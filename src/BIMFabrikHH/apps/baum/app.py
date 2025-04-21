@@ -1,0 +1,144 @@
+from functools import partial
+from math import pi
+from typing import Dict
+
+from pandas import to_numeric
+
+from BIMFabrikHH.apps.baum.col_names import DfColTree
+from BIMFabrikHH.core.baum_manager import BaumManager
+from BIMFabrikHH.core.ifc_modelbuilder import IfcModelBuilder
+from BIMFabrikHH.core.ifc_utils import IfcFileCreator
+from BIMFabrikHH.core.math_operations import MathTool
+from BIMFabrikHH.core.request_oaf import HamburgOGCAPI
+from BIMFabrikHH.default.url_api import PathUrl
+from BIMFabrikHH.pydantic_models.params_bbox import BoundingBoxParams
+from BIMFabrikHH.pydantic_models.params_tree import ModelParams
+
+
+class BaumModeller:
+
+    def __init__(self):
+        self.baum_manager = BaumManager()
+        self.builder = IfcModelBuilder()
+        self.model = None
+
+    @staticmethod
+    def get_oaf_trees(bbox, skip_geometry=False):
+
+        url = PathUrl.URL_OAF_TREES
+
+        tree_properties = (
+            "gid, baumid, baumnummer, gattung_deutsch, art_deutsch, sorte_deutsch, pflanzjahr, kronendurchmesser, "
+            "stammumfang, strasse, stadtteil, bezirk",
+        )
+
+        params_trees = {
+            "f": "json",
+            "bbox": f"{bbox.min_x},{bbox.min_y},{bbox.max_x},{bbox.max_y}",
+            "crs": "http://www.opengis.net/def/crs/EPSG/0/25832",
+            "limit": 2000,
+            "properties": tree_properties,
+            "skipGeometry": str(skip_geometry).lower(),
+        }
+
+        trees_data: Dict = HamburgOGCAPI.fetch_data(url, params_trees)
+
+        return trees_data
+
+    @staticmethod
+    def get_oaf_tree_df(x1, y1, x2, y2):
+        """Get OAF tree data as a DataFrame for the given bounding box coordinates."""
+
+        bbox = BoundingBoxParams(min_x=x1, min_y=y1, max_x=x2, max_y=y2)
+        tree_data = BaumModeller.get_oaf_trees(bbox)
+        df = HamburgOGCAPI.data_to_dataframe(tree_data)
+
+        df[DfColTree.STAMMUMFANG_BK] = BaumModeller.convert_umfang_durchmesser(
+            df, DfColTree.STAMMUMFANG_BK, MathTool.float_4f
+        )
+
+        return df
+
+    @staticmethod
+    def convert_umfang_durchmesser(df, col_name, formatting_function):
+        """
+        Args:
+            df (pd.DataFrame): The DataFrame containing the column to process.
+            col_name (str): The name of the column to process.
+            formatting_function (function): The formatting function to apply to the processed values.
+
+        Returns:
+            pd.Series: The processed column.
+        """
+
+        # Convert to numeric first (coercing errors to NaN), then divide by 100
+        df[col_name] = to_numeric(df[col_name], errors="coerce") / 100
+
+        df[col_name] /= pi
+
+        # Diameter will be set 0.05 for diameter lower than 0.05
+        df[col_name] = df[col_name].apply(lambda x: 0.05 if x < 0.05 else x)
+
+        df[col_name] = df[col_name].apply(partial(formatting_function))
+
+        return df[col_name]
+
+    def create_trees(self, model_params) -> bytes | None:
+        """
+        Create trees from a given ModelParams, which includes the bounding box and other parameters.
+        This method handles filtering trees within the bounding box and creating the IFC model.
+        """
+
+        # # Access bbox as a dictionary from model_dump()
+        # bbox_dict = model_params.bbox.model_dump()
+        #
+        # # Convert the dictionary back into a BoundingBoxParams object
+        # bbox = BoundingBoxParams(**bbox_dict)
+        #
+        # # Get trees within the bounding box using the object
+        # tree_data = self.get_oaf_trees(bbox=bbox, skip_geometry=False)
+        # print(tree_data)
+        #
+        # if not tree_data:
+        #     print("No valid Data found in the response")
+        #     return None
+        #
+        # df = HamburgOGCAPI.data_to_dataframe(tree_data)
+
+  
+        # Extract coordinates from model_params
+        x1 = model_params.bbox.min_x
+        y1 = model_params.bbox.min_y
+        x2 = model_params.bbox.max_x
+        y2 = model_params.bbox.max_y
+
+        # Get DataFrame directly
+        df = self.get_oaf_tree_df(x1, y1, x2, y2)
+
+        if df.empty:
+            print("No valid tree data found within the bounding box.")
+            return None
+
+
+        self.builder.reset_model()
+        self.builder.build_project(
+            project_info_dict={
+                "name": model_params.project_name,
+            },
+            site_name="Trees_Hamburg",
+        )
+
+
+
+        self.model = self.builder.get_model()
+
+        self.baum_manager.place_trees_from_df(
+            self.model,
+            df,
+            model_params.level_of_geom,
+            self.builder.site,
+            self.builder.body,
+        )
+
+        # Return the IFC model in memory as a byte stream
+        return IfcFileCreator.save_ifc_in_memory(self.model)
