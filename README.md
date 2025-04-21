@@ -1,3 +1,3 @@
 # BIMFabrikHH
 
-# Die BIMFabrikHH Hamburg
+Die BIMFabrikHH Hamburg
