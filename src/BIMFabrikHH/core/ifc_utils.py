@@ -4,12 +4,11 @@ from pathlib import Path
 import ifcopenshell.util.element
 import ifcopenshell.util.placement
 import ifcopenshell.util.representation
-from ifcopenshell.api import run, aggregate, georeference
-from ifcopenshell.api import context
+from ifcopenshell.api import run, aggregate, georeference, context
 from ifcopenshell.api.root import create_entity
 
-from BIMFabrikHH.default.paths import PathConfig
-from BIMFabrikHH.pydantic_models.pydantic_georeferencing import (
+from ..default.paths import PathConfig
+from ..pydantic_models.pydantic_georeferencing import (
     GeoreferencingData,
     ProjectedCRSData,
 )

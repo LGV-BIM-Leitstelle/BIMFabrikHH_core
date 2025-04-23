@@ -6,12 +6,9 @@ import rasterio
 from ifcopenshell.api import run
 from rasterio.enums import Resampling
 
-
-from BIMFabrikHH.core.ifc_modelbuilder import IfcModelBuilder
-from BIMFabrikHH.core.ifc_snippets import IfcSnippets
-from BIMFabrikHH.core.ifc_utils import IfcFileCreator
-from BIMFabrikHH.core.request_oaf import HamburgOGCAPI
-from BIMFabrikHH.default.url_api import PathUrl
+from ...core.ifc_modelbuilder import IfcModelBuilder
+from ...core.ifc_snippets import IfcSnippets
+from ...core.ifc_utils import IfcFileCreator
 
 ifc_snippets = IfcSnippets()
 

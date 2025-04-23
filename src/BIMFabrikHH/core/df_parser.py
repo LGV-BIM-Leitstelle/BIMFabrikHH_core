@@ -3,8 +3,8 @@ from typing import Dict, Any, List
 
 import pandas as pd
 
-from BIMFabrikHH.core.profile_stadtmobiliar import profiles_stadtmobiliar
-from BIMFabrikHH.default.paths import PathConfig
+from .profile_stadtmobiliar import profiles_stadtmobiliar
+from ..default.paths import PathConfig
 
 
 # from src.BIMFabrikHH_intern.default.paths import PathConfig
@@ -130,7 +130,7 @@ class DfParser:
         df_preview = pd.read_csv(csv_file_path, delimiter=";", nrows=0)
 
         # Add "Drehung.1" only if it exists in the file
-        required_columns = ["Effektiver Typ","Drehung.1", "NUMMER", "Nummer", "Handle"]
+        required_columns = ["Effektiver Typ", "Drehung.1", "NUMMER", "Nummer", "Handle"]
         columns_to_keep.extend([col for col in required_columns if col in df_preview.columns])
 
         df = pd.read_csv(csv_file_path, delimiter=";", usecols=columns_to_keep)
@@ -155,7 +155,7 @@ class DfParser:
         #     .str.replace("g", "", regex=False)  # Remove 'g'
         #     .apply(lambda x: float(x) * 0.9 if x.replace(".", "", 1).isdigit() else None)
         # )
-        
+
         # funktioniert nicht mehr
         """
         df["Drehung"] = (
@@ -613,25 +613,27 @@ class DfParser:
     @staticmethod
     def apply_laterne_typ(df):
         value_dict = {
-                "a": {"Typ": "Typ_a", "Hoehe": 9.5},
-                "b": {"Typ": "Typ_b", "Hoehe": 8.3},
-                "c": {"Typ": "Typ_c", "Hoehe": 3.6},
-                "d": {"Typ": "Typ_d", "Hoehe": 9.7},
-                "e": {"Typ": "Typ_e", "Hoehe": 4.6},
-                "f": {"Typ": "Typ_f", "Hoehe": 7.4},
-                "g": {"Typ": "Typ_g", "Hoehe": 5.4},
+            "a": {"Typ": "Typ_a", "Hoehe": 9.5},
+            "b": {"Typ": "Typ_b", "Hoehe": 8.3},
+            "c": {"Typ": "Typ_c", "Hoehe": 3.6},
+            "d": {"Typ": "Typ_d", "Hoehe": 9.7},
+            "e": {"Typ": "Typ_e", "Hoehe": 4.6},
+            "f": {"Typ": "Typ_f", "Hoehe": 7.4},
+            "g": {"Typ": "Typ_g", "Hoehe": 5.4},
         }
         try:
             df["Hoehe"] = df.apply(
-                    lambda row: value_dict[row["NUMMER"]]["Hoehe"] if row["NUMMER"] in value_dict else row["Hoehe"],
-                    axis=1
+                lambda row: (value_dict[row["NUMMER"]]["Hoehe"] if row["NUMMER"] in value_dict else row["Hoehe"]),
+                axis=1,
             )
-    
+
             df["Typ"] = df.apply(
-                    lambda row: row["Name"] + "_Typ_" + row["NUMMER"] + "_" + row["Blockname"]
+                lambda row: (
+                    row["Name"] + "_Typ_" + row["NUMMER"] + "_" + row["Blockname"]
                     if row["NUMMER"] in value_dict
-                    else row["Typ"],
-                    axis=1
+                    else row["Typ"]
+                ),
+                axis=1,
             )
         except Exception as e:
             print(e)

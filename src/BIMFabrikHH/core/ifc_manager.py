@@ -1,13 +1,13 @@
-from BIMFabrikHH.core.ifc_snippets import IfcSnippets
-from BIMFabrikHH.core.ifc_utils import IfcFileCreator
-from BIMFabrikHH.default.pset_data import (
+from .ifc_snippets import IfcSnippets
+from .ifc_utils import IfcFileCreator
+from ..default.pset_data import (
     pset_objectinfo_data,
     pset_modellinfo_data,
     pset_geo_data_utm,
     pset_hyperlinkdata,
 )
-from BIMFabrikHH.pydantic_models.pydantic_ifcproject import IfcProject
-from BIMFabrikHH.pydantic_models.pydantic_psets_BIMHH import (
+from ..pydantic_models.pydantic_ifcproject import IfcProject
+from ..pydantic_models.pydantic_psets_BIMHH import (
     Pset_Objektinformation,
     Pset_Modellinformation,
     Pset_Georeferenzierung,
@@ -65,7 +65,7 @@ class IfcModelBuilderComponent:
             None
         """
 
-        # step 1 create Project (User input)
+        # create Project (User input)
         project_info_pyd = IfcProject(**project_info_dict)
         self.project, self.site, self.building = self.ifc_creator.create_project(
             self.model,
@@ -73,14 +73,13 @@ class IfcModelBuilderComponent:
             site_name,
         )
 
-        # step 2 Add units to the IFC model (no User input)
+        # Add units to the IFC model (no User input)
         self.ifc_creator.create_units_meter(self.model)
 
-        # step 3 Add contexts for the representation (no User input)
+        # Add contexts for the representation (no User input)
         self.model3d, self.plan, self.body = self.ifc_creator.create_representations(self.model)
 
     def setup_psets(self):
-        # step 4 Initialize property sets (User input)
         self.pset_classes = self._initialize_psets(
             Pset_Objektinformation,
             pset_objectinfo_data,
@@ -94,13 +93,5 @@ class IfcModelBuilderComponent:
         self.all_psets = [pset.pset_name for pset in self.pset_classes]
 
     def combine_georeferencing(self):
-        # Step 7 Georeferencing (User input)
         self.ifc_creator.create_georeference(self.model)
         self.ifc_creator.edit_georeference(self.model)
-
-    # def save_ifc(self):
-    #     # step 8 save file to temp and for downloading (no User input)
-    #     self.ifc_creator.save_ifc_file(self.model)
-    #     ifc_bytes = self.ifc_creator.save_ifc_in_memory(self.model)
-    #
-    #     return ifc_bytes

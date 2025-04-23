@@ -3,7 +3,7 @@ from openpyxl.styles import Border, Side, PatternFill, Font, Alignment
 
 
 class ExcelStyler:
-    def __init__(self, filename: object) -> object:
+    def __init__(self, filename: object):
         self.filename = filename
         self.workbook = load_workbook(filename)
         self.sheet = self.workbook.active
@@ -28,7 +28,7 @@ class ExcelStyler:
                     try:
                         if len(str(cell.value)) > max_length:
                             max_length = len(cell.value)
-                    except:
+                    except Exception as _e:
                         pass
                 adjusted_width = (max_length + 2) * 1.3
                 self.sheet.column_dimensions[column].width = adjusted_width

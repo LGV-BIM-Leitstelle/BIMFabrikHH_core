@@ -1,19 +1,9 @@
-# # import os
-# #
-# # from src.apps.stadtmodell.main import process_gml_to_ifc
-# #
-# # folder_path = r"C:\Users\SalemAh\Downloads\Workshop CityGML\cityGML-ifc"
-# # gml_files = [os.path.join(folder_path, f) for f in os.listdir(folder_path) if f.endswith(".xml")]
-# # print(f"Found {len(gml_files)} CityGML files in the folder.")
-# #
-# # stadtmodell = process_gml_to_ifc(gml_files, "Hamburg Buildings", "Hamburg Site", reset_model=True)
-# # print(f"Processed file: {gml_files}")
-
-
 import os
 import unittest
 from pathlib import Path
 from unittest.mock import patch, MagicMock
+
+from src.BIMFabrikHH.apps.stadtmodell.app import process_gml_to_ifc
 
 
 class TestGMLProcessing(unittest.TestCase):
@@ -33,9 +23,6 @@ class TestGMLProcessing(unittest.TestCase):
     @patch("src.apps.stadtmodell.main.process_gml_to_ifc")  # Then mock the main function
     def test_process_gml_to_ifc(self, mock_process_gml_to_ifc, mock_etree_parse):
         """Test if process_gml_to_ifc is called correctly"""
-        from BIMFabrikHH.apps.stadtmodell.app import (
-            process_gml_to_ifc,
-        )  # Ensure correct import inside function
 
         mock_process_gml_to_ifc.return_value = "Mocked Processed Model"
         mock_etree_parse.return_value = MagicMock()  # Prevents actual XML parsing

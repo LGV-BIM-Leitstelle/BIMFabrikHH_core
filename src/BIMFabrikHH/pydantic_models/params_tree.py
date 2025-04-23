@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field
 
-from BIMFabrikHH.pydantic_models.params_bbox import BoundingBoxParams
+from ..pydantic_models.params_bbox import BoundingBoxParams
 
 
 class ModelParams(BaseModel):

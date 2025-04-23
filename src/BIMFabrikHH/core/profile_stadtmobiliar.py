@@ -1,8 +1,6 @@
 import pandas as pd
 
-from BIMFabrikHH.default.paths import PathConfig
-
-# from src.BIMFabrikHH_intern.default.paths import PathConfig
+from ..default.paths import PathConfig
 
 PathConfig()
 df = pd.read_excel(PathConfig.PROFILES_STADTMOBILIAR, dtype={"ID": str})

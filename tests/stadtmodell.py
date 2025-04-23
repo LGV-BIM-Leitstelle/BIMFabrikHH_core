@@ -1,4 +1,4 @@
-from BIMFabrikHH.apps.stadtmodell.app import process_gml_to_ifc
+from src.BIMFabrikHH.apps.stadtmodell.app import process_gml_to_ifc
 
 if __name__ == "__main__":
     gml_files = [

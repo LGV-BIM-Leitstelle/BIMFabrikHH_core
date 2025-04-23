@@ -5,7 +5,7 @@ from icosphere import icosphere
 from ifcopenshell.api import run, geometry, aggregate, pset, root
 from ifcopenshell.util import placement, representation
 
-from BIMFabrikHH.core.ifc_snippets import IfcSnippets
+from .ifc_snippets import IfcSnippets
 
 
 class BaumManager:
@@ -40,12 +40,18 @@ class BaumManager:
                 placement_zx_axes=((0.0, 0.0, 1.0), (1.0, 0.0, 0.0)),
             )
             element_baumstamm = root.create_entity(
-                model, ifc_class="IfcBuildingElementProxy", name="Baumstamm_{:04d}".format(self.idx_baum)
+                model,
+                ifc_class="IfcBuildingElementProxy",
+                name="Baumstamm_{:04d}".format(self.idx_baum),
             )
             representation_baumstamm = geometry.add_profile_representation(
                 model, context=body, profile=profile, depth=hoehe
             )
-            geometry.assign_representation(model, product=element_baumstamm, representation=representation_baumstamm)
+            geometry.assign_representation(
+                model,
+                product=element_baumstamm,
+                representation=representation_baumstamm,
+            )
             aggregate.assign_object(model, relating_object=storey, products=[element_baumstamm])
 
         elif creation_method == 2:
@@ -54,13 +60,24 @@ class BaumManager:
                 ifc_class="IfcBuildingElementProxy",
             )
             representation_baumstamm = geometry.add_wall_representation(
-                model, context=body, length=stammbasis, height=hoehe, thickness=stammbasis, offset=-stammbasis / 2
+                model,
+                context=body,
+                length=stammbasis,
+                height=hoehe,
+                thickness=stammbasis,
+                offset=-stammbasis / 2,
             )
-            geometry.assign_representation(model, product=element_baumstamm, representation=representation_baumstamm)
+            geometry.assign_representation(
+                model,
+                product=element_baumstamm,
+                representation=representation_baumstamm,
+            )
             aggregate.assign_object(model, relating_object=storey, products=[element_baumstamm])
         elif creation_method == 3:
             element_baumstamm = root.create_entity(
-                model, ifc_class="IfcBuildingElementProxy", name="Baumstamm_{:04d}".format(self.idx_baum)
+                model,
+                ifc_class="IfcBuildingElementProxy",
+                name="Baumstamm_{:04d}".format(self.idx_baum),
             )
             rectangle = model.createIfcRectangleProfileDef(ProfileType="AREA", XDim=stammbasis, YDim=stammbasis)
             direction = model.createIfcDirection((0.0, 0.0, 1.0))
@@ -72,7 +89,11 @@ class BaumManager:
                 RepresentationType="SweptSolid",
                 Items=[extrusion],
             )
-            geometry.assign_representation(model, product=element_baumstamm, representation=representation_baumstamm)
+            geometry.assign_representation(
+                model,
+                product=element_baumstamm,
+                representation=representation_baumstamm,
+            )
         else:
             x_length = stammbasis / 2
             element_baumstamm = root.create_entity(
@@ -96,7 +117,11 @@ class BaumManager:
             element_matrix[:, 3][0:3] = (-x_length, -x_length, 10)
             geometry.edit_object_placement(model, matrix=element_matrix, product=element_baumstamm)
 
-            geometry.assign_representation(model, product=element_baumstamm, representation=representation_baumstamm)
+            geometry.assign_representation(
+                model,
+                product=element_baumstamm,
+                representation=representation_baumstamm,
+            )
             aggregate.assign_object(model, relating_object=storey, products=[element_baumstamm])
 
         # Placement
@@ -133,7 +158,11 @@ class BaumManager:
         )
 
         representation_tree = geometry.add_mesh_representation(
-            model, context=body, vertices=[vertices_list], faces=[faces_list], edges=None
+            model,
+            context=body,
+            vertices=[vertices_list],
+            faces=[faces_list],
+            edges=None,
         )
         geometry.assign_representation(model, product=self.baumkrone, representation=representation_tree)
         aggregate.assign_object(model, relating_object=storey, products=[self.baumkrone])

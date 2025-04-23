@@ -1,3 +1,4 @@
+import ifcopenshell
 import ifcopenshell.api.aggregate as aggregate
 import ifcopenshell.api.material.add_material
 import ifcopenshell.util.placement
@@ -7,13 +8,10 @@ import pandas as pd
 from ifcopenshell.api import type, geometry, root, pset, material
 from ifcopenshell.util.shape_builder import ShapeBuilder, V
 
-from BIMFabrikHH.core.df_columns import DfCol
-from BIMFabrikHH.core.df_parser import DfParser
-
-# from BIMFabrikHH.apps.stadtmodell.df_parser import DfParser, DfCol
-from BIMFabrikHH.core.ifc_snippets import IfcSnippets
-from BIMFabrikHH.default.paths import PathConfig
-import ifcopenshell
+from .df_columns import DfCol
+from .df_parser import DfParser
+from .ifc_snippets import IfcSnippets
+from ..default.paths import PathConfig
 
 
 class GeometryCreator:
@@ -43,11 +41,7 @@ class GeometryCreator:
         )
         geometry.assign_representation(self.model, product=product_solid, representation=repr_solid)
         if location:
-            aggregate.assign_object(
-                self.model,
-                products=[product_solid],
-                relating_object=location
-            )
+            aggregate.assign_object(self.model, products=[product_solid], relating_object=location)
         return product_solid
 
     def create_profil_versetzt(self, body, ifc_class, width, depth, height):
@@ -539,9 +533,17 @@ class GeometryCreator:
             element = root.create_entity(self.model, ifc_class="IfcFurniture", name=obj_name)
 
             try:
-                type.assign_type(self.model, related_objects=[element], relating_type=df_types_dict[row["Typ"]])
+                type.assign_type(
+                    self.model,
+                    related_objects=[element],
+                    relating_type=df_types_dict[row["Typ"]],
+                )
             except KeyError:
-                type.assign_type(self.model, related_objects=[element], relating_type=df_types_dict[row["Typ"]])
+                type.assign_type(
+                    self.model,
+                    related_objects=[element],
+                    relating_type=df_types_dict[row["Typ"]],
+                )
 
             aggregate.assign_object(self.model, relating_object=storey, products=[element])
 
@@ -551,7 +553,7 @@ class GeometryCreator:
                 tiefe_value = row.get(DfCol.LAENGE, 0)  # Get value safely, default to 0 if missing
                 element_matrix[1, 3] += tiefe_value / 2  # Move Y-axis by tiefe_value
                 # geometry.edit_object_placement(self.model, matrix=element_matrix, product=element)
-                
+
             # hier to float sonst passiert fehlermeldung
             angle_degrees = float(angle_degrees)
             element_matrix = ifcopenshell.util.placement.rotation(angle_degrees, "Z") @ element_matrix
@@ -576,8 +578,6 @@ class GeometryCreator:
 
             # for element in elements:
             pset_ifc = pset.add_pset(self.model, product=element, name="Pset_Objektinformation")
-
-
 
             idebene1_str = self.data_parser.get_column_value(df_ide, "Blockname", row["Blockname"], "IDEbene1")
             idebene2_str = self.data_parser.get_column_value(df_ide, "Blockname", row["Blockname"], "IDEbene2")

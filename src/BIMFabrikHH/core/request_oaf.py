@@ -2,8 +2,8 @@ import logging
 
 import pandas as pd
 import requests
-from BIMFabrikHH.core.math_operations import MathTool
-from BIMFabrikHH.default.url_api import PathUrl
+from .math_operations import MathTool
+from ..default.url_api import PathUrl
 
 
 class HamburgOGCAPI:
@@ -130,12 +130,11 @@ class HamburgOGCAPI:
             x, y = MathTool.float_4f(coords[0][0]), MathTool.float_4f(coords[0][1])
 
         return {
-                "id": feature.get("id"),
-                "Easting": x,
-                "Northing": y,
-                **feature.get("properties", {})
+            "id": feature.get("id"),
+            "Easting": x,
+            "Northing": y,
+            **feature.get("properties", {}),
         }
-
 
     @staticmethod
     def _transform_value(value: str) -> str | None:

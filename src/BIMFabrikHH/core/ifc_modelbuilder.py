@@ -1,8 +1,8 @@
-from BIMFabrikHH.core.ifc_snippets import IfcSnippets
-from BIMFabrikHH.core.ifc_utils import IfcFileCreator
-from BIMFabrikHH.default.pset_data import pset_objectinfo_data, pset_hyperlinkdata
-from BIMFabrikHH.pydantic_models.pydantic_ifcproject import IfcProject
-from BIMFabrikHH.pydantic_models.pydantic_psets_BIMHH import (
+from .ifc_snippets import IfcSnippets
+from .ifc_utils import IfcFileCreator
+from ..default.pset_data import pset_objectinfo_data, pset_hyperlinkdata
+from ..pydantic_models.pydantic_ifcproject import IfcProject
+from ..pydantic_models.pydantic_psets_BIMHH import (
     Pset_Objektinformation,
     Pset_Hyperlink,
 )

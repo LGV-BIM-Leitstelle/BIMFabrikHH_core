@@ -4,15 +4,14 @@ from typing import Dict
 
 from pandas import to_numeric
 
-from BIMFabrikHH.apps.baum.col_names import DfColTree
-from BIMFabrikHH.core.baum_manager import BaumManager
-from BIMFabrikHH.core.ifc_modelbuilder import IfcModelBuilder
-from BIMFabrikHH.core.ifc_utils import IfcFileCreator
-from BIMFabrikHH.core.math_operations import MathTool
-from BIMFabrikHH.core.request_oaf import HamburgOGCAPI
-from BIMFabrikHH.default.url_api import PathUrl
-from BIMFabrikHH.pydantic_models.params_bbox import BoundingBoxParams
-from BIMFabrikHH.pydantic_models.params_tree import ModelParams
+from .col_names import DfColTree
+from ...core.baum_manager import BaumManager
+from ...core.ifc_modelbuilder import IfcModelBuilder
+from ...core.ifc_utils import IfcFileCreator
+from ...core.math_operations import MathTool
+from ...core.request_oaf import HamburgOGCAPI
+from ...default.url_api import PathUrl
+from ...pydantic_models.params_bbox import BoundingBoxParams
 
 
 class BaumModeller:
@@ -88,37 +87,16 @@ class BaumModeller:
         Create trees from a given ModelParams, which includes the bounding box and other parameters.
         This method handles filtering trees within the bounding box and creating the IFC model.
         """
-
-        # # Access bbox as a dictionary from model_dump()
-        # bbox_dict = model_params.bbox.model_dump()
-        #
-        # # Convert the dictionary back into a BoundingBoxParams object
-        # bbox = BoundingBoxParams(**bbox_dict)
-        #
-        # # Get trees within the bounding box using the object
-        # tree_data = self.get_oaf_trees(bbox=bbox, skip_geometry=False)
-        # print(tree_data)
-        #
-        # if not tree_data:
-        #     print("No valid Data found in the response")
-        #     return None
-        #
-        # df = HamburgOGCAPI.data_to_dataframe(tree_data)
-
-  
-        # Extract coordinates from model_params
         x1 = model_params.bbox.min_x
         y1 = model_params.bbox.min_y
         x2 = model_params.bbox.max_x
         y2 = model_params.bbox.max_y
 
-        # Get DataFrame directly
         df = self.get_oaf_tree_df(x1, y1, x2, y2)
 
         if df.empty:
             print("No valid tree data found within the bounding box.")
             return None
-
 
         self.builder.reset_model()
         self.builder.build_project(
@@ -127,8 +105,6 @@ class BaumModeller:
             },
             site_name="Trees_Hamburg",
         )
-
-
 
         self.model = self.builder.get_model()
 
@@ -140,5 +116,6 @@ class BaumModeller:
             self.builder.body,
         )
 
-        # Return the IFC model in memory as a byte stream
-        return IfcFileCreator.save_ifc_in_memory(self.model)
+        ifc_modell: bytes = IfcFileCreator.save_ifc_in_memory(self.model)
+
+        return ifc_modell

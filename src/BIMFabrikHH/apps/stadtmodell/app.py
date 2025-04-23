@@ -6,10 +6,9 @@ from ifcopenshell.api import run
 from lxml import etree
 
 from .building_objects import Building, Point
-from BIMFabrikHH.core.ifc_modelbuilder import IfcModelBuilder
-from BIMFabrikHH.core.ifc_snippets import IfcSnippets
-from BIMFabrikHH.core.ifc_utils import IfcFileCreator
-from ...core.request_oaf import HamburgOGCAPI
+from ...core.ifc_modelbuilder import IfcModelBuilder
+from ...core.ifc_snippets import IfcSnippets
+from ...core.ifc_utils import IfcFileCreator
 from ...default.url_api import PathUrl
 
 
@@ -325,4 +324,3 @@ def process_gml_to_ifc(gml_files: List, project_name: str, site_name: str, reset
 
     else:
         print("No models were processed; no IFC file was saved.")
-
