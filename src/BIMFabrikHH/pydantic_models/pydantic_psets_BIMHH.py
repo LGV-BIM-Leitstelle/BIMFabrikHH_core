@@ -1,5 +1,6 @@
+from typing import ClassVar, Optional
+
 from pydantic import BaseModel, Field
-from typing import Optional, ClassVar
 
 
 class BasePsetModel(BaseModel):

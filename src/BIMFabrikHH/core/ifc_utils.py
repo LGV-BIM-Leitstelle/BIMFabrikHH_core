@@ -4,45 +4,29 @@ from pathlib import Path
 import ifcopenshell.util.element
 import ifcopenshell.util.placement
 import ifcopenshell.util.representation
-from ifcopenshell.api import run, aggregate, georeference, context
+from ifcopenshell.api import aggregate, context, georeference, run
 from ifcopenshell.api.root import create_entity
 
 from ..default.paths import PathConfig
-from ..pydantic_models.pydantic_georeferencing import (
-    GeoreferencingData,
-    ProjectedCRSData,
-)
+from ..pydantic_models.pydantic_georeferencing import GeoreferencingData, ProjectedCRSData
 
 
 class IfcFileCreator:
-
     @staticmethod
     def create_model(ifc_schema):
         model = ifcopenshell.file(schema=ifc_schema.upper())
         return model
 
     @staticmethod
-    def create_project(model, project_info, site_name, building_name=None):
-        project = run("root.create_entity", model, ifc_class="IfcProject", **project_info.dict())
+    def create_project(model, project_name, site_name, building_name):
+        project = run("root.create_entity", model, ifc_class="IfcProject", name=project_name)
         site = create_entity(model, ifc_class="IfcSite", name=site_name)
-        aggregate.assign_object(
-            model,
-            products=[site],
-            relating_object=project,
-        )
+        aggregate.assign_object(model, products=[site], relating_object=project)
 
         building = None
         if building_name:
-            building = create_entity(
-                model,
-                ifc_class="IfcBuilding",
-                name=building_name,
-            )
-            aggregate.assign_object(
-                model,
-                relating_object=site,
-                products=[building],
-            )
+            building = create_entity(model, ifc_class="IfcBuilding", name=building_name)
+            aggregate.assign_object(model, relating_object=site, products=[building])
 
         return project, site, building
 
@@ -50,17 +34,8 @@ class IfcFileCreator:
     def create_floorplans(model, building, floorplans):
         floorplans_instances = []
         for floorplan_name in floorplans:
-            floorplan = run(
-                "root.create_entity",
-                model,
-                ifc_class="IfcBuildingStorey",
-                name=floorplan_name,
-            )
-            aggregate.assign_object(
-                model,
-                relating_object=building,
-                products=[floorplan],
-            )
+            floorplan = run("root.create_entity", model, ifc_class="IfcBuildingStorey", name=floorplan_name)
+            aggregate.assign_object(model, relating_object=building, products=[floorplan])
             floorplans_instances.append(floorplan)
 
         return floorplans_instances
@@ -76,11 +51,7 @@ class IfcFileCreator:
         model3d = run("context.add_context", model, context_type="Model")
         plan = context.add_context(model, context_type="Plan")
         body = context.add_context(
-            model,
-            context_type="Model",
-            context_identifier="Body",
-            target_view="MODEL_VIEW",
-            parent=model3d,
+            model, context_type="Model", context_identifier="Body", target_view="MODEL_VIEW", parent=model3d
         )
 
         return model3d, plan, body
@@ -115,7 +86,7 @@ class IfcFileCreator:
         conversion = None
         try:
             conversion = model.by_type("IfcMapConversion")[0]
-        except Exception:
+        except Exception as _e:
             pass
 
         if not conversion:

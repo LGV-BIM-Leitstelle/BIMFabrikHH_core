@@ -1,50 +1,10 @@
-from dataclasses import dataclass
-from typing import Dict, Any, List
+from typing import Any, Dict, List
 
 import pandas as pd
 
-from .profile_stadtmobiliar import profiles_stadtmobiliar
 from ..default.paths import PathConfig
-
-
-# from src.BIMFabrikHH_intern.default.paths import PathConfig
-
-# from BIMFabrikHH.apps.stadtmobiliar.profile_stadtmobiliar import profiles_stadtmobiliar
-# from BIMFabrikHH.default.paths import PathConfig
-
-# from src.BIMFabrikHH_intern.stadtmobiliar.profile_stadtmobiliar import profiles_stadtmobiliar
-
-
-@dataclass
-class DfCol:
-    """Dataclass representing the column names used in the dataframes."""
-
-    REM2: str = "REM2"
-    BAUM_INFO_ORIG: str = "BAUMINFO-STAMM_Datenquelle"
-    BAUM_NR: str = "_Baumnummer"
-    REM1: str = "REM1"
-    EASTING: str = "Easting"
-    EASTING_UTM = "Easting_UTM"
-    ELEVATION: str = "Elevation"
-    GATTUNG: str = "_Gattung"
-    KRONENDURCHMESSER: str = "_Kronendurchmesser"
-    LINE_SEPARATOR = "*" * 150
-    NORTHING: str = "Northing"
-    POS_X: str = "Position X"
-    POS_Y: str = "Position Y"
-    STAMMBASIS: str = "_Stammbasis"
-    STAMMUMFANG: str = "_Stammumfang"
-    STAMMUMFANG_BK: str = "stammumfang"
-    REFERENCE_LINE: str = "Referenzlinie"
-    TYP: str = "Typ"
-    OBJEKT_NR: str = "Objektnummer"
-    OBJEKTCODIERUNG: str = "OBJEKTCODIERUNG"
-    FARBE = "Farbe"
-
-    LAENGE = "Laenge"
-    TIEFE = "Tiefe"
-    HOEHE = "Hoehe"
-    METHODE = "Methode"
+from .df_columns import DfCol
+from .profile_stadtmobiliar import profiles_stadtmobiliar
 
 
 class DfParser:
@@ -402,8 +362,7 @@ class DfParser:
 
         # Add a new column for the midpoint
         df.loc[unique_groups.index, "Midpoint"] = unique_groups.apply(
-            lambda row: DfParser.calculate_midpoint(row["Referenzpunkt_1"], row["Referenzpunkt_2"]),
-            axis=1,
+            lambda row: DfParser.calculate_midpoint(row["Referenzpunkt_1"], row["Referenzpunkt_2"]), axis=1
         )
         df.loc[df["Midpoint"].notna(), "Referenzpunkt_1"] = df["Midpoint"]
 

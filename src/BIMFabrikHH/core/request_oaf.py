@@ -2,8 +2,9 @@ import logging
 
 import pandas as pd
 import requests
-from .math_operations import MathTool
+
 from ..default.url_api import PathUrl
+from .math_operations import MathTool
 
 
 class HamburgOGCAPI:
@@ -88,27 +89,6 @@ class HamburgOGCAPI:
 
         return df["kachelbezeichnung_dk5"].dropna().tolist()
 
-    # @staticmethod
-    # def _extract_feature(feature: dict) -> dict:
-    #     """
-    #     Extract relevant data from a single feature.
-    #
-    #     Args:
-    #         feature (dict): A single feature from the API response.
-    #
-    #     Returns:
-    #         dict: Processed feature data with coordinates and properties.
-    #     """
-    #
-    #     geometry = feature.get("geometry", {})
-    #     coords = geometry.get("coordinates", [])
-    #     x, y = (None, None)
-    #
-    #     if geometry.get("type") in ["Point", "MultiPoint"] and len(coords) >= 2:
-    #         x, y = MathTool.float_4f(coords[0]), MathTool.float_4f(coords[1])
-    #
-    #     return {"id": feature.get("id"), "Easting": x, "Northing": y, **feature.get("properties", {})}
-
     @staticmethod
     def _extract_feature(feature: dict) -> dict:
         """
@@ -126,6 +106,7 @@ class HamburgOGCAPI:
 
         if geometry.get("type") == "Point" and len(coords) == 2:
             x, y = MathTool.float_4f(coords[0]), MathTool.float_4f(coords[1])
+
         elif geometry.get("type") == "MultiPoint" and len(coords) > 0 and len(coords[0]) == 2:
             x, y = MathTool.float_4f(coords[0][0]), MathTool.float_4f(coords[0][1])
 
@@ -149,7 +130,6 @@ class HamburgOGCAPI:
         """
 
         parts = value.split("_")
-        # Ensure the format is as expected
         if len(parts) != 3:
             return None
 
@@ -157,7 +137,7 @@ class HamburgOGCAPI:
         # Convert 565000 → 565
         second_part = str(int(parts[1]) // 1000)
 
-        # Extract last 4 digits correctly (5932000 → 5932)
+        # Extract last 4 digits (5932000 → 5932)
         third_part = str((int(parts[2]) // 1000) % 10000)
 
         suffix = "1_HH.xml"

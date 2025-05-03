@@ -22,8 +22,15 @@ ifcopenshell = { version = "^0.8.1.post1", extras = ["geometry"] }
 black = "^24.4.2"
 pytest = "^8.3.4"
 pytest-mock = "^3.14.0"
+isort = "^6.0.1"
+autoflake = "^2.3.1"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
+[tool.ruff]
+line-length = 120
+
+[tool.black]
+line-length = 120

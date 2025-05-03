@@ -5,13 +5,13 @@ import ifcopenshell.util.placement
 import ifcopenshell.util.representation
 import numpy as np
 import pandas as pd
-from ifcopenshell.api import type, geometry, root, pset, material
+from ifcopenshell.api import geometry, material, pset, root, type
 from ifcopenshell.util.shape_builder import ShapeBuilder, V
 
+from ..default.paths import PathConfig
 from .df_columns import DfCol
 from .df_parser import DfParser
 from .ifc_snippets import IfcSnippets
-from ..default.paths import PathConfig
 
 
 class GeometryCreator:
@@ -50,24 +50,13 @@ class GeometryCreator:
             "depth": depth,
             "height": height,
         }
-        shift_to_center = V(0.0 / 2, -dims["depth"] / 2, 0.0)
+        _shift_to_center = V(0.0 / 2, -dims["depth"] / 2, 0.0)
 
         builder = ifcopenshell.util.shape_builder.ShapeBuilder(self.model)
-        outer_curve = builder.polyline(
-            [(0.0, 0.0), (width, 0.0), (width, depth), (0.0, depth)],
-            closed=True,
-        )
+        outer_curve = builder.polyline([(0.0, 0.0), (width, 0.0), (width, depth), (0.0, depth)], closed=True)
         # inner_curve = builder.circle((50.0, 50.0), radius=10.0)
         profile = builder.profile(outer_curve, name="Arbitrary")
         return profile
-        """
-        lod1_solid = self.extrude_rect(self.builder, (dims["width"], dims["depth"]), dims["height"], (0, 0, 0))
-        self.builder.translate(lod1_solid, shift_to_center)
-        repr_solid = self.builder.get_representation(body, [lod1_solid])
-        product_solid = self.model.create_entity(ifc_class, GlobalId=ifcopenshell.guid.new(), Name="Profil_versetz")
-        geometry.assign_representation(self.model, product=product_solid, representation=repr_solid)
-        return product_solid
-        """
 
     def create_bus_station(self, body, ifc_class="IfcBuildingElementType", location=None, LOD=3):
         dims = {
@@ -105,12 +94,7 @@ class GeometryCreator:
             station_sides = [
                 self.extrude_rect(self.builder, side_size, side_height, (x, 0.05, 0.1)) for x in (0, dims["width"])
             ]
-            station_back = self.extrude_rect(
-                self.builder,
-                (dims["width"], 0.005),
-                side_height,
-                (0, dims["depth"], 0.1),
-            )
+            station_back = self.extrude_rect(self.builder, (dims["width"], 0.005), side_height, (0, dims["depth"], 0.1))
 
             shape_column = self.builder.rectangle(size=V(dims["frame_width"], dims["frame_depth"]))
             columns = [self.builder.profile(shape_column)] + self.builder.mirror(
@@ -141,22 +125,13 @@ class GeometryCreator:
                 self.builder,
                 (dims["seat_width"], dims["seat_depth"]),
                 dims["thickness"],
-                (
-                    dims["width"] - dims["seat_width"],
-                    dims["depth"] - dims["seat_depth"],
-                    dims["seat_height"],
-                ),
+                (dims["width"] - dims["seat_width"], dims["depth"] - dims["seat_depth"], dims["seat_height"]),
             )
             side_size, side_height = (0.005, dims["depth"] - 0.1), dims["height"] - (dims["thickness"] + 0.1)
             station_sides = [
                 self.extrude_rect(self.builder, side_size, side_height, (x, 0.05, 0.1)) for x in (0, dims["width"])
             ]
-            station_back = self.extrude_rect(
-                self.builder,
-                (dims["width"], 0.005),
-                side_height,
-                (0, dims["depth"], 0.1),
-            )
+            station_back = self.extrude_rect(self.builder, (dims["width"], 0.005), side_height, (0, dims["depth"], 0.1))
             shape_column = self.builder.rectangle(size=V(dims["frame_width"], dims["frame_depth"]))
             columns = [self.builder.profile(shape_column)] + self.builder.mirror(
                 shape_column,
@@ -172,9 +147,7 @@ class GeometryCreator:
             repr_solid = self.builder.get_representation(body, station_solid)
             repr_glas = self.builder.get_representation(body, station_glas)
             product_solid = self.model.create_entity(
-                ifc_class,
-                GlobalId=ifcopenshell.guid.new(),
-                Name="Bushaltestelle_Konstruktion",
+                ifc_class, GlobalId=ifcopenshell.guid.new(), Name="Bushaltestelle_Konstruktion"
             )
             product_glas = self.model.create_entity(
                 ifc_class, GlobalId=ifcopenshell.guid.new(), Name="Bushaltestelle_Glas"
@@ -194,11 +167,7 @@ class GeometryCreator:
             for prod in [product_solid, product_glas]:
                 aggregate.assign_object(self.model, relating_object=parent_product, products=[prod])
             if location:
-                aggregate.assign_object(
-                    self.model,
-                    products=[parent_product],
-                    relating_object=location,
-                )
+                aggregate.assign_object(self.model, products=[parent_product], relating_object=location)
             return parent_product
 
     def create_sweep(self, obj_name, laenge, tiefe, hoehe, is_centered=True):
@@ -212,17 +181,9 @@ class GeometryCreator:
         body = ifcopenshell.util.representation.get_context(self.model, "Model", "Body", "MODEL_VIEW")
         representation = self.builder.get_representation(body, swept_curve)
 
-        product = self.model.create_entity(
-            "IfcBuildingElementType",
-            GlobalId=ifcopenshell.guid.new(),
-            Name=obj_name,
-        )
+        product = self.model.create_entity("IfcBuildingElementType", GlobalId=ifcopenshell.guid.new(), Name=obj_name)
 
-        geometry.assign_representation(
-            file=self.model,
-            product=product,
-            representation=representation,
-        )
+        geometry.assign_representation(file=self.model, product=product, representation=representation)
 
         return product
 
@@ -247,22 +208,13 @@ class GeometryCreator:
         self.idx_element += 1
 
         element_baumstamm = root.create_entity(
-            self.model,
-            ifc_class="IfcBuildingElementProxy",
-            name="{}_{:04d}".format(element_name, self.idx_element),
+            self.model, ifc_class="IfcBuildingElementProxy", name="{}_{:04d}".format(element_name, self.idx_element)
         )
         repr_element_instance = geometry.add_profile_representation(
-            self.model,
-            context=body,
-            profile=profile,
-            depth=hoehe,
+            self.model, context=body, profile=profile, depth=hoehe
         )
 
-        geometry.assign_representation(
-            self.model,
-            product=element_baumstamm,
-            representation=repr_element_instance,
-        )
+        geometry.assign_representation(self.model, product=element_baumstamm, representation=repr_element_instance)
 
         # Placement
         element_matrix = np.eye(4)
@@ -273,11 +225,7 @@ class GeometryCreator:
 
         element_matrix[:, 3][0:3] = (x, y, z)
 
-        geometry.edit_object_placement(
-            self.model,
-            matrix=element_matrix,
-            product=element_baumstamm,
-        )
+        geometry.edit_object_placement(self.model, matrix=element_matrix, product=element_baumstamm)
 
         # Materials
         self.ifc_snippets.assign_color_to_element(self.model, repr_element_instance, "0.204, 0.204, 0.5", 0.0)
@@ -310,18 +258,10 @@ class GeometryCreator:
         if hasattr(element, "RepresentationMaps") and element.RepresentationMaps:
             for representation in element.RepresentationMaps[0].Representations:
                 if representation.Items:
-                    styled_item = ifc_file.createIfcStyledItem(representation.Items[0], [style_assignment], None)
+                    _styled_item = ifc_file.createIfcStyledItem(representation.Items[0], [style_assignment], None)
 
     def create_standard_profile(
-        self,
-        body,
-        profile_name,
-        type_name,
-        profil_xdim,
-        profile_ydim,
-        profile_zdim,
-        color_input,
-        is_centered: bool,
+        self, body, profile_name, type_name, profil_xdim, profile_ydim, profile_zdim, color_input, is_centered: bool
     ):
         profile = None
 
@@ -332,7 +272,7 @@ class GeometryCreator:
                 ProfileType="AREA",
                 XDim=profil_xdim,
                 YDim=profile_ydim,
-                # placement_zx_axes=((0.0, 0.0, 1.0), (1.0, 0.0, 0.0)),
+                # placement_zx_axes=((0.0, 0.0, 1.0), (1.0, 0.0, 0.0))
             )
         elif profile_name == "profil_versetzt":
 
@@ -340,10 +280,7 @@ class GeometryCreator:
 
         elif profile_name == "Kreis":
             profile = self.model.create_entity(
-                "IfcCircleProfileDef",
-                ProfileName="300C",
-                ProfileType="AREA",
-                Radius=profil_xdim / 2,
+                "IfcCircleProfileDef", ProfileName="300C", ProfileType="AREA", Radius=profil_xdim / 2
             )
 
         elif profile_name == "Oval":
@@ -376,17 +313,10 @@ class GeometryCreator:
         else:
             print(f"{profile_name} ist nicht vorhanden")
 
-        element = root.create_entity(
-            self.model,
-            ifc_class="IfcFurnitureType",
-            name=type_name,
-        )
+        element = root.create_entity(self.model, ifc_class="IfcFurnitureType", name=type_name)
 
         representation = geometry.add_profile_representation(
-            self.model,
-            context=body,
-            profile=profile,
-            depth=profile_zdim,
+            self.model, context=body, profile=profile, depth=profile_zdim
         )
 
         # Materials
@@ -398,11 +328,7 @@ class GeometryCreator:
         #     "root.create_entity", model, ifc_class="IfcFurnitureType", name="type01"
         # )
 
-        geometry.assign_representation(
-            self.model,
-            product=element,
-            representation=representation,
-        )
+        geometry.assign_representation(self.model, product=element, representation=representation)
 
         if not is_centered:
             # Placement
@@ -410,11 +336,7 @@ class GeometryCreator:
             # element_matrix = ifcopenshell.util.placement.rotation(random.randint(5, 85), "Z") @ element_matrix
             element_matrix[0, 3] = profil_xdim  # Modify only X component
 
-            geometry.edit_object_placement(
-                self.model,
-                matrix=element_matrix,
-                product=element,
-            )
+            geometry.edit_object_placement(self.model, matrix=element_matrix, product=element)
 
         return element
 
@@ -484,11 +406,10 @@ class GeometryCreator:
                 )
                 df_types_dict[type_name_dict["Typ"]] = element_type
 
-        # für die Psets. Kann später raus aus dieser Methode.
+        # für die Psets. Kann später raus aus dieser Methode
         excel_file_path = PathConfig.PROFILES_STADTMOBILIAR
         df_ide = self.data_parser.create_df_from_excel(excel_file_path)
-        print(df_ide)
-        # df_ide = self.data_parser.apply_laterne_typ()
+
         list_types = []
         for index, row in df.iterrows():
             if row["Typ"] not in list_types:
@@ -533,17 +454,9 @@ class GeometryCreator:
             element = root.create_entity(self.model, ifc_class="IfcFurniture", name=obj_name)
 
             try:
-                type.assign_type(
-                    self.model,
-                    related_objects=[element],
-                    relating_type=df_types_dict[row["Typ"]],
-                )
+                type.assign_type(self.model, related_objects=[element], relating_type=df_types_dict[row["Typ"]])
             except KeyError:
-                type.assign_type(
-                    self.model,
-                    related_objects=[element],
-                    relating_type=df_types_dict[row["Typ"]],
-                )
+                type.assign_type(self.model, related_objects=[element], relating_type=df_types_dict[row["Typ"]])
 
             aggregate.assign_object(self.model, relating_object=storey, products=[element])
 
@@ -558,17 +471,9 @@ class GeometryCreator:
             angle_degrees = float(angle_degrees)
             element_matrix = ifcopenshell.util.placement.rotation(angle_degrees, "Z") @ element_matrix
             if extrude_downward:
-                element_matrix[:, 3][0:3] = (
-                    x_coordinate,
-                    y_coordinate,
-                    z_coordinate + 0.02 - row["Hoehe"],
-                )
+                element_matrix[:, 3][0:3] = (x_coordinate, y_coordinate, z_coordinate + 0.02 - row["Hoehe"])
             else:
-                element_matrix[:, 3][0:3] = (
-                    x_coordinate,
-                    y_coordinate,
-                    z_coordinate,
-                )
+                element_matrix[:, 3][0:3] = (x_coordinate, y_coordinate, z_coordinate)
 
             geometry.edit_object_placement(self.model, matrix=element_matrix, product=element)
 

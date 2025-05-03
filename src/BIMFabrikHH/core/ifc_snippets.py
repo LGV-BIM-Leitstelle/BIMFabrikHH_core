@@ -2,13 +2,12 @@ from typing import List
 
 import ifcopenshell.util.placement
 import numpy as np
-from ifcopenshell.api import style, material, pset
+from ifcopenshell.api import material, pset, style
 from ifcopenshell.entity_instance import entity_instance
 from ifcopenshell.util.element import get_psets
 
 
 class IfcSnippets:
-
     @staticmethod
     def convert_hex_to_rgb(hex_color):
         """Normalize hex color to RGB values in the range [0.1, 1].
@@ -34,11 +33,7 @@ class IfcSnippets:
     @staticmethod
     def ifc_normalise_color(rgb_color_str) -> List[float]:
         rgb_color = rgb_color_str.split(",")
-        r, g, b = (
-            float(rgb_color[0]),
-            float(rgb_color[1]),
-            float(rgb_color[2]),
-        )
+        r, g, b = (float(rgb_color[0]), float(rgb_color[1]), float(rgb_color[2]))
 
         # Normalize RGB values to the range [0.1, 1]
         normalized_rgb = [
@@ -47,42 +42,11 @@ class IfcSnippets:
             round(b / 255 * (1 - 0.1) + 0.1, 2),
         ]
 
-        # print(f"Normalized RGB values: {normalized_rgb}")
-
         return normalized_rgb
-
-    @staticmethod
-    def assign_color_to_element_old(model, representation, value, transparency):
-        # Create a new style
-        style_ifc = style.add_style(model, name="Material")
-
-        style.add_surface_style(
-            model,
-            style=style_ifc,
-            ifc_class="IfcSurfaceStyleShading",
-            attributes={
-                "SurfaceColour": {
-                    "Name": None,
-                    "Red": value[0],
-                    "Green": value[1],
-                    "Blue": value[2],
-                },
-                "Transparency": transparency,
-            },
-        )
-        style.assign_representation_styles(
-            model,
-            shape_representation=representation,
-            styles=[style_ifc],
-        )
 
     @classmethod
     def assign_color_to_element(
-        cls,
-        model: ifcopenshell.file,
-        representation: entity_instance,
-        color_rgb: str,
-        transparency: float,
+        cls, model: ifcopenshell.file, representation: entity_instance, color_rgb: str, transparency: float
     ) -> None:
         """Assign a color to the IFC element representation."""
         value = IfcSnippets.ifc_normalise_color(color_rgb)
@@ -103,19 +67,11 @@ class IfcSnippets:
                 "Transparency": transparency,
             },
         )
-        style.assign_representation_styles(
-            model,
-            shape_representation=representation,
-            styles=[style_ifc],
-        )
+        style.assign_representation_styles(model, shape_representation=representation, styles=[style_ifc])
 
     @staticmethod
     def create_material(model, name, category):
-        return material.add_material(
-            model,
-            name=name,
-            category=category,
-        )
+        return material.add_material(model, name=name, category=category)
 
     @staticmethod
     def parse_coordinates(coord_str):
@@ -164,52 +120,6 @@ class IfcSnippets:
         return angle_degrees
 
     @staticmethod
-    def get_angle_from_2pts_alt(p1, p2):
-        x1, y1, x2, y2 = None, None, None, None
-        try:
-            x1 = p1.split(",")[0]
-            y1 = p1.split(",")[1]
-            x2 = p2.split(",")[0]
-            y2 = p2.split(",")[1]
-        except AttributeError as e:
-            print(e)
-            # x1, y1, x2, y2 = 0.0, 0.0, 0.0, 0.0
-            # print(p1, p2)
-
-        # Define the origin and the point representing the rotation
-        origin = np.array([x1, y1, 0])
-        try:
-            rotation_point = np.array([x2, y2, 0])
-        except Exception as e:
-            print("*" * 100)
-            print(e)
-            print(p1, p2)
-            rotation_point = np.array([0, 0, 0])
-            print("*" * 100)
-
-        origin = origin.astype(float)
-        rotation_point = rotation_point.astype(float)
-
-        # print(origin)
-        # print(rotation_point)
-
-        # Compute the vector from the origin to the rotation point
-        rotation_vector = rotation_point - origin
-
-        # print(rotation_vector)
-
-        # Compute the angle between the X-axis and the rotation vector
-        x_axis = np.array([1, 0, 0])
-        cos_angle = np.dot(x_axis, rotation_vector) / (np.linalg.norm(x_axis) * np.linalg.norm(rotation_vector))
-        angle = np.arccos(cos_angle)
-        # Convert the angle from radians to degrees
-        angle_degrees = np.degrees(angle)
-
-        print("angle", angle_degrees)
-
-        return angle_degrees
-
-    @staticmethod
     def add_psets(model, element, pset_name):
         pset_ifc = pset.add_pset(model, product=element, name=pset_name)
         # run("pset.edit_pset", model, pset=pset_ifc, properties={"foo": "foobar", "foo2": "foobaz"})
@@ -218,30 +128,10 @@ class IfcSnippets:
     @staticmethod
     def edit_pset_data(model, elements, pset_classes, pset_names):
         for element in elements:
-            # get the pset of a certain object
             psets_obj = get_psets(element)
 
-            # loop over all pset_classes and insert the data
             for pset_class, pset_name in zip(pset_classes, pset_names):
-                # print(pset_class)
-                # print(pset_name)
+
                 pset_id = model.by_id(psets_obj[pset_name]["id"])
-                # print(pset_id)
-                # print("*" * 100)
 
-                pset.edit_pset(
-                    model,
-                    pset=pset_id,
-                    properties=pset_class.dict(by_alias=True),
-                )
-        # for attr in dir(elements[0]):
-        #     try:
-        #         value = getattr(elements[0], attr)
-        #         if isinstance(value, str):  # Check if the attribute is a string
-        #             print(f"{attr}: {value}")
-        #     except AttributeError:
-        #         print(f"{attr}: Unable to access value")
-
-
-if __name__ == "__main__":
-    ...
+                pset.edit_pset(model, pset=pset_id, properties=pset_class.dict(by_alias=True))

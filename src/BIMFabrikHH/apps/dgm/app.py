@@ -1,4 +1,4 @@
-from typing import Tuple, List
+from typing import List, Tuple
 
 import numpy as np
 import pyvista as pv
@@ -41,9 +41,7 @@ def preprocess_elevation_data(elevation_data: np.ndarray) -> np.ndarray:
 
 
 def extract_mesh_data(
-    input_path: str,
-    downsample_factor: int = 4,
-    target_reduction: float = 0.9,
+    input_path: str, downsample_factor: int = 4, target_reduction: float = 0.9
 ) -> Tuple[List[List[float]], List[List[int]]]:
     """
     Extract optimized vertices and faces from GeoTIFF using robust processing.
@@ -90,10 +88,7 @@ def extract_mesh_data(
 
 # Rest of the code remains the same as in the previous version
 def create_combined_terrain_ifc(
-    vertices: List[List[float]],
-    faces: List[List[int]],
-    project_name: str = "Terrain Project",
-    site_name: str = "Site",
+    vertices: List[List[float]], faces: List[List[int]], project_name: str = "Terrain Project", site_name: str = "Site"
 ) -> None:
     """
     Fast conversion of combined terrain data to IFC with optimization.
@@ -105,7 +100,7 @@ def create_combined_terrain_ifc(
 
     # Create IFC
     builder = IfcModelBuilder()
-    builder.build_project(project_info_dict={"name": project_name}, site_name=site_name)
+    builder.build_project(project_name=project_name, site_name=site_name, building_name="DGM")
     model = builder.get_model()
 
     # Create contexts
@@ -120,12 +115,7 @@ def create_combined_terrain_ifc(
     )
 
     # Create terrain element
-    element = run(
-        "root.create_entity",
-        model,
-        ifc_class="IfcSite",
-        name="Terrain",
-    )
+    element = run("root.create_entity", model, ifc_class="IfcSite", name="Terrain")
 
     # Add property set
     pset = run("pset.add_pset", model, product=element, name="Pset_TerrainInformation")
@@ -141,20 +131,10 @@ def create_combined_terrain_ifc(
 
     # Create and assign geometry
     representation = run(
-        "geometry.add_mesh_representation",
-        model,
-        context=body,
-        vertices=[vertices],
-        faces=[faces],
-        edges=[[]],
+        "geometry.add_mesh_representation", model, context=body, vertices=[vertices], faces=[faces], edges=[[]]
     )
 
-    run(
-        "geometry.assign_representation",
-        model,
-        product=element,
-        representation=representation,
-    )
+    run("geometry.assign_representation", model, product=element, representation=representation)
 
     ifc_snippets.assign_color_to_element(model, representation, "102, 204, 0", 0.0)
 
@@ -206,7 +186,4 @@ def process_folder_to_ifc(
 
     print(f"Combined mesh: {len(combined_faces)} faces from {len(tif_files)} files")
 
-    # Create and write IFC
-    ifc_bytes = create_combined_terrain_ifc(vertices=combined_vertices, faces=combined_faces)
-
-    return ifc_bytes
+    return create_combined_terrain_ifc(vertices=combined_vertices, faces=combined_faces)

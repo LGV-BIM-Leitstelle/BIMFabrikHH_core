@@ -1,15 +1,15 @@
 from pathlib import Path
-from typing import Tuple, List
+from typing import List, Tuple
 
 import numpy
 from ifcopenshell.api import run
 from lxml import etree
 
-from .building_objects import Building, Point
 from ...core.ifc_modelbuilder import IfcModelBuilder
 from ...core.ifc_snippets import IfcSnippets
 from ...core.ifc_utils import IfcFileCreator
 from ...default.url_api import PathUrl
+from .building_objects import Building, Point
 
 
 class CityGMLParser:
@@ -71,8 +71,7 @@ class CityGMLParser:
                 surface_types = ["GroundSurface", "RoofSurface", "WallSurface"]
                 for surface_type in surface_types:
                     surfaces = building_element.xpath(
-                        f".//bldg:boundedBy/bldg:{surface_type}//gml:Polygon",
-                        namespaces=self.ns,
+                        f".//bldg:boundedBy/bldg:{surface_type}//gml:Polygon", namespaces=self.ns
                     )
                     for polygon in surfaces:
                         face_points = self._extract_polygon_points(polygon)
@@ -125,11 +124,7 @@ class CityGMLParser:
             coords = pos_list[0].text.split()
             try:
                 for i in range(0, len(coords), 3):
-                    point = Point(
-                        float(coords[i].strip()),
-                        float(coords[i + 1].strip()),
-                        float(coords[i + 2].strip()),
-                    )
+                    point = Point(float(coords[i].strip()), float(coords[i + 1].strip()), float(coords[i + 2].strip()))
                     face_points.append(point)
             except (ValueError, IndexError) as e:
                 print(f"Warning: Invalid coordinate data in polygon: {e}")
@@ -187,12 +182,7 @@ class CityGMLParser:
         element_matrix[2, 3] = translation_z  # Z-axis translation
 
         # Apply the transformation
-        run(
-            "geometry.edit_object_placement",
-            model,
-            matrix=element_matrix,
-            product=element,
-        )
+        run("geometry.edit_object_placement", model, matrix=element_matrix, product=element)
 
 
 ifc_snippets = IfcSnippets()
@@ -248,12 +238,7 @@ def process_gml_to_ifc(gml_files: List, project_name: str, site_name: str, reset
             #     building_name += f"_{building.address}"
 
             # Create the building in IFC
-            element = run(
-                "root.create_entity",
-                model,
-                ifc_class="IfcBuildingElementProxy",
-                name=building_name,
-            )
+            element = run("root.create_entity", model, ifc_class="IfcBuildingElementProxy", name=building_name)
             if print_id < 2:
                 print(building.postcode)
             print_id += 1
@@ -286,12 +271,7 @@ def process_gml_to_ifc(gml_files: List, project_name: str, site_name: str, reset
                 edges=[[]],
             )
 
-            run(
-                "geometry.assign_representation",
-                model,
-                product=element,
-                representation=representation,
-            )
+            run("geometry.assign_representation", model, product=element, representation=representation)
 
             transformation = False
             if transformation:

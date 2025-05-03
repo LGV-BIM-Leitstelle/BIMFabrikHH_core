@@ -11,11 +11,11 @@ class PathConfig:
     parent_parent = Path(__file__).parent.parent
     parent_parent_parent = Path(__file__).parent.parent.parent
     PATH_STATIC = parent_parent_parent / "static_BIMFabrikHH"
-
-    PATH_APP_VERSION = (
-        "© 2024 Landesbetrieb Geoinformation und Vermessung | BIM-Leitstelle G42 | BIMFabrikHH | " "Version 24.001"
-    )
-    PATH_URL_FOOTER = "https://bim.hamburg.de/bim-lgv-612078"
+    #
+    # PATH_APP_VERSION = (
+    #     "© 2025 Landesbetrieb Geoinformation und Vermessung | BIM-Leitstelle G42 | BIMFabrikHH | " "Version 24.001"
+    # )
+    # PATH_URL_FOOTER = "https://bim.hamburg.de/bim-lgv-612078"
 
     PATH_WORKFLOW_SMOBI = parent / "workflows" / "workflow_smobi.json"
     PATH_WORKFLOW_SBAUMK = parent / "workflows" / "workflow_strassenbk.json"

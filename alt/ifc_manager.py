@@ -1,18 +1,12 @@
-from .ifc_snippets import IfcSnippets
-from .ifc_utils import IfcFileCreator
-from ..default.pset_data import (
-    pset_objectinfo_data,
-    pset_modellinfo_data,
-    pset_geo_data_utm,
-    pset_hyperlinkdata,
-)
-from ..pydantic_models.pydantic_ifcproject import IfcProject
-from ..pydantic_models.pydantic_psets_BIMHH import (
-    Pset_Objektinformation,
-    Pset_Modellinformation,
-    Pset_Georeferenzierung,
-    Pset_Hyperlink,
-)
+from core.ifc_snippets import IfcSnippets
+from core.ifc_utils import IfcFileCreator
+from default.pset_data import (pset_geo_data_utm, pset_hyperlinkdata,
+                               pset_modellinfo_data, pset_objectinfo_data)
+from pydantic_models.pydantic_ifcproject import IfcProject
+from pydantic_models.pydantic_psets_BIMHH import (Pset_Georeferenzierung,
+                                                  Pset_Hyperlink,
+                                                  Pset_Modellinformation,
+                                                  Pset_Objektinformation)
 
 
 class IfcModelBuilderComponent:
@@ -68,9 +62,7 @@ class IfcModelBuilderComponent:
         # create Project (User input)
         project_info_pyd = IfcProject(**project_info_dict)
         self.project, self.site, self.building = self.ifc_creator.create_project(
-            self.model,
-            project_info_pyd,
-            site_name,
+            self.model, project_info_pyd, site_name
         )
 
         # Add units to the IFC model (no User input)

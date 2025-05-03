@@ -1,11 +1,12 @@
 from functools import partial
 from math import pi
-from typing import Dict
+from typing import Dict, Optional
 
 from pandas import to_numeric
 
+from ...pydantic_models.params_tree import RequestParams
 from .col_names import DfColTree
-from ...core.baum_manager import BaumManager
+from .baum_manager import BaumManager
 from ...core.ifc_modelbuilder import IfcModelBuilder
 from ...core.ifc_utils import IfcFileCreator
 from ...core.math_operations import MathTool
@@ -22,13 +23,16 @@ class BaumModeller:
         self.model = None
 
     @staticmethod
-    def get_oaf_trees(bbox, skip_geometry=False):
+    def get_oaf_tree_df(x1, y1, x2, y2):
+        """Get OAF tree data as a DataFrame for the given bounding box coordinates."""
+
+        bbox = BoundingBoxParams(min_x=x1, min_y=y1, max_x=x2, max_y=y2)
 
         url = PathUrl.URL_OAF_TREES
 
         tree_properties = (
             "gid, baumid, baumnummer, gattung_deutsch, art_deutsch, sorte_deutsch, pflanzjahr, kronendurchmesser, "
-            "stammumfang, strasse, stadtteil, bezirk",
+            "stammumfang, strasse, stadtteil, bezirk"
         )
 
         params_trees = {
@@ -37,19 +41,11 @@ class BaumModeller:
             "crs": "http://www.opengis.net/def/crs/EPSG/0/25832",
             "limit": 2000,
             "properties": tree_properties,
-            "skipGeometry": str(skip_geometry).lower(),
+            "skipGeometry": "false",
         }
 
-        trees_data: Dict = HamburgOGCAPI.fetch_data(url, params_trees)
+        tree_data: Dict = HamburgOGCAPI.fetch_data(url, params_trees)
 
-        return trees_data
-
-    @staticmethod
-    def get_oaf_tree_df(x1, y1, x2, y2):
-        """Get OAF tree data as a DataFrame for the given bounding box coordinates."""
-
-        bbox = BoundingBoxParams(min_x=x1, min_y=y1, max_x=x2, max_y=y2)
-        tree_data = BaumModeller.get_oaf_trees(bbox)
         df = HamburgOGCAPI.data_to_dataframe(tree_data)
 
         df[DfColTree.STAMMUMFANG_BK] = BaumModeller.convert_umfang_durchmesser(
@@ -82,10 +78,16 @@ class BaumModeller:
 
         return df[col_name]
 
-    def create_trees(self, model_params) -> bytes | None:
+    def create_tree_model(self, model_params: RequestParams) -> Optional[bytes]:
         """
         Create trees from a given ModelParams, which includes the bounding box and other parameters.
         This method handles filtering trees within the bounding box and creating the IFC model.
+
+        Args:
+            model_params: Parameters for the model including bounding box and project info
+
+        Returns:
+            IFC model as bytes or None if creation fails
         """
         x1 = model_params.bbox.min_x
         y1 = model_params.bbox.min_y
@@ -93,29 +95,34 @@ class BaumModeller:
         y2 = model_params.bbox.max_y
 
         df = self.get_oaf_tree_df(x1, y1, x2, y2)
-
+        df = df.head(1)
         if df.empty:
-            print("No valid tree data found within the bounding box.")
+            print("No valid tree data found within the bounding box")
             return None
 
         self.builder.reset_model()
+
+        project_info = model_params.model_params.project_info
+
         self.builder.build_project(
-            project_info_dict={
-                "name": model_params.project_name,
-            },
-            site_name="Trees_Hamburg",
+            project_name=project_info.project_name,
+            site_name=project_info.site_name,
+            building_name=project_info.building_name,
         )
 
         self.model = self.builder.get_model()
+        if not self.model:
+            print("Model not initialized")
+            return None
 
         self.baum_manager.place_trees_from_df(
             self.model,
             df,
-            model_params.level_of_geom,
+            model_params.model_params.level_of_geom,
             self.builder.site,
             self.builder.body,
         )
 
-        ifc_modell: bytes = IfcFileCreator.save_ifc_in_memory(self.model)
+        print("Saving IFC model to memory...")
 
-        return ifc_modell
+        return IfcFileCreator.save_ifc_in_memory(self.model)

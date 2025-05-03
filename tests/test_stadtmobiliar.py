@@ -1,7 +1,7 @@
 import os
 import unittest
 from pathlib import Path
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 from src.BIMFabrikHH.apps.stadtmodell.app import process_gml_to_ifc
 
@@ -28,7 +28,7 @@ class TestGMLProcessing(unittest.TestCase):
         mock_etree_parse.return_value = MagicMock()  # Prevents actual XML parsing
 
         gml_files = [os.path.join(self.folder_path, f) for f in self.test_files]
-        folder_path = Path(r"C:\_Lokale_Daten_ungesichert\CityGML_Hamburg\LoD1-DE_HH_2023-04-01")
+        _folder_path = Path(r"C:\_Lokale_Daten_ungesichert\CityGML_Hamburg\LoD1-DE_HH_2023-04-01")
         result = process_gml_to_ifc(gml_files, "Hamburg Buildings", "Hamburg Site", reset_model=True)
 
         mock_process_gml_to_ifc.assert_called_once_with(
