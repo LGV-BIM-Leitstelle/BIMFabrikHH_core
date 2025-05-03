@@ -3,9 +3,8 @@ from io import BytesIO
 from unittest.mock import patch
 
 import pandas as pd
-
 from src.BIMFabrikHH.apps.baum.app import BaumModeller
-from src.BIMFabrikHH.apps.baum.col_names import DfColTree
+from src.BIMFabrikHH.apps.baum.baum_col_names import DfColTree
 from src.BIMFabrikHH.pydantic_models.params_bbox import BoundingBoxParams
 
 

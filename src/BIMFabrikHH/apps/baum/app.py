@@ -4,15 +4,15 @@ from typing import Dict, Optional
 
 from pandas import to_numeric
 
-from ...pydantic_models.params_tree import RequestParams
-from .col_names import DfColTree
-from .baum_manager import BaumManager
 from ...core.ifc_modelbuilder import IfcModelBuilder
 from ...core.ifc_utils import IfcFileCreator
 from ...core.math_operations import MathTool
 from ...core.request_oaf import HamburgOGCAPI
 from ...default.url_api import PathUrl
 from ...pydantic_models.params_bbox import BoundingBoxParams
+from ...pydantic_models.params_tree import RequestParams
+from .baum_manager import BaumManager
+from .baum_col_names import DfColTree
 
 
 class BaumModeller:
@@ -116,11 +116,7 @@ class BaumModeller:
             return None
 
         self.baum_manager.place_trees_from_df(
-            self.model,
-            df,
-            model_params.model_params.level_of_geom,
-            self.builder.site,
-            self.builder.body,
+            self.model, df, model_params.model_params.level_of_geom, self.builder.site, self.builder.body
         )
 
         print("Saving IFC model to memory...")

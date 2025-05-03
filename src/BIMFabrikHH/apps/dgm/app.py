@@ -141,7 +141,7 @@ def create_combined_terrain_ifc(
     # model.write(output_path)
 
     if model:
-        IfcFileCreator.save_ifc_file(model, "DGM_Test.ifc")
+        # IfcFileCreator.save_ifc_file(model, "DGM_Test.ifc")
         print("*" * 200)
         print("Ifc file saved")
         print("*" * 200)
@@ -153,13 +153,12 @@ def create_combined_terrain_ifc(
         print("No models were processed; no IFC file was saved.")
 
 
-def process_folder_to_ifc(
+def process_terrain_folder_to_ifc(
     folder_path,
     tif_files,
-    # output_path: str,
     downsample_factor: int = 4,
     target_reduction: float = 0.9,
-) -> None:
+):
     """
     Process all GeoTIFF files in a folder and create a single combined IFC file.
     """
@@ -186,4 +185,6 @@ def process_folder_to_ifc(
 
     print(f"Combined mesh: {len(combined_faces)} faces from {len(tif_files)} files")
 
-    return create_combined_terrain_ifc(vertices=combined_vertices, faces=combined_faces)
+    ifc_bytes = create_combined_terrain_ifc(vertices=combined_vertices, faces=combined_faces)
+
+    return ifc_bytes

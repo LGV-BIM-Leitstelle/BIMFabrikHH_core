@@ -2,7 +2,8 @@ from pathlib import Path
 from typing import List, Tuple
 
 import numpy
-from ifcopenshell.api import run
+from ifcopenshell.api import spatial, geometry, context, root, pset
+
 from lxml import etree
 
 from ...core.ifc_modelbuilder import IfcModelBuilder
@@ -10,6 +11,7 @@ from ...core.ifc_snippets import IfcSnippets
 from ...core.ifc_utils import IfcFileCreator
 from ...default.url_api import PathUrl
 from .building_objects import Building, Point
+from ...pydantic_models.params_tree import RequestParams
 
 
 class CityGMLParser:
@@ -26,10 +28,10 @@ class CityGMLParser:
     def parse_file(self, filepath: str) -> None:
         """Parse a CityGML file and extract buildings with their geometry."""
         tree = etree.parse(filepath)
-        root = tree.getroot()
+        root_citygml = tree.getroot()
 
         # Find all buildings
-        building_elements = root.xpath(".//bldg:Building", namespaces=self.ns)
+        building_elements = root_citygml.xpath(".//bldg:Building", namespaces=self.ns)
 
         for building in building_elements:
             building_id = building.get(f"{{{self.ns['gml']}}}id")
@@ -182,32 +184,33 @@ class CityGMLParser:
         element_matrix[2, 3] = translation_z  # Z-axis translation
 
         # Apply the transformation
-        run("geometry.edit_object_placement", model, matrix=element_matrix, product=element)
+        geometry.edit_object_placement(model, matrix=element_matrix, product=element)
 
 
 ifc_snippets = IfcSnippets()
 
 
-def process_gml_to_ifc(gml_files: List, project_name: str, site_name: str, reset_model=False):
+def process_gml_to_ifc(gml_files: List, model_params: RequestParams, reset_model=False, folder_path=None):
     """Process CityGML file and create IFC with separate building objects."""
     parser = CityGMLParser()
     builder = IfcModelBuilder()
 
     # Build project
-    builder.build_project(project_info_dict={"name": project_name}, site_name=site_name)
+    project_info = model_params.model_params.project_info
+    builder.build_project(
+        project_name=project_info.project_name,
+        site_name=project_info.site_name,
+        building_name=project_info.building_name,
+    )
+
     model = builder.get_model()
 
     builder.reset_model()
 
     # Create geometry representation
-    model3d = run("context.add_context", model, context_type="Model")
-    body = run(
-        "context.add_context",
-        model,
-        context_type="Model",
-        context_identifier="Body",
-        target_view="MODEL_VIEW",
-        parent=model3d,
+    model3d = context.add_context(model, context_type="Model")
+    body = context.add_context(
+        model, context_type="Model", context_identifier="Body", target_view="MODEL_VIEW", parent=model3d
     )
 
     # Reset IFC model
@@ -215,7 +218,7 @@ def process_gml_to_ifc(gml_files: List, project_name: str, site_name: str, reset
         builder.reset_model()
         reset_model = False
 
-    folder_path = Path(PathUrl.URL_UDP_CITYMODELL_LOD1)
+    # folder_path = Path(PathUrl.URL_UDP_CITYMODELL_LOD1)
 
     for file in gml_files:
         file_path = folder_path / file
@@ -225,7 +228,11 @@ def process_gml_to_ifc(gml_files: List, project_name: str, site_name: str, reset
 
         # print(parser.buildings)
 
-        print_id = 1
+        # Check if there are buildings
+        if not parser.buildings:
+            print("No buildings found. IFC file will not be created.")
+            return None
+
         # Create separate objects for each building
         for building_id, building in parser.buildings.items():
             # Create nested structure for the IFC geometry
@@ -238,19 +245,13 @@ def process_gml_to_ifc(gml_files: List, project_name: str, site_name: str, reset
             #     building_name += f"_{building.address}"
 
             # Create the building in IFC
-            element = run("root.create_entity", model, ifc_class="IfcBuildingElementProxy", name=building_name)
-            if print_id < 2:
-                print(building.postcode)
-            print_id += 1
+            element = root.create_entity(model, ifc_class="IfcBuildingElementProxy", name=building_name)
 
-            # print(print_id, "---", building_name)
-            # for element in elements:
-            pset = run("pset.add_pset", model, product=element, name="Pset_Objektinformation")
+            pset_ifc = pset.add_pset(model, product=element, name="Pset_Objektinformation")
 
-            run(
-                "pset.edit_pset",
+            pset.edit_pset(
                 model,
-                pset=pset,
+                pset=pset_ifc,
                 properties={
                     "_IDEbene1": "Gebaeude",
                     "_IDEbene2": "Gebaeude",
@@ -262,16 +263,19 @@ def process_gml_to_ifc(gml_files: List, project_name: str, site_name: str, reset
                 },
             )
 
-            representation = run(
-                "geometry.add_mesh_representation",
+            representation = geometry.add_mesh_representation(
                 model,
                 context=body,
                 vertices=nested_vertices,
                 faces=nested_faces,
-                edges=[[]],
+                edges=None,
             )
 
-            run("geometry.assign_representation", model, product=element, representation=representation)
+            geometry.assign_representation(model, product=element, representation=representation)
+
+            # Assign to storey
+            site_entity = model.by_type("IfcSite")[0]
+            spatial.assign_container(model, relating_structure=site_entity, products=[element])
 
             transformation = False
             if transformation:

@@ -1,9 +1,9 @@
 from typing import Optional
 
-from .ifc_snippets import IfcSnippets
-from .ifc_utils import IfcFileCreator
 from ..default.pset_data import pset_hyperlinkdata, pset_objectinfo_data
 from ..pydantic_models.pydantic_psets_BIMHH import Pset_Hyperlink, Pset_Objektinformation
+from .ifc_snippets import IfcSnippets
+from .ifc_utils import IfcFileCreator
 
 
 class IfcModelBuilder:

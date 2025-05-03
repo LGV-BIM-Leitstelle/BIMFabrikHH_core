@@ -58,7 +58,7 @@ class HamburgOGCAPI:
         return df
 
     @staticmethod
-    def get_tiles(x1: float, y1: float, x2: float, y2: float) -> list[str]:
+    def get_tiles(x1: float, y1: float, x2: float, y2: float, model_type=None) -> list[str]:
         """
         Fetch tile names within a specified bounding box.
 
@@ -85,8 +85,9 @@ class HamburgOGCAPI:
         if df.empty or "kachelbezeichnung_dk5" not in df:
             return []
 
-        df["kachelbezeichnung_dk5"] = df["kachelbezeichnung_dk5"].apply(HamburgOGCAPI._transform_value)
-
+        df["kachelbezeichnung_dk5"] = df["kachelbezeichnung_dk5"].apply(
+            lambda val: HamburgOGCAPI._transform_value(val, model_type)
+        )
         return df["kachelbezeichnung_dk5"].dropna().tolist()
 
     @staticmethod
@@ -118,29 +119,43 @@ class HamburgOGCAPI:
         }
 
     @staticmethod
-    def _transform_value(value: str) -> str | None:
+    def _transform_value(value: str, model_type: str = "citymodel") -> str | None:
         """
-        Transform raw tile name into city model filename format.
+        Transform raw tile name into appropriate filename format for a given model type.
 
         Args:
             value (str): Raw tile name (e.g., "DK5_565000_5932000").
+            model_type (str): Model type ('citymodel' or 'dgm').
 
         Returns:
             str | None: Transformed filename or None if format invalid.
         """
-
         parts = value.split("_")
         if len(parts) != 3:
             return None
 
-        first_part = "LoD1_32"
-        # Convert 565000 → 565
-        second_part = str(int(parts[1]) // 1000)
+        try:
+            x = int(parts[1]) // 1000
+            if model_type == "citymodel":
+                y = int(parts[2]) // 1000  # 5932000 → 5932
+                return f"LoD1_32_{x}_{y}_1_HH.xml"
+            elif model_type == "dgm":
+                y = (int(parts[2]) // 100) % 10000  # 5932000 → 9320
+                return f"dgm1_32_{x}_{y}_1_hh_2022.tif"
+            else:
+                return None
+        except ValueError:
+            return None
 
-        # Extract last 4 digits (5932000 → 5932)
-        third_part = str((int(parts[2]) // 1000) % 10000)
-
-        suffix = "1_HH.xml"
-        citymodell_filename = f"{first_part}_{second_part}_{third_part}_{suffix}"
-
-        return citymodell_filename
+    # @staticmethod
+    # def transform_value(value):
+    #     parts = value.split("_")  # Split by underscore
+    #     if len(parts) != 3:
+    #         return None  # Ensure the format is as expected
+    #
+    #     first_part = "dgm1_32"
+    #     second_part = str(int(parts[1]) // 1000)  # Convert 565000 → 565
+    #     third_part = str((int(parts[2]) // 100) % 10000)  # Extract last 4 digits correctly (5932000 → 9320)
+    #     suffix = "1_hh_2022"
+    #
+    #     return f"{first_part}_{second_part}_{third_part}_{suffix}.tif"
