@@ -11,8 +11,8 @@ from ...core.request_oaf import HamburgOGCAPI
 from ...default.url_api import PathUrl
 from ...pydantic_models.params_bbox import BoundingBoxParams
 from ...pydantic_models.params_tree import RequestParams
-from .baum_manager import BaumManager
 from .baum_col_names import DfColTree
+from .baum_manager import BaumManager
 
 
 class BaumModeller:

@@ -26,6 +26,7 @@ class BaumManager:
 
     def create_tree(self, model, level_of_geom, storey, body, x, y, radius, stammbasis):
         """Create a tree with trunk and crown in IFC model."""
+
         # Calculate tree dimensions
         kronendurchmesser = radius * 2
         hoehe = int(3.5 if kronendurchmesser < 3 else 1.35 * kronendurchmesser)

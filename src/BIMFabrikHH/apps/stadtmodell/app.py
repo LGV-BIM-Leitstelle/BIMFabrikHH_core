@@ -1,17 +1,14 @@
-from pathlib import Path
 from typing import List, Tuple
 
 import numpy
-from ifcopenshell.api import spatial, geometry, context, root, pset
-
+from ifcopenshell.api import context, geometry, pset, root, spatial
 from lxml import etree
 
 from ...core.ifc_modelbuilder import IfcModelBuilder
 from ...core.ifc_snippets import IfcSnippets
 from ...core.ifc_utils import IfcFileCreator
-from ...default.url_api import PathUrl
-from .building_objects import Building, Point
 from ...pydantic_models.params_tree import RequestParams
+from .building_objects import Building, Point
 
 
 class CityGMLParser:
@@ -192,6 +189,7 @@ ifc_snippets = IfcSnippets()
 
 def process_gml_to_ifc(gml_files: List, model_params: RequestParams, reset_model=False, folder_path=None):
     """Process CityGML file and create IFC with separate building objects."""
+
     parser = CityGMLParser()
     builder = IfcModelBuilder()
 
@@ -264,11 +262,7 @@ def process_gml_to_ifc(gml_files: List, model_params: RequestParams, reset_model
             )
 
             representation = geometry.add_mesh_representation(
-                model,
-                context=body,
-                vertices=nested_vertices,
-                faces=nested_faces,
-                edges=None,
+                model, context=body, vertices=nested_vertices, faces=nested_faces, edges=None
             )
 
             geometry.assign_representation(model, product=element, representation=representation)

@@ -74,7 +74,6 @@ class IfcModelBuilder:
         Builds the IFC project with the given project information and type.
 
         Arguments:
-            project_info_dict (dict): Dictionary containing project details such as 'name', 'site_name', and 'building_name'.
             site_name (Optional[str]): The name of the site (optional).
             building_name (Optional[str]): The name of the building (optional).
 

@@ -24,6 +24,6 @@ def check_folder_exists(folder_name) -> Path:
         src_dir = get_src_dir()
         folder = src_dir / folder_name
 
-    print(folder)
+    print(f"{folder_name}: {folder}")
 
     return folder

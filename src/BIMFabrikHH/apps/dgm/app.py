@@ -153,12 +153,7 @@ def create_combined_terrain_ifc(
         print("No models were processed; no IFC file was saved.")
 
 
-def process_terrain_folder_to_ifc(
-    folder_path,
-    tif_files,
-    downsample_factor: int = 4,
-    target_reduction: float = 0.9,
-):
+def process_terrain_folder_to_ifc(folder_path, tif_files, downsample_factor: int = 4, target_reduction: float = 0.9):
     """
     Process all GeoTIFF files in a folder and create a single combined IFC file.
     """
