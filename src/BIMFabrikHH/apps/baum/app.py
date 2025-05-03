@@ -23,6 +23,29 @@ class BaumModeller:
         self.model = None
 
     @staticmethod
+    def get_oaf_trees(bbox, skip_geometry=False):
+
+        url = PathUrl.URL_OAF_TREES
+
+        tree_properties = (
+            "gid, baumid, baumnummer, gattung_deutsch, art_deutsch, sorte_deutsch, pflanzjahr, kronendurchmesser, "
+            "stammumfang, strasse, stadtteil, bezirk",
+        )
+
+        params_trees = {
+            "f": "json",
+            "bbox": f"{bbox.min_x},{bbox.min_y},{bbox.max_x},{bbox.max_y}",
+            "crs": "http://www.opengis.net/def/crs/EPSG/0/25832",
+            "limit": 2000,
+            "properties": tree_properties,
+            "skipGeometry": str(skip_geometry).lower(),
+        }
+
+        trees_data: Dict = HamburgOGCAPI.fetch_data(url, params_trees)
+
+        return trees_data
+
+    @staticmethod
     def get_oaf_tree_df(x1, y1, x2, y2):
         """Get OAF tree data as a DataFrame for the given bounding box coordinates."""
 

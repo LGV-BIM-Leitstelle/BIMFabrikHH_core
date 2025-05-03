@@ -3,7 +3,7 @@ from typing import List, Tuple
 import numpy as np
 import pyvista as pv
 import rasterio
-from ifcopenshell.api import run
+from ifcopenshell.api import context, geometry, pset, root
 from rasterio.enums import Resampling
 
 from ...core.ifc_modelbuilder import IfcModelBuilder
@@ -15,7 +15,7 @@ ifc_snippets = IfcSnippets()
 
 def preprocess_elevation_data(elevation_data: np.ndarray) -> np.ndarray:
     """
-    Ultra-fast preprocessing of elevation data with minimal operations.
+    fast preprocessing of elevation data with minimal operations.
 
     Args:
         elevation_data: Raw elevation data from rasterio
@@ -86,17 +86,16 @@ def extract_mesh_data(
         return [], []
 
 
-# Rest of the code remains the same as in the previous version
 def create_combined_terrain_ifc(
     vertices: List[List[float]], faces: List[List[int]], project_name: str = "Terrain Project", site_name: str = "Site"
-) -> None:
+) -> bytes | None:
     """
     Fast conversion of combined terrain data to IFC with optimization.
     """
-    # Skip if no vertices
+
     if not vertices or not faces:
         print("No valid terrain data to convert.")
-        return
+        return None
 
     # Create IFC
     builder = IfcModelBuilder()
@@ -104,25 +103,19 @@ def create_combined_terrain_ifc(
     model = builder.get_model()
 
     # Create contexts
-    model3d = run("context.add_context", model, context_type="Model")
-    body = run(
-        "context.add_context",
-        model,
-        context_type="Model",
-        context_identifier="Body",
-        target_view="MODEL_VIEW",
-        parent=model3d,
+    model3d = context.add_context(model, context_type="Model")
+    body = context.add_context(
+        model, context_type="Model", context_identifier="Body", target_view="MODEL_VIEW", parent=model3d
     )
 
     # Create terrain element
-    element = run("root.create_entity", model, ifc_class="IfcSite", name="Terrain")
+    element = root.create_entity(model, ifc_class="IfcSite", name="Terrain")
 
     # Add property set
-    pset = run("pset.add_pset", model, product=element, name="Pset_TerrainInformation")
-    run(
-        "pset.edit_pset",
+    pset_ifc = pset.add_pset(model, product=element, name="Pset_TerrainInformation")
+    pset.edit_pset(
         model,
-        pset=pset,
+        pset=pset_ifc,
         properties={
             "TerrainType": "DigitalElevationModel",
             "FaceCount": len(faces),
@@ -130,48 +123,35 @@ def create_combined_terrain_ifc(
     )
 
     # Create and assign geometry
-    representation = run(
-        "geometry.add_mesh_representation", model, context=body, vertices=[vertices], faces=[faces], edges=[[]]
+    representation = geometry.add_mesh_representation(
+        model, context=body, vertices=[vertices], faces=[faces], edges=[[]]
     )
 
-    run("geometry.assign_representation", model, product=element, representation=representation)
-
+    geometry.assign_representation(model, product=element, representation=representation)
     ifc_snippets.assign_color_to_element(model, representation, "102, 204, 0", 0.0)
 
-    # model.write(output_path)
-
     if model:
-        # IfcFileCreator.save_ifc_file(model, "DGM_Test.ifc")
-        print("*" * 200)
-        print("Ifc file saved")
-        print("*" * 200)
-
         ifc_bytes = IfcFileCreator.save_ifc_in_memory(model)
         return ifc_bytes
 
     else:
         print("No models were processed; no IFC file was saved.")
+        return None
 
 
 def process_terrain_folder_to_ifc(folder_path, tif_files, downsample_factor: int = 4, target_reduction: float = 0.9):
     """
     Process all GeoTIFF files in a folder and create a single combined IFC file.
     """
-    # List all GeoTIFF files
-    # tif_files = [os.path.join(folder_path, f) for f in os.listdir(folder_path) if f.endswith(".tif")]
-    # print(f"Found {len(tif_files)} GeoTIFF files in the folder.")
-
     combined_vertices = []
     combined_faces = []
 
-    # Loop through files and process each
     for file in tif_files:
         file_path = folder_path / file
 
         print(f"Processing {file_path}...")
         vertices, faces = extract_mesh_data(file_path, downsample_factor, target_reduction)
 
-        # Only add if valid data
         if vertices and faces:
             # Adjust face indices for combined mesh
             face_offset = len(combined_vertices)

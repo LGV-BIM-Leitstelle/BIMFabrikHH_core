@@ -203,7 +203,7 @@ def process_gml_to_ifc(gml_files: List, model_params: RequestParams, reset_model
 
     model = builder.get_model()
 
-    builder.reset_model()
+    # builder.reset_model()
 
     # Create geometry representation
     model3d = context.add_context(model, context_type="Model")

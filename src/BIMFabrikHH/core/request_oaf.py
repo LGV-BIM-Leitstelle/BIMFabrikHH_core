@@ -147,15 +147,4 @@ class HamburgOGCAPI:
         except ValueError:
             return None
 
-    # @staticmethod
-    # def transform_value(value):
-    #     parts = value.split("_")  # Split by underscore
-    #     if len(parts) != 3:
-    #         return None  # Ensure the format is as expected
-    #
-    #     first_part = "dgm1_32"
-    #     second_part = str(int(parts[1]) // 1000)  # Convert 565000 → 565
-    #     third_part = str((int(parts[2]) // 100) % 10000)  # Extract last 4 digits correctly (5932000 → 9320)
-    #     suffix = "1_hh_2022"
-    #
-    #     return f"{first_part}_{second_part}_{third_part}_{suffix}.tif"
+
