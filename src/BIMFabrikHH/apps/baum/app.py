@@ -118,7 +118,7 @@ class BaumModeller:
         y2 = model_params.bbox.max_y
 
         df = self.get_oaf_tree_df(x1, y1, x2, y2)
-        df = df.head(1)
+
         if df.empty:
             print("No valid tree data found within the bounding box")
             return None

@@ -13,7 +13,7 @@ class ProjectInfos(BaseModel):
 
 class ModelParams(BaseModel):
     project_info: Optional[ProjectInfos] = Field(default=None, description="Project information")
-    level_of_geom: int = Field(1, description="Level of geometry detail (1-4)", ge=1, le=4)
+    level_of_geom: Optional[int] = Field(1, description="Level of geometry detail (1-4)", ge=1, le=4)
 
 
 class RequestParams(BaseModel):
@@ -22,4 +22,4 @@ class RequestParams(BaseModel):
     """
 
     bbox: BoundingBoxParams = Field(..., description="Bounding box parameters")
-    model_params: ModelParams = Field(..., description="Model parameters for the tree model")
+    model_params: Optional[ModelParams] = Field(..., description="Model parameters for the tree model")
