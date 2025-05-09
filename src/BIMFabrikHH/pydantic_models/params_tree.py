@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List, Dict, Any
 
 from pydantic import BaseModel, Field
 
@@ -16,10 +16,22 @@ class ModelParams(BaseModel):
     level_of_geom: Optional[int] = Field(1, description="Level of geometry detail (1-4)", ge=1, le=4)
 
 
+class Component(BaseModel):
+    title: Optional[str] = None
+    value: Optional[Any] = None
+
+
+class Container(BaseModel):
+    containerTitle: Optional[str] = None
+    containerId: Optional[str] = None
+    components: Optional[Dict[str, Component]] = None
+
+
 class RequestParams(BaseModel):
     """
     Request parameters for the API.
     """
 
     bbox: BoundingBoxParams = Field(..., description="Bounding box parameters")
-    model_params: Optional[ModelParams] = Field(..., description="Model parameters for the tree model")
+    # model_params: ModelParams = Field(..., description="Model parameters for the tree model")
+    containers: Optional[List[Container]] = None

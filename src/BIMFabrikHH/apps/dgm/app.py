@@ -9,6 +9,8 @@ from rasterio.enums import Resampling
 from ...core.ifc_modelbuilder import IfcModelBuilder
 from ...core.ifc_snippets import IfcSnippets
 from ...core.ifc_utils import IfcFileCreator
+from ...core.ogc_values_extractor import extract_project_info
+from ...pydantic_models.params_tree import RequestParams
 
 ifc_snippets = IfcSnippets()
 
@@ -87,7 +89,7 @@ def extract_mesh_data(
 
 
 def create_combined_terrain_ifc(
-    vertices: List[List[float]], faces: List[List[int]], project_name: str = "Terrain Project", site_name: str = "Site"
+    vertices: List[List[float]], faces: List[List[int]], input_data: RequestParams
 ) -> bytes | None:
     """
     Fast conversion of combined terrain data to IFC with optimization.
@@ -99,6 +101,8 @@ def create_combined_terrain_ifc(
 
     # Create IFC
     builder = IfcModelBuilder()
+    project_name, site_name, building_name = extract_project_info(input_data.containers)
+
     builder.build_project(project_name=project_name, site_name=site_name, building_name="DGM")
     model = builder.get_model()
 
@@ -139,7 +143,9 @@ def create_combined_terrain_ifc(
         return None
 
 
-def process_terrain_folder_to_ifc(folder_path, tif_files, downsample_factor: int = 4, target_reduction: float = 0.9):
+def process_terrain_folder_to_ifc(
+    folder_path, tif_files, downsample_factor: int = 4, target_reduction: float = 0.9, input_data: RequestParams = None
+) -> bytes | None:
     """
     Process all GeoTIFF files in a folder and create a single combined IFC file.
     """
@@ -160,6 +166,6 @@ def process_terrain_folder_to_ifc(folder_path, tif_files, downsample_factor: int
 
     print(f"Combined mesh: {len(combined_faces)} faces from {len(tif_files)} files")
 
-    ifc_bytes = create_combined_terrain_ifc(vertices=combined_vertices, faces=combined_faces)
+    ifc_bytes = create_combined_terrain_ifc(vertices=combined_vertices, faces=combined_faces, input_data=input_data)
 
     return ifc_bytes

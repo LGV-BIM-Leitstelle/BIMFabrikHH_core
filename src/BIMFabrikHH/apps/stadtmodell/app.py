@@ -7,6 +7,7 @@ from lxml import etree
 from ...core.ifc_modelbuilder import IfcModelBuilder
 from ...core.ifc_snippets import IfcSnippets
 from ...core.ifc_utils import IfcFileCreator
+from ...core.ogc_values_extractor import extract_project_info
 from ...pydantic_models.params_tree import RequestParams
 from .building_objects import Building, Point
 
@@ -194,13 +195,8 @@ def process_gml_to_ifc(gml_files: List, model_params: RequestParams, reset_model
     builder = IfcModelBuilder()
 
     # Build project
-    project_info = model_params.model_params.project_info
-    builder.build_project(
-        project_name=project_info.project_name,
-        site_name=project_info.site_name,
-        building_name=project_info.building_name,
-    )
-
+    project_name, site_name, building_name = extract_project_info(model_params.containers)
+    builder.build_project(project_name=project_name, site_name=site_name, building_name=building_name)
     model = builder.get_model()
 
     # builder.reset_model()

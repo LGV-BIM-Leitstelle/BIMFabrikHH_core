@@ -7,6 +7,7 @@ from pandas import to_numeric
 from ...core.ifc_modelbuilder import IfcModelBuilder
 from ...core.ifc_utils import IfcFileCreator
 from ...core.math_operations import MathTool
+from ...core.ogc_values_extractor import extract_project_info, extract_level_of_geometry
 from ...core.request_oaf import HamburgOGCAPI
 from ...default.url_api import PathUrl
 from ...pydantic_models.params_bbox import BoundingBoxParams
@@ -125,22 +126,17 @@ class BaumModeller:
 
         self.builder.reset_model()
 
-        project_info = model_params.model_params.project_info
+        project_name, site_name, building_name = extract_project_info(model_params.containers)
+        level_of_geom = extract_level_of_geometry(model_params.containers)
 
-        self.builder.build_project(
-            project_name=project_info.project_name,
-            site_name=project_info.site_name,
-            building_name=project_info.building_name,
-        )
+        self.builder.build_project(project_name=project_name, site_name=site_name, building_name=building_name)
 
         self.model = self.builder.get_model()
         if not self.model:
             print("Model not initialized")
             return None
 
-        self.baum_manager.place_trees_from_df(
-            self.model, df, model_params.model_params.level_of_geom, self.builder.site, self.builder.body
-        )
+        self.baum_manager.place_trees_from_df(self.model, df, level_of_geom, self.builder.site, self.builder.body)
 
         print("Saving IFC model to memory...")
 
