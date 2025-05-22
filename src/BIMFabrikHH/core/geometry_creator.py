@@ -453,6 +453,7 @@ class GeometryCreator:
 
             element = root.create_entity(self.model, ifc_class="IfcFurniture", name=obj_name)
 
+            # TODO: Wieso ist der Pfad in try identisch zu dem im Fehlerfall? Das ergibt keinen Sinn und wenn doch, dann unbedingt kommentieren
             try:
                 type.assign_type(self.model, related_objects=[element], relating_type=df_types_dict[row["Typ"]])
             except KeyError:
