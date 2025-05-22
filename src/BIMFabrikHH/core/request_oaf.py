@@ -57,6 +57,7 @@ class HamburgOGCAPI:
 
         return df
 
+    # TODO: Wieso nicht das BoundingBox Modell als Argument nehmen?
     @staticmethod
     def get_tiles(x1: float, y1: float, x2: float, y2: float, model_type=None) -> list[str]:
         """

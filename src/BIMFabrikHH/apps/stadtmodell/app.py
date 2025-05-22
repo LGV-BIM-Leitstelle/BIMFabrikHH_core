@@ -86,7 +86,7 @@ class CityGMLParser:
         vertices, face_indices = self._convert_to_indexed_geometry(faces)
 
         # Create building object
-        building = Building(building_id, (vertices, face_indices))
+        building = Building(building_id, (vertices, face_indices)) # TODO: Type check schlägt fehlt, stimmt das sicher so?
 
         # Extract additional properties
         height = building_element.xpath(".//bldg:measuredHeight", namespaces=self.ns)
