@@ -1,6 +1,12 @@
-.idea
-examples
-local_tests
-output
-samples
-local_tests/alt
+# Ignore IDE settings of PyCharm
+.idea/
+
+# Ignore Python cache files and folders
+**/__pycache__/
+*.py[cod]
+
+# Ignore local and example folders
+local_tests/
+local_tests/alt/
+output/
+samples/
