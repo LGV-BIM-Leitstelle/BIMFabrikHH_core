@@ -4,12 +4,14 @@ import numpy
 from ifcopenshell.api import context, geometry, pset, root, spatial
 from lxml import etree
 
+from .building_objects import Building, Point
+from ...core.ogc_values_extractor import extract_psets_basepoint
+from ...core.geom_base_point import BasePoint
 from ...core.ifc_modelbuilder import IfcModelBuilder
 from ...core.ifc_snippets import IfcSnippets
 from ...core.ifc_utils import IfcFileCreator
 from ...core.ogc_values_extractor import extract_project_info
 from ...pydantic_models.params_tree import RequestParams
-from .building_objects import Building, Point
 
 
 class CityGMLParser:
@@ -206,6 +208,8 @@ def process_gml_to_ifc(gml_files: List, model_params: RequestParams, reset_model
     body = context.add_context(
         model, context_type="Model", context_identifier="Body", target_view="MODEL_VIEW", parent=model3d
     )
+    # Assign to storey
+    site_entity = model.by_type("IfcSite")[0]
 
     # Reset IFC model
     if reset_model:
@@ -263,8 +267,6 @@ def process_gml_to_ifc(gml_files: List, model_params: RequestParams, reset_model
 
             geometry.assign_representation(model, product=element, representation=representation)
 
-            # Assign to storey
-            site_entity = model.by_type("IfcSite")[0]
             spatial.assign_container(model, relating_structure=site_entity, products=[element])
 
             transformation = False
@@ -285,6 +287,15 @@ def process_gml_to_ifc(gml_files: List, model_params: RequestParams, reset_model
                         ifc_snippets.assign_color_to_element(model, representation, "15, 19, 218", 0.0)
                 except Exception as e:
                     print(f"Fehler: {e}\n{building.id} hat keine Daten.")
+
+    # Access first building only once to get the base point coordinates
+    first_building = next(iter(parser.buildings.values()))
+    first_point = first_building.vertices[0]
+    x, y, z = first_point
+
+    pset_groups = extract_psets_basepoint(model_params.containers)
+    bp_creator = BasePoint(model, body, site_entity)
+    bp_creator.create_base_point(size=1.0, x=x, y=y, pset_groups=pset_groups)
 
     if model:
         # IfcFileCreator.save_ifc_file(model, "Hamburg_Buildings.ifc")

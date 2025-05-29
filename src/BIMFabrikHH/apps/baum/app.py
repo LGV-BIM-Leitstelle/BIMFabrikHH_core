@@ -2,12 +2,13 @@ from functools import partial
 from math import pi
 from typing import Dict, Optional
 
+from BIMFabrikHH.core.geom_base_point import BasePoint
 from pandas import to_numeric
 
 from ...core.ifc_modelbuilder import IfcModelBuilder
 from ...core.ifc_utils import IfcFileCreator
 from ...core.math_operations import MathTool
-from ...core.ogc_values_extractor import extract_project_info, extract_level_of_geometry
+from ...core.ogc_values_extractor import extract_project_info, extract_level_of_geometry, extract_psets_basepoint
 from ...core.request_oaf import HamburgOGCAPI
 from ...default.url_api import PathUrl
 from ...pydantic_models.params_bbox import BoundingBoxParams
@@ -137,6 +138,13 @@ class BaumModeller:
             return None
 
         self.baum_manager.place_trees_from_df(self.model, df, level_of_geom, self.builder.site, self.builder.body)
+
+        # create project base point
+        first_point = df["Easting"].iloc[0], df["Northing"].iloc[0]
+        x, y = first_point
+        pset_groups = extract_psets_basepoint(model_params.containers)
+        bp_creator = BasePoint(self.model, self.builder.body, self.builder.site)
+        bp_creator.create_base_point(size=1.0, x=x, y=y, pset_groups=pset_groups)
 
         print("Saving IFC model to memory...")
 

@@ -7,7 +7,6 @@ import numpy as np
 import pandas as pd
 from ifcopenshell.api import geometry, material, pset, root, type
 from ifcopenshell.util.shape_builder import ShapeBuilder, V
-
 from ..default.paths import PathConfig
 from .df_columns import DfCol
 from .df_parser import DfParser
@@ -40,6 +39,7 @@ class GeometryCreator:
             ifc_class, GlobalId=ifcopenshell.guid.new(), Name="Bushaltestelle_LOD1"
         )
         geometry.assign_representation(self.model, product=product_solid, representation=repr_solid)
+
         if location:
             aggregate.assign_object(self.model, products=[product_solid], relating_object=location)
         return product_solid

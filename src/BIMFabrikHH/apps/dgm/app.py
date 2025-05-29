@@ -9,8 +9,9 @@ from rasterio.enums import Resampling
 from ...core.ifc_modelbuilder import IfcModelBuilder
 from ...core.ifc_snippets import IfcSnippets
 from ...core.ifc_utils import IfcFileCreator
-from ...core.ogc_values_extractor import extract_project_info
+from ...core.ogc_values_extractor import extract_project_info, extract_psets_basepoint
 from ...pydantic_models.params_tree import RequestParams
+from ...core.geom_base_point import BasePoint
 
 ifc_snippets = IfcSnippets()
 
@@ -113,16 +114,32 @@ def create_combined_terrain_ifc(
     )
 
     # Create terrain element
-    element = root.create_entity(model, ifc_class="IfcSite", name="Terrain")
+    element = root.create_entity(model, ifc_class="IfcBuildingElementProxy", name="Terrain")
 
     # Add property set
-    pset_ifc = pset.add_pset(model, product=element, name="Pset_TerrainInformation")
+    pset_ifc = pset.add_pset(model, product=element, name="Pset_DGM")
     pset.edit_pset(
         model,
         pset=pset_ifc,
         properties={
-            "TerrainType": "DigitalElevationModel",
+            "_ArtDGM": "TIN",
+            "_Herkunft": "SDP",
             "FaceCount": len(faces),
+        },
+    )
+
+    pset_ifc = pset.add_pset(model, product=element, name="Pset_Objektinformation")
+    pset.edit_pset(
+        model,
+        pset=pset_ifc,
+        properties={
+            "_ArtDeckschicht": "undefiniert",
+            "_Bemerkung": "undefiniert",
+            "_Erzeuger": "BIMFabrikHH",
+            "_IDEbene1": "DGM",
+            "_IDEbene2": "DGM",
+            "_IDEbene3": "DGM",
+            "_Status": "Bestand",
         },
     )
 
@@ -133,6 +150,13 @@ def create_combined_terrain_ifc(
 
     geometry.assign_representation(model, product=element, representation=representation)
     ifc_snippets.assign_color_to_element(model, representation, "102, 204, 0", 0.0)
+
+    # Extract base point from terrain
+    x, y, _ = vertices[0]
+
+    pset_groups = extract_psets_basepoint(input_data.containers)
+    bp_creator = BasePoint(model, body, builder.site)
+    bp_creator.create_base_point(size=5.0, x=x, y=y, pset_groups=pset_groups)
 
     if model:
         ifc_bytes = IfcFileCreator.save_ifc_in_memory(model)
