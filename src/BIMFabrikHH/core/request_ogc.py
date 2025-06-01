@@ -56,7 +56,7 @@ inputs = {
         {
             "containerId": "level_of_geometry",
             "containerTitle": "Level Of Geometry",
-            "components": {"level_of_geom": {"title": "Level Of Geometry", "value": 2}},
+            "components": {"level_of_geom": {"title": "Level Of Geometry", "value": 1}},
         },
     ],
     "bbox": {

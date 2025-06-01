@@ -1,9 +1,9 @@
 from typing import Dict, Optional
 
 import numpy as np
-from BIMFabrikHH.core.ifc_snippets import IfcSnippets
-from BIMFabrikHH.default import pset_data
 from ifcopenshell.api import geometry, root, spatial, pset
+
+from BIMFabrikHH.core.ifc_snippets import IfcSnippets
 
 
 class BasePoint:
