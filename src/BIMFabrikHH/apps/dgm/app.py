@@ -3,7 +3,7 @@ from typing import List, Tuple
 import numpy as np
 import pyvista as pv
 import rasterio
-from ifcopenshell.api import context, geometry, pset, root
+from ifcopenshell.api import context, geometry, pset, root, spatial
 from rasterio.enums import Resampling
 
 from ...core.ifc_modelbuilder import IfcModelBuilder
@@ -114,7 +114,9 @@ def create_combined_terrain_ifc(
     )
 
     # Create terrain element
-    element = root.create_entity(model, ifc_class="IfcBuildingElementProxy", name="Terrain")
+    element = root.create_entity(model, ifc_class="IfcBuildingElementProxy", name="DGM")
+
+    spatial.assign_container(model, relating_structure=builder.site, products=[element])
 
     # Add property set
     pset_ifc = pset.add_pset(model, product=element, name="Pset_DGM")

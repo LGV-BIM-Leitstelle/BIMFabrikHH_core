@@ -269,16 +269,6 @@ def process_gml_to_ifc(gml_files: List, model_params: RequestParams, reset_model
 
             spatial.assign_container(model, relating_structure=site_entity, products=[element])
 
-            transformation = False
-            if transformation:
-                # Move element with specified translations
-                translation_x = -549714.19  # + 3565567.31
-                translation_y = -5937004.23  # + 5928239.73
-                translation_z = 0
-
-                # Call the function
-                parser.move_element(model, element, translation_x, translation_y, translation_z)
-
             # Analysis
             color_analysis = False
             if color_analysis:
@@ -298,11 +288,6 @@ def process_gml_to_ifc(gml_files: List, model_params: RequestParams, reset_model
     bp_creator.create_base_point(size=1.0, x=x, y=y, pset_groups=pset_groups)
 
     if model:
-        # IfcFileCreator.save_ifc_file(model, "Hamburg_Buildings.ifc")
-        # print("*" * 200)
-        # print("Ifc file saved")
-        # print("*" * 200)
-
         ifc_bytes = IfcFileCreator.save_ifc_in_memory(model)
 
         return ifc_bytes

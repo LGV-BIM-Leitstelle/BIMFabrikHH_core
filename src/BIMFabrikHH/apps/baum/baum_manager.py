@@ -178,68 +178,6 @@ class BaumManager:
             model, relating_object=tree_entities["tree"], products=[tree_entities["crown"], tree_entities["trunk"]]
         )
 
-    def create_tree_alt(self, model, level_of_geom, storey, body, x, y, radius, stammbasis):
-        kronendurchmesser = radius * 2
-        hoehe = int(3.5 if kronendurchmesser < 3 else 1.35 * kronendurchmesser)
-
-        self.idx_baum += 1
-        tree_id = self.idx_baum
-
-        # Create main tree entity first
-        self.baum = root.create_entity(model, ifc_class="IfcBuildingElement", name=f"Baum_{tree_id:04d}")
-
-        # Create trunk
-        self.element_baumstamm = root.create_entity(
-            model, ifc_class="IfcBuildingElementProxy", name=f"Baumstamm_{tree_id:04d}"
-        )
-
-        # Create tree crown
-        self.baumkrone = root.create_entity(model, ifc_class="IfcBuildingElementProxy", name=f"Baumkrone_{tree_id:04d}")
-
-        # add representation for trunk
-        representation_baumstamm = geometry.add_wall_representation(
-            model, context=body, length=stammbasis, height=hoehe, thickness=stammbasis, offset=-stammbasis / 2
-        )
-        geometry.assign_representation(model, product=self.element_baumstamm, representation=representation_baumstamm)
-
-        # Placement for trunk
-        trunk_matrix = np.eye(4)
-        trunk_matrix[:, 3][0:3] = (x, y, 0)
-        geometry.edit_object_placement(model, matrix=trunk_matrix, product=self.element_baumstamm)
-
-        # Assign material to trunk
-        self.ifc_snippets.assign_color_to_element(model, representation_baumstamm, "111, 70, 46", 0.0)
-
-        # Generate tree crown geometry
-        tree_level_of_detail = level_of_geom if level_of_geom else 1
-        vertices, faces = icosphere(tree_level_of_detail)
-        vertices = BaumManager.scale_tree_vertices(vertices, radius)
-
-        # Convert to proper format for IFC
-        vertices_list = [tuple(float(item) for item in row) for row in vertices]
-        faces_list = [tuple(int(item) for item in row) for row in faces]
-
-        # Create representation and assign
-        representation_tree = geometry.add_mesh_representation(
-            model, context=body, vertices=[vertices_list], faces=[faces_list], edges=None
-        )
-        geometry.assign_representation(model, product=self.baumkrone, representation=representation_tree)
-
-        # Assign material to crown
-        self.ifc_snippets.assign_color_to_element(model, representation_tree, "33, 128, 45", 0.0)
-
-        # Placement for crown
-        crown_matrix = np.eye(4)
-        crown_matrix = placement.rotation(random.randint(5, 85), "Z") @ crown_matrix
-        crown_matrix = placement.rotation(random.randint(5, 140), "X") @ crown_matrix
-        crown_matrix[:, 3][0:3] = (x, y, hoehe)
-        run("geometry.edit_object_placement", model, matrix=crown_matrix, product=self.baumkrone)
-
-        spatial.assign_container(model, relating_structure=storey, products=[self.baum])
-
-        # Aggregate both parts to the main tree entity
-        aggregate.assign_object(model, relating_object=self.baum, products=[self.baumkrone, self.element_baumstamm])
-
     def place_trees_from_df(self, model, df, level_of_geom, storey, body):
         df = df.fillna("")
 
