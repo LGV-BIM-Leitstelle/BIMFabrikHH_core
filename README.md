@@ -17,3 +17,18 @@ bereitzustellen.
 - BIM-Nutzung in der FHH wird verbreitet.
 - Usability im Masterportal wird verbessert.
 - Eine Anwendung für alle.
+
+
+## Development
+
+### Installation
+
+Python 3.11 is required.
+
+The project uses poetry. Dependencies can be installed in the following way:
+
+```
+python -m pip install --user pipx
+pipx install poetry
+poetry install
+```
