@@ -77,6 +77,7 @@ class BaumManager:
     def _create_trunk(self, model, body, trunk_entity, x, y, stammbasis, hoehe):
         """Create trunk with geometry, placement and material."""
 
+        # @todo extruded area solid of IfcCircleProfileDef
         vertices_list, faces_list = self.create_trunk_mesh(radius=stammbasis, height=hoehe)
 
         trunk_representation = geometry.add_mesh_representation(

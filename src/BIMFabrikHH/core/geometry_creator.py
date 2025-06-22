@@ -1,3 +1,5 @@
+from argparse import Namespace
+from dataclasses import dataclass
 import ifcopenshell
 import ifcopenshell.api.aggregate as aggregate
 import ifcopenshell.api.material.add_material
@@ -12,7 +14,69 @@ from .df_columns import DfCol
 from .df_parser import DfParser
 from .ifc_snippets import IfcSnippets
 
+# @note: I would propose to use dataclasses for better composability and a more declarative feel, could also be pydantic models of course
 
+# 'trait' for 2d definitions
+class profile: pass
+
+@dataclass
+class Rect(profile):
+    width : float
+    height : float
+    def build(self, model, builder):
+        return builder.rectangle(size=(self.width, self.height))
+    
+@dataclass
+class Extrusion:
+    basis : profile
+    depth : float
+    def build(self, model, builder):
+        builder.extrude(self.basis.build(model, builder), self.depth)
+
+@dataclass
+class Box:
+    width : float
+    depth : float
+    height : float
+    def build(self, model, builder):
+        return Extrusion(Rect(self.width, self.depth), self.height).build(model, builder)
+
+@dataclass
+class Cube:
+    size : float
+    def build(self, model, builder):
+        return Extrusion(Rect(self.size, self.size), self.size).build(model, builder)
+
+@dataclass
+class Representation:
+    items : list
+    def build(self, model, builder):
+        body = ifcopenshell.util.representation.get_context(model, "Model", "Body", "MODEL_VIEW")
+        return builder.get_representation(context=body, items=[i.build() for i in self.items])
+
+@dataclass
+class Product:
+    cls : str
+    repr : Representation
+    def build(self, model, builder):
+        element = ifcopenshell.api.root.create_entity(model, ifc_class=self.cls)
+        ifcopenshell.api.geometry.edit_object_placement(model, product=element)
+        ifcopenshell.api.geometry.assign_representation(model, product=element, representation=self.repr.build())
+
+@dataclass
+class Translate:
+    item : object
+    vec : tuple
+    def build(self, model, builder):
+        # @todo currently not immutable
+        item = self.item.build()
+        builder.translate(item, self.vec)
+        return item
+
+
+# separate high level, low level
+# use existing library? e.g openscad, cadquery, but what about ifopsh integration?
+# dataclasses instead of functions for composability?
 class GeometryCreator:
     def __init__(self, model):
         self.geometry_creator = None
@@ -59,7 +123,7 @@ class GeometryCreator:
         return profile
 
     def create_bus_station(self, body, ifc_class="IfcBuildingElementType", location=None, LOD=3):
-        dims = {
+        dims = Namespace(**{
             "width": 4,
             "depth": 1.61,
             "height": 2.45,
@@ -69,9 +133,20 @@ class GeometryCreator:
             "seat_width": 2,
             "seat_depth": 0.4,
             "seat_height": 0.5,
-        }
+        })
 
-        shift_to_center = V(-dims["width"] / 2, -dims["depth"] / 2, 0.0)
+        return Product(
+            Representation([
+                Translate(
+                    Box(dims.thickness, dims.depth, dims.height),
+                    (-dims.width / 2, 0., 0.)
+                ),
+                Translate(
+                    Box(dims.thickness, dims.depth, dims.height),
+                    (+dims.width / 2, 0., 0.)
+                ),
+            ])
+        )
 
         if LOD == 1:
             lod1_solid = self.extrude_rect(self.builder, (dims["width"], dims["depth"]), dims["height"], (0, 0, 0))
