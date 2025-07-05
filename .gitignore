@@ -1,12 +1,14 @@
 # Ignore IDE settings of PyCharm
 .idea/
 
+# ignore IFC files
+**/ifc/
+
 # Ignore Python cache files and folders
 **/__pycache__/
 *.py[cod]
 
 # Ignore local folders
-local_tests/
-local_tests/alt/
-output/
-samples/
+__local_dev
+__output_dev
+__samples

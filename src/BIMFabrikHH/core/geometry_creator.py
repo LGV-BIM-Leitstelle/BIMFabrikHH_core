@@ -7,9 +7,10 @@ import numpy as np
 import pandas as pd
 from ifcopenshell.api import geometry, material, pset, root, type
 from ifcopenshell.util.shape_builder import ShapeBuilder, V
-from ..default.paths import PathConfig
+
+from ..default_data.paths import PathConfig
+from .data_processing.df_parser import DfParser
 from .df_columns import DfCol
-from .df_parser import DfParser
 from .ifc_snippets import IfcSnippets
 
 
@@ -171,7 +172,7 @@ class GeometryCreator:
             return parent_product
 
     def create_sweep(self, obj_name, laenge, tiefe, hoehe, is_centered=True):
-        # Generate the curve
+        # Generating the curve
         curve = self.create_profile(laenge, hoehe, is_centered)
 
         # Create the swept solid from the curve
@@ -350,13 +351,13 @@ class GeometryCreator:
         # df.sort_values(by="Typ", ascending=True)
 
         for idx, type_name_dict in df_types.iterrows():
-            # Beispiel Bushaltestelle
+            # Bus station example
             if type_name_dict["Methode"] == "Objekt_Bushaltestelle":
                 self.geometry_creator = GeometryCreator(self.model)
                 element_type = self.geometry_creator.create_bus_station(body)
                 df_types_dict[type_name_dict["Typ"]] = element_type
 
-            # Beispiel Fussgaengerschutzbuegel
+            # Pedestrian protection arch example (endpoint)
             elif type_name_dict["Methode"] == "Objekt_Sweep_endpunkt":
                 self.geometry_creator = GeometryCreator(self.model)
                 element_type = self.geometry_creator.create_sweep(
@@ -368,7 +369,7 @@ class GeometryCreator:
                 )
                 df_types_dict[type_name_dict["Typ"]] = element_type
 
-            # Beispiel Fussgaengerschutzbuegel
+            # Pedestrian protection arch example (centered)
             elif type_name_dict["Methode"] == "Objekt_Sweep_mittig":
                 self.geometry_creator = GeometryCreator(self.model)
                 element_type = self.geometry_creator.create_sweep(
@@ -406,7 +407,7 @@ class GeometryCreator:
                 )
                 df_types_dict[type_name_dict["Typ"]] = element_type
 
-        # für die Psets. Kann später raus aus dieser Methode
+        # For property sets. Can be moved out of this method later
         excel_file_path = PathConfig.PROFILES_STADTMOBILIAR
         df_ide = self.data_parser.create_df_from_excel(excel_file_path)
 
@@ -463,11 +464,11 @@ class GeometryCreator:
             element_matrix = np.eye(4)
             tiefe_value = 0
             if row["Typ"].startswith("Trumme"):
-                tiefe_value = row.get(DfCol.LAENGE, 0)  # Get value safely, default to 0 if missing
+                tiefe_value = row.get(DfCol.LAENGE, 0)  # Get value safely, default_data to 0 if missing
                 element_matrix[1, 3] += tiefe_value / 2  # Move Y-axis by tiefe_value
                 # geometry.edit_object_placement(self.model, matrix=element_matrix, product=element)
 
-            # hier to float sonst passiert fehlermeldung
+            # Convert to float to avoid error messages
             angle_degrees = float(angle_degrees)
             element_matrix = ifcopenshell.util.placement.rotation(angle_degrees, "Z") @ element_matrix
             if extrude_downward:

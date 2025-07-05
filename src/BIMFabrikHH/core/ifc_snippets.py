@@ -19,10 +19,10 @@ class IfcSnippets:
             List[float]: Normalized RGB values.
         """
 
-        # Remove the hash symbol
+        # Removing the hash symbol
         hex_color = hex_color.lstrip("#")
 
-        # Convert hex to RGB values
+        # Converting hex to RGB values
         r = int(hex_color[0:2], 16)
         g = int(hex_color[2:4], 16)
         b = int(hex_color[4:6], 16)
@@ -35,7 +35,7 @@ class IfcSnippets:
         rgb_color = rgb_color_str.split(",")
         r, g, b = (float(rgb_color[0]), float(rgb_color[1]), float(rgb_color[2]))
 
-        # Normalize RGB values to the range [0.1, 1]
+        # Normalizing RGB values to the range [0.1, 1]
         normalized_rgb = [
             round(r / 255 * (1 - 0.1) + 0.1, 2),
             round(g / 255 * (1 - 0.1) + 0.1, 2),
@@ -50,7 +50,7 @@ class IfcSnippets:
     ) -> None:
         """Assign a color to the IFC element representation."""
         value = IfcSnippets.ifc_normalise_color(color_rgb)
-        # Create a new style
+        # Creating a new style
         style_ifc = style.add_style(model, name="Style")
 
         style.add_surface_style(
@@ -81,39 +81,39 @@ class IfcSnippets:
 
     @staticmethod
     def get_angle_from_2pts(p1, p2):
-        # Split input points and convert to float
+        # Splitting input points and converting to float
         try:
             x1, y1 = map(float, p1.split(","))
             x2, y2 = map(float, p2.split(","))
         except (AttributeError, ValueError) as e:
             print(f"Error processing points: {e}")
-            return 0  # or set a default return value
+            return 0  # or set a default_data return value
 
-        # Define the origin and the point representing the rotation
+        # Defining the origin and the point representing the rotation
         origin = np.array([x1, y1, 0], dtype=float)
         rotation_point = np.array([x2, y2, 0], dtype=float)
 
-        # Compute the vector from the origin to the rotation point
+        # Computing the vector from the origin to the rotation point
         rotation_vector = rotation_point - origin
 
-        # Check for zero vector to avoid division by zero
+        # Checking for zero vector to avoid division by zero
         if np.linalg.norm(rotation_vector) == 0:
             print("The two points are the same, angle is undefined.")
-            return None  # or set a default return value
+            return None  # or set a default_data return value
 
-        # Compute the angle between the X-axis and the rotation vector
+        # Computing the angle between the X-axis and the rotation vector
         x_axis = np.array([1, 0, 0], dtype=float)
         cos_angle = np.dot(x_axis, rotation_vector) / (np.linalg.norm(x_axis) * np.linalg.norm(rotation_vector))
 
-        # Clamp cos_angle to avoid invalid input for arccos
+        # Clamping cos_angle to avoid invalid input for arccos
         cos_angle = np.clip(cos_angle, -1.0, 1.0)
 
         angle = np.arccos(cos_angle)
 
-        # Convert the angle from radians to degrees
+        # Converting the angle from radians to degrees
         angle_degrees = np.degrees(angle)
 
-        # Adjust the angle based on the Y-component to account for points above/below the origin
+        # Adjusting the angle based on the Y-component to account for points above/below the origin
         if rotation_vector[1] < 0:
             angle_degrees = 360 - angle_degrees
 

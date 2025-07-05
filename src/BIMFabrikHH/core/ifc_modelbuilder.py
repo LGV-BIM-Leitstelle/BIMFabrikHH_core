@@ -1,7 +1,7 @@
 from typing import Optional
 
-from ..default.pset_data import pset_hyperlinkdata, pset_objectinfo_data
-from ..pydantic_models.pydantic_psets_BIMHH import Pset_Hyperlink, Pset_Objektinformation
+from ..data_models.pydantic_psets_BIMHH import Pset_Hyperlink, Pset_Objektinformation
+from ..default_data.pset_data import pset_hyperlinkdata, pset_objectinfo_data
 from .ifc_snippets import IfcSnippets
 from .ifc_utils import IfcFileCreator
 
@@ -9,12 +9,12 @@ from .ifc_utils import IfcFileCreator
 class IfcModelBuilder:
     """
     A class to encapsulate the process of creating an IFC model.
-
+    Provides methods for project creation, property set setup, and georeferencing.
     """
 
     def __init__(self):
         """
-        Initializes StadtmobiliarModeller with necessary components and property sets.
+        Initializes IfcModelBuilder with necessary components and property sets.
         """
 
         self.ifc_snippets = IfcSnippets()
@@ -31,7 +31,7 @@ class IfcModelBuilder:
         self.pset_classes = None
         self.site = None
 
-    def reset_model(self):
+    def reset_model(self) -> None:
         """
         Resets the model and initializes necessary components.
         """
@@ -47,9 +47,21 @@ class IfcModelBuilder:
         self.site = None
 
     def get_site(self):
+        """
+        Get the current site entity.
+
+        Returns:
+            The site entity.
+        """
         return self.site
 
     def get_building(self):
+        """
+        Get the current building entity.
+
+        Returns:
+            The building entity.
+        """
         return self.building
 
     @staticmethod
@@ -69,11 +81,12 @@ class IfcModelBuilder:
         """
         return [pset_class(**pset_data) for pset_class, pset_data in zip(args[::2], args[1::2])]
 
-    def build_project(self, project_name: str, site_name: Optional[str], building_name: Optional[str]):
+    def build_project(self, project_name: str, site_name: Optional[str], building_name: Optional[str]) -> None:
         """
         Builds the IFC project with the given project information and type.
 
-        Arguments:
+        Args:
+            project_name (str): The name of the project.
             site_name (Optional[str]): The name of the site (optional).
             building_name (Optional[str]): The name of the building (optional).
 
@@ -81,24 +94,22 @@ class IfcModelBuilder:
             None
         """
         try:
-
             # create project in the IFC model using the creator's method
             self.project, self.site, self.building = self.ifc_creator.create_project(
                 self.model, project_name, site_name, building_name
             )
-
             # Add units to the IFC model (e.g., meters)
             self.ifc_creator.create_units_meter(self.model)
-
             # Add contexts for the representation (3D, plan, body)
             self.model3d, self.plan, self.body = self.ifc_creator.create_representations(self.model)
-
         except Exception as e:
             print(f"Error during project creation: {e}")
             raise
 
-    def setup_psets(self):
-        # Initialize property sets (User input)
+    def setup_psets(self) -> None:
+        """
+        Initialize and store property sets (User input).
+        """
         self.pset_classes = self._initialize_psets(
             Pset_Objektinformation,
             pset_objectinfo_data,
@@ -109,13 +120,20 @@ class IfcModelBuilder:
             Pset_Hyperlink,
             pset_hyperlinkdata,
         )
-
         self.all_psets = [pset.pset_name for pset in self.pset_classes]
 
-    def combine_georeferencing(self):
-        # Georeferencing (User input)
+    def combine_georeferencing(self) -> None:
+        """
+        Add and edit georeferencing information for the IFC model (User input).
+        """
         self.ifc_creator.create_georeference(self.model)
         self.ifc_creator.edit_georeference(self.model)
 
     def get_model(self):
+        """
+        Get the current IFC model.
+
+        Returns:
+            The IFC model.
+        """
         return self.model

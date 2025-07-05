@@ -3,7 +3,10 @@ from dataclasses import dataclass
 
 @dataclass
 class DfCol:
-    """Dataclass representing the column names used in BIMFabrikHH."""
+    """
+    Dataclass representing the column names used in BIMFabrikHH DataFrames.
+    Each attribute corresponds to a specific column name used for data processing and transformation.
+    """
 
     BAUM_INFO_ORIG: str = "BAUMINFO-STAMM_Datenquelle"
     BAUM_NR: str = "_Baumnummer"

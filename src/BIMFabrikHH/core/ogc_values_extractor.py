@@ -1,12 +1,12 @@
-from pydantic import ValidationError
-
-from ..pydantic_models.params_tree import ModelParams
-
-
-def extract_project_info(containers):
+def extract_project_info(containers) -> tuple[str, str, str]:
     """
     Extract project name, site name, and building name from containers.
-    Returns a tuple: (project_name, site_name, building_name)
+
+    Args:
+        containers: List of container objects with project info.
+
+    Returns:
+        tuple[str, str, str]: (project_name, site_name, building_name)
     """
     project_name = "IfcProjectName"
     site_name = "SiteName"
@@ -28,7 +28,12 @@ def extract_project_info(containers):
 def extract_level_of_geometry(containers) -> int:
     """
     Extract the level of geometry from containers.
-    Returns: level_of_geom (int)
+
+    Args:
+        containers: List of container objects with geometry info.
+
+    Returns:
+        int: level_of_geom (default_data 1 if not found)
     """
     level_of_geom = 1
 
@@ -62,7 +67,16 @@ def extract_level_of_geometry(containers) -> int:
 #     return level_of_geom
 
 
-def extract_psets_basepoint(containers):
+def extract_psets_basepoint(containers) -> dict:
+    """
+    Extract property sets for the base point from containers.
+
+    Args:
+        containers: List of container objects with property set info.
+
+    Returns:
+        dict: Dictionary of property set groups for the base point.
+    """
     pset_groups = {}
     for container in containers:
         if container.containerId.startswith("Pset_"):
