@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional, Tuple, Union
 
 import ifcopenshell.util.placement
 import numpy as np
@@ -46,10 +46,10 @@ class IfcSnippets:
 
     @classmethod
     def assign_color_to_element(
-        cls, model: ifcopenshell.file, representation: entity_instance, color_rgb: str, transparency: float
+        cls, model: ifcopenshell.file, representation: entity_instance, color_rgb: Union[str, Tuple[float]], transparency: Optional[float]
     ) -> None:
-        """Assign a color to the IFC element representation."""
-        value = IfcSnippets.ifc_normalise_color(color_rgb)
+        """Assign a color to the IFC element representation or item"""
+        value = IfcSnippets.ifc_normalise_color(color_rgb) if isinstance(color_rgb, str) else color_rgb
         # Creating a new style
         style_ifc = style.add_style(model, name="Style")
 
@@ -64,10 +64,15 @@ class IfcSnippets:
                     "Green": value[1],
                     "Blue": value[2],
                 },
-                "Transparency": transparency,
+                **({"Transparency": transparency} if transparency is not None else {})
             },
         )
-        style.assign_representation_styles(model, shape_representation=representation, styles=[style_ifc])
+        if representation.is_a('IfcRepresentation'):
+            style.assign_representation_styles(model, shape_representation=representation, styles=[style_ifc])
+        elif representation.is_a('IfcRepresentationItem'):
+            style.assign_item_style(model, item=representation, style=style_ifc)
+        else:
+            raise TypeError(f"Unable to assign style to instance of type {representation.is_a()}")
 
     @staticmethod
     def create_material(model, name, category):

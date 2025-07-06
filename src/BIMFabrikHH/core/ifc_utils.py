@@ -32,7 +32,7 @@ class IfcFileCreator:
         return model
 
     @staticmethod
-    def create_project(model, project_name: str, site_name: str, building_name: Optional[str] = None):
+    def create_project(model, project_name: str, site_name: Optional[str] = None, building_name: Optional[str] = None):
         """
         Create a project, site, and optionally a building in the IFC model.
 
@@ -46,11 +46,14 @@ class IfcFileCreator:
             Tuple: (project, site, building) entities.
         """
         project = run("root.create_entity", model, ifc_class="IfcProject", name=project_name)
-        site = create_entity(model, ifc_class="IfcSite", name=site_name)
-        aggregate.assign_object(model, products=[site], relating_object=project)
+        
+        site = None
+        if site_name is not None:
+            site = create_entity(model, ifc_class="IfcSite", name=site_name)
+            aggregate.assign_object(model, products=[site], relating_object=project)
 
         building = None
-        if building_name:
+        if building_name is not None:
             building = create_entity(model, ifc_class="IfcBuilding", name=building_name)
             aggregate.assign_object(model, relating_object=site, products=[building])
 
@@ -90,7 +93,7 @@ class IfcFileCreator:
         run("unit.assign_unit", model, units=[length, area])
 
     @staticmethod
-    def create_representations(model):
+    def create_contexts(model):
         """
         Create 3D and plan contexts for the IFC model.
 

@@ -19,12 +19,11 @@ from .primitive_objects import (
     Cylinder,
     Extrusion,
     MeshRepresentation,
-    Product,
+    Element,
     Rect,
-    Representation,
     Sphere,
     Translate,
-    profile,
+    Profile,
 )
 from .tree_objects import Crown, Tree, TreeCluster, Trunk
 
@@ -35,12 +34,11 @@ __all__ = [
     "Rect",
     "Extrusion",
     "Translate",
-    "Representation",
-    "Product",
+    "Element",
     "MeshRepresentation",
     "Cylinder",
     "Sphere",
-    "profile",
+    "Profile",
     # Tree-specific
     "Tree",
     "Trunk",

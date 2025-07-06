@@ -101,7 +101,7 @@ class IfcModelBuilder:
             # Add units to the IFC model (e.g., meters)
             self.ifc_creator.create_units_meter(self.model)
             # Add contexts for the representation (3D, plan, body)
-            self.model3d, self.plan, self.body = self.ifc_creator.create_representations(self.model)
+            self.model3d, self.plan, self.body = self.ifc_creator.create_contexts(self.model)
         except Exception as e:
             print(f"Error during project creation: {e}")
             raise

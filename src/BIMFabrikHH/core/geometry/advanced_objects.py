@@ -12,8 +12,12 @@ from typing import List, Tuple
 
 import numpy as np
 
-from .primitive_objects import MeshPrimitive, MeshRepresentation
+from .primitive_objects import MeshRepresentation
 
+
+# @todo
+class MeshPrimitive:
+    pass
 
 @dataclass
 class ProjectBasePoint(MeshPrimitive):
