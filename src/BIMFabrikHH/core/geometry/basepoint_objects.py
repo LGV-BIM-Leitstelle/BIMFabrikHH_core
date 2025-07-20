@@ -19,7 +19,7 @@ import numpy as np
 from BIMFabrikHH.core.ifc_snippets import IfcSnippets
 
 from .primitive_objects import MeshRepresentation
-from .advanced_objects import ProjectBasePoint, ProjectBasePointNorth
+from .advanced_objects import ProjectBasePointMesh as ProjectBasePoint, ProjectBasePointNorth
 
 
 @dataclass

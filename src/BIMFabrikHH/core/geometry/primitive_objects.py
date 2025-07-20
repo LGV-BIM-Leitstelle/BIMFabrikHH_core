@@ -118,33 +118,44 @@ class Cube(BaseModel, RepresentationItem):
         return Box(width=self.size, height=self.size, depth=self.size).build(model, builder)
 
 
-class NgonCylinder(BaseModel, RepresentationItem):
-    """Ngon extruded cylinder primitive"""
-
-    radius: float
+class ExtrudedNgonAsMesh(BaseModel, RepresentationItem):
+    basis: List[Tuple[float, float, float]]
     height: float
-    segments: int = 8
 
     def create_mesh(self):
         """Create a polygonal cylinder mesh (ngon extruded)"""
-        angle_step = 2 * np.pi / self.segments
-        bottom = [
-            (float(self.radius * np.cos(i * angle_step)), float(self.radius * np.sin(i * angle_step)), 0) for i in range(self.segments)
-        ]
-        top = [(float(x), float(y), self.height) for (x, y, _) in bottom]
-        vertices = bottom + top
+        n_segments = len(self.basis)
+        top = (np.array(self.basis) + (0., 0., self.height)).tolist()
+        vertices = self.basis + top
         faces = []
-        for i in range(self.segments):
-            next_i = (i + 1) % self.segments
-            faces.append((i, next_i, i + self.segments))
-            faces.append((next_i, next_i + self.segments, i + self.segments))
-        bottom_face = tuple(range(self.segments - 1, -1, -1))
-        faces.append(bottom_face)
+        for i in range(n_segments):
+            next_i = (i + 1) % n_segments
+            faces.append((i, next_i, i + n_segments))
+            faces.append((next_i, next_i + n_segments, i + n_segments))
+        bottom_face = list(range(n_segments))
+        faces.append(bottom_face[::-1])
+        top_face = list(range(n_segments, n_segments + n_segments))
+        faces.append(top_face)
         return vertices, faces
 
     def build(self, model, builder):
         vertices, faces = self.create_mesh()
         return MeshRepresentation(vertices=vertices, faces=faces).build(model, builder)
+
+
+class NgonCylinder(ExtrudedNgonAsMesh):
+    """Ngon extruded cylinder primitive"""
+
+    radius: float
+    segments: int = 8
+
+    def model_post_init(self, _):
+        angle_step = 2 * np.pi / self.segments
+        angles = np.arange(self.segments) * angle_step
+        x = self.radius * np.cos(angles)
+        y = self.radius * np.sin(angles)
+        z = np.zeros_like(x)
+        self.basis = np.stack((x, y, z), axis=1).tolist()
 
 
 class Cylinder(BaseModel, RepresentationItem):
@@ -177,150 +188,16 @@ class Sphere(BaseModel, RepresentationItem):
         return MeshRepresentation(vertices, faces).build()
 
 
-class NullpunktWithArrowObject(BaseModel, RepresentationItem):
-    """Geometric base point object with a north arrow and 'N' on the top face using parametric coordinates."""
-
-    size: float
-    arrow_color: str = "50, 50, 50"  # Dark gray
-
-    def _get_n_coordinates(self):
-        """Get N letter coordinates with scale factor, extruded 20mm above surface"""
-        base_coords = [
-            (-0.05, 0.35),
-            (-0.033, 0.35),
-            (-0.033, 0.425),
-            (0.033, 0.35),
-            (0.05, 0.35),
-            (0.05, 0.45),
-            (0.033, 0.45),
-            (0.033, 0.375),
-            (-0.033, 0.45),
-            (-0.05, 0.45),
-            (-0.05, 0.35),
-        ]
-
-        # Scale coordinates and add Z coordinate (extruded 20mm above surface)
-        z_base = 1.0 * self.size  # Base surface
-        z_extruded = (1.0 + 0.02) * self.size  # 20mm above surface
-
-        vertices = []
-        # Add base vertices
-        for x, y in base_coords:
-            vertices.append((x * self.size, y * self.size, z_base))
-        # Add extruded vertices
-        for x, y in base_coords:
-            vertices.append((x * self.size, y * self.size, z_extruded))
-
-        return vertices
-
-    def create_mesh(self):
-        """Create complete basepoint mesh with solid top face"""
-        # Full basepoint coordinates
-        vertices = [
-            # Base vertices (same as NullpunktObject)
-            (-0.5 * self.size, -0.5 * self.size, 1.0 * self.size),  # 0: top front left
-            (0.5 * self.size, -0.5 * self.size, 1.0 * self.size),  # 1: top front right
-            (0.5 * self.size, 0.5 * self.size, 1.0 * self.size),  # 2: top back right
-            (-0.5 * self.size, 0.5 * self.size, 1.0 * self.size),  # 3: top back left
-            (-0.5 * self.size, -0.5 * self.size, -1.0 * self.size),  # 4: bottom front left
-            (0.5 * self.size, -0.5 * self.size, -1.0 * self.size),  # 5: bottom front right
-            (0.5 * self.size, 0.5 * self.size, -1.0 * self.size),  # 6: bottom back right
-            (-0.5 * self.size, 0.5 * self.size, -1.0 * self.size),  # 7: bottom back left
-            (0.0, 0.0, 0.0),  # 8: center point
-        ]
-
-        # Define faces for complete basepoint
-        faces = [
-            # Base star-shaped faces (triangular faces from cube corners to center)
-            (0, 1, 8),  # front face triangles
-            (1, 2, 8),
-            (2, 3, 8),
-            (3, 0, 8),
-            (5, 4, 8),  # back face triangles
-            (6, 5, 8),
-            (7, 6, 8),
-            (4, 7, 8),
-            # Base cube faces (quads)
-            (0, 1, 2, 3),  # top face (solid)
-            (7, 6, 5, 4),  # bottom face
-        ]
-
-        return vertices, faces
-
-    def as_arrow_n_mesh(self):
-        """Create separate mesh for arrow and N (extruded 20mm above surface)"""
-        vertices = []
-        faces = []
-
-        # Arrow coordinates (extruded 20mm above surface)
-        z_base = 1.0 * self.size  # Base surface
-        z_extruded = (1.0 + 0.02) * self.size  # 20mm above surface
-
-        arrow_base = [
-            (-0.3 * self.size, -0.3 * self.size, z_base),
-            (0.3 * self.size, -0.3 * self.size, z_base),
-            (0, 0.30015 * self.size, z_base),
-        ]
-
-        arrow_extruded = [
-            (-0.3 * self.size, -0.3 * self.size, z_extruded),
-            (0.3 * self.size, -0.3 * self.size, z_extruded),
-            (0, 0.30015 * self.size, z_extruded),
-        ]
-
-        # Add arrow vertices
-        arrow_start_idx = len(vertices)
-        vertices.extend(arrow_base)
-        vertices.extend(arrow_extruded)
-
-        # Arrow faces: base triangle, top triangle, and side faces
-        faces.append((arrow_start_idx, arrow_start_idx + 1, arrow_start_idx + 2))  # base
-        faces.append((arrow_start_idx + 3, arrow_start_idx + 5, arrow_start_idx + 4))  # top
-        # Side faces
-        faces.append((arrow_start_idx, arrow_start_idx + 3, arrow_start_idx + 4, arrow_start_idx + 1))
-        faces.append((arrow_start_idx + 1, arrow_start_idx + 4, arrow_start_idx + 5, arrow_start_idx + 2))
-        faces.append((arrow_start_idx + 2, arrow_start_idx + 5, arrow_start_idx + 3, arrow_start_idx))
-
-        # N coordinates (extruded)
-        n_vertices = self._get_n_coordinates()
-        n_start_idx = len(vertices)
-        vertices.extend(n_vertices)
-
-        # N faces: create extrusion faces
-        n_base_count = len(n_vertices) // 2
-        n_base_start = n_start_idx
-        n_top_start = n_start_idx + n_base_count
-
-        # Base face
-        base_face = tuple(range(n_base_start, n_base_start + n_base_count))
-        faces.append(base_face)
-
-        # Top face
-        top_face = tuple(range(n_top_start, n_top_start + n_base_count))
-        faces.append(top_face)
-
-        # Side faces (connecting base to top)
-        for i in range(n_base_count):
-            next_i = (i + 1) % n_base_count
-            faces.append((n_base_start + i, n_base_start + next_i, n_top_start + next_i, n_top_start + i))
-
-        return MeshRepresentation(vertices, faces, self.arrow_color)
-
-    def create_ifc_mesh_from_mesh(self, mesh, model, body):
-        """Create IFC mesh representation from a MeshRepresentation object."""
-        return ifcopenshell.api.geometry.add_mesh_representation(model, context=body, vertices=[mesh.vertices], faces=[mesh.faces])
-
-
 class MeshRepresentation(BaseModel, RepresentationItem):
     """Container for mesh geometry data"""
 
-    vertices: List[Tuple[float, float, float]]
-    faces: List[List[int]]
-    # color: str
-    # transparency: float = 0.0
+    # @todo these are default-initialized so that subclasses can be defined that later overwrite these
+    # attributes in model_post_init() without having something passed to their __init__() calls. 
+    vertices: List[Tuple[float, float, float]] = Field(default_factory=list)
+    faces: List[List[int]] = Field(default_factory=list)
 
     def build(self, model, builder):
-        return builder.triangulated_face_set(self.vertices, self.faces)
+        return builder.mesh(self.vertices, self.faces)
 
 
 class Element(BaseModel, ElementInterface):
