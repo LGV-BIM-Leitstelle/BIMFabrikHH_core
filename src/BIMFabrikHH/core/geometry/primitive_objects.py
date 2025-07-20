@@ -13,6 +13,7 @@ from __future__ import annotations
 from typing import List, Tuple, Optional, Type, Union
 from enum import Enum
 from abc import ABC
+import warnings
 
 import ifcopenshell
 import ifcopenshell.api.geometry
@@ -356,6 +357,15 @@ class Element(BaseModel, ElementInterface):
             body = ifcopenshell.util.representation.get_context(model, "Model", "Body", "MODEL_VIEW")
             rep = builder.get_representation(context=body, items=[ch.build(model, builder) for ch in self.children])
             ifcopenshell.api.geometry.assign_representation(model, product=element, representation=rep)
+
+            # calculate quantities
+            shp = ifcopenshell.geom.create_shape(ifcopenshell.geom.settings(ITERATOR_OUTPUT=ifcopenshell.ifcopenshell_wrapper.NATIVE, REORIENT_SHELLS=True), element)
+            qto = ifcopenshell.api.pset.add_qto(model, product=element, name=f"Qto_{element.is_a()[3:].replace('StandardCase', '')}BaseQuantities")
+            if shp.volume == shp.volume:
+                # can return nan for non-manifold shapes
+                ifcopenshell.api.pset.edit_qto(model, qto=qto, properties={"NetVolume": shp.volume})
+            else:
+                warnings.warn(f"Invalid volume encountered for {element}")
         if child_type is ElementInterface:
             ifcopenshell.api.aggregate.assign_object(
                 model, products=[ch.build(model, builder) for ch in self.children], relating_object=element
@@ -437,9 +447,23 @@ class Boolean(BaseModel, RepresentationItem, Profile, ElementInterface):
                 chs = [(model.createIfcArbitraryClosedProfileDef("AREA", None, inst) if inst.is_a("IfcCurve") else inst) for inst in chs]
                 return model.createIfcCompositeProfileDef("AREA", None, chs, None)
         if ty == ElementInterface:
+            element = chs[0]
             for op in chs[1:]:
-                ifcopenshell.api.feature.add_feature(model, feature=op, element=chs[0])
-            return chs[0]
+                ifcopenshell.api.feature.add_feature(model, feature=op, element=element)
+
+            # calculate quantities
+            qto = ifcopenshell.api.pset.add_qto(model, product=element, name=f"Qto_{element.is_a()[3:].replace('StandardCase', '')}BaseQuantities")
+            shp = ifcopenshell.geom.create_shape(ifcopenshell.geom.settings(ITERATOR_OUTPUT=ifcopenshell.ifcopenshell_wrapper.NATIVE), element)
+            if shp.volume == shp.volume:
+                ifcopenshell.api.pset.edit_qto(model, qto=qto, properties={"GrossVolume": shp.volume})
+            else:
+                warnings.warn(f"Invalid volume encountered for {element}")
+            shp = ifcopenshell.geom.create_shape(ifcopenshell.geom.settings(ITERATOR_OUTPUT=ifcopenshell.ifcopenshell_wrapper.NATIVE, DISABLE_OPENING_SUBTRACTIONS=True), element)
+            if shp.volume == shp.volume:
+                ifcopenshell.api.pset.edit_qto(model, qto=qto, properties={"NetVolume": shp.volume})
+            else:
+                warnings.warn(f"Invalid volume encountered for {element}")
+            return element
         if ty == RepresentationItem:
             left = chs.pop(0)
             while chs:
