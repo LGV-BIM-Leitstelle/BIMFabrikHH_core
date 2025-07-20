@@ -361,9 +361,9 @@ class Element(BaseModel, ElementInterface):
 
             # calculate quantities
             shp = ifcopenshell.geom.create_shape(ifcopenshell.geom.settings(ITERATOR_OUTPUT=ifcopenshell.ifcopenshell_wrapper.NATIVE, REORIENT_SHELLS=True), element)
-            qto = ifcopenshell.api.pset.add_qto(model, product=element, name=f"Qto_{element.is_a()[3:].replace('StandardCase', '')}BaseQuantities")
             if shp.volume == shp.volume:
                 # can return nan for non-manifold shapes
+                qto = ifcopenshell.api.pset.add_qto(model, product=element, name=f"Qto_{element.is_a()[3:].replace('StandardCase', '')}BaseQuantities")
                 ifcopenshell.api.pset.edit_qto(model, qto=qto, properties={"NetVolume": shp.volume})
             else:
                 warnings.warn(f"Invalid volume encountered for {element}")
@@ -481,14 +481,18 @@ class Boolean(BaseModel, RepresentationItem, Profile, ElementInterface):
                 ifcopenshell.api.feature.add_feature(model, feature=op, element=element)
 
             # calculate quantities
-            qto = ifcopenshell.api.pset.add_qto(model, product=element, name=f"Qto_{element.is_a()[3:].replace('StandardCase', '')}BaseQuantities")
+            qto = None
             shp = ifcopenshell.geom.create_shape(ifcopenshell.geom.settings(ITERATOR_OUTPUT=ifcopenshell.ifcopenshell_wrapper.NATIVE), element)
             if shp.volume == shp.volume:
+                if qto is None:
+                    qto = ifcopenshell.api.pset.add_qto(model, product=element, name=f"Qto_{element.is_a()[3:].replace('StandardCase', '')}BaseQuantities")
                 ifcopenshell.api.pset.edit_qto(model, qto=qto, properties={"GrossVolume": shp.volume})
             else:
                 warnings.warn(f"Invalid volume encountered for {element}")
             shp = ifcopenshell.geom.create_shape(ifcopenshell.geom.settings(ITERATOR_OUTPUT=ifcopenshell.ifcopenshell_wrapper.NATIVE, DISABLE_OPENING_SUBTRACTIONS=True), element)
             if shp.volume == shp.volume:
+                if qto is None:
+                    qto = ifcopenshell.api.pset.add_qto(model, product=element, name=f"Qto_{element.is_a()[3:].replace('StandardCase', '')}BaseQuantities")
                 ifcopenshell.api.pset.edit_qto(model, qto=qto, properties={"NetVolume": shp.volume})
             else:
                 warnings.warn(f"Invalid volume encountered for {element}")
