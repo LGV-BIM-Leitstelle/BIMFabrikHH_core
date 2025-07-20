@@ -15,6 +15,7 @@ from enum import Enum
 from abc import ABC
 import warnings
 
+from ...data_models.pydantic_psets_BIMHH import PropertySetTemplate, Pset_Modellinformation
 import ifcopenshell
 import ifcopenshell.api.geometry
 import ifcopenshell.api.root
@@ -25,7 +26,7 @@ import ifcopenshell.util.placement
 import numpy as np
 
 from icosphere import icosphere as icosphere_lib
-from pydantic import BaseModel, PositiveFloat, model_validator
+from pydantic import BaseModel, PositiveFloat, model_validator, Field
 
 from ..ifc_snippets import IfcSnippets
 from ..ifc_utils import IfcFileCreator
@@ -327,6 +328,7 @@ class Element(BaseModel, ElementInterface):
     inst: Optional[ifcopenshell.entity_instance] = None
     children: List[RepresentationItem | ElementInterface]
     material: Optional[Material] = None
+    psets: List[PropertySetTemplate] = Field(default_factory=list)
 
     # For accepting children types
     model_config = {"arbitrary_types_allowed": True}
@@ -374,6 +376,11 @@ class Element(BaseModel, ElementInterface):
 
         if self.material:
             ifcopenshell.api.material.assign_material(model, products=[element], material=self.material.build(model, builder))
+
+        for data in self.psets:
+            # @todo this means propertyset data is never shared even if it's the same template instance in python
+            pset = ifcopenshell.api.pset.add_pset(model, product=element, name=data.pset_name)
+            ifcopenshell.api.pset.edit_pset(model, pset=pset, properties=data.model_dump())
 
         return element
 
@@ -529,8 +536,22 @@ if __name__ == "__main__":
         transparency=0.6
     )
 
+    model_info = Pset_Modellinformation(
+        # @todo why the underscores?
+        _ArtFachmodell="Gebäudemodell",
+        _ArtTeilmodell="Tragwerksplanung",
+        _Auftraggeber="Freie und Hansestadt Hamburg, Behörde für Stadtentwicklung und Wohnen",
+        _Ersteller="Ingenieurbüro Müller GmbH",
+        # @todo we should work on different data types so that e.g dates are rendered to a proper semantic type
+        _Erstelldatum="2025-07-15",
+        _GemObjektkatalog="BIM-Katalog Hamburg 2025",
+        _Projektname="Neubau Schulzentrum Altona",
+        _Projektnummer="HH-2025-0731"
+    )
+
     Element(
         inst=proj,
+        psets=[model_info],
         children=[
             Element(
                 type="IfcSite",

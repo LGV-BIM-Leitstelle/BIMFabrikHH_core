@@ -3,19 +3,19 @@ from typing import ClassVar, Optional
 from pydantic import BaseModel, Field
 
 
-class BasePsetModel(BaseModel):
+class PropertySetTemplate(BaseModel):
     pset_name: ClassVar[str]
 
 
-class Pset_Objektinformation(BaseModel):
-    pset_name: ClassVar[str] = "Pset_Objektinformation"
+class Pset_Objektinformation(PropertySetTemplate):
+    pset_name: ClassVar[str] = "HamburgHH_Objektinformation"
     idebene1: str = Field(alias="_IDEbene1")
     idebene2: str = Field(alias="_IDEbene2")
     idebene3: str = Field(alias="_IDEbene3")
 
 
-class Pset_Modellinformation(BaseModel):
-    pset_name: ClassVar[str] = "Pset_Modellinformation"
+class Pset_Modellinformation(PropertySetTemplate):
+    pset_name: ClassVar[str] = "HamburgHH_Modellinformation"
     artfachmodell: str = Field(alias="_ArtFachmodell")
     artteilmodell: str = Field(alias="_ArtTeilmodell")
     auftraggeber: str = Field(alias="_Auftraggeber")
@@ -26,21 +26,21 @@ class Pset_Modellinformation(BaseModel):
     projektnummer: str = Field(alias="_Projektnummer")
 
 
-class Pset_Georeferenzierung(BaseModel):
-    pset_name: ClassVar[str] = "Pset_Georeferenzierung"
+class Pset_Georeferenzierung(PropertySetTemplate):
+    pset_name: ClassVar[str] = "HamburgHH_Georeferenzierung"
     hoehenstatus: str = Field(alias="_Hoehenstatus")
     hoehensystem: str = Field(alias="_Hoehensystem")
     koordinatensystem: str = Field(alias="_Koordinatensystem")
     lagestatus: str = Field(alias="_Lagestatus")
 
 
-class Pset_Hyperlink(BaseModel):
-    pset_name: ClassVar[str] = "Pset_Hyperlink"
+class Pset_Hyperlink(PropertySetTemplate):
+    pset_name: ClassVar[str] = "HamburgHH_Hyperlink"
     hyperlink_001: str = Field(alias="_Hyperlink_001")
     hyperlink_001_Bemerkung: str = Field(alias="_Hyperlink_001_Bemerkung")
 
 
-class Nullpunktobjekt(BaseModel):
+class Nullpunktobjekt(PropertySetTemplate):
     pset_objektinformation: Optional[Pset_Objektinformation] = None
     pset_modellinformation: Optional[Pset_Modellinformation] = None
     pset_georeferenzierung: Optional[Pset_Georeferenzierung] = None
@@ -89,7 +89,7 @@ if __name__ == "__main__":
     georeferenzierung = Pset_Georeferenzierung(**georeferenzierung_data)
     hyperlink = Pset_Hyperlink(**hyperlink_data)
 
-    print("Pset_Objektinformation:")
+    print("HamburgHH_Objektinformation:")
     print(objekt_info)
     print("\nPset_Modellinformation:")
     print(modell_info)
