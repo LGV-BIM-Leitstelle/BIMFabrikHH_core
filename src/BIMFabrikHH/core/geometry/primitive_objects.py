@@ -326,6 +326,7 @@ class Element(BaseModel, ElementInterface):
     type: Optional[str] = None
     inst: Optional[ifcopenshell.entity_instance] = None
     children: List[RepresentationItem | ElementInterface]
+    material: Optional[Material] = None
 
     # For accepting children types
     model_config = {"arbitrary_types_allowed": True}
@@ -370,6 +371,10 @@ class Element(BaseModel, ElementInterface):
             ifcopenshell.api.aggregate.assign_object(
                 model, products=[ch.build(model, builder) for ch in self.children], relating_object=element
             )
+
+        if self.material:
+            ifcopenshell.api.material.assign_material(model, products=[element], material=self.material.build(model, builder))
+
         return element
 
 
@@ -391,6 +396,9 @@ class Translate(BaseModel, RepresentationItem, Profile, ElementInterface):
 
 
 class Style(BaseModel, RepresentationItem):
+    """
+    This is a node in the scene graph to represent a styled representation item
+    """
     item: RepresentationItem
     rgb: Tuple[float, float, float]
     transparency: Optional[float] = None
@@ -403,6 +411,27 @@ class Style(BaseModel, RepresentationItem):
         IfcSnippets.assign_color_to_element(model, inst, self.rgb, self.transparency)
         return inst
 
+class Material(BaseModel):
+    name : str
+    category : Optional[str] = None
+    rgb: Tuple[float, float, float]
+    transparency: Optional[float] = None
+
+    def build(self, model, builder):
+        if res := getattr(self, '_build_result', None):
+            # build it only once
+            return res
+        inst = ifcopenshell.api.material.add_material(model, name=self.name, category=self.category)
+        style = ifcopenshell.api.style.add_style(model)
+        ifcopenshell.api.style.add_surface_style(model,
+            style=style, ifc_class="IfcSurfaceStyleShading", attributes={
+                "SurfaceColour": { "Name": None, "Red": self.rgb[0], "Green": self.rgb[1], "Blue": self.rgb[1]},
+                "Transparency": self.transparency,
+            })
+        context = [x for x in model.by_type('IfcGeometricRepresentationContext') if x.ContextIdentifier == 'Body'][0]
+        ifcopenshell.api.style.assign_material_style(model, material=inst, style=style, context=context)
+        self._build_result = inst
+        return inst
 
 class BooleanOperationTypes(str, Enum):
     Union = "UNION"
@@ -479,6 +508,23 @@ if __name__ == "__main__":
 
     builder = ifcopenshell.util.shape_builder.ShapeBuilder(model)
 
+    concrete = Material(
+        name="CON01",
+        category="concrete",
+        rgb=(0.5,0.5,0.5)
+    )
+    wood = Material(
+        name="WOOD01",
+        category="wood",
+        rgb=(0.65, 0.50, 0.30),
+    )
+    glass = Material(
+        name="GLASS01",
+        category="glass",
+        rgb=(0.6, 0.9, 0.8),
+        transparency=0.6
+    )
+
     Element(
         inst=proj,
         children=[
@@ -525,7 +571,7 @@ if __name__ == "__main__":
                 item=Boolean(
                     operation=BooleanOperationTypes.Difference,
                     children=[
-                        Element(type="IfcWall", children=[Cube(size=10.0)]),
+                        Element(type="IfcWall", children=[Cube(size=10.0)], material=wood),
                         Translate(vec=(5.0, 5.0, 5.0), item=Element(type="IfcOpeningElement", children=[Cube(size=5.0)])),
                     ],
                 ),
@@ -549,11 +595,11 @@ if __name__ == "__main__":
     ).build(model, builder)
     Element(
         inst=building,
-        children=[Element(type="IfcWall", children=[Translate(vec=(41.0, 5.0, 0.0), item=NgonCylinder(radius=5.0, height=10.0))])],
+        children=[Element(type="IfcWall", material=glass, children=[Translate(vec=(41.0, 5.0, 0.0), item=NgonCylinder(radius=5.0, height=10.0))])],
     ).build(model, builder)
     Element(
         inst=building,
-        children=[Element(type="IfcWall", children=[Translate(vec=(53.0, 5.0, 0.0), item=Cylinder(radius=5.0, height=10.0))])],
+        children=[Element(type="IfcWall", material=concrete, children=[Translate(vec=(53.0, 5.0, 0.0), item=Cylinder(radius=5.0, height=10.0))])],
     ).build(model, builder)
 
     model.write("test.ifc")
