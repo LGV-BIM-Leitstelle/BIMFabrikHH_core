@@ -119,7 +119,7 @@ class Cube(BaseModel, RepresentationItem):
 
 
 class ExtrudedNgonAsMesh(BaseModel, RepresentationItem):
-    basis: List[Tuple[float, float, float]]
+    basis: List[Tuple[float, float, float]] = Field(default_factory=list)
     height: float
 
     def create_mesh(self):
