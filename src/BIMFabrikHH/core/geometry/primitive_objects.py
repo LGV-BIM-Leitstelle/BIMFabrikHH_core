@@ -10,9 +10,12 @@ declarative, composable way.
 # postponed annotations for Element.children : list[Element]
 from __future__ import annotations
 
+import functools
+import operator
 from typing import List, Tuple, Optional, Type, Union
 from enum import Enum
 from abc import ABC
+import typing
 import warnings
 
 from ...data_models.pydantic_psets_BIMHH import PropertySetTemplate, Pset_Modellinformation
@@ -22,6 +25,7 @@ import ifcopenshell.api.root
 import ifcopenshell.api.feature
 import ifcopenshell.util.representation
 import ifcopenshell.util.placement
+import ifc5d.qto
 
 import numpy as np
 
@@ -66,7 +70,17 @@ def determine_type(element) -> Union[Type[Profile], Type[RepresentationItem], Ty
         raise TypeError(f"Element of type {type(element).__name__} not supported")
 
 
-class Rect(BaseModel, Profile):
+class Primitive(BaseModel):
+    def children_of_type(self, ty : typing.TypeVar):
+        if isinstance(self, ty):
+            yield self
+        for child in getattr(self, 'children', ()):
+            yield from child.children_of_type(ty)
+        if child := getattr(self, 'item', ()):
+            yield from child.children_of_type(ty)
+
+
+class Rect(Primitive, Profile):
     width: PositiveFloat
     height: PositiveFloat
 
@@ -74,7 +88,7 @@ class Rect(BaseModel, Profile):
         return builder.rectangle(size=(self.width, self.height))
 
 
-class Circle(BaseModel, Profile):
+class Circle(Primitive, Profile):
     radius: PositiveFloat
 
     def build(self, model, builder):
@@ -83,7 +97,7 @@ class Circle(BaseModel, Profile):
         )
 
 
-class Extrusion(BaseModel, RepresentationItem):
+class Extrusion(Primitive, RepresentationItem):
     basis: Profile
     depth: PositiveFloat
 
@@ -102,7 +116,7 @@ class Extrusion(BaseModel, RepresentationItem):
         return builder.extrude(basis, self.depth)
 
 
-class Box(BaseModel, RepresentationItem):
+class Box(Primitive, RepresentationItem):
     width: PositiveFloat
     depth: PositiveFloat
     height: PositiveFloat
@@ -111,14 +125,14 @@ class Box(BaseModel, RepresentationItem):
         return Extrusion(basis=Rect(width=self.width, height=self.depth), depth=self.height).build(model, builder)
 
 
-class Cube(BaseModel, RepresentationItem):
+class Cube(Primitive, RepresentationItem):
     size: PositiveFloat
 
     def build(self, model, builder):
         return Box(width=self.size, height=self.size, depth=self.size).build(model, builder)
 
 
-class ExtrudedNgonAsMesh(BaseModel, RepresentationItem):
+class ExtrudedNgonAsMesh(Primitive, RepresentationItem):
     basis: List[Tuple[float, float, float]] = Field(default_factory=list)
     height: float
 
@@ -158,7 +172,7 @@ class NgonCylinder(ExtrudedNgonAsMesh):
         self.basis = np.stack((x, y, z), axis=1).tolist()
 
 
-class Cylinder(BaseModel, RepresentationItem):
+class Cylinder(Primitive, RepresentationItem):
     """Ngon extruded cylinder primitive"""
 
     radius: float
@@ -168,7 +182,7 @@ class Cylinder(BaseModel, RepresentationItem):
         return Extrusion(basis=Circle(radius=self.radius), depth=self.height).build(model, builder)
 
 
-class Sphere(BaseModel, RepresentationItem):
+class Sphere(Primitive, RepresentationItem):
     """Icosphere primitive"""
 
     radius: float
@@ -188,7 +202,7 @@ class Sphere(BaseModel, RepresentationItem):
         return MeshRepresentation(vertices, faces).build()
 
 
-class MeshRepresentation(BaseModel, RepresentationItem):
+class MeshRepresentation(Primitive, RepresentationItem):
     """Container for mesh geometry data"""
 
     # @todo these are default-initialized so that subclasses can be defined that later overwrite these
@@ -200,7 +214,8 @@ class MeshRepresentation(BaseModel, RepresentationItem):
         return builder.mesh(self.vertices, self.faces)
 
 
-class Element(BaseModel, ElementInterface):
+class Element(Primitive, ElementInterface):
+    guid: str = Field(default_factory=ifcopenshell.guid.new)
     type: Optional[str] = None
     inst: Optional[ifcopenshell.entity_instance] = None
     children: List[RepresentationItem | ElementInterface]
@@ -232,6 +247,7 @@ class Element(BaseModel, ElementInterface):
             element = self.inst
         else:
             element = ifcopenshell.api.root.create_entity(model, ifc_class=self.type)
+            element.GlobalId = self.guid
         ifcopenshell.api.geometry.edit_object_placement(model, product=element)
         if child_type is RepresentationItem:
             body = ifcopenshell.util.representation.get_context(model, "Model", "Body", "MODEL_VIEW")
@@ -239,13 +255,7 @@ class Element(BaseModel, ElementInterface):
             ifcopenshell.api.geometry.assign_representation(model, product=element, representation=rep)
 
             # calculate quantities
-            shp = ifcopenshell.geom.create_shape(ifcopenshell.geom.settings(ITERATOR_OUTPUT=ifcopenshell.ifcopenshell_wrapper.NATIVE, REORIENT_SHELLS=True), element)
-            if shp.volume == shp.volume:
-                # can return nan for non-manifold shapes
-                qto = ifcopenshell.api.pset.add_qto(model, product=element, name=f"Qto_{element.is_a()[3:].replace('StandardCase', '')}BaseQuantities")
-                ifcopenshell.api.pset.edit_qto(model, qto=qto, properties={"NetVolume": shp.volume})
-            else:
-                warnings.warn(f"Invalid volume encountered for {element}")
+            ifc5d.qto.edit_qtos(model, ifc5d.qto.quantify(model, [element], ifc5d.qto.rules[f'{model.schema.upper()}QtoBaseQuantities']))
         if child_type is ElementInterface:
             ifcopenshell.api.aggregate.assign_object(
                 model, products=[ch.build(model, builder) for ch in self.children], relating_object=element
@@ -262,7 +272,7 @@ class Element(BaseModel, ElementInterface):
         return element
 
 
-class Translate(BaseModel, RepresentationItem, Profile, ElementInterface):
+class Translate(Primitive, RepresentationItem, Profile, ElementInterface):
     item: object
     vec: tuple
 
@@ -279,7 +289,7 @@ class Translate(BaseModel, RepresentationItem, Profile, ElementInterface):
         return item
 
 
-class Style(BaseModel, RepresentationItem):
+class Style(Primitive, RepresentationItem):
     """
     This is a node in the scene graph to represent a styled representation item
     """
@@ -295,7 +305,7 @@ class Style(BaseModel, RepresentationItem):
         IfcSnippets.assign_color_to_element(model, inst, self.rgb, self.transparency)
         return inst
 
-class Material(BaseModel):
+class Material(Primitive):
     name : str
     category : Optional[str] = None
     rgb: Tuple[float, float, float]
@@ -309,7 +319,7 @@ class Material(BaseModel):
         style = ifcopenshell.api.style.add_style(model)
         ifcopenshell.api.style.add_surface_style(model,
             style=style, ifc_class="IfcSurfaceStyleShading", attributes={
-                "SurfaceColour": { "Name": None, "Red": self.rgb[0], "Green": self.rgb[1], "Blue": self.rgb[1]},
+                "SurfaceColour": { "Name": None, "Red": self.rgb[0], "Green": self.rgb[1], "Blue": self.rgb[2]},
                 "Transparency": self.transparency,
             })
         context = [x for x in model.by_type('IfcGeometricRepresentationContext') if x.ContextIdentifier == 'Body'][0]
@@ -323,7 +333,7 @@ class BooleanOperationTypes(str, Enum):
     Difference = "DIFFERENCE"
 
 
-class Boolean(BaseModel, RepresentationItem, Profile, ElementInterface):
+class Boolean(Primitive, RepresentationItem, Profile, ElementInterface):
     operation: BooleanOperationTypes
     children: List[Union[RepresentationItem, Profile, ElementInterface]]
 
@@ -365,21 +375,7 @@ class Boolean(BaseModel, RepresentationItem, Profile, ElementInterface):
                 ifcopenshell.api.feature.add_feature(model, feature=op, element=element)
 
             # calculate quantities
-            qto = None
-            shp = ifcopenshell.geom.create_shape(ifcopenshell.geom.settings(ITERATOR_OUTPUT=ifcopenshell.ifcopenshell_wrapper.NATIVE), element)
-            if shp.volume == shp.volume:
-                if qto is None:
-                    qto = ifcopenshell.api.pset.add_qto(model, product=element, name=f"Qto_{element.is_a()[3:].replace('StandardCase', '')}BaseQuantities")
-                ifcopenshell.api.pset.edit_qto(model, qto=qto, properties={"GrossVolume": shp.volume})
-            else:
-                warnings.warn(f"Invalid volume encountered for {element}")
-            shp = ifcopenshell.geom.create_shape(ifcopenshell.geom.settings(ITERATOR_OUTPUT=ifcopenshell.ifcopenshell_wrapper.NATIVE, DISABLE_OPENING_SUBTRACTIONS=True), element)
-            if shp.volume == shp.volume:
-                if qto is None:
-                    qto = ifcopenshell.api.pset.add_qto(model, product=element, name=f"Qto_{element.is_a()[3:].replace('StandardCase', '')}BaseQuantities")
-                ifcopenshell.api.pset.edit_qto(model, qto=qto, properties={"NetVolume": shp.volume})
-            else:
-                warnings.warn(f"Invalid volume encountered for {element}")
+            ifc5d.qto.edit_qtos(model, ifc5d.qto.quantify(model, [element], ifc5d.qto.rules[f'{model.schema.upper()}QtoBaseQuantities']))
             return element
         if ty == RepresentationItem:
             left = chs.pop(0)
@@ -504,4 +500,37 @@ if __name__ == "__main__":
         children=[Element(type="IfcWall", material=concrete, children=[Translate(vec=(53.0, 5.0, 0.0), item=Cylinder(radius=5.0, height=10.0))])],
     ).build(model, builder)
 
+    wall_id = ifcopenshell.guid.new()
+    wall_elem = Element(
+        inst=building,
+        children=[Translate(
+                vec=(0.0, 15.0, 0.0), 
+                item=Boolean(
+                    operation=BooleanOperationTypes.Difference,
+                    children=[
+                        Element(guid=wall_id, type="IfcWall", children=[Box(width=20., depth=0.3, height=3.0)]),
+                        Translate(vec=(2.0, -0.5, 1.0), item=Element(type="IfcOpeningElement", children=[Cube(size=1.0)])),
+                        # @todo there is no mechanism yet for placing a window/door in an opening
+                        Translate(vec=(4.0, -0.5, 1.0), item=Element(type="IfcOpeningElement", children=[Cube(size=1.0)])),
+                        Translate(vec=(6.0, -0.5, 1.0), item=Element(type="IfcOpeningElement", children=[Cube(size=1.0)])),
+                        Translate(vec=(8.0, -0.5, 1.0), item=Element(type="IfcOpeningElement", children=[Cube(size=1.0)])),
+                        Translate(vec=(10.0, -0.5, 1.0), item=Element(type="IfcOpeningElement", children=[Cube(size=1.0)])),
+                    ],
+                ))
+        ],
+    )
+    wall_elem.build(model, builder)
+
+    qto = ifcopenshell.util.element.get_pset(model[wall_id], 'Qto_WallBaseQuantities')
+    wall_box = next(wall_elem.children_of_type(Box))
+    almost_eq = lambda a, b: abs(b - a) < 1.e-7
+    num_openings = len([el for el in wall_elem.children_of_type(Element) if el.type == 'IfcOpeningElement'])
+    gross_vol = functools.reduce(operator.mul, wall_box.model_dump().values())
+    assert almost_eq(qto['GrossVolume'], gross_vol)
+    assert almost_eq(qto['NetVolume'], gross_vol - (num_openings * 1 * 1 * wall_box.depth))
+    assert almost_eq(qto['GrossSideArea'], wall_box.width * wall_box.height)
+    assert almost_eq(qto['Height'], wall_box.height)
+    assert almost_eq(qto['Length'], wall_box.width)
+    assert almost_eq(qto['Width'], wall_box.depth)
+    
     model.write("test.ifc")
