@@ -17,7 +17,7 @@ class Quantity(Generic[TypeVar("")]):
         def _validate(val):
             if not isinstance(val, pint.Quantity):
                 try:
-                    val = U.Quantity(val)
+                    val = U.Quantity(*val) if isinstance(val, (list, tuple)) else U.Quantity(val)
                 except Exception as e:
                     raise ValueError(f"Could not parse quantity {val!r}") from e
 

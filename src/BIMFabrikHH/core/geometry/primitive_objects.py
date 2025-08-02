@@ -436,7 +436,7 @@ if __name__ == "__main__":
 
     tree_info = Pset_Objektinformation_Tree(
         kronendurchmesser = "0.5 meter",
-        stammumfang = "100 mm"
+        stammumfang = (100, "mm")
     )
 
     Element(
