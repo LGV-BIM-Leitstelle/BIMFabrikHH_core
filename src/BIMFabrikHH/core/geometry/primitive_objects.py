@@ -17,7 +17,9 @@ from enum import Enum
 from abc import ABC
 import typing
 import warnings
+import pint
 
+from ...data_models.pydantic_psets_tree import Pset_Objektinformation_Tree
 from ...data_models.pydantic_psets_BIMHH import PropertySetTemplate, Pset_Modellinformation
 import ifcopenshell
 import ifcopenshell.api.geometry
@@ -34,7 +36,7 @@ from pydantic import BaseModel, PositiveFloat, model_validator, Field
 
 from ..ifc_snippets import IfcSnippets
 from ..ifc_utils import IfcFileCreator
-
+from .pint_to_ifc import pint_to_ifc
 
 # 'trait' for 2d definitions
 class Profile(ABC):
@@ -267,7 +269,17 @@ class Element(Primitive, ElementInterface):
         for data in self.psets:
             # @todo this means propertyset data is never shared even if it's the same template instance in python
             pset = ifcopenshell.api.pset.add_pset(model, product=element, name=data.pset_name)
-            ifcopenshell.api.pset.edit_pset(model, pset=pset, properties=data.model_dump())
+            di = data.model_dump()
+            def process_quantity(q):
+                if isinstance(q, pint.Quantity):
+                    measure_type = pint_to_ifc[q.dimensionality]
+                    scale_factor = ifcopenshell.util.unit.calculate_unit_scale(model, measure_type[3:].replace('Measure', '').upper() + "UNIT")
+                    value = q.to_base_units().magnitude / scale_factor
+                    return model.create_entity(measure_type, value)
+                else:
+                    return q
+            di = dict(zip(di.keys(), map(process_quantity, di.values())))
+            ifcopenshell.api.pset.edit_pset(model, pset=pset, properties=di)
 
         return element
 
@@ -422,6 +434,11 @@ if __name__ == "__main__":
         _Projektnummer="HH-2025-0731"
     )
 
+    tree_info = Pset_Objektinformation_Tree(
+        kronendurchmesser = "0.5 meter",
+        stammumfang = "100 mm"
+    )
+
     Element(
         inst=proj,
         psets=[model_info],
@@ -532,5 +549,10 @@ if __name__ == "__main__":
     assert almost_eq(qto['Height'], wall_box.height)
     assert almost_eq(qto['Length'], wall_box.width)
     assert almost_eq(qto['Width'], wall_box.depth)
+
+    Element(
+        inst=building,
+        children=[Element(type="IfcGeographicElement", psets=[tree_info], children=[Translate(vec=(60.0, 0.0, 0.0), item=Cylinder(radius=0.1, height=10.0))])],
+    ).build(model, builder)
     
     model.write("test.ifc")

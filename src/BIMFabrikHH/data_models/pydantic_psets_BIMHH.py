@@ -1,11 +1,7 @@
 from typing import ClassVar, Optional
 
-from pydantic import BaseModel, Field
-
-
-class PropertySetTemplate(BaseModel):
-    pset_name: ClassVar[str]
-
+from pydantic import Field
+from .pset_base import PropertySetTemplate
 
 class Pset_Objektinformation(PropertySetTemplate):
     pset_name: ClassVar[str] = "HamburgHH_Objektinformation"
