@@ -322,9 +322,22 @@ class Element(Primitive, ElementInterface):
             ifc5d.qto.edit_qtos(model, ifc5d.qto.quantify(model, [element], ifc5d.qto.rules[f'{model.schema.upper()}QtoBaseQuantities']))
         if child_type is ElementInterface:
             if self.is_occurrence_container:
-                ifcopenshell.api.aggregate.assign_object(
-                    model, products=[ch.build(model, builder) for ch in self.children], relating_object=element
-                )
+                children_instances = [ch.build(model, builder) for ch in self.children]
+                is_hierarchy = lambda inst: inst.is_a('IfcProject') or inst.is_a('IfcSpatialStructureElement')
+                if len(set(map(is_hierarchy, children_instances))) != 1:
+                    raise ValueError("Cannot mix spatial structure and physical products in children")
+                if element.is_a('IfcProject') and not all(map(is_hierarchy, children_instances)):
+                    raise ValueError("Cannot assign physical products directly to project")
+                if all(map(is_hierarchy, children_instances)) == is_hierarchy(element):
+                    ifcopenshell.api.aggregate.assign_object(
+                        model, products=children_instances, relating_object=element
+                    )
+                elif is_hierarchy(element) and not any(map(is_hierarchy, children_instances)):
+                    ifcopenshell.api.spatial.assign_container(
+                        model, products=children_instances, relating_structure=element
+                    )
+                else:
+                    raise ValueError("Cannot assign spatial container to physical product")
             elif self.is_type_container and self.ifc_type.upper() == "IFCPROJECT":
                 ifcopenshell.api.project.assign_declaration(model, definitions=[ch.build(model, builder) for ch in self.children], relating_context=element)
             else:
