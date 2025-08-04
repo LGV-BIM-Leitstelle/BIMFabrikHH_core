@@ -25,8 +25,11 @@ import ifcopenshell
 import ifcopenshell.api.geometry
 import ifcopenshell.api.root
 import ifcopenshell.api.feature
+import ifcopenshell.api.project
+import ifcopenshell.api.aggregate
 import ifcopenshell.util.representation
 import ifcopenshell.util.placement
+import ifcopenshell.api.type
 import ifc5d.qto
 
 import numpy as np
@@ -71,6 +74,22 @@ def determine_type(element) -> Union[Type[Profile], Type[RepresentationItem], Ty
     else:
         raise TypeError(f"Element of type {type(element).__name__} not supported")
 
+def get_type_bearing_element(element, indent=0) -> Optional[Union[Profile, RepresentationItem, ElementInterface]]:
+    kinds = (Profile, RepresentationItem, ElementInterface)
+    is_ = [isinstance(element, kind) for kind in kinds]
+    if sum(is_) == 1:
+        return element
+    elif sum(is_) == 0:
+        return None
+    elif children := getattr(element, "children", None):
+        if len(children) == 1 or isinstance(element, Boolean):
+            return get_type_bearing_element(children[0], indent=indent + 4)
+        else:
+            return None
+    elif item := getattr(element, "item", None):
+        return get_type_bearing_element(item, indent=indent + 4)
+    else:
+        return None
 
 class Primitive(BaseModel):
     def children_of_type(self, ty : typing.TypeVar):
@@ -218,6 +237,7 @@ class MeshRepresentation(Primitive, RepresentationItem):
 
 class Element(Primitive, ElementInterface):
     guid: str = Field(default_factory=ifcopenshell.guid.new)
+    name: Optional[str] = None
     type: Optional[str] = None
     inst: Optional[ifcopenshell.entity_instance] = None
     children: List[RepresentationItem | ElementInterface]
@@ -227,6 +247,33 @@ class Element(Primitive, ElementInterface):
     # For accepting children types
     model_config = {"arbitrary_types_allowed": True}
 
+    def _get_type_and_occurence_counts(self):
+        num_types, num_occurrences = 0, 0
+        for child in filter(None, map(get_type_bearing_element, self.children)):
+            # @todo hardcoded to ifc4
+            ent = ifcopenshell.ifcopenshell_wrapper.schema_by_name('IFC4').declaration_by_name(child.type)
+            def yield_super_types(ent):
+                yield ent.name()
+                if st := ent.supertype():
+                    yield from yield_super_types(st)
+            if "IfcTypeObject" in yield_super_types(ent):
+                num_types += 1
+            if "IfcProduct" in yield_super_types(ent):
+                num_occurrences += 1
+        return num_types, num_occurrences
+    
+    @property
+    def is_type_container(self):
+        return self._get_type_and_occurence_counts()[0] > 0
+    
+    @property
+    def is_occurrence_container(self):
+        return self._get_type_and_occurence_counts()[1] > 0
+    
+    @property
+    def ifc_type(self):
+        return self.inst.is_a() if self.inst else self.type
+
     @model_validator(mode="after")
     def check_repr_children(self):
         child_types = set(determine_type(ch) for ch in self.children)
@@ -234,6 +281,15 @@ class Element(Primitive, ElementInterface):
             raise ValueError(
                 f"Elements can contain either other elements or representation items, but not both; Found {' '.join(type(ch).__name__ for ch in self.children)}"
             )
+        if next(iter(child_types)) == ElementInterface:
+            if self.is_type_container and self.is_occurrence_container:
+                raise ValueError(
+                    f"Cannot mix occurences and types"
+                )
+            if self.is_type_container and self.ifc_type.upper() != "IFCPROJECT" and len(self.children) > 1:
+                raise ValueError(
+                    f"Only IfcProject can have multiple types as children"
+                )
         return self
 
     @model_validator(mode="after")
@@ -244,25 +300,35 @@ class Element(Primitive, ElementInterface):
         return self
 
     def build(self, model, builder):
+        if res := getattr(self, '_build_result', None):
+            # build it only once
+            return res
+
         child_type = next(determine_type(ch) for ch in self.children)
         if self.inst:
             element = self.inst
         else:
             element = ifcopenshell.api.root.create_entity(model, ifc_class=self.type)
             element.GlobalId = self.guid
+            element.Name = self.name
         ifcopenshell.api.geometry.edit_object_placement(model, product=element)
         if child_type is RepresentationItem:
             body = ifcopenshell.util.representation.get_context(model, "Model", "Body", "MODEL_VIEW")
             rep = builder.get_representation(context=body, items=[ch.build(model, builder) for ch in self.children])
+            # works for both occurrences and types
             ifcopenshell.api.geometry.assign_representation(model, product=element, representation=rep)
 
             # calculate quantities
             ifc5d.qto.edit_qtos(model, ifc5d.qto.quantify(model, [element], ifc5d.qto.rules[f'{model.schema.upper()}QtoBaseQuantities']))
         if child_type is ElementInterface:
-            ifcopenshell.api.aggregate.assign_object(
-                model, products=[ch.build(model, builder) for ch in self.children], relating_object=element
-            )
-
+            if self.is_occurrence_container:
+                ifcopenshell.api.aggregate.assign_object(
+                    model, products=[ch.build(model, builder) for ch in self.children], relating_object=element
+                )
+            elif self.is_type_container and self.ifc_type.upper() == "IFCPROJECT":
+                ifcopenshell.api.project.assign_declaration(model, definitions=[ch.build(model, builder) for ch in self.children], relating_context=element)
+            else:
+                ifcopenshell.api.type.assign_type(model, related_objects=[element], relating_type=self.children[0].build(model, builder))
         if self.material:
             ifcopenshell.api.material.assign_material(model, products=[element], material=self.material.build(model, builder))
 
@@ -281,6 +347,7 @@ class Element(Primitive, ElementInterface):
             di = dict(zip(di.keys(), map(process_quantity, di.values())))
             ifcopenshell.api.pset.edit_pset(model, pset=pset, properties=di)
 
+        self._build_result = element
         return element
 
 
@@ -298,6 +365,28 @@ class Translate(Primitive, RepresentationItem, Profile, ElementInterface):
             ifcopenshell.api.geometry.edit_object_placement(model, item, matrix=translation @ m4)
         else:
             builder.translate(item, self.vec)
+        return item
+
+
+class RotateZ(Primitive, RepresentationItem, Profile, ElementInterface):
+    item: object
+    degrees: float
+
+    def build(self, model, builder):
+        # @todo currently not immutable/reentrant
+        item = self.item.build(model, builder)
+        if item.is_a("IfcProduct"):
+            m4 = ifcopenshell.util.placement.get_local_placement(item.ObjectPlacement)
+            theta = np.deg2rad(self.degrees)
+            rotation = np.array([
+                [np.cos(theta), -np.sin(theta), 0.0, 0.0],
+                [np.sin(theta),  np.cos(theta), 0.0, 0.0],
+                [0.0,            0.0,           1.0, 0.0],
+                [0.0,            0.0,           0.0, 1.0]
+            ])
+            ifcopenshell.api.geometry.edit_object_placement(model, item, matrix=rotation @ m4)
+        else:
+            builder.rotate(item, angle=self.degrees, counter_clockwise=True)
         return item
 
 
@@ -553,6 +642,30 @@ if __name__ == "__main__":
     Element(
         inst=building,
         children=[Element(type="IfcGeographicElement", psets=[tree_info], children=[Translate(vec=(60.0, 0.0, 0.0), item=Cylinder(radius=0.1, height=10.0))])],
+    ).build(model, builder)
+
+    chair_type = Element(type="IfcFurnishingElementType", name="CHAIR01", children=[
+        Translate(vec=(-0.0500, -0.0500, 0.0000), item=Box(width=0.1000, depth=0.1000, height=0.4000)), 
+        Translate(vec=(0.3500, -0.0500, 0.0000), item=Box(width=0.1000, depth=0.1000, height=0.4000)), 
+        Translate(vec=(-0.0500, 0.3500, 0.0000), item=Box(width=0.1000, depth=0.1000, height=0.4000)), 
+        Translate(vec=(0.3500, 0.3500, 0.0000), item=Box(width=0.1000, depth=0.1000, height=0.4000)), 
+        Translate(vec=(-0.0500, -0.0500, 0.4000), item=Box(width=0.5000, depth=0.5000, height=0.0500)), 
+        Translate(vec=(-0.0500, 0.3500, 0.4500), item=Box(width=0.1000, depth=0.1000, height=0.5000)), 
+        Translate(vec=(0.3500, 0.3500, 0.4500), item=Box(width=0.1000, depth=0.1000, height=0.5000)), 
+        Translate(vec=(-0.0500, 0.3000, 0.7500), item=Box(width=0.5000, depth=0.0500, height=0.2000)), 
+    ])
+
+    Element(
+        inst=model.by_type('IfcProject')[0],
+        children=[chair_type],
+    ).build(model, builder)
+
+    Element(
+        inst=building,
+        children=[
+            Translate(vec=(i, 16.0, 0.0), item=RotateZ(degrees=180, item=Element(type="IfcFurnishingElement", children=[chair_type]))) \
+            for i in range(1, 21)
+        ],
     ).build(model, builder)
     
     model.write("test.ifc")
