@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import functools
 import operator
+import sys
 from typing import List, Tuple, Optional, Type, Union
 from enum import Enum
 from abc import ABC
@@ -99,6 +100,30 @@ class Primitive(BaseModel):
             yield from child.children_of_type(ty)
         if child := getattr(self, 'item', ()):
             yield from child.children_of_type(ty)
+
+
+class CachingMixin:
+    def build(self, model, builder):
+        self._cache = getattr(self, '_cache', {})
+
+        # evict cache items for files that have been garbage collected
+        cache_key = model.identifier if hasattr(model, 'identifier') else model.wrapped_data.file_pointer()
+        live_files = sys.modules['ifcopenshell.file'].file_dict
+        live_file_ids = ((kk, vv[1]) for kk, vv in live_files.items()) if hasattr(model, 'identifier') else live_files.keys()
+        for k in list(self._cache.keys()):
+            if k not in live_file_ids:
+                del self._cache[k]
+
+        if result := self._cache.get(cache_key):
+            return model[result]
+        else:
+            result = self._build(model, builder)
+            # We don't actually cache the instance, because that would
+            # prevent from freeing the file. We just capture the id
+            # that we can use to retrieve the instance from the file
+            # later on
+            self._cache[cache_key] = result.id()
+            return result
 
 
 class Rect(Primitive, Profile):
@@ -235,7 +260,7 @@ class MeshRepresentation(Primitive, RepresentationItem):
         return builder.mesh(self.vertices, self.faces)
 
 
-class Element(Primitive, ElementInterface):
+class Element(Primitive, ElementInterface, CachingMixin):
     guid: str = Field(default_factory=ifcopenshell.guid.new)
     name: Optional[str] = None
     type: Optional[str] = None
@@ -299,11 +324,7 @@ class Element(Primitive, ElementInterface):
             raise ValueError(f"Either `type` or `inst` needs to be provided")
         return self
 
-    def build(self, model, builder):
-        if res := getattr(self, '_build_result', None):
-            # build it only once
-            return res
-
+    def _build(self, model, builder):
         child_type = next(determine_type(ch) for ch in self.children)
         if self.inst:
             element = self.inst
@@ -359,8 +380,6 @@ class Element(Primitive, ElementInterface):
                     return q
             di = dict(zip(di.keys(), map(process_quantity, di.values())))
             ifcopenshell.api.pset.edit_pset(model, pset=pset, properties=di)
-
-        self._build_result = element
         return element
 
 
@@ -419,16 +438,13 @@ class Style(Primitive, RepresentationItem):
         IfcSnippets.assign_color_to_element(model, inst, self.rgb, self.transparency)
         return inst
 
-class Material(Primitive):
+class Material(Primitive, CachingMixin):
     name : str
     category : Optional[str] = None
     rgb: Tuple[float, float, float]
     transparency: Optional[float] = None
 
-    def build(self, model, builder):
-        if res := getattr(self, '_build_result', None):
-            # build it only once
-            return res
+    def _build(self, model, builder):
         inst = ifcopenshell.api.material.add_material(model, name=self.name, category=self.category)
         style = ifcopenshell.api.style.add_style(model)
         ifcopenshell.api.style.add_surface_style(model,
@@ -438,7 +454,6 @@ class Material(Primitive):
             })
         context = [x for x in model.by_type('IfcGeometricRepresentationContext') if x.ContextIdentifier == 'Body'][0]
         ifcopenshell.api.style.assign_material_style(model, material=inst, style=style, context=context)
-        self._build_result = inst
         return inst
 
 class BooleanOperationTypes(str, Enum):
@@ -682,3 +697,30 @@ if __name__ == "__main__":
     ).build(model, builder)
     
     model.write("test.ifc")
+
+    for i, schema in enumerate(("IFC2X3", "IFC4")):
+        f = IfcFileCreator.create_model(schema)
+
+        person = ifcopenshell.api.owner.add_person(
+            f, identification="user",
+        )
+        organisation = ifcopenshell.api.owner.add_organisation(
+            f, identification="org",
+        )
+        user = ifcopenshell.api.owner.add_person_and_organisation(
+            f, person=person, organisation=organisation
+        )
+        application = ifcopenshell.api.owner.add_application(f)
+        ifcopenshell.api.owner.settings.get_user = lambda x: user
+        ifcopenshell.api.owner.settings.get_application = lambda x: application
+
+        proj = IfcFileCreator.create_project(f, "my_project")[0]
+        IfcFileCreator.create_units_meter(f)
+        IfcFileCreator.create_contexts(f)
+
+        # concrete is a material which uses CachingMixin, which makes sure
+        # it is built exactly once per file.
+        concrete.build(f, ifcopenshell.util.shape_builder.ShapeBuilder(f))
+        concrete.build(f, ifcopenshell.util.shape_builder.ShapeBuilder(f))
+
+        assert len(f.by_type('IfcMaterial')) == 1
