@@ -254,7 +254,7 @@ class MeshRepresentation(Primitive, RepresentationItem):
     # @todo these are default-initialized so that subclasses can be defined that later overwrite these
     # attributes in model_post_init() without having something passed to their __init__() calls. 
     vertices: List[Tuple[float, float, float]] = Field(default_factory=list)
-    faces: List[List[int]] = Field(default_factory=list)
+    faces: List[Union[List[int], List[List[int]]]] = Field(default_factory=list)
 
     def build(self, model, builder):
         return builder.mesh(self.vertices, self.faces)
@@ -692,6 +692,35 @@ if __name__ == "__main__":
             Translate(vec=(i, 16.0, 0.0), item=RotateZ(degrees=180, item=Element(type="IfcFurnishingElement", children=[chair_type]))) \
             for i in range(1, 21)
         ],
+    ).build(model, builder)
+
+    vertices = [
+        (0.0, 0.0, 0.0)   , # 00
+        (10.0, 0.0, 10.0) , # 01
+        (10.0, 10.0, 0.0) , # 02
+        (10.0, 10.0, 10.0), # 03
+        (0.0, 10.0, 0.0)  , # 04
+        (0.0, 10.0, 10.0) , # 05
+        (0.0, 0.0, 10.0)  , # 06
+        (2.0, 8.0, 10.0)  , # 07
+        (8.0, 8.0, 10.0)  , # 08
+        (8.0, 8.0, 0.0)   , # 09
+        (2.0, 2.0, 10.0)  , # 10
+        (8.0, 2.0, 10.0)  , # 11
+        (8.0, 2.0, 0.0)   , # 12
+        (10.0, 0.0, 0.0)  , # 13
+        (2.0, 8.0, 0.0)   , # 14
+        (2.0, 2.0, 0.0)   , # 15
+    ]
+
+    faces = [(4, 2, 14, 15), (10, 11, 12, 15), (10, 6, 1, 11), (1, 6, 0, 13), (5, 3, 2, 4),
+    (11, 8, 9, 12), (3, 1, 13, 2), (7, 10, 15, 14), (8, 7, 14, 9), (6, 5, 4, 0),
+    # faces with voids
+    [(2, 13, 0, 4), (14, 9, 12, 15)], [(5, 6, 1, 3), (11, 8, 7, 10)]]
+
+    Element(
+        inst=building,
+        children=[Translate(vec=(-12., 0., 0.), item=Element(type="IfcWall", material=concrete, children=[MeshRepresentation(vertices=vertices, faces=faces)]))],
     ).build(model, builder)
     
     model.write("test.ifc")
