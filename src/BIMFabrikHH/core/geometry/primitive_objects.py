@@ -544,8 +544,6 @@ if __name__ == "__main__":
         _ArtTeilmodell="Tragwerksplanung",
         _Auftraggeber="Freie und Hansestadt Hamburg, Behörde für Stadtentwicklung und Wohnen",
         _Ersteller="Ingenieurbüro Müller GmbH",
-        # @todo we should work on different data types so that e.g dates are rendered to a proper semantic type
-        _Erstelldatum="2025-07-15",
         _GemObjektkatalog="BIM-Katalog Hamburg 2025",
         _Projektname="Neubau Schulzentrum Altona",
         _Projektnummer="HH-2025-0731"

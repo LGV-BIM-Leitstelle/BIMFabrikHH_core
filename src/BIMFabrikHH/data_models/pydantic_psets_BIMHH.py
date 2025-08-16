@@ -1,3 +1,4 @@
+import datetime
 from typing import ClassVar, Optional
 
 from pydantic import Field
@@ -16,7 +17,7 @@ class Pset_Modellinformation(PropertySetTemplate):
     artteilmodell: str = Field(alias="_ArtTeilmodell")
     auftraggeber: str = Field(alias="_Auftraggeber")
     ersteller: str = Field(alias="_Ersteller")
-    erstelldatum: str = Field(alias="_Erstelldatum")
+    erstelldatum: datetime.date = Field(alias="_Erstelldatum", default_factory=datetime.date.today)
     gemobjektkatalog: str = Field(alias="_GemObjektkatalog")
     projektname: str = Field(alias="_Projektname")
     projektnummer: str = Field(alias="_Projektnummer")
