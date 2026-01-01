@@ -1,0 +1,36 @@
+from dataclasses import dataclass
+
+
+@dataclass
+class DfColTree:
+    BAUM_INFO: str = "BAUMINFO-STAMM"
+    BAUM_INFO_ORIG: str = "BAUMINFO-STAMM_Datenquelle"
+    BAUM_NR: str = "_Baumnummer"
+    CODE: str = "Code"
+    EASTING: str = "Easting"
+    EASTING_UTM = "Easting_UTM"
+    ELEVATION: str = "Elevation"
+    GATTUNG: str = "_Gattung"
+    KRONENDURCHMESSER: str = "_Kronendurchmesser"
+    LINE_SEPARATOR = "*" * 150
+    NORTHING: str = "Northing"
+    NORTHING_UTM: str = "Northing_UTM"
+    POS_X: str = "Position X"
+    POS_Y: str = "Position Y"
+    STAMMBASIS: str = "_Stammbasis"
+    STAMMUMFANG: str = "_Stammumfang"
+    STAMMUMFANG_BK: str = "stammumfang"
+    BAUM_ID: str = "baumid"
+    ART_BAUM: str = "art_deutsch"
+    SORTE: str = "sorte_deutsch"
+    STRASSE: str = "strasse"
+    STADTTEIL: str = "stadtteil"
+    BEZIRK: str = "bezirk"
+    PFLANZJAHR: str = "pflanzjahr_portal"
+    LOG: str = "100"
+    LOI: str = "100"
+    STATUS_VEGETATION: str = "Bestand"
+    AUFNAHMEDATUM_VERMESSUNG: str = "2019-01-01"
+    GID: str = "gid"
+    HOHE: str = "hohe"
+    BAUMART: str = "baumart"

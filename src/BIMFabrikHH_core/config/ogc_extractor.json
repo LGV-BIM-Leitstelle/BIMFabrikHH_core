@@ -1,0 +1,19 @@
+{
+  "_description": "OGC Extractor Config - Used by ogc_values_extractor.py to parse RequestParams from BIMFabrikHH_UI and map them to IFC properties",
+  "_defaults_description": "Fallback values for extract_project_info() when UI doesn't provide values",
+  "DEFAULT_PROJECT_NAME": "IfcProjectName",
+  "DEFAULT_SITE_NAME": "SiteName",
+  "DEFAULT_BUILDING_NAME": "BuildingName",
+  "_lod_default_description": "Fallback for extract_level_of_geometry() - 1=LoD1, 2=LoD2",
+  "DEFAULT_LEVEL_OF_GEOMETRY": 1,
+  "_container_ids_description": "Container IDs to match against RequestParams.containers[].containerId",
+  "PROJECT_INFO_CONTAINER_ID": "Projektinformationen",
+  "LEVEL_OF_GEOMETRY_CONTAINER_ID": "level_of_geometry",
+  "_pset_prefix_description": "Prefix for extract_psets_basepoint() to find property set containers",
+  "PSET_CONTAINER_PREFIX": "Pset_",
+  "_component_keys_description": "Component titles/keys to match in container.components",
+  "PROJECT_NAME_TITLE": "Projektname",
+  "SITE_NAME_TITLE": "IfcSite",
+  "BUILDING_NAME_TITLE": "IfcBuilding",
+  "LEVEL_OF_GEOMETRY_COMPONENT_KEY": "level_of_geom"
+} 

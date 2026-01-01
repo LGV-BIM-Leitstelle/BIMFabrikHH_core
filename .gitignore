@@ -1,0 +1,19 @@
+# Ignore IDE settings of PyCharm
+.idea/
+
+*.ifc
+*.log
+*.dwg
+
+# Ignore Python cache files and folders
+**/__pycache__/
+*.py[cod]
+
+# Ignore local folders
+__local_dev
+__output_dev
+__samples
+output/errors
+examples_local/
+
+/local_workflows/
