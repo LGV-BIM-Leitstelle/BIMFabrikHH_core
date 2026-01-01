@@ -1,4 +1,4 @@
-# BIMFabrikHH - Hamburg BIM Factory
+# BIMFabrikHH Core
 
 [![PyPI version](https://badge.fury.io/py/bimfabrikhh-core.svg)](https://pypi.org/project/bimfabrikhh-core/)
 [![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)](https://www.python.org/downloads/)
