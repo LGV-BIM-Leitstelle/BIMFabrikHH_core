@@ -11,20 +11,21 @@ pip install bimfabrikhh-core
 ```
 
 ## Overview
+This package is one of the main components of the BIMFabrikHH project,
+together with:
+- [ifcfactory](https://github.com/LGV-BIM-Leitstelle/ifcfactory)
+- [BIMFabrikHH_api](https://github.com/LGV-BIM-Leitstelle/BIMFabrikHH_api)
 
-Geospatial data such as DGM (Digital Terrain Models), city models, and other infrastructure data are crucial foundations
-for construction planning. These data are often available as GIS data, but BIM methodology requires conversion to IFC
-format. BIMFabrikHH aims to provide geospatial data in IFC format with relevant information from heterogeneous formats.
+These three packages make up the **BIMFabrikHH** Project, enabling automated BIM and IFC workflows as part of the Connected Urban Twins (CUT) project.
 
-**BIMFabrikHH** is a development by the **Freie und Hansestadt Hamburg, Landesbetrieb Geoinformation und Vermessung,
+BIMFabrikHH is a development by the **Freie und Hansestadt Hamburg, Landesbetrieb Geoinformation und Vermessung,
 BIM-Leitstelle** as part of the *Connected Urban Twins (CUT)* project. It provides automated conversion of geospatial
 data from heterogeneous formats to IFC (Industry Foundation Classes) format, enabling BIM (Building Information
 Modeling) methodology implementation.
 
-This package is one of the main components of the BIMFabrikHH project,
-alongside [ifcfactory](https://github.com/LGV-BIM-Leitstelle/ifcfactory)
-and [BIMFabrikHH_api](https://github.com/LGV-BIM-Leitstelle/BIMFabrikHH_api). All three packages form the BIMFabrikHH
-suite, enabling automated BIM and IFC workflows as part of the Connected Urban Twins (CUT) initiative.
+Geospatial data such as DGM (Digital Terrain Models), city models, and other infrastructure data are crucial foundations
+for construction planning. These data are often available as GIS data, but BIM methodology requires conversion to IFC
+format. BIMFabrikHH aims to provide geospatial data in IFC format with relevant information from heterogeneous formats.
 
 ### Key Benefits
 
