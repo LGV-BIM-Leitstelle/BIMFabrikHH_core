@@ -11,10 +11,18 @@ pip install bimfabrikhh-core
 ```
 
 ## Overview
-This package is one of the main components of the BIMFabrikHH project,
-together with:
-- [ifcfactory](https://github.com/LGV-BIM-Leitstelle/ifcfactory)
-- [BIMFabrikHH_api](https://github.com/LGV-BIM-Leitstelle/BIMFabrikHH_api)
+
+This package is one of the main components of the BIMFabrikHH project, together with the following packages:
+
+- **BIMFabrikHH_core**  
+  - [GitHub](https://github.com/LGV-BIM-Leitstelle/BIMFabrikHH_core)  
+  - [OpenCode](https://gitlab.opencode.de/LGV-BIM-Leitstelle/bimfabrikhh_core)
+- **ifcfactory**  
+  - [GitHub](https://github.com/LGV-BIM-Leitstelle/ifcfactory)  
+  - [OpenCode](https://gitlab.opencode.de/LGV-BIM-Leitstelle/ifcfactory)
+- **BIMFabrikHH_api**  
+  - [GitHub](https://github.com/LGV-BIM-Leitstelle/BIMFabrikHH_api)  
+  - [OpenCode](https://gitlab.opencode.de/LGV-BIM-Leitstelle/BIMFabrikHH_api)
 
 These three packages make up the **BIMFabrikHH** Project, enabling automated BIM and IFC workflows as part of the Connected Urban Twins (CUT) project.
 
@@ -370,7 +378,7 @@ for details.
 
 - **PyPI**: https://pypi.org/project/bimfabrikhh-core/
 - **GitHub**: https://github.com/LGV-BIM-Leitstelle/BIMFabrikHH_core
-- **OpenCode**: https://gitlab.opencode.de/LGV-BIM-Leitstelle/BIMFabrikHH_core
+- **OpenCode**: https://gitlab.opencode.de/LGV-BIM-Leitstelle/bimfabrikhh_core
 - **Issues**: https://github.com/LGV-BIM-Leitstelle/BIMFabrikHH_core/issues
 - **ifcfactory** (dependency): https://pypi.org/project/ifcfactory/
 
