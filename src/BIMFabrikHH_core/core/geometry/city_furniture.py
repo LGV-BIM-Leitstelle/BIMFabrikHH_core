@@ -126,9 +126,9 @@ class LShapedCurvedSweptDiskSolid(Primitive, RepresentationItem):
             [
                 (0.0, 0.0, 0.0),  # Point 1: Start at base
                 (0.0, 0.0, self.height - fillet_radius),  # Point 2: Go up before fillet
-                (fillet_radius, 0.0, self.height),  # Point 3: Fillet curve point ← ARC POINT
-                (self.length - fillet_radius, 0.0, self.height),  # Point 4: After fillet
-                (self.length, 0.0, self.height),  # Point 5: End horizontally
+                (0.0, fillet_radius, self.height),  # Point 3: Fillet curve point ← ARC POINT (changed to Y-axis)
+                (0.0, self.length - fillet_radius, self.height),  # Point 4: After fillet (changed to Y-axis)
+                (0.0, self.length, self.height),  # Point 5: End horizontally along Y-axis
             ],
             arc_points=[2],
         )  # Make point 3 (index 2) the arc point for fillet

@@ -44,7 +44,7 @@ class Trunk:
         # Create IFC mesh representation using primitive
         body = ifcopenshell.util.representation.get_context(model, "Model", "Body", "MODEL_VIEW")
         cylinder = NgonCylinder(radius=self.radius, height=self.height, segments=self.segments)
-        mesh = cylinder.build(model, builder)
+        mesh = cylinder.build(model)
 
         # Create trunk product
         trunk = root.create_entity(model, ifc_class="IfcBuildingElementProxy")
@@ -75,7 +75,7 @@ class Crown:
         # Create IFC mesh representation using primitive
         body = ifcopenshell.util.representation.get_context(model, "Model", "Body", "MODEL_VIEW")
         sphere = Sphere(radius=self.radius, detail=self.detail)
-        mesh = sphere.build(model, builder)
+        mesh = sphere.build(model)
 
         # Create crown product
         crown = root.create_entity(model, ifc_class="IfcBuildingElementProxy")

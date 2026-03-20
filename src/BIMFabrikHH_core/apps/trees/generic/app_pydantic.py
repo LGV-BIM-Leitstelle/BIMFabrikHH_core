@@ -80,6 +80,12 @@ class BaumPydanticApp:
                     for pset_name, pset_data in psets.items():
                         if isinstance(pset_data, BaseModel):
                             pset_templates.append(pset_data)
+                        else:
+                            logging.warning(
+                                f"Tree {tree_name}: Property set '{pset_name}' is not a BaseModel instance (type: {type(pset_data)}). Skipping."
+                            )
+                elif include_property_sets:
+                    logging.warning(f"Tree {tree_name}: No property sets found in tree_dict (psets={psets})")
 
                 # Calculate derived values
                 crown_radius = kronendurchmesser / 2
