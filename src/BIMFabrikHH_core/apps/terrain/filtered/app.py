@@ -404,8 +404,8 @@ def extract_optimized_mesh_data(
                 elevation_data, transform, min_points=min_points, importance_threshold=importance_threshold
             )
 
-            # --- BBOX FILTER ---
-            if input_data is not None and hasattr(input_data, "bbox"):
+            # --- BBOX FILTER (skip when bbox is None; use full raster) ---
+            if input_data is not None and getattr(input_data, "bbox", None) is not None:
                 bbox_wgs84 = (
                     input_data.bbox.min_x,
                     input_data.bbox.min_y,
@@ -558,7 +558,7 @@ def create_terrain_ifc(
         shape_builder = ifcopenshell.util.shape_builder.ShapeBuilder(model)
 
         # Use provided nullpunkt_x, nullpunkt_y for base point
-        pset_groups = extract_psets_basepoint(input_data.containers)
+        pset_groups = extract_psets_basepoint(input_data.containers or [])
         # Create basepoint using old approach
         basepoint_data = {"position": (nullpunkt_x, nullpunkt_y, 0), "size": 5.0, "psets": pset_groups}
         # Create basepoint manually without using BIMFactoryElement
@@ -637,7 +637,7 @@ def extract_combined_points(
     boundary_y = None
     boundary_z = None
 
-    if input_data is not None and hasattr(input_data, "bbox"):
+    if input_data is not None and getattr(input_data, "bbox", None) is not None:
         bbox_wgs84 = (
             input_data.bbox.min_x,
             input_data.bbox.min_y,
@@ -816,7 +816,7 @@ def process_terrain_folder_to_ifc(
 
     # Move to origin if requested
     bbox = None
-    if input_data is not None and hasattr(input_data, "bbox"):
+    if input_data is not None and getattr(input_data, "bbox", None) is not None:
         bbox_wgs84 = (input_data.bbox.min_x, input_data.bbox.min_y, input_data.bbox.max_x, input_data.bbox.max_y)
         bbox = bbox_wgs84_to_epsg25832(bbox_wgs84)
 
@@ -829,7 +829,9 @@ def process_terrain_folder_to_ifc(
     elif bbox is not None:
         nullpunkt_x, nullpunkt_y = bbox[0], bbox[1]
     else:
-        nullpunkt_x, nullpunkt_y = vertices[0][0], vertices[0][1] if vertices else (0, 0)
+        # No bbox: use first vertex as nullpunkt (full-raster mode)
+        nullpunkt_x = min(v[0] for v in vertices) if vertices else 0
+        nullpunkt_y = min(v[1] for v in vertices) if vertices else 0
 
     logger.info(f"Created mesh with {len(vertices)} vertices and {len(faces)} faces")
 

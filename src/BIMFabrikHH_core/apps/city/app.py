@@ -394,6 +394,8 @@ class CityModularApp(UIAppInterface):
 
             # Create basepoint at lower left corner of the INPUT bounding box (matching tree and DGM apps)
             if processed_data:
+                if request_params.bbox is None:
+                    raise ValueError("bbox is required for city model IFC creation")
                 # Convert bbox from WGS84 to EPSG:25832
                 bbox_wgs84 = (
                     request_params.bbox.min_x,
@@ -410,7 +412,7 @@ class CityModularApp(UIAppInterface):
                     name="Nullpunktobjekt",
                     children=[
                         Transform(
-                            vec=(min_x, min_y, 0),
+                            translation=(min_x, min_y, 0),
                             item=create_basepoint_quad(size=8.0, psets=[]),
                         ),
                     ],

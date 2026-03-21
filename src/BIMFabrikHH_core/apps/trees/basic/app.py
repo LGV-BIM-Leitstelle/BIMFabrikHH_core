@@ -198,6 +198,8 @@ class BaumModeller:
             self.baum_manager.place_trees_from_df(self.model, df, level_of_geom, self.builder.site, self.builder.body)
 
             # Create project base point using the lower-left of the bbox (after conversion to EPSG:25832)
+            if model_params.bbox is None:
+                raise ValueError("bbox is required for tree model IFC creation")
             bbox_wgs84 = (
                 model_params.bbox.min_x,
                 model_params.bbox.min_y,
@@ -212,7 +214,7 @@ class BaumModeller:
                 inst=self.builder.site,
                 children=[
                     Transform(
-                        vec=(x, y, 0),
+                        translation=(x, y, 0),
                         item=create_basepoint_quad(size=1.0, psets=pset_groups),
                     ),
                 ],

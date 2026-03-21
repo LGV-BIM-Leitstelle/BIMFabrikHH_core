@@ -70,6 +70,18 @@ class CoordinateSystemTemplates:
         )
 
     @staticmethod
+    def epsg_25833() -> CoordinateSystem:
+        """EPSG:25833 - ETRS89 / UTM zone 33N (used in Sachsen and eastern Germany)."""
+        return CoordinateSystem(
+            name="EPSG:25833",
+            description="ETRS89 / UTM zone 33N",
+            geodetic_datum="ETRS89",
+            vertical_datum="DHHN2016",
+            map_projection="Transverse Mercator",
+            map_zone="33",
+        )
+
+    @staticmethod
     def gauss_kruger_hamburg() -> CoordinateSystem:
         """Gauß-Krüger coordinate system for Hamburg area."""
         return CoordinateSystem(
@@ -82,7 +94,7 @@ class CoordinateSystemTemplates:
         )
 
     @staticmethod
-    def get_template(template_name: Literal["epsg_25832", "gauss_kruger_hamburg"]) -> CoordinateSystem:
+    def get_template(template_name: Literal["epsg_25832", "epsg_25833", "gauss_kruger_hamburg"]) -> CoordinateSystem:
         """
         Get a predefined coordinate system template.
 
@@ -94,6 +106,7 @@ class CoordinateSystemTemplates:
         """
         templates = {
             "epsg_25832": CoordinateSystemTemplates.epsg_25832,
+            "epsg_25833": CoordinateSystemTemplates.epsg_25833,
             "gauss_kruger_hamburg": CoordinateSystemTemplates.gauss_kruger_hamburg,
         }
 

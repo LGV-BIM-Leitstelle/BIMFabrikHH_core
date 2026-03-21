@@ -121,10 +121,10 @@ class TreeGenericApp:
         basepoint_entity = BIMFactoryElement(
             inst=builder.site or storey,
             children=[
-                Transform(
-                    vec=basepoint_position,
-                    item=create_basepoint_quad(size=8.0, psets=basepoint_data["psets"]),
-                ),
+                        Transform(
+                            translation=basepoint_position,
+                            item=create_basepoint_quad(size=8.0, psets=basepoint_data["psets"]),
+                        ),
             ],
         ).build(model)
 
@@ -174,7 +174,7 @@ class TreeGenericApp:
                     inst=builder.site or storey,
                     children=[
                         Transform(
-                            vec=data["position"],
+                            translation=data["position"],
                             item=create_basepoint_quad(size=data.get("size", 5.0), psets=data.get("psets", {})),
                         ),
                     ],

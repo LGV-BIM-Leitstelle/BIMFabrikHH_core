@@ -76,7 +76,7 @@ class BasepointBasicApp:
                 inst=builder.storey or builder.site,
                 children=[
                     Transform(
-                        vec=position,
+                        translation=position,
                         item=basepoint_factory,
                     ),
                 ],

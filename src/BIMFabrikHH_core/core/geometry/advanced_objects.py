@@ -44,7 +44,7 @@ class BaseProjectBasePointNorth(BaseModel):
     """Base class for project base point with north arrow and 'N' on top face."""
 
     # Geometry constants
-    EXTRUSION_HEIGHT: ClassVar[float] = 0.02
+    EXTRUSION_HEIGHT_FACTOR: ClassVar[float] = 0.05  # relative to size
     N_SCALE_FACTOR: ClassVar[float] = 0.1
     ARROW_SCALE_FACTOR: ClassVar[float] = 0.3
 
@@ -201,12 +201,22 @@ class BaseProjectBasePointNorth(BaseModel):
             cad_layer=self.ARROW_LAYER,
         )
 
-    def create_styled_extrusion(self, polygon_points, z_offset, depth):
-        """Helper to create a styled extruded shape"""
+    def create_styled_extrusion(self, polygon_points, z_offset, depth=None):
+        """Helper to create a styled extruded shape.
+
+        The extrusion is placed so its surface is flush (bündig) with the face:
+        - Top face (z_offset > 0): extrusion base at z - depth, top at z (flush with face)
+        - Bottom face (z_offset < 0): extrusion base at z, top at z + depth (flush with face)
+        """
+        if depth is None:
+            depth = self.EXTRUSION_HEIGHT_FACTOR * self.size
+        # For the top face: lower base by depth so top surface is flush with the face.
+        # For the bottom face: start exactly at the face so the bottom surface is flush.
+        z = z_offset * self.size - (depth if z_offset > 0 else 0)
         return Style(
             rgb=self.ARROW_COLOR,
             item=Transform(
-                vec=(0.0, 0.0, z_offset * self.size),
+                translation=(0.0, 0.0, z),
                 item=Extrusion(
                     basis=Polygon(points=polygon_points),
                     depth=depth,
@@ -285,19 +295,16 @@ def create_basepoint_quad(size: float, psets=None):
             temp_basepoint.create_styled_extrusion(
                 temp_basepoint.scale_coordinates_2d(temp_basepoint.get_n_base_coordinates()),
                 z_offset=1.0,
-                depth=temp_basepoint.EXTRUSION_HEIGHT,
             ),
             # Arrow extruded at top surface (2D polygon scaled by size)
             temp_basepoint.create_styled_extrusion(
                 temp_basepoint.scale_coordinates_2d(temp_basepoint.get_arrow_base_coordinates()),
                 z_offset=1.0,
-                depth=temp_basepoint.EXTRUSION_HEIGHT,
             ),
             # Arrow extruded at bottom surface (2D polygon scaled by size)
             temp_basepoint.create_styled_extrusion(
                 temp_basepoint.scale_coordinates_2d(temp_basepoint.get_arrow_base_coordinates()),
                 z_offset=-1.0,
-                depth=temp_basepoint.EXTRUSION_HEIGHT,
             ),
         ],
     )
