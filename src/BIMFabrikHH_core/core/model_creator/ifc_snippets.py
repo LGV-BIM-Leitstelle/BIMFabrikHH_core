@@ -167,9 +167,12 @@ class IfcSnippets:
                 Blue=normalized_rgb[2],
             )
 
-            # Create surface style rendering
+            # Create surface style rendering (ReflectanceMethod is mandatory in IFC4)
             surface_rendering = model.create_entity(
-                "IfcSurfaceStyleRendering", SurfaceColour=color_entity, Transparency=transparency
+                "IfcSurfaceStyleRendering",
+                SurfaceColour=color_entity,
+                Transparency=transparency,
+                ReflectanceMethod="NOTDEFINED",
             )
 
             # Create surface style
