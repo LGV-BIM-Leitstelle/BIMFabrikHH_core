@@ -141,6 +141,26 @@ def create_solid_representation(model, context, vertices, faces_with_voids):
 # Build representation using all regular faces and faces with voids (true LoD2)
 
 
+def _clean_ring(indices: list) -> list:
+    """Remove duplicate indices from a polygon ring.
+
+    Strips a closing repeat (last == first) and removes consecutive duplicates,
+    leaving a ring that satisfies SYNTAX_VALIDATION_48 (unique aggregate elements).
+    """
+    if not indices:
+        return indices
+    # Remove closing duplicate (IFC rings are implicitly closed)
+    ring = list(indices)
+    if len(ring) > 1 and ring[-1] == ring[0]:
+        ring = ring[:-1]
+    # Remove consecutive duplicates
+    cleaned = [ring[0]]
+    for idx in ring[1:]:
+        if idx != cleaned[-1]:
+            cleaned.append(idx)
+    return cleaned
+
+
 def create_combined_representation(model, context, vertices, faces, faces_with_voids):
     """Create polygonal face set containing regular faces and void faces."""
     coord_list = [tuple(map(float, v)) for v in vertices]
@@ -151,28 +171,34 @@ def create_combined_representation(model, context, vertices, faces, faces_with_v
     # regular faces (0-based indices list of lists)
     if faces:
         for ring in faces:
-            if len(ring) >= 3:
-                # convert to 1-based
-                ifc_faces.append(model.create_entity("IfcIndexedPolygonalFace", CoordIndex=[i + 1 for i in ring]))
+            cleaned = _clean_ring([i + 1 for i in ring])
+            if len(cleaned) >= 3:
+                ifc_faces.append(model.create_entity("IfcIndexedPolygonalFace", CoordIndex=cleaned))
 
     # faces with voids (already 1-based dicts from parser)
     if faces_with_voids:
         for fs in faces_with_voids:
             if fs["type"] == "IfcIndexedPolygonalFaceWithVoids":
-                ifc_faces.append(
-                    model.create_entity(
-                        "IfcIndexedPolygonalFaceWithVoids",
-                        CoordIndex=fs["coord_index"],
-                        InnerCoordIndices=fs["inner_coord_indices"],
+                outer = _clean_ring(fs["coord_index"])
+                inner = [_clean_ring(hole) for hole in fs["inner_coord_indices"]]
+                inner = [h for h in inner if len(h) >= 3]
+                if len(outer) >= 3:
+                    ifc_faces.append(
+                        model.create_entity(
+                            "IfcIndexedPolygonalFaceWithVoids",
+                            CoordIndex=outer,
+                            InnerCoordIndices=inner,
+                        )
                     )
-                )
             else:
-                ifc_faces.append(
-                    model.create_entity(
-                        "IfcIndexedPolygonalFace",
-                        CoordIndex=fs["coord_index"],
+                cleaned = _clean_ring(fs["coord_index"])
+                if len(cleaned) >= 3:
+                    ifc_faces.append(
+                        model.create_entity(
+                            "IfcIndexedPolygonalFace",
+                            CoordIndex=cleaned,
+                        )
                     )
-                )
 
     face_set = model.create_entity(
         "IfcPolygonalFaceSet",

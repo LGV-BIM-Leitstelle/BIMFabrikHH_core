@@ -31,6 +31,7 @@ class IfcModelMethods:
             ifcopenshell.file: The created IFC model.
         """
         model = ifcopenshell.file(schema=ifc_schema)
+        model.header.file_description.description = ("ViewDefinition [Ifc4ReferenceView]",)
         return model
 
     @staticmethod
