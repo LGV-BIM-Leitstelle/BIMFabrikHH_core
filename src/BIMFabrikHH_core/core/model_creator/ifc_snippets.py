@@ -192,6 +192,78 @@ class IfcSnippets:
             print(f"Warning: Could not assign color '{color_rgb}' to representation: {e}")
 
     @staticmethod
+    def batch_assign_layer_to_representations(
+        model,
+        representations: List[ifcopenshell.entity_instance],
+        layer_name: str,
+        color: tuple = (1.0, 1.0, 1.0),
+        transparency: float = 0.0,
+    ) -> None:
+        """
+        Create IfcPresentationLayerWithStyle once for all representations — O(n) instead of O(n²).
+
+        Use this instead of calling assign_layer_to_representation inside a loop. Collect all
+        representations during the loop, then call this once afterwards.
+        """
+        try:
+            all_items: List[ifcopenshell.entity_instance] = []
+            for representation in representations:
+                if hasattr(representation, "is_a") and representation.is_a() in [
+                    "IfcExtrudedAreaSolid",
+                    "IfcTriangulatedFaceSet",
+                    "IfcPolygonalFaceSet",
+                    "IfcMappedItem",
+                    "IfcSweptDiskSolid",
+                ]:
+                    all_items.append(representation)
+                if hasattr(representation, "Items") and representation.Items:
+                    for item in representation.Items:
+                        all_items.append(item)
+                        if hasattr(item, "is_a") and item.is_a("IfcMappedItem"):
+                            all_items.append(item)
+                if hasattr(representation, "is_a") and representation.is_a("IfcShapeRepresentation"):
+                    if getattr(representation, "RepresentationType", "") == "MappedRepresentation":
+                        all_items.append(representation)
+
+            all_items = list(dict.fromkeys(all_items))
+            if not all_items:
+                return
+
+            layer_color = model.create_entity(
+                "IfcColourRgb", Name="LayerColor", Red=color[0], Green=color[1], Blue=color[2]
+            )
+            surface_style_shading = model.create_entity(
+                "IfcSurfaceStyleShading", SurfaceColour=layer_color, Transparency=transparency
+            )
+            surface_style = model.create_entity(
+                "IfcSurfaceStyle", Name="LayerStyle", Side="POSITIVE", Styles=[surface_style_shading]
+            )
+
+            existing_layer = None
+            for layer in model.by_type("IfcPresentationLayerWithStyle"):
+                if layer.Name == layer_name:
+                    existing_layer = layer
+                    break
+
+            if existing_layer:
+                existing_items = list(existing_layer.AssignedItems) if existing_layer.AssignedItems else []
+                existing_items.extend(all_items)
+                existing_layer.AssignedItems = list(dict.fromkeys(existing_items))
+            else:
+                model.create_entity(
+                    "IfcPresentationLayerWithStyle",
+                    Name=layer_name,
+                    Description=None,
+                    AssignedItems=all_items,
+                    LayerOn=True,
+                    LayerFrozen=False,
+                    LayerBlocked=False,
+                    LayerStyles=[surface_style],
+                )
+        except Exception as e:
+            print(f"Warning: Could not assign layer '{layer_name}': {e}")
+
+    @staticmethod
     def assign_layer_to_representation(
         model,
         representation: ifcopenshell.entity_instance,

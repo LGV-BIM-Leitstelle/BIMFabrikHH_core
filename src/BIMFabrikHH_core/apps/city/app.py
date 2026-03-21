@@ -5,6 +5,8 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 from ifcfactory import BIMFactoryElement, Transform
+import numpy as np
+import ifcopenshell.api.owner.settings as owner_settings
 from ifcopenshell.api import context, geometry, pset, root, spatial
 
 from BIMFabrikHH_core.apps.city.parser import CityGMLParser
@@ -333,14 +335,20 @@ class CityModularApp(UIAppInterface):
                 model, context_type="Model", context_identifier="Body", target_view="MODEL_VIEW", parent=model3d
             )
 
-            # Create building elements
+            # Add buildings to model
+            color_city_model = (1.0, 1.0, 0.498)
+            identity = np.eye(4)
+            representations = []
+            _orig_get_user = owner_settings.get_user
+            _orig_get_app = owner_settings.get_application
+            owner_settings.get_user = lambda *_: None
+            owner_settings.get_application = lambda *_: None
+
             elements = [
                 root.create_entity(model, ifc_class="IfcBuildingElementProxy", name=data["name"])
                 for data in processed_data
             ]
 
-            # Add buildings to model
-            color_city_model = (1.0, 1.0, 0.498)
             for element, building_data in zip(elements, processed_data):
                 # Add property sets
                 pset_ifc = pset.add_pset(model, product=element, name="Pset_Objektinformation")
@@ -386,11 +394,20 @@ class CityModularApp(UIAppInterface):
 
                 # Add color and layer
                 IfcSnippets.assign_color_to_representation(model, representation, color_city_model, 0.0)
-                IfcSnippets.assign_layer_to_representation(model, representation, "_BIM_Stadtmodell", color_city_model)
-
-                # Assign representation and container
+                representations.append(representation)
                 geometry.assign_representation(model, product=element, representation=representation)
-                spatial.assign_container(model, relating_structure=model_builder.building, products=[element])
+
+            # Batch container assignment before placements so assign_container's internal
+            # re-localization pass sees no ObjectPlacement and skips the redundant
+            # edit_object_placement call it would otherwise fire for every element.
+            spatial.assign_container(model, relating_structure=model_builder.building, products=elements)
+            for element in elements:
+                geometry.edit_object_placement(model, product=element, matrix=identity)
+
+            owner_settings.get_user = _orig_get_user
+            owner_settings.get_application = _orig_get_app
+
+            IfcSnippets.batch_assign_layer_to_representations(model, representations, "_BIM_Stadtmodell", color_city_model)
 
             # Create basepoint at lower left corner of the INPUT bounding box (matching tree and DGM apps)
             if processed_data:

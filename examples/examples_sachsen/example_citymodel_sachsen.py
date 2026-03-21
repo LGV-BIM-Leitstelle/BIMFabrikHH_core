@@ -11,6 +11,8 @@ Outputs:
 import time
 from pathlib import Path
 
+import numpy as np
+import ifcopenshell.api.owner.settings as owner_settings
 from ifcopenshell.api import context, geometry, pset, root, spatial
 
 from BIMFabrikHH_core.apps.city.app import create_combined_representation
@@ -89,6 +91,14 @@ def build_ifc_for_lod(lod_name: str, cfg: dict) -> bool:
         parent=model3d,
     )
 
+    identity = np.eye(4)
+    representations = []
+    _orig_get_user = owner_settings.get_user
+    _orig_get_app = owner_settings.get_application
+    owner_settings.get_user = lambda *_: None
+    owner_settings.get_application = lambda *_: None
+
+    elements = []
     for building_id, building_data in parser.buildings.items():
         vertices = building_data.vertices
         face_indices = building_data.faces
@@ -123,9 +133,22 @@ def build_ifc_for_lod(lod_name: str, cfg: dict) -> bool:
             )
 
         IfcSnippets.assign_color_to_representation(model, representation, color, 0.0)
-        IfcSnippets.assign_layer_to_representation(model, representation, "_BIM_Stadtmodell", color)
+        representations.append(representation)
         geometry.assign_representation(model, product=element, representation=representation)
-        spatial.assign_container(model, relating_structure=building_container, products=[element])
+        elements.append(element)
+
+    # Batch container assignment before placements: assign_container internally re-localizes
+    # placements for any element that already has an ObjectPlacement. By assigning the container
+    # first (while elements have no placement), we skip that redundant internal edit_object_placement
+    # call and avoid the O(n²) RelatedElements set-growth from n separate single-element calls.
+    spatial.assign_container(model, relating_structure=building_container, products=elements)
+    for element in elements:
+        geometry.edit_object_placement(model, product=element, matrix=identity)
+
+    owner_settings.get_user = _orig_get_user
+    owner_settings.get_application = _orig_get_app
+
+    IfcSnippets.batch_assign_layer_to_representations(model, representations, "_BIM_Stadtmodell", color)
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
     saved = model_builder.save_ifc_to_path(output_path)
