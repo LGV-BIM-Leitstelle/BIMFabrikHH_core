@@ -132,6 +132,7 @@ def create_combined_terrain_ifc(
     # Create terrain element
     element = root.create_entity(model, ifc_class="IfcBuildingElementProxy", name="DGM")
     spatial.assign_container(model, relating_structure=builder.site, products=[element])
+    geometry.edit_object_placement(model, matrix=np.eye(4), product=element)
     # Add property set for DGM
     pset_ifc = pset.add_pset(model, product=element, name="Pset_DGM")
     pset.edit_pset(
@@ -179,8 +180,6 @@ def create_combined_terrain_ifc(
     basepoint_entity = basepoint_quad.build(model)
 
     # Position the basepoint
-    import numpy as np
-
     matrix = np.eye(4)
     matrix[0, 3] = x  # X position
     matrix[1, 3] = y  # Y position

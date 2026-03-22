@@ -510,6 +510,7 @@ def create_terrain_ifc(
             return None
 
         spatial.assign_container(model, relating_structure=builder.site, products=[element])
+        geometry.edit_object_placement(model, matrix=np.eye(4), product=element)
 
         # Add property sets
         logger.info("Adding property sets...")
@@ -568,8 +569,6 @@ def create_terrain_ifc(
         basepoint_entity = basepoint_quad.build(model)
 
         # Position the basepoint
-        import numpy as np
-
         matrix = np.eye(4)
         matrix[0, 3] = nullpunkt_x  # X position
         matrix[1, 3] = nullpunkt_y  # Y position

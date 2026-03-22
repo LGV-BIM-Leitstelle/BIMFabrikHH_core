@@ -6,8 +6,8 @@ and creates an IFC terrain model via BIMFabrikHH_core.apps.terrain.filtered.
 
 Runs without bbox so the full raster is used (any CRS, e.g. EPSG:25833).
 """
+
 import time
-from pathlib import Path
 
 from BIMFabrikHH_core import Component, Container, RequestParams
 from BIMFabrikHH_core.apps.terrain.filtered import process_terrain_folder_to_ifc
