@@ -119,13 +119,20 @@ class CityGMLParser:
             raise ValueError(f"Path is not a file: {filepath}")
         return file_path
 
-    def parse_file(self, filepath: str, bbox_epsg: Tuple[float, float, float, float] | None = None) -> None:
+    def parse_file(
+        self,
+        filepath: str,
+        bbox_epsg: Tuple[float, float, float, float] | None = None,
+        building_id_filter: str | None = None,
+    ) -> None:
         """
         Efficiently parse a CityGML file and extract buildings with their geometry using streaming.
 
         Args:
             filepath (str): Path to the CityGML file, mounted path, or URL.
             bbox_epsg: Optional bounding box in EPSG:25832
+            building_id_filter: If given, only this building ID is extracted; all others are skipped
+                                 before any geometry processing, making single-building runs fast.
         """
         try:
             xml_start = time.perf_counter()
@@ -185,8 +192,9 @@ class CityGMLParser:
 
                 building_id = building.get(f"{{{self.ns['gml']}}}id")
                 if building_id:
-                    self.extract_building(building, building_id)
-                    building_count += 1
+                    if building_id_filter is None or building_id == building_id_filter:
+                        self.extract_building(building, building_id)
+                        building_count += 1
                 else:
                     logger.warning("Found building element without ID, skipping")
                 # Free memory for processed element

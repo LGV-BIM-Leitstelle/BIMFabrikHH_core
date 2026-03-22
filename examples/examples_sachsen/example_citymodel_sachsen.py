@@ -25,6 +25,15 @@ from BIMFabrikHH_core.data_models.pydantic_georeferencing import CoordinateSyste
 
 logger = get_logger()
 
+# ---------------------------------------------------------------------------
+# Export controls — edit these before running
+# ---------------------------------------------------------------------------
+# Which LoD(s) to export: "lod1" | "lod2" | "both"
+EXPORT_LOD: str = "lod2"
+# Restrict export to a single building ID, or None for all buildings
+FILTER_BUILDING_ID: str | None = "DESNATPU1000C1qE"  # e.g. "DESNATPU1000C1qE"
+# ---------------------------------------------------------------------------
+
 # Input GML files
 SACHSEN_DATA = PathConfig.ASSETS / "data_sachsen"
 
@@ -44,31 +53,36 @@ LOD_CONFIG = {
 }
 
 
-def build_ifc_for_lod(lod_name: str, cfg: dict) -> bool:
+def build_ifc_for_lod(lod_name: str, cfg: dict, building_id: str | None = None) -> bool:
     """
     Parse one CityGML file and write a single IFC output.
 
     Args:
         lod_name: "lod1" or "lod2" (used only for logging)
         cfg: dict with keys gml, output, project_name, color
+        building_id: if given, export only this building ID
 
     Returns:
         True if the IFC file was written successfully.
     """
     gml_path: Path = cfg["gml"]
-    output_path: Path = cfg["output"]
     color = cfg["color"]
 
     logger.info(f"[{lod_name.upper()}] Parsing {gml_path.name} ...")
 
     parser = CityGMLParser()
-    parser.parse_file(str(gml_path))
+    parser.parse_file(str(gml_path), building_id_filter=building_id)
 
     if not parser.buildings:
-        logger.error(f"[{lod_name.upper()}] No buildings found — skipping.")
+        msg = f"Building ID '{building_id}' not found" if building_id else "No buildings found"
+        logger.error(f"[{lod_name.upper()}] {msg} — skipping.")
         return False
 
     logger.info(f"[{lod_name.upper()}] {len(parser.buildings)} buildings parsed.")
+
+    output_path: Path = cfg["output"]
+    if building_id is not None:
+        output_path = output_path.with_stem(output_path.stem + f"_{building_id}")
 
     # IFC model
     model_builder = IfcModelBuilder()
@@ -164,9 +178,12 @@ def build_ifc_for_lod(lod_name: str, cfg: dict) -> bool:
 def main():
     total_start = time.perf_counter()
 
-    for lod_name, cfg in LOD_CONFIG.items():
+    lods = list(LOD_CONFIG.keys()) if EXPORT_LOD == "both" else [EXPORT_LOD]
+
+    for lod_name in lods:
+        cfg = LOD_CONFIG[lod_name]
         t = time.perf_counter()
-        ok = build_ifc_for_lod(lod_name, cfg)
+        ok = build_ifc_for_lod(lod_name, cfg, building_id=FILTER_BUILDING_ID)
         elapsed = time.perf_counter() - t
         status = "✓" if ok else "✗"
         print(f"{status} {lod_name.upper()}: {elapsed:.2f}s  →  {cfg['output']}")
