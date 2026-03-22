@@ -8,6 +8,7 @@ Outputs:
     output/output_citymodel_sachsen_lod1.ifc
     output/output_citymodel_sachsen_lod2.ifc
 """
+
 import time
 from pathlib import Path
 
@@ -29,7 +30,7 @@ logger = get_logger()
 # Export controls — edit these before running
 # ---------------------------------------------------------------------------
 # Which LoD(s) to export: "lod1" | "lod2" | "both"
-EXPORT_LOD: str = "lod2"
+EXPORT_LOD: str = "both"
 # Restrict export to a single building ID, or None for all buildings
 FILTER_BUILDING_ID: str | None = "DESNATPU1000C1qE"  # e.g. "DESNATPU1000C1qE"
 # ---------------------------------------------------------------------------

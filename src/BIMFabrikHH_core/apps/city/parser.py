@@ -35,10 +35,12 @@ from BIMFabrikHH_core.core.utils.geometry_utils import (
     extract_polygon_with_voids,
 )
 from BIMFabrikHH_core.data_models.pydantic_psets_city_model import Building
-
 from .helpers import extract_attributes_from_xml
 
 logger = get_level_logger("city_app")
+
+Faces = List[List[Tuple[float, float, float]]]
+FacesWithVoids = List[Tuple[List[Tuple[float, float, float]], List[List[Tuple[float, float, float]]]]]
 
 
 # Map of mounted paths to actual file system paths
@@ -53,20 +55,28 @@ class CityGMLParser:
     Parses CityGML files and extracts building geometry and properties for IFC conversion.
     """
 
+    _NS = {
+        "gml": "http://www.opengis.net/gml",
+        "core": "http://www.opengis.net/citygml/1.0",
+        "bldg": "http://www.opengis.net/citygml/building/1.0",
+        "xAL": "urn:oasis:names:tc:ciq:xsdschema:xAL:2.0",
+        "gen": "http://www.opengis.net/citygml/generics/1.0",
+    }
+    _XLINK_NS = {**_NS, "xlink": "http://www.w3.org/1999/xlink"}
+
+    _BUILDING_TAG = "{http://www.opengis.net/citygml/building/1.0}Building"
+    _GML_ID_ATTR = "{http://www.opengis.net/gml}id"
+
+    _XPATH_POS_LIST = etree.XPath(".//gml:posList", namespaces=_NS)
+    _XPATH_BOUNDED_POLYS = etree.XPath("bldg:boundedBy//gml:Polygon", namespaces=_NS)
+    _XPATH_LOD2_REFS = etree.XPath("bldg:lod2Solid//gml:surfaceMember/@xlink:href", namespaces=_XLINK_NS)
+    _XPATH_BY_ID = etree.XPath(".//*[@gml:id=$ref_id]", namespaces=_NS)
+    _XPATH_LOD1_SOLID = etree.XPath(".//bldg:lod1Solid//gml:Solid", namespaces=_NS)
+    _XPATH_ALL_POLYGONS = etree.XPath(".//gml:Polygon", namespaces=_NS)
+    _XPATH_BUILDING_PARTS = etree.XPath(".//bldg:BuildingPart", namespaces=_NS)
+
     def __init__(self) -> None:
-        """
-        Initialize the CityGMLParser with namespace definitions and building storage.
-        """
-        self.ns: dict = {
-            "gml": "http://www.opengis.net/gml",
-            "core": "http://www.opengis.net/citygml/1.0",
-            "bldg": "http://www.opengis.net/citygml/building/1.0",
-            "xAL": "urn:oasis:names:tc:ciq:xsdschema:xAL:2.0",
-            "gen": "http://www.opengis.net/citygml/generics/1.0",
-        }
         self.buildings: dict = {}
-        self.first_building_printed = False
-        # Timing statistics
         self.timing_stats = {
             "xml_parsing": 0.0,
             "attribute_extraction": 0.0,
@@ -75,7 +85,8 @@ class CityGMLParser:
             "total_buildings": 0,
         }
 
-    def _get_file_source(self, filepath: str) -> Union[Path, io.BytesIO]:
+    @staticmethod
+    def _get_file_source(filepath: str) -> Union[Path, io.BytesIO]:
         """
         Get file source - either a local Path or BytesIO from URL.
 
@@ -149,7 +160,9 @@ class CityGMLParser:
             # Log filter bbox for debugging
             if bbox_epsg:
                 logger.info(
-                    f"Filter bbox (UTM): min=({bbox_epsg[0]:.1f}, {bbox_epsg[1]:.1f}), max=({bbox_epsg[2]:.1f}, {bbox_epsg[3]:.1f})"
+                    f"Filter bbox (UTM): "
+                    f"min=({bbox_epsg[0]:.1f}, {bbox_epsg[1]:.1f}), "
+                    f"max=({bbox_epsg[2]:.1f}, {bbox_epsg[3]:.1f})"
                 )
 
             # Use lxml.etree.iterparse for streaming parsing
@@ -157,17 +170,16 @@ class CityGMLParser:
             xml_context = etree.iterparse(
                 str(file_source) if isinstance(file_source, Path) else file_source,
                 events=("end",),
-                tag="{http://www.opengis.net/citygml/building/1.0}Building",
+                tag=self._BUILDING_TAG,
             )
 
             building_count = 0
-            pos_xpath = etree.XPath(".//gml:posList", namespaces={"gml": "http://www.opengis.net/gml"})
             for _, building in xml_context:
                 # Early BBOX skip -------------------------------------------------
                 if bbox_epsg:
                     minx = miny = 1e20
                     maxx = maxy = -1e20
-                    for pos in pos_xpath(building):
+                    for pos in self._XPATH_POS_LIST(building):
                         try:
                             arr = numpy.fromstring(pos.text.strip(), sep=" ", dtype=numpy.float64)
                             if arr.size % 3 == 0:
@@ -178,7 +190,7 @@ class CityGMLParser:
                                 miny = min(miny, ys.min())
                                 maxx = max(maxx, xs.max())
                                 maxy = max(maxy, ys.max())
-                        except Exception:
+                        except (ValueError, AttributeError):
                             continue
 
                     # Check if building bbox overlaps with the EPSG:25832 bbox
@@ -190,7 +202,7 @@ class CityGMLParser:
                             del building.getparent()[0]
                         continue
 
-                building_id = building.get(f"{{{self.ns['gml']}}}id")
+                building_id = building.get(self._GML_ID_ATTR)
                 if building_id:
                     if building_id_filter is None or building_id == building_id_filter:
                         self.extract_building(building, building_id)
@@ -221,6 +233,40 @@ class CityGMLParser:
             logger.error(f"Error parsing CityGML file: {e}")
             raise
 
+    def _collect_polygon(self, polygon_elem: etree.Element, faces: Faces, faces_with_voids: FacesWithVoids) -> None:
+        exterior_points, interior_points = extract_polygon_with_voids(polygon_elem, self._NS)
+        if exterior_points:
+            if interior_points:
+                faces_with_voids.append((exterior_points, interior_points))
+            else:
+                faces.append(exterior_points)
+
+    def _extract_component(
+        self,
+        component: etree.Element,
+        building_element: etree.Element,
+        faces: Faces,
+        faces_with_voids: FacesWithVoids,
+    ) -> None:
+        """Extract all LOD2 faces from one component (building or BuildingPart).
+
+        Prefer bldg:boundedBy as it contains the complete polygon set including
+        ClosureSurface elements. Fall back to lod2Solid xlink resolution only when
+        no boundedBy surfaces are present.
+        """
+        bounded_polys = self._XPATH_BOUNDED_POLYS(component)
+        if bounded_polys:
+            for polygon in bounded_polys:
+                self._collect_polygon(polygon, faces, faces_with_voids)
+        else:
+            for ref in self._XPATH_LOD2_REFS(component):
+                ref_id = ref.lstrip("#")
+                polygon = self._XPATH_BY_ID(component, ref_id=ref_id) or self._XPATH_BY_ID(
+                    building_element, ref_id=ref_id
+                )
+                if polygon:
+                    self._collect_polygon(polygon[0], faces, faces_with_voids)
+
     def extract_building(self, building_element: etree.Element, building_id: str) -> None:
         """
         Extract geometry and properties for a single building.
@@ -230,64 +276,23 @@ class CityGMLParser:
             building_id (str): Unique building ID.
         """
         geom_start = time.perf_counter()
-        faces: List[List[Tuple[float, float, float]]] = []
-        faces_with_voids: List[Tuple[List[Tuple[float, float, float]], List[List[Tuple[float, float, float]]]]] = []
+        faces: Faces = []
+        faces_with_voids: FacesWithVoids = []
 
         # Try LOD1 geometry first
-        lod1_solids = building_element.xpath(".//bldg:lod1Solid//gml:Solid", namespaces=self.ns)
+        lod1_solids = self._XPATH_LOD1_SOLID(building_element)
         if lod1_solids:
             lod = "LoD1"
-            # Process LOD1 geometry
-            for polygon in lod1_solids[0].xpath(".//gml:Polygon", namespaces=self.ns):
-                exterior_points, interior_points = extract_polygon_with_voids(polygon, self.ns)
-                if exterior_points:
-                    if interior_points:
-                        # Has voids - store for special handling
-                        faces_with_voids.append((exterior_points, interior_points))
-                    else:
-                        # No voids - use standard approach
-                        faces.append(exterior_points)
+            for solid in lod1_solids:
+                for polygon in self._XPATH_ALL_POLYGONS(solid):
+                    self._collect_polygon(polygon, faces, faces_with_voids)
         else:
-            # Try LOD2 geometry
-            # First check if we have a direct LOD2 solid
-            lod2_refs = building_element.xpath(
-                ".//bldg:lod2Solid//gml:surfaceMember/@xlink:href",
-                namespaces={**self.ns, "xlink": "http://www.w3.org/1999/xlink"},
-            )
-            if lod2_refs:
-                lod = "LoD2"
-                # Process referenced geometries
-                for ref in lod2_refs:
-                    # Remove '#' from reference
-                    ref_id = ref.lstrip("#")
-                    # Find corresponding polygon
-                    polygon = building_element.xpath(f".//*[@gml:id='{ref_id}']", namespaces=self.ns)
-                    if polygon:
-                        exterior_points, interior_points = extract_polygon_with_voids(polygon[0], self.ns)
-                        if exterior_points:
-                            if interior_points:
-                                # Has voids - store for special handling
-                                faces_with_voids.append((exterior_points, interior_points))
-                            else:
-                                # No voids - use standard approach
-                                faces.append(exterior_points)
-            else:
-                lod = None
-                # Try to get geometry from boundedBy surfaces
-                surface_types = ["GroundSurface", "RoofSurface", "WallSurface"]
-                for surface_type in surface_types:
-                    surfaces = building_element.xpath(
-                        f".//bldg:boundedBy/bldg:{surface_type}//gml:Polygon", namespaces=self.ns
-                    )
-                    for polygon in surfaces:
-                        exterior_points, interior_points = extract_polygon_with_voids(polygon, self.ns)
-                        if exterior_points:
-                            if interior_points:
-                                # Has voids - store for special handling
-                                faces_with_voids.append((exterior_points, interior_points))
-                            else:
-                                # No voids - use standard approach
-                                faces.append(exterior_points)
+            lod = "LoD2"
+            # Process the top-level building and each BuildingPart independently so that
+            # parts with only boundedBy surfaces (no lod2Solid) are not silently skipped.
+            components = [building_element] + self._XPATH_BUILDING_PARTS(building_element)
+            for component in components:
+                self._extract_component(component, building_element, faces, faces_with_voids)
 
         geom_end = time.perf_counter()
         self.timing_stats["geometry_extraction"] += geom_end - geom_start
@@ -297,38 +302,21 @@ class CityGMLParser:
             return
 
         # Create and populate attributes first
-        attributes = extract_attributes_from_xml(building_element, self.ns, lod=lod, timing_stats=self.timing_stats)
+        attributes = extract_attributes_from_xml(building_element, self._NS, lod=lod, timing_stats=self.timing_stats)
 
         # Handle faces with voids separately
-        faces_with_voids_structures = None
         if faces_with_voids:
-            # Found faces with voids for building {building_id}
-            # Convert all faces (both regular and voided) to IFC format together
-            all_polygons_for_conversion = []
-
-            # Add regular faces
-            for face_points in faces:
-                all_polygons_for_conversion.append((face_points, []))
-
-            # Add faces with voids
-            for exterior_points, interior_points in faces_with_voids:
-                all_polygons_for_conversion.append((exterior_points, interior_points))
-
-            # Convert everything to IFC format
-            vertices, face_structures = convert_faces_with_voids_to_ifc_format(all_polygons_for_conversion)
-
-            # Separate regular faces from faces with voids
-            face_indices = []
-            faces_with_voids_structures = []
-
-            for face_structure in face_structures:
-                if face_structure["type"] == "IfcIndexedPolygonalFaceWithVoids":
-                    faces_with_voids_structures.append(face_structure)
-                else:
-                    # Convert 1-based indices back to 0-based for regular faces
-                    face_indices.append([idx - 1 for idx in face_structure["coord_index"]])
+            all_polys = [(f, []) for f in faces] + list(faces_with_voids)
+            vertices, face_structures = convert_faces_with_voids_to_ifc_format(all_polys)
+            face_indices = [
+                [idx - 1 for idx in fs["coord_index"]]
+                for fs in face_structures
+                if fs["type"] != "IfcIndexedPolygonalFaceWithVoids"
+            ]
+            faces_with_voids_structures = [
+                fs for fs in face_structures if fs["type"] == "IfcIndexedPolygonalFaceWithVoids"
+            ] or None
         else:
-            # No voids - use standard conversion
             vertices, face_indices = convert_to_indexed_geometry(faces)
             faces_with_voids_structures = None
 

@@ -4,9 +4,9 @@ import logging
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
 
-from ifcfactory import BIMFactoryElement, Transform
-import numpy as np
 import ifcopenshell.api.owner.settings as owner_settings
+import numpy as np
+from ifcfactory import BIMFactoryElement, Transform
 from ifcopenshell.api import context, geometry, pset, root, spatial
 
 from BIMFabrikHH_core.apps.city.parser import CityGMLParser
@@ -15,7 +15,7 @@ from BIMFabrikHH_core.core.geometry.advanced_objects import create_basepoint_qua
 from BIMFabrikHH_core.core.georeferencing.crs_transform import bbox_wgs84_to_epsg25832
 from BIMFabrikHH_core.core.model_creator import IfcModelBuilder
 from BIMFabrikHH_core.core.model_creator.ifc_snippets import IfcSnippets
-from BIMFabrikHH_core.core.ogc_extractor.ogc_values_extractor import extract_project_info, extract_psets_basepoint
+from BIMFabrikHH_core.core.ogc_extractor.ogc_values_extractor import extract_project_info
 from BIMFabrikHH_core.data_models.params_bbox import BoundingBoxParams
 from BIMFabrikHH_core.data_models.params_tree import RequestParams
 from BIMFabrikHH_core.data_models.pydantic_georeferencing import CoordinateSystemTemplates
@@ -433,7 +433,9 @@ class CityModularApp(UIAppInterface):
             owner_settings.get_user = _orig_get_user
             owner_settings.get_application = _orig_get_app
 
-            IfcSnippets.batch_assign_layer_to_representations(model, representations, "_BIM_Stadtmodell", color_city_model)
+            IfcSnippets.batch_assign_layer_to_representations(
+                model, representations, "_BIM_Stadtmodell", color_city_model
+            )
 
             # Create basepoint at lower left corner of the INPUT bounding box (matching tree and DGM apps)
             if processed_data:
