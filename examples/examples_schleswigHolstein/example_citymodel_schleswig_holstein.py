@@ -1,12 +1,17 @@
 """
-Sachsen city model example — LoD1 and LoD2.
+Schleswig-Holstein city model example — LoD1 and LoD2.
 
-Parses the CityGML tiles from examples/assets/data_sachsen and writes two
-separate IFC files, one per LoD. Uses EPSG:25833 (UTM zone 33N, Sachsen).
-Uses ``export_citygml_tile_to_ifc`` (Hamburg pipeline: includes Pset_Hyperlink).
+ADV-style tiles under ``examples/assets/data_schleswigHolstein``.
+EPSG:25832 (ETRS89 / UTM zone 32N), tile ``32_573_6021_1_SH``.
+Uses ``export_citygml_tile_to_ifc`` (Hamburg defaults for hyperlink and layer).
 
-Outputs under ``PathConfig.OUTPUT``; with a building filter the stem includes
-that id (same as the app default).
+Place the downloaded CityGML files next to each other, for example::
+
+    LoD1_32_573_6021_1_SH.xml
+    LoD2_32_573_6021_1_SH.xml
+
+Outputs under ``PathConfig.OUTPUT``. With a building filter, the stem includes
+that id (for example ``..._lod1_DESHPDHK0001uU4a.ifc``).
 """
 
 import time
@@ -22,32 +27,30 @@ logger = get_logger()
 # ---------------------------------------------------------------------------
 # Export controls — edit these before running
 # ---------------------------------------------------------------------------
-# Which LoD(s) to export: "lod1" | "lod2" | "both"
 EXPORT_LOD: str = "both"
-# Restrict export to a single building ID, or None for all buildings
-FILTER_BUILDING_ID: str | None = "DESNATPU1000C1qE"  # e.g. "DESNATPU1000C1qE"
+# None = full tile. Use one building id for a quick test run.
+FILTER_BUILDING_ID: str | None = None  # e.g. "DESHPDHK0001uU4a"
 # ---------------------------------------------------------------------------
 
-SACHSEN_DATA = PathConfig.ASSETS / "data_sachsen"
+SH_DATA = PathConfig.ASSETS / "data_schleswigHolstein"
 
 LOD_CONFIG = {
     "lod1": {
-        "gml": SACHSEN_DATA / "lod1_33410_5652_2_sn_citygml" / "lod1_33410_5652_2_sn.gml",
-        "output": PathConfig.OUTPUT / "output_citymodel_sachsen_lod1.ifc",
-        "project_name": "Sachsen_CityModel_LoD1",
+        "gml": SH_DATA / "LoD1_32_573_6021_1_SH.xml",
+        "output": PathConfig.OUTPUT / "output_citymodel_schleswig_holstein_lod1.ifc",
+        "project_name": "SchleswigHolstein_CityModel_LoD1",
         "color": (1.0, 1.0, 0.498),
     },
     "lod2": {
-        "gml": SACHSEN_DATA / "lod2_33410_5652_2_sn_citygml" / "lod2_33410_5652_2_sn.gml",
-        "output": PathConfig.OUTPUT / "output_citymodel_sachsen_lod2.ifc",
-        "project_name": "Sachsen_CityModel_LoD2",
+        "gml": SH_DATA / "LoD2_32_573_6021_1_SH.xml",
+        "output": PathConfig.OUTPUT / "output_citymodel_schleswig_holstein_lod2.ifc",
+        "project_name": "SchleswigHolstein_CityModel_LoD2",
         "color": (1.0, 0.8, 0.4),
     },
 }
 
 
 def build_ifc_for_lod(lod_name: str, cfg: dict, building_id: str | None = None) -> tuple[bool, Path]:
-    """Parse one CityGML file and write IFC via the shared city app export."""
     gml_path = cfg["gml"]
     output_path: Path = cfg["output"]
     resolved_out = output_path.with_stem(output_path.stem + f"_{building_id}") if building_id else output_path
@@ -60,9 +63,9 @@ def build_ifc_for_lod(lod_name: str, cfg: dict, building_id: str | None = None) 
         building_id_filter=building_id,
         append_building_id_to_output_stem=building_id is not None,
         project_name=cfg["project_name"],
-        site_name="Sachsen_Site",
-        building_container_name=f"Sachsen_{lod_name.upper()}",
-        coordinate_system=CoordinateSystemTemplates.epsg_25833(),
+        site_name="SchleswigHolstein_Site",
+        building_container_name=f"SchleswigHolstein_{lod_name.upper()}",
+        coordinate_system=CoordinateSystemTemplates.epsg_25832(),
         representation_color=cfg["color"],
     )
 

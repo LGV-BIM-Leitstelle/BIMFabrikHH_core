@@ -18,7 +18,11 @@ from BIMFabrikHH_core.core.model_creator.ifc_snippets import IfcSnippets
 from BIMFabrikHH_core.core.ogc_extractor.ogc_values_extractor import extract_project_info
 from BIMFabrikHH_core.data_models.params_bbox import BoundingBoxParams
 from BIMFabrikHH_core.data_models.params_tree import RequestParams
-from BIMFabrikHH_core.data_models.pydantic_georeferencing import CoordinateSystemTemplates
+from BIMFabrikHH_core.data_models.pydantic_georeferencing import (
+    CoordinateOperation,
+    CoordinateSystem,
+    CoordinateSystemTemplates,
+)
 from BIMFabrikHH_core.data_models.pydantic_psets_BIMHH import Pset_Hyperlink
 
 logging.basicConfig(level=logging.INFO)
@@ -216,6 +220,170 @@ def create_combined_representation(model, context, vertices, faces, faces_with_v
     )
 
 
+def add_city_model_elements_from_processed_data(
+    model,
+    model_builder: IfcModelBuilder,
+    body,
+    processed_data: List[Dict[str, Any]],
+    *,
+    representation_color: Tuple[float, float, float] = (1.0, 1.0, 0.498),
+    layer_name: str = "_BIM_Stadtmodell",
+    pset_hyperlink: Optional[Pset_Hyperlink] = None,
+) -> None:
+    """
+    Append IfcBuildingElementProxy instances with Objektinformation, Pset_Hyperlink (Hamburg defaults),
+    and tessellated geometry. Matches the behaviour of ``CityModularApp.create_ifc`` for building bodies.
+    """
+    if pset_hyperlink is None:
+        pset_hyperlink = Pset_Hyperlink(
+            hyperlink_001="www.bim.hamburg.de",
+            hyperlink_001_bemerkung="Link zur Homepage von BIM.Hamburg",
+        )
+
+    identity = np.eye(4)
+    representations = []
+    _orig_get_user = owner_settings.get_user
+    _orig_get_app = owner_settings.get_application
+    owner_settings.get_user = lambda *_: None
+    owner_settings.get_application = lambda *_: None
+
+    elements = [
+        root.create_entity(model, ifc_class="IfcBuildingElementProxy", name=data["name"]) for data in processed_data
+    ]
+
+    for element, building_data in zip(elements, processed_data):
+        pset_ifc = pset.add_pset(model, product=element, name="Pset_Objektinformation")
+        pydantic_properties = building_data["attributes"].to_dict_with_labels(by_alias=True)
+        properties = {k: v for k, v in pydantic_properties.items() if v is not None}
+        pset.edit_pset(model, pset=pset_ifc, properties=properties)
+
+        pset_hyperlink_ifc = pset.add_pset(model, product=element, name="Pset_Hyperlink")
+        pset.edit_pset(
+            model,
+            pset=pset_hyperlink_ifc,
+            properties=pset_hyperlink.model_dump(by_alias=True),
+        )
+
+        if building_data.get("faces_with_voids"):
+            representation = create_combined_representation(
+                model,
+                context=body,
+                vertices=building_data["vertices"],
+                faces=building_data["faces"],
+                faces_with_voids=building_data["faces_with_voids"],
+            )
+        else:
+            vertices = building_data["vertices"]
+            faces = building_data["faces"]
+            logger.debug(f"Building {building_data['id']}: vertices={len(vertices)}, faces={len(faces)}")
+            if len(vertices) > 0:
+                logger.debug(f"First vertex type: {type(vertices[0])}")
+            if len(faces) > 0:
+                logger.debug(
+                    f"First face type: {type(faces[0])}, "
+                    f"length: {len(faces[0]) if hasattr(faces[0], '__len__') else 'N/A'}"
+                )
+            vertices_wrapped = [vertices]
+            faces_wrapped = [faces]
+            representation = geometry.add_mesh_representation(
+                model, context=body, vertices=vertices_wrapped, faces=faces_wrapped, edges=[[]]
+            )
+
+        IfcSnippets.assign_color_to_representation(model, representation, representation_color, 0.0)
+        representations.append(representation)
+        geometry.assign_representation(model, product=element, representation=representation)
+
+    spatial.assign_container(model, relating_structure=model_builder.building, products=elements)
+    for element in elements:
+        geometry.edit_object_placement(model, product=element, matrix=identity)
+
+    owner_settings.get_user = _orig_get_user
+    owner_settings.get_application = _orig_get_app
+
+    IfcSnippets.batch_assign_layer_to_representations(model, representations, layer_name, representation_color)
+
+
+def export_citygml_tile_to_ifc(
+    gml_path: Union[str, Path],
+    output_path: Union[str, Path],
+    *,
+    building_id_filter: Optional[str] = None,
+    append_building_id_to_output_stem: bool = True,
+    project_name: str = "Stadtmodell",
+    site_name: str = "Site",
+    building_container_name: str = "Gebäude",
+    coordinate_system: Optional[CoordinateSystem] = None,
+    coordinate_operation: Optional[CoordinateOperation] = None,
+    representation_color: Tuple[float, float, float] = (1.0, 1.0, 0.498),
+    layer_name: str = "_BIM_Stadtmodell",
+    pset_hyperlink: Optional[Pset_Hyperlink] = None,
+) -> Optional[Path]:
+    """
+    Parse one CityGML/GML/XML tile and write an IFC with the same building pipeline as Hamburg modular city.
+
+    Omitted arguments use Hamburg-style defaults (EPSG:25832, yellow city-model colour, ``Pset_Hyperlink``
+    to BIM.Hamburg) so existing callers can rely on stable behaviour when only paths are supplied.
+    """
+    gml_path = Path(gml_path)
+    out = Path(output_path)
+    if building_id_filter is not None and append_building_id_to_output_stem:
+        out = out.with_stem(out.stem + f"_{building_id_filter}")
+
+    parser = CityGMLParser()
+    parser.parse_file(str(gml_path), building_id_filter=building_id_filter)
+    processed_data = [
+        {
+            "id": bid,
+            "name": bid,
+            "vertices": b.vertices,
+            "faces": b.faces,
+            "attributes": b.attributes,
+            **({"faces_with_voids": b.faces_with_voids} if getattr(b, "faces_with_voids", None) else {}),
+        }
+        for bid, b in parser.buildings.items()
+        if b.vertices and b.faces
+    ]
+    if not processed_data:
+        logger.error("No buildings to export from %s", gml_path.name)
+        return None
+
+    crs = coordinate_system or CoordinateSystemTemplates.epsg_25832()
+    coord_op = coordinate_operation or CoordinateSystemTemplates.get_default_coordinate_operation()
+
+    model_builder = IfcModelBuilder()
+    model_builder.build_project(
+        project_name=project_name,
+        coordinate_system=crs,
+        coordinate_operation=coord_op,
+        site_name=site_name,
+        building_name=building_container_name,
+    )
+    model = model_builder.model
+    model3d = context.add_context(model, context_type="Model")
+    body = context.add_context(
+        model,
+        context_type="Model",
+        context_identifier="Body",
+        target_view="MODEL_VIEW",
+        parent=model3d,
+    )
+    add_city_model_elements_from_processed_data(
+        model,
+        model_builder,
+        body,
+        processed_data,
+        representation_color=representation_color,
+        layer_name=layer_name,
+        pset_hyperlink=pset_hyperlink,
+    )
+
+    out.parent.mkdir(parents=True, exist_ok=True)
+    if model_builder.save_ifc_to_path(out):
+        return out
+    logger.error("Failed to save IFC to %s", out)
+    return None
+
+
 class CityModularApp(UIAppInterface):
     """Modular implementation for processing city models."""
 
@@ -354,87 +522,23 @@ class CityModularApp(UIAppInterface):
                 building_name=building_name,
             )
 
-            # Get model and contexts
             model = model_builder.model
             model3d = context.add_context(model, context_type="Model")
             body = context.add_context(
-                model, context_type="Model", context_identifier="Body", target_view="MODEL_VIEW", parent=model3d
+                model,
+                context_type="Model",
+                context_identifier="Body",
+                target_view="MODEL_VIEW",
+                parent=model3d,
             )
-
-            # Add buildings to model
             color_city_model = (1.0, 1.0, 0.498)
-            identity = np.eye(4)
-            representations = []
-            _orig_get_user = owner_settings.get_user
-            _orig_get_app = owner_settings.get_application
-            owner_settings.get_user = lambda *_: None
-            owner_settings.get_application = lambda *_: None
-
-            elements = [
-                root.create_entity(model, ifc_class="IfcBuildingElementProxy", name=data["name"])
-                for data in processed_data
-            ]
-
-            for element, building_data in zip(elements, processed_data):
-                # Add property sets
-                pset_ifc = pset.add_pset(model, product=element, name="Pset_Objektinformation")
-                pydantic_properties = building_data["attributes"].to_dict_with_labels(by_alias=True)
-                properties = {k: v for k, v in pydantic_properties.items() if v is not None}
-                pset.edit_pset(model, pset=pset_ifc, properties=properties)
-
-                # Add Pset_Hyperlink (using default values)
-                pset_hyperlink = pset.add_pset(model, product=element, name="Pset_Hyperlink")
-                default_hyperlink = Pset_Hyperlink(
-                    hyperlink_001="www.bim.hamburg.de", hyperlink_001_bemerkung="Link zur Homepage von BIM.Hamburg"
-                )
-                pset.edit_pset(model, pset=pset_hyperlink, properties=default_hyperlink.model_dump(by_alias=True))
-
-                # Add geometry
-                if building_data.get("faces_with_voids"):
-                    # Create full LoD2 representation using walls + void faces
-                    representation = create_combined_representation(
-                        model,
-                        context=body,
-                        vertices=building_data["vertices"],
-                        faces=building_data["faces"],
-                        faces_with_voids=building_data["faces_with_voids"],
-                    )
-                else:
-                    # Standard mesh representation
-                    vertices = building_data["vertices"]
-                    faces = building_data["faces"]
-                    logger.debug(f"Building {building_data['id']}: vertices={len(vertices)}, faces={len(faces)}")
-                    if len(vertices) > 0:
-                        logger.debug(f"First vertex type: {type(vertices[0])}")
-                    if len(faces) > 0:
-                        logger.debug(
-                            f"First face type: {type(faces[0])}, "
-                            f"length: {len(faces[0]) if hasattr(faces[0], '__len__') else 'N/A'}"
-                        )
-                    # Wrap vertices and faces in outer lists to match IfcOpenShell API expectations
-                    vertices_wrapped = [vertices]
-                    faces_wrapped = [faces]
-                    representation = geometry.add_mesh_representation(
-                        model, context=body, vertices=vertices_wrapped, faces=faces_wrapped, edges=[[]]
-                    )
-
-                # Add color and layer
-                IfcSnippets.assign_color_to_representation(model, representation, color_city_model, 0.0)
-                representations.append(representation)
-                geometry.assign_representation(model, product=element, representation=representation)
-
-            # Batch container assignment before placements so assign_container's internal
-            # re-localization pass sees no ObjectPlacement and skips the redundant
-            # edit_object_placement call it would otherwise fire for every element.
-            spatial.assign_container(model, relating_structure=model_builder.building, products=elements)
-            for element in elements:
-                geometry.edit_object_placement(model, product=element, matrix=identity)
-
-            owner_settings.get_user = _orig_get_user
-            owner_settings.get_application = _orig_get_app
-
-            IfcSnippets.batch_assign_layer_to_representations(
-                model, representations, "_BIM_Stadtmodell", color_city_model
+            add_city_model_elements_from_processed_data(
+                model,
+                model_builder,
+                body,
+                processed_data,
+                representation_color=color_city_model,
+                layer_name="_BIM_Stadtmodell",
             )
 
             # Create basepoint at lower left corner of the INPUT bounding box (matching tree and DGM apps)
