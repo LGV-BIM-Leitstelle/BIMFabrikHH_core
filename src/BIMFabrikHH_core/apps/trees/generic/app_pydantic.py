@@ -7,6 +7,7 @@ the pydantic-based approach with configurable property sets.
 """
 
 import logging
+import time
 from pathlib import Path
 from typing import Callable, Dict, List, Optional, Union
 
@@ -32,6 +33,7 @@ class BaumPydanticApp:
         crown_layer: str = "_BIM_SBK_Krone",
         name_prefix: str = "",
         on_progress: Optional[Callable[[], None]] = None,
+        phase_timings: Optional[Dict[str, float]] = None,
     ) -> Path:
         """
         Build an IFC model from a list of tree data dicts using pydantic approach.
@@ -47,11 +49,15 @@ class BaumPydanticApp:
             crown_layer: CAD layer name for crown geometry (default: "_BIM_SBK_Krone")
             name_prefix: Prefix to add to tree names (e.g., "SBK_Mengestrasse_")
             on_progress: Optional callback called after each tree is built, for progress tracking.
+            phase_timings: If given, cumulative seconds are written for ``project_setup_s``,
+                ``prepare_elements_s`` (``create_tree_element`` loop), ``build_in_s``,
+                ``save_s``.
 
         Returns:
             Path to the saved IFC file.
         """
         # Create model and contexts
+        _t0 = time.perf_counter()
         model_builder = IfcModelBuilder()
         model_builder.build_project(
             project_name="Tree_Pydantic_Project",
@@ -59,6 +65,8 @@ class BaumPydanticApp:
             coordinate_operation=CoordinateSystemTemplates.get_default_coordinate_operation(),
             site_name="Tree_Pydantic_Site",
         )
+        if phase_timings is not None:
+            phase_timings["project_setup_s"] = time.perf_counter() - _t0
 
         model = model_builder.model
         site = model_builder.site
@@ -68,6 +76,7 @@ class BaumPydanticApp:
         # call via BIMFactoryElement.build_in() — O(n) instead of O(n²).
         tree_elements = []
 
+        _t0 = time.perf_counter()
         for idx, tree_dict in enumerate(tree_data, 1):
             try:
                 # Extract tree attributes
@@ -134,14 +143,24 @@ class BaumPydanticApp:
                 logging.error(f"Failed to create tree {idx}: {e}")
                 continue
 
+        if phase_timings is not None:
+            phase_timings["prepare_elements_s"] = time.perf_counter() - _t0
+
         # Build all trees and assign them to the site in one batched call.
+        _t0 = time.perf_counter()
         BIMFactoryElement.build_in(model, inst=site, items=tree_elements, on_progress=on_progress)
+        if phase_timings is not None:
+            phase_timings["build_in_s"] = time.perf_counter() - _t0
 
         # Save to file
+        _t0 = time.perf_counter()
         if output_path is None:
             file_path = model_builder.save_ifc_to_output("output_baum_pydantic.ifc")
         else:
-            file_path = model_builder.save_ifc_to_output(str(Path(output_path).name))
+            op = Path(output_path)
+            file_path = model_builder.save_ifc_to_output(op.name, output_path=op)
+        if phase_timings is not None:
+            phase_timings["save_s"] = time.perf_counter() - _t0
 
         logging.info(f"IFC model saved to {file_path}")
         return Path(str(file_path))

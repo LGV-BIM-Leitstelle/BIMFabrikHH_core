@@ -16,6 +16,8 @@ import logging
 import math
 from typing import Any, Dict, List, Tuple
 
+from ifcfactory import ureg
+
 from BIMFabrikHH_core.apps.trees.generic.app_pydantic import BaumPydanticApp
 from BIMFabrikHH_core.data_models.pydantic_psets_tree import Pset_Bauwerk_Tree, Pset_Objektinformation_Tree
 
@@ -47,8 +49,8 @@ def _psets_for_tree(
         gattung_deutsch=gattung_deutsch,
         art_baum=art_baum,
         pflanzjahr=pflanzjahr,
-        kronendurchmesser=(kronendurchmesser_m, "meter"),
-        stammdurchmesser=(stammdurchmesser_m, "meter"),
+        kronendurchmesser=ureg.Quantity(kronendurchmesser_m, "meter"),
+        stammdurchmesser=ureg.Quantity(stammdurchmesser_m, "meter"),
     )
     bau = Pset_Bauwerk_Tree(strassenname=strassenname)
     return {"Pset_Objektinformation": obj, "Pset_Bauwerk": bau}

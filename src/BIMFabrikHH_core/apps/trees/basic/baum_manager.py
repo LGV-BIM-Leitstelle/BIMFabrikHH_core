@@ -1,5 +1,6 @@
 import random
-from typing import Any, Dict, List
+import time
+from typing import Any, Dict, List, Optional
 
 import ifcopenshell.api.geometry as ifc_geometry
 import numpy as np
@@ -312,7 +313,15 @@ class BaumManager:
             model, relating_object=tree_entities["tree"], products=[tree_entities["crown"], tree_entities["trunk"]]
         )
 
-    def place_trees_from_df(self, model, df, level_of_geom, storey, body):
+    def place_trees_from_df(
+        self,
+        model,
+        df,
+        level_of_geom,
+        storey,
+        body,
+        phase_timings: Optional[Dict[str, float]] = None,
+    ):
         """
         Place multiple trees in the IFC model from a DataFrame.
 
@@ -322,6 +331,8 @@ class BaumManager:
             level_of_geom (int): Level of geometry detail.
             storey: IFC storey entity.
             body: IFC body context.
+            phase_timings: If given, cumulative seconds are added under keys
+                ``tree_geometry_s`` (``create_tree``) and ``tree_pset_s`` (add/edit pset).
         """
         df = df.fillna("")  # Replace NaN with empty string for safety
 
@@ -358,6 +369,7 @@ class BaumManager:
                     elevation = 0.0
 
                 # Create and place the tree in the model
+                _t0 = time.perf_counter()
                 baum = self.create_tree(
                     model,
                     level_of_geom,
@@ -369,11 +381,16 @@ class BaumManager:
                     radius=radius,
                     stammbasis=umfang,
                 )
+                if phase_timings is not None:
+                    phase_timings["tree_geometry_s"] = phase_timings.get("tree_geometry_s", 0.0) + (
+                        time.perf_counter() - _t0
+                    )
             except Exception as e:
                 logger.error(f"Failed to create tree {tree.get('baumid', index)} at index {index}: {e}")
                 continue  # Skip this tree and continue with the next one
 
             try:
+                _t0 = time.perf_counter()
                 pset_ifc = pset.add_pset(model, product=baum, name="Pset_Objektinformation")
 
                 pset.edit_pset(
@@ -397,6 +414,10 @@ class BaumManager:
                         "_AufnahmedatumVermessung": "undefiniert",
                     },
                 )
+                if phase_timings is not None:
+                    phase_timings["tree_pset_s"] = phase_timings.get("tree_pset_s", 0.0) + (
+                        time.perf_counter() - _t0
+                    )
             except Exception as e:
                 logger.error(f"Error creating Pset for tree {tree['baumid']}: {e}")
 

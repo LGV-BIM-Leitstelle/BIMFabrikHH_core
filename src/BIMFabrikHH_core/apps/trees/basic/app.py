@@ -19,12 +19,12 @@ License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 """
 
+import time
 from functools import partial
 from math import pi
 from pathlib import Path
-from typing import Optional
+from typing import Dict, Optional
 
-import ifcopenshell.util.placement
 import pandas as pd
 from ifcfactory import BIMFactoryElement, Transform
 
@@ -42,7 +42,6 @@ from BIMFabrikHH_core.core.ogc_extractor.ogc_values_extractor import (
 from BIMFabrikHH_core.core.utils import MathTool
 from BIMFabrikHH_core.data_models.params_tree import RequestParams
 from BIMFabrikHH_core.data_models.pydantic_georeferencing import CoordinateSystemTemplates
-
 from .baum_col_names import DfColTree
 from .baum_manager import BaumManager
 
@@ -84,36 +83,6 @@ class BaumModeller:
         return df
 
     @staticmethod
-    def get_oaf_tree_df(x1: float, y1: float, x2: float, y2: float) -> "pd.DataFrame":
-        """
-        Fetch tree data from OAF API and convert to DataFrame.
-
-        Args:
-            x1 (float): Minimum X coordinate
-            y1 (float): Minimum Y coordinate
-            x2 (float): Maximum X coordinate
-            y2 (float): Maximum Y coordinate
-
-        Returns:
-            pd.DataFrame: DataFrame with tree data from OAF API
-        """
-        try:
-            from BIMFabrikHH_intern.core.http_requests_pro import DataFetcher
-
-            bbox = {
-                "min_x": x1,
-                "min_y": y1,
-                "max_x": x2,
-                "max_y": y2,
-            }
-
-            raw_tree_data = DataFetcher.fetch_tree_data(bbox)
-            return BaumModeller.raw_data_to_tree_df(raw_tree_data)
-        except Exception as e:
-            logger.error(f"Failed to fetch tree data from OAF API: {e}")
-            return pd.DataFrame()
-
-    @staticmethod
     def convert_umfang_durchmesser(df, col_name, formatting_function):
         """
         Convert circumference to diameter and apply formatting.
@@ -141,6 +110,7 @@ class BaumModeller:
         tif_path: Optional[str] = None,
         use_geotiff_elevation: bool = True,
         output_path: Optional[Path] = None,
+        phase_timings: Optional[Dict[str, float]] = None,
     ) -> Optional[Path]:
         """
         Create trees from a DataFrame and model parameters.
@@ -154,6 +124,9 @@ class BaumModeller:
                 If False, skip elevation extraction. Default is True.
             output_path (Optional[Path]): Full path where to save the IFC file.
                 If provided, the parent directory must exist. If None, saves to default location.
+            phase_timings: If given, cumulative seconds are written for ``project_setup_s``,
+                ``basepoint_s``, ``save_s``, and (via ``place_trees_from_df``) ``tree_geometry_s``,
+                ``tree_pset_s``.
 
         Returns:
             Optional[Path]: Path to the saved IFC file if successful, None if failed.
@@ -174,6 +147,7 @@ class BaumModeller:
             )
 
         try:
+            _t_proj = time.perf_counter()
             self.builder.reset_model()
             # Extract project and geometry info from model parameters
             project_name, site_name, building_name = extract_project_info(model_params.containers)
@@ -191,15 +165,18 @@ class BaumModeller:
                 logger.warning("Model not initialized")
                 return None
 
-            # Create shape builder after model is built
-            builder = ifcopenshell.util.shape_builder.ShapeBuilder(self.model)
+            if phase_timings is not None:
+                phase_timings["project_setup_s"] = time.perf_counter() - _t_proj
 
             # Place trees in the IFC model using the BaumManager
-            self.baum_manager.place_trees_from_df(self.model, df, level_of_geom, self.builder.site, self.builder.body)
+            self.baum_manager.place_trees_from_df(
+                self.model, df, level_of_geom, self.builder.site, self.builder.body, phase_timings=phase_timings
+            )
 
             # Create project base point using the lower-left of the bbox (after conversion to EPSG:25832)
             if model_params.bbox is None:
                 raise ValueError("bbox is required for tree model IFC creation")
+            _t_bp = time.perf_counter()
             bbox_wgs84 = (
                 model_params.bbox.min_x,
                 model_params.bbox.min_y,
@@ -210,7 +187,7 @@ class BaumModeller:
             x, y = bbox[0], bbox[1]
             pset_groups = extract_psets_basepoint(model_params.containers)
             # Create basepoint using new BIMFactoryElement pattern
-            basepoint_entity = BIMFactoryElement(
+            BIMFactoryElement(
                 inst=self.builder.site,
                 children=[
                     Transform(
@@ -219,9 +196,14 @@ class BaumModeller:
                     ),
                 ],
             ).build(self.model)
+            if phase_timings is not None:
+                phase_timings["basepoint_s"] = time.perf_counter() - _t_bp
 
             # Save IFC file
+            _t_sv = time.perf_counter()
             file_path = self.builder.save_ifc_to_output("output_baum.ifc", output_path=output_path)
+            if phase_timings is not None:
+                phase_timings["save_s"] = time.perf_counter() - _t_sv
 
             return file_path
 
