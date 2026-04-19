@@ -30,12 +30,6 @@ from pathlib import Path
 
 from city_furniture.example_bus_stations import main as create_city_furniture
 from city_model.basic.example_basic_city_model import main as create_city_model
-from city_model.from_xml.example_city_model_from_xml import main as create_city_model_from_xml
-from city_model.generic.example_generic_city_model import main as create_city_model_generic
-from city_model.modular.example_modular_city import main as create_city_model_modular
-from city_model.timing.example_city_model_timing import main as create_city_model_timing
-from city_model.with_pydantic.example_city_model_with_pydantic import main as create_city_model_with_pydantic
-from city_model.with_pydantic.simple_example import main as create_city_model_simple
 from georeferencing.example_enhanced_georeferencing import main as create_georeferencing_enhanced
 from georeferencing.example_simple_georeferencing import main as create_georeferencing
 from primitive_objects.example_all_primitives_with_tree_and_dgm import main as create_primitives_all
@@ -80,21 +74,9 @@ def run_comprehensive_examples():
         examples_dir = Path(__file__).parent
         os.chdir(examples_dir)
 
-        print("\n=== Running City Model Examples ===")
+        print("\n=== Running City Model Example ===")
         print("--- Basic City Model ---")
         create_city_model()
-        print("--- City Model from XML ---")
-        create_city_model_from_xml()
-        print("--- Generic City Model ---")
-        create_city_model_generic()
-        print("--- City Model Timing ---")
-        create_city_model_timing()
-        print("--- City Model with Pydantic ---")
-        create_city_model_with_pydantic()
-        print("--- City Model Simple Example ---")
-        create_city_model_simple()
-        print("--- Modular City Model ---")
-        create_city_model_modular()
 
         print("\n=== Running Trees Examples ===")
         print("--- Basic Trees ---")
@@ -162,7 +144,7 @@ def run_comprehensive_examples():
     print("\nGenerated files include:")
     print("  ✓ Basepoint with north arrow (basic)")
     print("  ✓ Basepoint with Pydantic data models")
-    print("  ✓ City model from XML files (basic, from_xml, generic, primitive, timing, pydantic, modular)")
+    print("  ✓ City model from XML files (basic)")
     print("  ✓ Tree models (basic, pydantic)")
     print("  ✓ Digital ground model (basic, filtered, optimized, modular)")
     print("  ✓ Bus station with multiple LODs")
@@ -170,7 +152,6 @@ def run_comprehensive_examples():
     print("  ✓ All primitives with tree and DGM")
     print("  ✓ Various profile types")
     print("  ✓ Multiple georeferencing examples (simple, enhanced)")
-    print("  ✓ Modular city model with clean interface")
     print("  ✓ Modular terrain with clean interface")
 
 

@@ -1,3 +1,5 @@
+import subprocess
+import sys
 from pathlib import Path
 
 from BIMFabrikHH_core import BoundingBoxParams, Component, Container, PathConfig, RequestParams
@@ -46,6 +48,10 @@ def main():
 
     if result:
         logger.info(f"✓ Successfully created {result.name}\n{result.parent}", extra={"debug_category": "success"})
+        subprocess.run(
+            [sys.executable, "-m", "ifcopenshell.validate", "--rules", str(result)],
+            check=True,
+        )
     else:
         logger.error("✗ Failed to create IFC file", extra={"debug_category": "error"})
 
