@@ -9,7 +9,7 @@ various example directories.
 Features demonstrated:
 - Basepoint creation with north arrow
 - City model processing from XML files
-- Tree modeling with elevation data
+- Tree modeling (basic and pydantic)
 - Terrain/DGM creation
 - City furniture (bus stations)
 - Primitive geometry objects
@@ -52,7 +52,6 @@ from terrain.modular.example_modular_terrain import main as create_terrain_modul
 from terrain.optimized.example_optimized_terrain import main as create_terrain_optimized
 from trees.basic.example_basic_trees import main as create_trees
 from trees.combined.example_combined_trees import main as create_trees_combined
-from trees.generic.example_generic_trees import main as create_trees_generic
 from trees.pydantic_example.example_tree_pydantic import main as create_trees_pydantic
 
 from BIMFabrikHH_core.config import get_logger
@@ -103,8 +102,6 @@ def run_comprehensive_examples():
         create_trees()
         print("--- Combined Trees ---")
         create_trees_combined()
-        print("--- Generic Trees ---")
-        create_trees_generic()
         print("--- Pydantic Trees (BaumPydanticApp) ---")
         create_trees_pydantic()
 
@@ -169,7 +166,7 @@ def run_comprehensive_examples():
     print("  ✓ Basepoint with north arrow (basic)")
     print("  ✓ Basepoint with Pydantic data models")
     print("  ✓ City model from XML files (basic, from_xml, generic, primitive, timing, pydantic, modular)")
-    print("  ✓ Tree models (basic, combined, generic, pydantic)")
+    print("  ✓ Tree models (basic, combined, pydantic)")
     print("  ✓ Digital ground model (basic, filtered, optimized, modular)")
     print("  ✓ Bus station with multiple LODs")
     print("  ✓ Complex geometric shapes (primitives suite)")

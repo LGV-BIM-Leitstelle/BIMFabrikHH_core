@@ -1,16 +1,7 @@
 """
-Generic tree modeling functionality for BIMFabrikHH.
-
-This module contains generic tree modeling classes and functions.
+Generic tree IFC export for BIMFabrikHH (Pydantic-based geometry and property sets).
 """
 
-from .app import BaumGenericElevationApp
-from .tree_model import Crown, Tree, TreeCluster, Trunk
+from .app_pydantic import BaumPydanticApp
 
-__all__ = [
-    "BaumGenericElevationApp",
-    "Trunk",
-    "Crown",
-    "Tree",
-    "TreeCluster",
-]
+__all__ = ["BaumPydanticApp"]

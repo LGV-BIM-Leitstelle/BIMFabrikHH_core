@@ -6,7 +6,6 @@ import pandas as pd
 
 from BIMFabrikHH_core.apps.trees.basic.app import BaumModeller
 from BIMFabrikHH_core.apps.trees.basic.baum_manager import BaumManager
-from BIMFabrikHH_core.apps.trees.generic.app import BaumGenericElevationApp
 from BIMFabrikHH_core.data_models.params_tree import BoundingBoxParams, Component, Container, RequestParams
 
 logging.basicConfig(level=logging.INFO)
@@ -81,8 +80,8 @@ EXAMPLE_TREES = {
 
 class TreeExporter:
     """
-    A class that combines different tree export capabilities into one place.
-    Can export basic trees and generic trees.
+    Demonstrates tree export via the basic tree modeller (BaumModeller).
+    For Pydantic-based trees, see ``trees/pydantic_example/example_tree_pydantic.py``.
     """
 
     def __init__(self):
@@ -150,54 +149,13 @@ class TreeExporter:
         else:
             logger.error("Basic tree export failed.")
 
-    def export_generic_trees(self, tree_data: Dict, output_file: str = "output_trees_generic.ifc"):
-        """
-        Export trees using the generic tree modeller
-
-        Args:
-            tree_data (Dict): Dictionary containing tree data
-            output_file (str): Name of the output IFC file
-        """
-        logger.info("Exporting generic trees...")
-
-        # Format data for generic tree modeller
-        tree_list = tree_data["trees"]
-
-        # Transform data to match generic modeller format
-        processed_trees = []
-        for tree in tree_list:
-            processed_tree = {
-                "position": (tree["Easting"], tree["Northing"], tree["Elevation"]),
-                "kronendurchmesser": tree["KRONENDURCHMESSER"],
-                "stammumfang": tree["STAMMUMFANG"],
-                "art_deutsch": tree["art_deutsch"],
-                "sorte_deutsch": tree["sorte_deutsch"],
-                "pflanzjahr": tree["pflanzjahr"],
-            }
-            processed_trees.append(processed_tree)
-
-        # Set up generic tree modeller
-        tree_modeller = BaumGenericElevationApp()
-
-        # Generate and save tree model
-        output_path = self.output_dir / output_file
-        tree_modeller.build_ifc_from_tree_data(processed_trees, output_path)
-        logger.info(f"Generic trees exported to {output_path}")
-
 
 def main():
-    """Main function to demonstrate different tree export capabilities"""
-    # Initialize the tree exporter
+    """Main function to demonstrate basic tree export."""
     exporter = TreeExporter()
-
-    # Use the example tree data dictionary
     tree_data = EXAMPLE_TREES
-
-    # Export trees using different methods
     exporter.export_basic_trees(tree_data)
-    exporter.export_generic_trees(tree_data)
-
-    logger.info("All tree exports completed successfully!")
+    logger.info("Tree export completed successfully!")
 
 
 if __name__ == "__main__":
