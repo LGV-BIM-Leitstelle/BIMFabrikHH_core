@@ -20,7 +20,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 """
 
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Union
 
 from BIMFabrikHH_core.config.logging_colors import get_level_logger
 from BIMFabrikHH_core.config.paths import PathConfig
@@ -167,20 +167,26 @@ class IfcModelBuilder:
             traceback.print_exc()
             return None
 
-    def save_ifc_to_output(self, filename: str, output_path: Optional[Path] = None) -> Optional[Path]:
+    def save_ifc_to_output(
+        self,
+        filename: str,
+        output_path: Optional[Union[str, Path]] = None,
+    ) -> Optional[Path]:
         """
         Save the current IFC model to a file.
 
         Args:
-            filename (str): The filename to save as (used only if output_path is None).
-            output_path (Optional[Path]): Full path where to save the file. If provided,
-                the parent directory must exist. If None, saves to default OUTPUT directory.
+            filename (str): Default filename, used only when ``output_path`` is ``None``.
+                Saved under :attr:`PathConfig.OUTPUT`.
+            output_path (Optional[Union[str, Path]]): Full path where to save the file.
+                Accepts both ``str`` and ``Path``. When given, the parent directory must
+                exist and this path is used verbatim (``filename`` is ignored). When ``None``,
+                the file is written to ``PathConfig.OUTPUT / filename``.
 
         Returns:
             Optional[Path]: The path to the saved IFC file, or None if saving fails.
         """
         if output_path is None:
-            # Default behavior - save to core's output directory
             if not filename:
                 self.logger.warning("Filename cannot be empty")
                 return None
@@ -190,13 +196,12 @@ class IfcModelBuilder:
                 self.logger.warning(f"Output directory does not exist: {output_dir}")
                 return None
 
-            safe_filename = Path(filename).name
-            file_path = output_dir / safe_filename
+            file_path = output_dir / Path(filename).name
         else:
-            # Custom path provided - validate that directory exists
-            if not output_path.parent.exists():
-                raise FileNotFoundError(f"Output directory does not exist: {output_path.parent}")
-            file_path = output_path
+            op = Path(output_path)
+            if not op.parent.exists():
+                raise FileNotFoundError(f"Output directory does not exist: {op.parent}")
+            file_path = op
 
         try:
             self.logger.info(f"Saving IFC file to {file_path}")

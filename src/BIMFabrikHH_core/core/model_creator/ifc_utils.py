@@ -1,4 +1,7 @@
-from typing import List, Literal, Optional, Tuple
+import subprocess
+import sys
+from pathlib import Path
+from typing import List, Literal, Optional, Tuple, Union
 
 import ifcopenshell
 import ifcopenshell.api.aggregate as aggregate
@@ -197,3 +200,19 @@ class IfcModelMethods:
             projected_crs=coordinate_system.model_dump(by_alias=True),
             coordinate_operation=coordinate_operation.model_dump(by_alias=True),
         )
+
+
+def validate_ifc(path: Union[str, Path]) -> None:
+    """Validate an exported IFC file with ``ifcopenshell.validate --rules``.
+
+    Runs ``python -m ifcopenshell.validate --rules <path>`` as a subprocess so the
+    current interpreter keeps its imports clean. Raises ``subprocess.CalledProcessError``
+    if validation fails.
+
+    Args:
+        path: Path to the IFC file to validate (``str`` or ``Path``).
+    """
+    subprocess.run(
+        [sys.executable, "-m", "ifcopenshell.validate", "--rules", str(path)],
+        check=True,
+    )

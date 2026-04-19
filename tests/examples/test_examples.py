@@ -46,7 +46,7 @@ def get_example_files():
     files = discover_example_files()
     # Filter out files that are known to have issues
     excluded = [
-        "trees/pydantic_example/example_tree_pydantic.py",  # Missing dependencies
+        "trees/generic/example_trees_generic.py",  # Missing dependencies
     ]
     return [(file_path, rel_path) for file_path, rel_path in files if rel_path.replace("\\", "/") not in excluded]
 

@@ -1,7 +1,7 @@
-"""
-Generic tree IFC export for BIMFabrikHH (Pydantic-based geometry and property sets).
-"""
+"""Generic trees IFC export (Pydantic records + ifcfactory BIMFactoryElement)."""
 
-from .app_pydantic import BaumPydanticApp
+from BIMFabrikHH_core.data_models import TreeRecord
 
-__all__ = ["BaumPydanticApp"]
+from .app import TreesGenericApp
+
+__all__ = ["TreesGenericApp", "TreeRecord"]

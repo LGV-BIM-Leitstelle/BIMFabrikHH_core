@@ -10,7 +10,7 @@ from . import ifc_utils as root
 
 # Core model creation classes
 from .ifc_modelbuilder import IfcModelBuilder
-from .ifc_utils import IfcModelMethods
+from .ifc_utils import IfcModelMethods, validate_ifc
 
 # Property set utilities
 from .pset_utils import assign_psets_to_element, extract_psets_from_row
@@ -19,6 +19,7 @@ from .pset_utils import assign_psets_to_element, extract_psets_from_row
 __all__ = [
     "IfcModelBuilder",  # Main class for building IFC models with saving capabilities
     "IfcModelMethods",  # Utility methods for IFC model creation and management
+    "validate_ifc",  # Run ifcopenshell.validate --rules on an exported IFC file
     # Property set utilities
     "assign_psets_to_element",
     "extract_psets_from_row",

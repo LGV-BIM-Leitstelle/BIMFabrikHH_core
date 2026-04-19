@@ -9,6 +9,9 @@ management throughout the application.
 from .params_bbox import BoundingBoxParams
 from .params_tree import Component, Container, RequestParams
 
+# App input records
+from .tree_record import TreeRecord
+
 # Default property set data and functions
 from .pydantic_default_pset_data import (
     DefaultPsetData,
@@ -40,6 +43,8 @@ __all__ = [
     "RequestParams",
     "Container",
     "Component",
+    # App input records
+    "TreeRecord",
     # Georeferencing models
     "CoordinateSystem",
     "CoordinateSystemTemplates",

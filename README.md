@@ -53,8 +53,8 @@ This project is under intensive development. Features are being added and improv
     - Street tree inventory from Hamburg OGC API
     - Automatic tree placement with realistic geometry
     - Support for different tree species and sizes
-    - Multiple processing modes: basic (`BaumModeller`) and pydantic (`BaumPydanticApp` in `apps/trees/generic/app_pydantic.py`)
-    - The older generic elevation exporter (`BaumGenericElevationApp`, former `tree_model` dataclasses) was removed; migrate callers to `BaumPydanticApp.build_ifc_from_tree_data`
+    - Multiple processing modes: basic (`BaumModeller`) and generic (`TreesGenericApp` in `apps/trees/generic/app.py`, with `TreeRecord` input contract)
+    - The older generic elevation exporter (`BaumGenericElevationApp`, former `tree_model` dataclasses) was removed; migrate callers to `TreesGenericApp.build_ifc`
 
 2. **Digital Terrain Models (DGM)**
     - GeoTIFF processing and conversion
@@ -140,7 +140,7 @@ graph TB
     
     subgraph tree_apps ["Tree Model Applications"]
         trees_basic["Basic Trees<br/>(BaumModeller)"]
-        trees_pydantic["Pydantic Trees<br/>(BaumPydanticApp)"]
+        trees_generic["Generic Trees<br/>(TreesGenericApp)"]
     end
     
     subgraph terrain_apps ["Terrain Model Applications"]
@@ -206,7 +206,7 @@ graph TB
     
     class ifcopenshell,ifcfactory,numpy,pandas,pydantic,pyvista,rasterio,pyproj,lxml externalStyle
     class ifc_modelbuilder,geometry,data_models,utils,city_parser,config coreStyle
-    class city_app,trees_basic,trees_pydantic,terrain_basic,terrain_filtered,basepoint_basic,basepoint_generic appStyle
+    class city_app,trees_basic,trees_generic,terrain_basic,terrain_filtered,basepoint_basic,basepoint_generic appStyle
 ```
 
 ### Dependencies
@@ -228,7 +228,7 @@ BIMFabrikHH_core/
 │       │   │   └── helpers.py      # City-specific helpers
 │       │   ├── trees/              # Tree modeling application
 │       │   │   ├── basic/          # Basic tree processing (BaumModeller)
-│       │   │   └── generic/        # BaumPydanticApp (IFC trees from dicts + psets)
+│       │   │   └── generic/        # TreesGenericApp (IFC trees from TreeRecord + psets)
 │       │   ├── terrain/            # Digital terrain modeling
 │       │   │   ├── basic/          # Basic terrain processing
 │       │   │   └── filtered/       # Filtered terrain processing

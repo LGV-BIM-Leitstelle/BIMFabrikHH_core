@@ -86,11 +86,7 @@ class BasepointBasicApp:
 
         print(f"Created {len(basepoint_entities)} basepoints")
 
-        if output_path is None:
-            file_path = builder.save_ifc_to_output("output_basepoint_basic.ifc")
-        else:
-            op = Path(output_path)
-            file_path = builder.save_ifc_to_output(op.name, output_path=op)
+        file_path = builder.save_ifc_to_output("output_basepoint_basic.ifc", output_path=output_path)
         print(f"IFC model saved to {file_path}")
         return str(file_path)
 
