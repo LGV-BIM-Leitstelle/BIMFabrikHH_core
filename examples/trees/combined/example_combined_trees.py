@@ -7,7 +7,6 @@ import pandas as pd
 from BIMFabrikHH_core.apps.trees.basic.app import BaumModeller
 from BIMFabrikHH_core.apps.trees.basic.baum_manager import BaumManager
 from BIMFabrikHH_core.apps.trees.generic.app import BaumGenericElevationApp
-from BIMFabrikHH_core.apps.trees.optimised.app import TreeGenericApp
 from BIMFabrikHH_core.data_models.params_tree import BoundingBoxParams, Component, Container, RequestParams
 
 logging.basicConfig(level=logging.INFO)
@@ -83,7 +82,7 @@ EXAMPLE_TREES = {
 class TreeExporter:
     """
     A class that combines different tree export capabilities into one place.
-    Can export basic trees, generic trees, and optimized trees.
+    Can export basic trees and generic trees.
     """
 
     def __init__(self):
@@ -185,42 +184,6 @@ class TreeExporter:
         tree_modeller.build_ifc_from_tree_data(processed_trees, output_path)
         logger.info(f"Generic trees exported to {output_path}")
 
-    def export_optimized_trees(self, tree_data: Dict, output_file: str = "output_trees_optimized.ifc"):
-        """
-        Export trees using the optimized tree modeller
-
-        Args:
-            tree_data (Dict): Dictionary containing tree data
-            output_file (str): Name of the output IFC file
-        """
-        logger.info("Exporting optimized trees...")
-
-        # Format data for optimized tree modeller
-        tree_list = tree_data["trees"]
-
-        # Convert data to the format expected by the optimized modeller
-        processed_trees = []
-        for tree in tree_list:
-            processed_tree = {
-                "kronendurchmesser": tree["KRONENDURCHMESSER"],
-                "stammumfang": tree["STAMMUMFANG"],
-                "Easting": tree["Easting"],
-                "Northing": tree["Northing"],
-                "Elevation": tree["Elevation"],
-                "art_deutsch": tree["art_deutsch"],
-                "sorte_deutsch": tree["sorte_deutsch"],
-                "pflanzjahr": tree["pflanzjahr"],
-            }
-            processed_trees.append(processed_tree)
-
-        # Initialize optimized tree modeller
-        tree_modeller = TreeGenericApp()
-
-        # Process and export trees
-        output_path = self.output_dir / output_file
-        tree_modeller.build_ifc_from_tree_data(processed_trees, output_path)
-        logger.info(f"Optimized trees exported to {output_path}")
-
 
 def main():
     """Main function to demonstrate different tree export capabilities"""
@@ -233,7 +196,6 @@ def main():
     # Export trees using different methods
     exporter.export_basic_trees(tree_data)
     exporter.export_generic_trees(tree_data)
-    exporter.export_optimized_trees(tree_data)
 
     logger.info("All tree exports completed successfully!")
 

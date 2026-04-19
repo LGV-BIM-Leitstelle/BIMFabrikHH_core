@@ -53,7 +53,7 @@ This project is under intensive development. Features are being added and improv
     - Street tree inventory from Hamburg OGC API
     - Automatic tree placement with realistic geometry
     - Support for different tree species and sizes
-    - Multiple processing modes: basic, generic, optimized
+    - Multiple processing modes: basic, generic, pydantic (BaumPydanticApp)
 
 2. **Digital Terrain Models (DGM)**
     - GeoTIFF processing and conversion
@@ -140,7 +140,7 @@ graph TB
     subgraph tree_apps ["Tree Model Applications"]
         trees_basic["Basic Trees<br/>(BaumModeller)"]
         trees_generic["Generic Trees"]
-        trees_optimised["Optimized Trees"]
+        trees_pydantic["Pydantic Trees<br/>(BaumPydanticApp)"]
     end
     
     subgraph terrain_apps ["Terrain Model Applications"]
@@ -206,7 +206,7 @@ graph TB
     
     class ifcopenshell,ifcfactory,numpy,pandas,pydantic,pyvista,rasterio,pyproj,lxml externalStyle
     class ifc_modelbuilder,geometry,data_models,utils,city_parser,config coreStyle
-    class city_app,trees_basic,trees_generic,trees_optimised,terrain_basic,terrain_filtered,basepoint_basic,basepoint_generic appStyle
+    class city_app,trees_basic,trees_generic,trees_pydantic,terrain_basic,terrain_filtered,basepoint_basic,basepoint_generic appStyle
 ```
 
 ### Dependencies
@@ -227,9 +227,8 @@ BIMFabrikHH_core/
 │       │   │   ├── parser.py       # CityGML parser (separated)
 │       │   │   └── helpers.py      # City-specific helpers
 │       │   ├── trees/              # Tree modeling application
-│       │   │   ├── basic/          # Basic tree processing
-│       │   │   ├── generic/        # Generic tree processing
-│       │   │   └── optimised/      # Optimized tree processing
+│       │   │   ├── basic/          # Basic tree processing (BaumModeller)
+│       │   │   └── generic/        # Generic tree processing (incl. BaumPydanticApp)
 │       │   ├── terrain/            # Digital terrain modeling
 │       │   │   ├── basic/          # Basic terrain processing
 │       │   │   └── filtered/       # Filtered terrain processing

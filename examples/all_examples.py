@@ -53,7 +53,7 @@ from terrain.optimized.example_optimized_terrain import main as create_terrain_o
 from trees.basic.example_basic_trees import main as create_trees
 from trees.combined.example_combined_trees import main as create_trees_combined
 from trees.generic.example_generic_trees import main as create_trees_generic
-from trees.optimized.example_optimized_trees import main as create_trees_optimized
+from trees.pydantic_example.example_tree_pydantic import main as create_trees_pydantic
 
 from BIMFabrikHH_core.config import get_logger
 from BIMFabrikHH_core.config.paths import PathConfig
@@ -105,8 +105,8 @@ def run_comprehensive_examples():
         create_trees_combined()
         print("--- Generic Trees ---")
         create_trees_generic()
-        print("--- Optimized Trees ---")
-        create_trees_optimized()
+        print("--- Pydantic Trees (BaumPydanticApp) ---")
+        create_trees_pydantic()
 
         print("\n=== Running Terrain Examples ===")
         print("--- Basic Terrain ---")
@@ -169,7 +169,7 @@ def run_comprehensive_examples():
     print("  ✓ Basepoint with north arrow (basic)")
     print("  ✓ Basepoint with Pydantic data models")
     print("  ✓ City model from XML files (basic, from_xml, generic, primitive, timing, pydantic, modular)")
-    print("  ✓ Tree models (basic, combined, generic, optimized, pydantic)")
+    print("  ✓ Tree models (basic, combined, generic, pydantic)")
     print("  ✓ Digital ground model (basic, filtered, optimized, modular)")
     print("  ✓ Bus station with multiple LODs")
     print("  ✓ Complex geometric shapes (primitives suite)")
