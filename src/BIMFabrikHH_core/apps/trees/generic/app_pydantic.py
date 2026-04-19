@@ -8,8 +8,9 @@ the pydantic-based approach with configurable property sets.
 
 import logging
 from pathlib import Path
-from typing import Dict, List, Optional, Union
+from typing import Callable, Dict, List, Optional, Union
 
+from ifcfactory import BIMFactoryElement
 from pydantic import BaseModel
 
 from BIMFabrikHH_core.core.geometry.tree_objects_generic import create_tree_element
@@ -30,6 +31,7 @@ class BaumPydanticApp:
         trunk_layer: str = "_BIM_SBK_Stamm",
         crown_layer: str = "_BIM_SBK_Krone",
         name_prefix: str = "",
+        on_progress: Optional[Callable[[], None]] = None,
     ) -> Path:
         """
         Build an IFC model from a list of tree data dicts using pydantic approach.
@@ -44,6 +46,7 @@ class BaumPydanticApp:
             trunk_layer: CAD layer name for trunk geometry (default: "_BIM_SBK_Stamm")
             crown_layer: CAD layer name for crown geometry (default: "_BIM_SBK_Krone")
             name_prefix: Prefix to add to tree names (e.g., "SBK_Mengestrasse_")
+            on_progress: Optional callback called after each tree is built, for progress tracking.
 
         Returns:
             Path to the saved IFC file.
@@ -61,6 +64,8 @@ class BaumPydanticApp:
         site = model_builder.site
         body_context = model_builder.model3d
 
+        # Collect valid tree elements first, then build them all in one batched
+        # call via BIMFactoryElement.build_in() — O(n) instead of O(n²).
         tree_elements = []
 
         for idx, tree_dict in enumerate(tree_data, 1):
@@ -89,54 +94,48 @@ class BaumPydanticApp:
 
                 # Calculate derived values
                 crown_radius = kronendurchmesser / 2
-                trunk_radius = stammdurchmesser / 2  # Convert diameter to radius
+                # Clamp to a visible minimum (5 cm diameter) so a 0.0 or near-zero
+                # stammdurchmesser (e.g. newly planted tree) never produces a degenerate cylinder.
+                MIN_TRUNK_RADIUS = 0.025  # 5 cm diameter
+                trunk_radius = max(MIN_TRUNK_RADIUS, stammdurchmesser / 2)
                 crown_diameter = kronendurchmesser
 
                 # Calculate tree height using consistent logic
                 extracted_height = tree_dict.get("baumhoehe")
                 if extracted_height and extracted_height > 0:
-                    # Use provided height
                     tree_height = float(extracted_height)
                     trunk_height = tree_height + crown_radius
                 elif crown_diameter < 3:
-                    # For small trees: total height is 3.5m, trunk goes to crown center
                     tree_height = 3.5
                     trunk_height = 3.5
                 else:
-                    # For larger trees: trunk height is 1.35 * crown_diameter, tree height is trunk - crown_radius
                     trunk_height = 1.35 * crown_diameter
                     tree_height = trunk_height - crown_radius
 
-                # Create tree element using tree_objects_generic
-                tree_element = create_tree_element(
-                    position=position,
-                    crown_radius=crown_radius,
-                    trunk_radius=trunk_radius,
-                    trunk_height=trunk_height,
-                    crown_detail=detail,
-                    trunk_segments=segments,
-                    psets=pset_templates,
-                    trunk_color=trunk_color,
-                    crown_color=crown_color,
-                    name=tree_name,
-                    name_prefix=name_prefix,
-                    trunk_layer=trunk_layer,
-                    crown_layer=crown_layer,
+                tree_elements.append(
+                    create_tree_element(
+                        position=position,
+                        crown_radius=crown_radius,
+                        trunk_radius=trunk_radius,
+                        trunk_height=trunk_height,
+                        crown_detail=detail,
+                        trunk_segments=segments,
+                        psets=pset_templates,
+                        trunk_color=trunk_color,
+                        crown_color=crown_color,
+                        name=tree_name,
+                        name_prefix=name_prefix,
+                        trunk_layer=trunk_layer,
+                        crown_layer=crown_layer,
+                    )
                 )
-
-                # Build the tree and assign it to the site
-                from ifcfactory import BIMFactoryElement
-
-                BIMFactoryElement(
-                    inst=site,
-                    children=[tree_element],
-                ).build(model)
-
-                tree_elements.append(tree_element)
 
             except Exception as e:
                 logging.error(f"Failed to create tree {idx}: {e}")
                 continue
+
+        # Build all trees and assign them to the site in one batched call.
+        BIMFactoryElement.build_in(model, inst=site, items=tree_elements, on_progress=on_progress)
 
         # Save to file
         if output_path is None:
