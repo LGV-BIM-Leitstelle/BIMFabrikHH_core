@@ -89,7 +89,8 @@ class BasepointBasicApp:
         if output_path is None:
             file_path = builder.save_ifc_to_output("output_basepoint_basic.ifc")
         else:
-            file_path = builder.save_ifc_to_output(str(Path(output_path).name))
+            op = Path(output_path)
+            file_path = builder.save_ifc_to_output(op.name, output_path=op)
         print(f"IFC model saved to {file_path}")
         return str(file_path)
 
