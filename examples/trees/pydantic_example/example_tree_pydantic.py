@@ -1,331 +1,187 @@
 """
-Example: Tree Model using Pydantic Approach
-==========================================
+Example: Pydantic tree IFC (``BaumPydanticApp`` pipeline)
+======================================================
 
-This example demonstrates how to create tree objects using
-the pydantic-based tree model with configurable property sets.
+Flow: tunable constants → list of tree dicts → ``BaumPydanticApp.build_ifc_from_tree_data``.
+
+This example does **not** fetch data, use pandas, DGM elevation, or coordinate
+transformation: ``position`` is set directly in metres (same CRS the app uses
+for the project, Gauss-Kruger Hamburg via ``IfcModelBuilder`` inside
+``BaumPydanticApp``).
 """
 
-import ifcopenshell.api.aggregate as aggregate
-from ifcfactory import Material
+from __future__ import annotations
 
-from BIMFabrikHH_core.apps.trees.generic.tree_model_pydantic import TreeBuilder, TreeConfig, TreeModel
-from BIMFabrikHH_core.core.model_creator import IfcModelBuilder
-from BIMFabrikHH_core.data_models.pydantic_georeferencing import CoordinateSystemTemplates
+import logging
+import math
+from typing import Any, Dict, List, Tuple
+
+from BIMFabrikHH_core.apps.trees.generic.app_pydantic import BaumPydanticApp
 from BIMFabrikHH_core.data_models.pydantic_psets_tree import Pset_Bauwerk_Tree, Pset_Objektinformation_Tree
 
+# --- Tunable constants -------------------------------------------------------
 
-def create_basic_tree_example():
-    """Create a basic tree example with minimal configuration."""
+TRUNK_COLOR: Tuple[float, float, float] = (0.44, 0.27, 0.18)
+CROWN_COLOR: Tuple[float, float, float] = (0.13, 0.50, 0.18)
+LEVEL_OF_DETAIL: int = 2
+TRUNK_SEGMENTS: int = 10
+OUTPUT_FILENAME: str = "example_tree_pydantic.ifc"
+# Optional prefix for IFC tree names (e.g. project or site); empty keeps names like Baum_001.
+NAME_PREFIX: str = ""
 
-    print("Creating basic tree example...")
 
-    # Create model and contexts
-    model_builder = IfcModelBuilder()
-    model_builder.build_project(
-        project_name="Basic_Tree_Project",
-        coordinate_system=CoordinateSystemTemplates.epsg_25832(),
-        coordinate_operation=CoordinateSystemTemplates.get_default_coordinate_operation(),
-        site_name="Basic_Tree_Site",
-        building_name="Basic_Tree_Building",
-        storey_name="Basic_Tree_Storey",
+def _psets_for_tree(
+    *,
+    baumnummer: str,
+    gattung_deutsch: str,
+    art_baum: str,
+    pflanzjahr: int,
+    kronendurchmesser_m: float,
+    stammumfang_m: float,
+    strassenname: str,
+) -> Dict[str, Any]:
+    """Build Pset models; trunk diameter from circumference (m) for ``stammdurchmesser``."""
+    stammdurchmesser_m = (stammumfang_m / math.pi) if stammumfang_m > 0 else 0.05
+    obj = Pset_Objektinformation_Tree(
+        baumnummer=baumnummer,
+        gattung_deutsch=gattung_deutsch,
+        art_baum=art_baum,
+        pflanzjahr=pflanzjahr,
+        kronendurchmesser=(kronendurchmesser_m, "meter"),
+        stammdurchmesser=(stammdurchmesser_m, "meter"),
     )
-
-    model = model_builder.model
-    storey = model_builder.storey
-    body_context = model_builder.model3d
-
-    # Create simple tree configuration
-    tree_config = TreeConfig(crown_radius=2.0, trunk_radius=0.25, trunk_height=3.5, trunk_segments=8, crown_detail=1)
-
-    # Create tree builder
-    tree_builder = TreeBuilder(model, body_context, tree_config)
-
-    # Create tree model without property sets
-    tree_model = TreeModel(position=(0, 0, 0), config=tree_config, psets=None)  # No property sets for basic example
-
-    # Build the tree
-    tree_element = tree_model.build(model_builder, tree_builder)
-
-    # Aggregate tree under storey
-    aggregate.assign_object(model, products=[tree_element], relating_object=storey)
-
-    # Write to file
-    output_file = "output/basic_tree_example.ifc"
-    model.write(output_file)
-
-    print(f"Basic tree IFC model created successfully: {output_file}")
+    bau = Pset_Bauwerk_Tree(strassenname=strassenname)
+    return {"Pset_Objektinformation": obj, "Pset_Bauwerk": bau}
 
 
-def create_detailed_tree_example():
-    """Create a detailed tree example with property sets and materials."""
+def build_example_tree_data() -> List[Dict[str, Any]]:
+    """
+    Minimal hand-authored rows (no API, no transforms).
 
-    print("Creating detailed tree example...")
-
-    # Create model and contexts
-    model_builder = IfcModelBuilder()
-    model_builder.build_project(
-        project_name="Detailed_Tree_Project",
-        coordinate_system=CoordinateSystemTemplates.epsg_25832(),
-        coordinate_operation=CoordinateSystemTemplates.get_default_coordinate_operation(),
-        site_name="Detailed_Tree_Site",
-        building_name="Detailed_Tree_Building",
-        storey_name="Detailed_Tree_Storey",
-    )
-
-    model = model_builder.model
-    storey = model_builder.storey
-    body_context = model_builder.model3d
-
-    # Create materials
-    trunk_material = Material(name="Tree_Trunk_Material", category="Wood", rgb=(0.44, 0.27, 0.18), transparency=0.0)
-
-    crown_material = Material(
-        name="Tree_Crown_Material", category="Vegetation", rgb=(0.13, 0.50, 0.18), transparency=0.1
-    )
-
-    # Create detailed tree configuration
-    tree_config = TreeConfig(
-        crown_radius=3.0,
-        trunk_radius=0.4,
-        trunk_height=5.0,
-        trunk_segments=16,
-        crown_detail=2,
-        trunk_color=(0.44, 0.27, 0.18),
-        crown_color=(0.13, 0.50, 0.18),
-        trunk_material=trunk_material,
-        crown_material=crown_material,
-    )
-
-    # Create property sets
-    obj_info = Pset_Objektinformation_Tree(
-        baumnummer="TREE_DETAILED_001",
-        gattung_deutsch="Buche",
-        baumid=101,
-        art_deutsch="Rotbuche",
-        sorte_deutsch="Fagus sylvatica",
-        pflanzjahr=1980,
-        kronendurchmesser=6.0,
-        stammumfang=0.8,
-    )
-
-    dgm_info = Pset_Bauwerk_Tree(strassenname="Beispielstraße")
-
-    psets = {"Pset_Objektinformation": obj_info, "Pset_Bauwerk": dgm_info}
-
-    # Create tree builder
-    tree_builder = TreeBuilder(model, body_context, tree_config)
-
-    # Create tree model with property sets
-    tree_model = TreeModel(position=(0, 0, 0), config=tree_config, psets=psets)
-
-    # Build the tree
-    tree_element = tree_model.build(model_builder, tree_builder)
-
-    # Aggregate tree under storey
-    aggregate.assign_object(model, products=[tree_element], relating_object=storey)
-
-    # Write to file
-    output_file = "output/detailed_tree_example.ifc"
-    model.write(output_file)
-
-    print(f"Detailed tree IFC model created successfully: {output_file}")
-
-
-def create_multiple_trees_example():
-    """Create multiple trees with different configurations."""
-
-    print("Creating multiple trees example...")
-
-    # Create model and contexts
-    model_builder = IfcModelBuilder()
-    model_builder.build_project(
-        project_name="Multiple_Trees_Project",
-        coordinate_system=CoordinateSystemTemplates.epsg_25832(),
-        coordinate_operation=CoordinateSystemTemplates.get_default_coordinate_operation(),
-        site_name="Multiple_Trees_Site",
-        building_name="Multiple_Trees_Building",
-        storey_name="Multiple_Trees_Storey",
-    )
-
-    model = model_builder.model
-    storey = model_builder.storey
-    body_context = model_builder.model3d
-
-    # Define different tree configurations
-    tree_configs = [
-        TreeConfig(
-            crown_radius=1.5,
-            trunk_radius=0.2,
-            trunk_height=2.5,
-            trunk_segments=6,
-            crown_detail=1,
-            crown_color=(0.2, 0.6, 0.2),  # Bright green
-        ),
-        TreeConfig(
-            crown_radius=2.5,
-            trunk_radius=0.3,
-            trunk_height=4.0,
-            trunk_segments=10,
-            crown_detail=2,
-            crown_color=(0.1, 0.4, 0.1),  # Dark green
-        ),
-        TreeConfig(
-            crown_radius=3.5,
-            trunk_radius=0.4,
-            trunk_height=5.5,
-            trunk_segments=12,
-            crown_detail=2,
-            crown_color=(0.15, 0.5, 0.15),  # Medium green
-        ),
-    ]
-
-    # Create property sets for different trees
-    tree_data = [
+    Each dict matches ``BaumPydanticApp.build_ifc_from_tree_data`` expectations.
+    """
+    return [
         {
-            "baumnummer": "TREE_001",
-            "gattung_deutsch": "Eiche",
-            "baumid": 1,
-            "art_deutsch": "Stieleiche",
-            "sorte_deutsch": "Quercus robur",
-            "pflanzjahr": 1990,
-            "kronendurchmesser": 3.0,
-            "stammumfang": 0.4,
+            "name": "Baum_001",
+            "position": (558_400.0, 5_927_500.0, 5.0),
+            "kronendurchmesser": 4.0,
+            "stammdurchmesser": 0.35,
+            "detail": LEVEL_OF_DETAIL,
+            "segments": TRUNK_SEGMENTS,
+            "psets": _psets_for_tree(
+                baumnummer="001",
+                gattung_deutsch="Eiche",
+                art_baum="Quercus robur",
+                pflanzjahr=1990,
+                kronendurchmesser_m=4.0,
+                stammumfang_m=1.1,
+                strassenname="Beispielstraße A",
+            ),
         },
         {
-            "baumnummer": "TREE_002",
-            "gattung_deutsch": "Buche",
-            "baumid": 2,
-            "art_deutsch": "Rotbuche",
-            "sorte_deutsch": "Fagus sylvatica",
-            "pflanzjahr": 1985,
-            "kronendurchmesser": 5.0,
-            "stammumfang": 0.6,
+            "name": "Baum_002",
+            "position": (558_408.0, 5_927_500.0, 5.0),
+            "kronendurchmesser": 6.0,
+            "stammdurchmesser": 0.45,
+            "detail": LEVEL_OF_DETAIL,
+            "segments": TRUNK_SEGMENTS,
+            "baumhoehe": 12.0,
+            "psets": _psets_for_tree(
+                baumnummer="002",
+                gattung_deutsch="Buche",
+                art_baum="Fagus sylvatica",
+                pflanzjahr=1985,
+                kronendurchmesser_m=6.0,
+                stammumfang_m=1.4,
+                strassenname="Beispielstraße B",
+            ),
         },
         {
-            "baumnummer": "TREE_003",
-            "gattung_deutsch": "Linde",
-            "baumid": 3,
-            "art_deutsch": "Sommerlinde",
-            "sorte_deutsch": "Tilia platyphyllos",
-            "pflanzjahr": 1995,
-            "kronendurchmesser": 7.0,
-            "stammumfang": 0.8,
+            "name": "Baum_003",
+            "position": (558_416.0, 5_927_500.0, 5.0),
+            "kronendurchmesser": 3.5,
+            "stammdurchmesser": 0.30,
+            "detail": max(1, LEVEL_OF_DETAIL - 1),
+            "segments": 8,
+            "psets": _psets_for_tree(
+                baumnummer="003",
+                gattung_deutsch="Linde",
+                art_baum="Tilia cordata",
+                pflanzjahr=2001,
+                kronendurchmesser_m=3.5,
+                stammumfang_m=0.9,
+                strassenname="Beispielstraße C",
+            ),
         },
     ]
 
-    # Create trees at different positions
-    positions = [(0, 0, 0), (8, 0, 0), (16, 0, 0)]
 
-    tree_elements = []
+def validate_example_tree_data(tree_data: List[Dict[str, Any]]) -> None:
+    """Lightweight checks only (no pandas). Raises ``ValueError`` on failure."""
+    if not tree_data:
+        raise ValueError("tree_data is empty")
 
-    for i, (config, data, position) in enumerate(zip(tree_configs, tree_data, positions)):
-        # Create property sets
-        obj_info = Pset_Objektinformation_Tree(**data)
-        dgm_info = Pset_Bauwerk_Tree(strassenname=f"Baumstraße {i+1}")
-
-        psets = {"Pset_Objektinformation": obj_info, "Pset_Bauwerk": dgm_info}
-
-        # Create tree builder
-        tree_builder = TreeBuilder(model, body_context, config)
-
-        # Create tree model
-        tree_model = TreeModel(position=position, config=config, psets=psets)
-
-        # Build the tree
-        tree_element = tree_model.build(model_builder, tree_builder)
-        tree_elements.append(tree_element)
-
-    # Aggregate all trees under storey
-    aggregate.assign_object(model, products=tree_elements, relating_object=storey)
-
-    # Write to file
-    output_file = "output/multiple_trees_example.ifc"
-    model.write(output_file)
-
-    print(f"Multiple trees IFC model created successfully: {output_file}")
-
-
-def create_tree_from_data_example():
-    """Create a tree from standardized data row."""
-
-    print("Creating tree from data example...")
-
-    # Create model and contexts
-    model_builder = IfcModelBuilder()
-    model_builder.build_project(
-        project_name="Data_Tree_Project",
-        coordinate_system=CoordinateSystemTemplates.epsg_25832(),
-        coordinate_operation=CoordinateSystemTemplates.get_default_coordinate_operation(),
-        site_name="Data_Tree_Site",
-        building_name="Data_Tree_Building",
-        storey_name="Data_Tree_Storey",
+    required = (
+        "name",
+        "position",
+        "kronendurchmesser",
+        "stammdurchmesser",
+        "detail",
+        "segments",
+        "psets",
     )
 
-    model = model_builder.model
-    storey = model_builder.storey
-    body_context = model_builder.model3d
+    for i, row in enumerate(tree_data):
+        label = row.get("name", f"index_{i}")
+        for key in required:
+            if key not in row:
+                raise ValueError(f"{label}: missing required key {key!r}")
 
-    # Simulate data row from database or CSV
-    data_row = {
-        "position": (0, 0, 0),
-        "kronendurchmesser": 4.5,
-        "stammumfang": 0.7,
-        "height": 4.2,
-        "segments": 12,
-        "detail": 2,
-    }
+        pos = row["position"]
+        if not isinstance(pos, (tuple, list)) or len(pos) != 3:
+            raise ValueError(f"{label}: position must be a 3-tuple")
 
-    # Create property sets
-    obj_info = Pset_Objektinformation_Tree(
-        baumnummer="TREE_DATA_001",
-        gattung_deutsch="Ahorn",
-        baumid=201,
-        art_deutsch="Bergahorn",
-        sorte_deutsch="Acer pseudoplatanus",
-        pflanzjahr=1988,
-        kronendurchmesser=4.5,
-        stammumfang=0.7,
+        for k in ("kronendurchmesser", "stammdurchmesser"):
+            v = row[k]
+            if not isinstance(v, (int, float)) or v < 0:
+                raise ValueError(f"{label}: invalid {k}: {v!r}")
+
+        d, s = row["detail"], row["segments"]
+        if not isinstance(d, int) or not (1 <= d <= 4):
+            raise ValueError(f"{label}: detail must be int 1..4, got {d!r}")
+        if not isinstance(s, int) or s < 3:
+            raise ValueError(f"{label}: segments must be int >= 3, got {s!r}")
+
+        psets = row["psets"]
+        if not isinstance(psets, dict) or not psets:
+            raise ValueError(f"{label}: psets must be a non-empty dict")
+
+
+def main() -> None:
+    logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
+
+    logging.info("Example: pydantic trees via BaumPydanticApp (no fetch, no transform)")
+    tree_data = build_example_tree_data()
+    validate_example_tree_data(tree_data)
+
+    logging.info("Validated %d tree row(s)", len(tree_data))
+    logging.info(
+        "Colours: trunk=%s crown=%s | LOD=%s segments=%s",
+        TRUNK_COLOR,
+        CROWN_COLOR,
+        LEVEL_OF_DETAIL,
+        TRUNK_SEGMENTS,
     )
 
-    dgm_info = Pset_Bauwerk_Tree(strassenname="Datenstraße")
-
-    psets = {"Pset_Objektinformation": obj_info, "Pset_Bauwerk": dgm_info}
-
-    # Create tree from standardized data
-    tree_model = TreeModel.from_standardized_data(data_row, psets)
-
-    # Create tree builder with the computed configuration
-    tree_builder = TreeBuilder(model, body_context, tree_model.config)
-
-    # Build the tree
-    tree_element = tree_model.build(model_builder, tree_builder)
-
-    # Aggregate tree under storey
-    aggregate.assign_object(model, products=[tree_element], relating_object=storey)
-
-    # Write to file
-    output_file = "output/data_tree_example.ifc"
-    model.write(output_file)
-
-    print(f"Data-based tree IFC model created successfully: {output_file}")
-
-
-def main():
-    """Run all tree examples."""
-
-    print("Creating tree examples using pydantic approach...")
-
-    # Create output directory if it doesn't exist
-    os.makedirs("output", exist_ok=True)
-
-    # Run all examples
-    create_basic_tree_example()
-    create_detailed_tree_example()
-    create_multiple_trees_example()
-    create_tree_from_data_example()
-
-    print("\nAll tree examples completed successfully!")
+    out = BaumPydanticApp.build_ifc_from_tree_data(
+        tree_data,
+        output_path=OUTPUT_FILENAME,
+        include_property_sets=True,
+        trunk_color=TRUNK_COLOR,
+        crown_color=CROWN_COLOR,
+        name_prefix=NAME_PREFIX,
+    )
+    logging.info("Done. IFC path: %s", out)
 
 
 if __name__ == "__main__":
