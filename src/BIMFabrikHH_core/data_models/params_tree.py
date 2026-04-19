@@ -45,7 +45,9 @@ class RequestParams(BaseModel):
     Request parameters for the API.
     """
 
-    bbox: Optional[BoundingBoxParams] = Field(default=None, description="Bounding box parameters (optional; if None, terrain uses full raster)")
+    bbox: Optional[BoundingBoxParams] = Field(
+        default=None, description="Bounding box parameters (optional; if None, terrain uses full raster)"
+    )
     containers: Optional[List[Container]] = None
 
     model_config = {
