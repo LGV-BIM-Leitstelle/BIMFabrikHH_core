@@ -28,10 +28,6 @@ import os
 import time
 from pathlib import Path
 
-from city_furniture.example_bus_stations import main as create_city_furniture
-from city_model.basic.example_basic_city_model import main as create_city_model
-from georeferencing.example_enhanced_georeferencing import main as create_georeferencing_enhanced
-from georeferencing.example_simple_georeferencing import main as create_georeferencing
 from primitive_objects.example_all_primitives_with_tree_and_dgm import main as create_primitives_all
 from primitive_objects.example_basic_primitives import main as create_primitives_basic
 from primitive_objects.example_boolean_operations import main as create_primitives_boolean
@@ -40,15 +36,19 @@ from primitive_objects.example_materials_and_styles import main as create_primit
 from primitive_objects.example_ngon_cylinders import main as create_primitives_ngon_cylinders
 from primitive_objects.example_property_sets import main as create_primitives_psets
 from primitive_objects.example_transformations import main as create_primitives_transformations
+
+from BIMFabrikHH_core.config import get_logger
+from BIMFabrikHH_core.config.paths import PathConfig
+from city_furniture.example_bus_stations import main as create_city_furniture
+from city_model.basic.example_basic_city_model import main as create_city_model
+from georeferencing.example_enhanced_georeferencing import main as create_georeferencing_enhanced
+from georeferencing.example_simple_georeferencing import main as create_georeferencing
 from terrain.basic.example_basic_terrain import main as create_terrain
 from terrain.filtered.example_filtered_terrain import main as create_terrain_filtered
 from terrain.modular.example_modular_terrain import main as create_terrain_modular
 from terrain.optimized.example_optimized_terrain import main as create_terrain_optimized
 from trees.basic.example_basic_trees import main as create_trees
 from trees.pydantic_example.example_tree_pydantic import main as create_trees_pydantic
-
-from BIMFabrikHH_core.config import get_logger
-from BIMFabrikHH_core.config.paths import PathConfig
 
 logger = get_logger()
 

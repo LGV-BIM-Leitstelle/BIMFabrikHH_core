@@ -35,7 +35,6 @@ from BIMFabrikHH_core.core.utils.geometry_utils import (
     extract_polygon_with_voids,
 )
 from BIMFabrikHH_core.data_models.pydantic_psets_city_model import Building
-
 from .helpers import extract_attributes_from_xml
 
 logger = get_level_logger("city_app")

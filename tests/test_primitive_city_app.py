@@ -3,6 +3,7 @@
 from pathlib import Path
 
 from BIMFabrikHH_core.apps.city.primitive_app import PrimitiveCityApp, create_primitive_city
+
 from BIMFabrikHH_core.data_models.params_bbox import BoundingBoxParams
 
 

@@ -18,7 +18,6 @@ from typing import Any, Dict, Generator, List, Tuple
 
 import ifcopenshell.api.pset as ifc_pset
 import pandas as pd
-
 from ifcfactory import ureg
 
 from BIMFabrikHH_core.apps.trees.basic.app import BaumModeller

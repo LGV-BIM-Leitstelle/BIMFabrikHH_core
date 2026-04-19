@@ -6,8 +6,6 @@ This example shows how easy it is to add georeferencing to IFC models
 using the new CoordinateSystem model and templates.
 """
 
-from pathlib import Path
-
 from BIMFabrikHH_core.core.model_creator.ifc_modelbuilder import IfcModelBuilder
 from BIMFabrikHH_core.data_models.pydantic_georeferencing import (
     CoordinateOperation,

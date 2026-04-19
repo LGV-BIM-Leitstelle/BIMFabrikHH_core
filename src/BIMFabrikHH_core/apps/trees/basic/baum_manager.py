@@ -415,9 +415,7 @@ class BaumManager:
                     },
                 )
                 if phase_timings is not None:
-                    phase_timings["tree_pset_s"] = phase_timings.get("tree_pset_s", 0.0) + (
-                        time.perf_counter() - _t0
-                    )
+                    phase_timings["tree_pset_s"] = phase_timings.get("tree_pset_s", 0.0) + (time.perf_counter() - _t0)
             except Exception as e:
                 logger.error(f"Error creating Pset for tree {tree['baumid']}: {e}")
 

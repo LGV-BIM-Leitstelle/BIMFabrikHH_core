@@ -6,8 +6,6 @@ This example demonstrates how to create bus station objects using
 the city_furniture module with primitive geometry.
 """
 
-from ifcfactory import BIMFactoryElement
-
 from BIMFabrikHH_core.core.geometry.city_furniture import (
     BusStationBuilder,
     BusStationConfig,
