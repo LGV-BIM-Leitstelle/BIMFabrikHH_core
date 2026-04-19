@@ -27,8 +27,8 @@ class BaumPydanticApp:
         tree_data: List[Dict],
         output_path: Optional[Union[str, Path]] = None,
         include_property_sets: bool = True,
-        trunk_color: tuple = (0.44, 0.27, 0.18),
-        crown_color: tuple = (0.13, 0.50, 0.18),
+        trunk_color: tuple = (112, 69, 46),
+        crown_color: tuple = (33, 128, 46),
         trunk_layer: str = "_BIM_SBK_Stamm",
         crown_layer: str = "_BIM_SBK_Krone",
         name_prefix: str = "",
@@ -43,8 +43,9 @@ class BaumPydanticApp:
             output_path: Path to save the IFC file.
                 If None, saves to output_baum_pydantic.ifc in current dir.
             include_property_sets: Whether to include property sets in the model
-            trunk_color: RGB tuple for trunk color (default: brown (0.44, 0.27, 0.18))
-            crown_color: RGB tuple for crown color (default: green (0.13, 0.50, 0.18))
+            trunk_color: RGB as ``(R, G, B)`` with 0-255 **or** normalized 0-1 floats; ifcfactory
+                ``Style`` accepts both (default trunk brown ``(112, 69, 46)``).
+            crown_color: Same as ``trunk_color`` (default crown green ``(33, 128, 46)``).
             trunk_layer: CAD layer name for trunk geometry (default: "_BIM_SBK_Stamm")
             crown_layer: CAD layer name for crown geometry (default: "_BIM_SBK_Krone")
             name_prefix: Prefix to add to tree names (e.g., "SBK_Mengestrasse_")
