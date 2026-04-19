@@ -72,7 +72,7 @@ class BaumManager:
             stammbasis (float): Trunk base diameter.
 
         Returns:
-            The main tree entity (IfcBuildingElement).
+            The main tree entity (IfcBuildingElementProxy).
         """
         # Calculate tree dimensions
         kronendurchmesser = radius * 2
@@ -115,7 +115,7 @@ class BaumManager:
         Returns:
             dict: Dictionary with keys 'tree', 'trunk', 'crown' and their corresponding IFC entities.
         """
-        main_tree = root.create_entity(model, ifc_class="IfcBuildingElement", name=f"Baum_{tree_id:04d}")
+        main_tree = root.create_entity(model, ifc_class="IfcBuildingElementProxy", name=f"Baum_{tree_id:04d}")
         trunk = root.create_entity(model, ifc_class="IfcBuildingElementProxy", name=f"Stamm_{tree_id:04d}")
         crown = root.create_entity(model, ifc_class="IfcBuildingElementProxy", name=f"Krone_{tree_id:04d}")
 
@@ -422,7 +422,7 @@ class BaumManager:
                 logger.error(f"Error creating Pset for tree {tree['baumid']}: {e}")
 
             # Assign the tree to the storey
-            # element = model.by_type("IfcBuildingElement")[0]
+            # element = model.by_type("IfcBuildingElementProxy")[0]
 
     def create_trees_from_df(
         self, df: pd.DataFrame, builder: IfcModelBuilder, level_of_geometry: str, psets: Dict[str, Any]

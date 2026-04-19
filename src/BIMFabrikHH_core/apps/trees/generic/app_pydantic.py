@@ -14,7 +14,7 @@ from typing import Callable, Dict, List, Optional, Union
 from ifcfactory import BIMFactoryElement
 from pydantic import BaseModel
 
-from BIMFabrikHH_core.core.geometry.tree_objects_generic import create_tree_element
+from BIMFabrikHH_core.core.geometry.tree_objects_generic import RgbTuple, create_tree_element
 from BIMFabrikHH_core.core.model_creator import IfcModelBuilder
 from BIMFabrikHH_core.data_models.pydantic_georeferencing import CoordinateSystemTemplates
 
@@ -27,8 +27,8 @@ class BaumPydanticApp:
         tree_data: List[Dict],
         output_path: Optional[Union[str, Path]] = None,
         include_property_sets: bool = True,
-        trunk_color: tuple = (112, 69, 46),
-        crown_color: tuple = (33, 128, 46),
+        trunk_color: RgbTuple = (112, 69, 46),
+        crown_color: RgbTuple = (33, 128, 46),
         trunk_layer: str = "_BIM_SBK_Stamm",
         crown_layer: str = "_BIM_SBK_Krone",
         name_prefix: str = "",
@@ -71,7 +71,6 @@ class BaumPydanticApp:
 
         model = model_builder.model
         site = model_builder.site
-        body_context = model_builder.model3d
 
         # Collect valid tree elements first, then build them all in one batched
         # call via BIMFactoryElement.build_in() — O(n) instead of O(n²).
@@ -91,13 +90,14 @@ class BaumPydanticApp:
                 # Get property sets from tree_dict if provided
                 psets = tree_dict.get("psets", None) if include_property_sets else None
                 pset_templates = []
-                if psets:
+                if psets is not None and psets:
                     for pset_name, pset_data in psets.items():
                         if isinstance(pset_data, BaseModel):
                             pset_templates.append(pset_data)
                         else:
                             logging.warning(
-                                f"Tree {tree_name}: Property set '{pset_name}' is not a BaseModel instance (type: {type(pset_data)}). Skipping."
+                                f"Tree {tree_name}: Property set '{pset_name}' is not a BaseModel instance "
+                                f"(type: {type(pset_data)}). Skipping."
                             )
                 elif include_property_sets:
                     logging.warning(f"Tree {tree_name}: No property sets found in tree_dict (psets={psets})")
@@ -110,17 +110,14 @@ class BaumPydanticApp:
                 trunk_radius = max(MIN_TRUNK_RADIUS, stammdurchmesser / 2)
                 crown_diameter = kronendurchmesser
 
-                # Calculate tree height using consistent logic
+                # Trunk vertical extent for geometry
                 extracted_height = tree_dict.get("baumhoehe")
                 if extracted_height and extracted_height > 0:
-                    tree_height = float(extracted_height)
-                    trunk_height = tree_height + crown_radius
+                    trunk_height = float(extracted_height) + crown_radius
                 elif crown_diameter < 3:
-                    tree_height = 3.5
                     trunk_height = 3.5
                 else:
                     trunk_height = 1.35 * crown_diameter
-                    tree_height = trunk_height - crown_radius
 
                 tree_elements.append(
                     create_tree_element(

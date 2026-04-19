@@ -6,9 +6,12 @@ This module provides generic tree object creation functionality
 that can be used across different tree applications.
 """
 
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Union
 
 from ifcfactory import BIMFactoryElement, NgonCylinder, Sphere, Style, Transform
+
+# Normalized 0-1 or 8-bit 0-255 per channel (ifcfactory ``Style`` normalizes ints > 1).
+RgbTuple = Union[Tuple[float, float, float], Tuple[int, int, int]]
 
 
 def create_tree_element(
@@ -19,8 +22,8 @@ def create_tree_element(
     crown_detail: int = 1,
     trunk_segments: int = 8,
     psets: Optional[List] = None,
-    trunk_color: Tuple[float, float, float] = (0.44, 0.27, 0.18),
-    crown_color: Tuple[float, float, float] = (0.13, 0.50, 0.18),
+    trunk_color: RgbTuple = (0.44, 0.27, 0.18),
+    crown_color: RgbTuple = (0.13, 0.50, 0.18),
     name: str = "Baum",
     name_prefix: str = "",
     trunk_layer: str = "_BIM_SBK_Stamm",
