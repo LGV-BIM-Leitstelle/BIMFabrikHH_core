@@ -1,13 +1,7 @@
-"""
-Digital Terrain Model (DGM) application for BIMFabrikHH.
+"""Basic terrain IFC export (feature-preserving adaptive-sampled Delaunay mesh)."""
 
-This module contains functionality for processing GeoTIFF files and
-converting them to IFC terrain models.
-"""
+from BIMFabrikHH_core.data_models import Pset_Objektinformation_DGM, TerrainMesh
 
-from .app import create_combined_terrain_ifc, process_terrain_folder_to_ifc
+from .app import TerrainBasicApp
 
-__all__ = [
-    "process_terrain_folder_to_ifc",
-    "create_combined_terrain_ifc",
-]
+__all__ = ["TerrainBasicApp", "TerrainMesh", "Pset_Objektinformation_DGM"]

@@ -1,57 +1,68 @@
 """
 Example demonstrating the enhanced georeferencing system with coordinate system models.
 
-This example shows how to use the new coordinate system functionality:
-1. Using predefined templates
-2. Creating custom coordinate systems
-3. Using the enhanced georeferencing model
+Every project is bootstrapped via :func:`init_ifc_project`, which provides
+sensible defaults for ``coordinate_operation`` and the EPSG:25832 CRS so
+each example only has to declare the coordinate system it actually cares
+about.
+
+This example shows:
+
+1. Using predefined CRS templates.
+2. Creating a custom :class:`CoordinateSystem`.
+3. The enhanced georeferencing model (``epsg_25832`` via templates).
+4. The default EPSG:25832 fallback of :func:`init_ifc_project`.
+5. Retrieving the CRS back from the written model.
 """
 
 from pathlib import Path
 
-from BIMFabrikHH_core.core.model_creator.ifc_modelbuilder import IfcModelBuilder
+from BIMFabrikHH_core.core.model_creator import init_ifc_project
 from BIMFabrikHH_core.data_models.pydantic_georeferencing import CoordinateSystem, CoordinateSystemTemplates
 
 
 def example_using_templates():
-    """Example using predefined coordinate system templates."""
+    """Example using predefined coordinate system templates.
+
+    Walks through every template registered on
+    :class:`CoordinateSystemTemplates` (``epsg_25832``, ``epsg_25833``,
+    ``gauss_kruger_hamburg``) so the output reflects what ``get_template``
+    actually supports.
+    """
     print("=== Example 1: Using Predefined Templates ===")
 
-    # Create model builder
-    builder = IfcModelBuilder()
-
-    # Example 1: Using WGS84 template
-    print("\n1. Creating project with WGS84 coordinate system...")
-    builder.build_project(project_name="WGS84 Project", site_name="WGS84 Site", coordinate_system="wgs84")
-    builder.save_ifc_to_output("example_wgs84.ifc")
-    print("✓ Saved WGS84 project")
-
-    # Reset for next example
-    builder.reset_model()
-
-    # Example 2: Using EPSG:25832 template
-    print("\n2. Creating project with EPSG:25832 coordinate system...")
-    builder.build_project(project_name="EPSG25832 Project", site_name="EPSG25832 Site", coordinate_system="epsg_25832")
+    print("\n1. Creating project with EPSG:25832 (ETRS89 / UTM zone 32N)...")
+    builder = init_ifc_project(
+        project_name="EPSG25832 Project",
+        site_name="EPSG25832 Site",
+        coordinate_system=CoordinateSystemTemplates.epsg_25832(),
+    )
     builder.save_ifc_to_output("example_epsg25832.ifc")
-    print("✓ Saved EPSG:25832 project")
+    print("OK Saved EPSG:25832 project")
 
-    # Reset for next example
-    builder.reset_model()
+    print("\n2. Creating project with EPSG:25833 (ETRS89 / UTM zone 33N)...")
+    builder = init_ifc_project(
+        project_name="EPSG25833 Project",
+        site_name="EPSG25833 Site",
+        coordinate_system=CoordinateSystemTemplates.epsg_25833(),
+    )
+    builder.save_ifc_to_output("example_epsg25833.ifc")
+    print("OK Saved EPSG:25833 project")
 
-    # Example 3: Using Gauß-Krüger Hamburg template
-    print("\n3. Creating project with Gauß-Krüger Hamburg coordinate system...")
-    builder.build_project(
-        project_name="GaussKruger Project", site_name="GaussKruger Site", coordinate_system="gauss_kruger_hamburg"
+    print("\n3. Creating project with Gauss-Krueger Hamburg coordinate system...")
+    builder = init_ifc_project(
+        project_name="GaussKruger Project",
+        site_name="GaussKruger Site",
+        coordinate_system=CoordinateSystemTemplates.gauss_kruger_hamburg(),
     )
     builder.save_ifc_to_output("example_gauss_kruger_hamburg.ifc")
-    print("✓ Saved Gauß-Krüger Hamburg project")
+    print("OK Saved Gauss-Krueger Hamburg project")
 
 
 def example_custom_coordinate_system():
     """Example creating a custom coordinate system."""
     print("\n=== Example 2: Custom Coordinate System ===")
 
-    # Create a custom coordinate system for a specific location
     custom_crs = CoordinateSystem(
         name="Custom Local CRS",
         description="Custom coordinate system for local project area",
@@ -61,56 +72,76 @@ def example_custom_coordinate_system():
         map_zone="31",
     )
 
-    # Create model with custom coordinate system
-    builder = IfcModelBuilder()
-    builder.build_project(project_name="Custom CRS Project", site_name="Custom CRS Site", coordinate_system=custom_crs)
+    builder = init_ifc_project(
+        project_name="Custom CRS Project",
+        site_name="Custom CRS Site",
+        coordinate_system=custom_crs,
+    )
     builder.save_ifc_to_output("example_custom_crs.ifc")
-    print("✓ Saved custom coordinate system project")
+    print("OK Saved custom coordinate system project")
 
 
 def example_enhanced_georeferencing():
     """Example using the enhanced georeferencing model."""
     print("\n=== Example 3: Enhanced Georeferencing Model ===")
 
-    # Create coordinate system
-    coord_sys = CoordinateSystemTemplates.epsg_25832()
-
-    # Create model with coordinate system
-    builder = IfcModelBuilder()
-    builder.build_project(
-        project_name="Enhanced Georef Project", site_name="Enhanced Georef Site", coordinate_system=coord_sys
+    builder = init_ifc_project(
+        project_name="Enhanced Georef Project",
+        site_name="Enhanced Georef Site",
+        coordinate_system=CoordinateSystemTemplates.epsg_25832(),
     )
     builder.save_ifc_to_output("example_enhanced_georef.ifc")
-    print("✓ Saved enhanced georeferencing project")
+    print("OK Saved enhanced georeferencing project")
 
 
-def example_backward_compatibility():
-    """Example showing backward compatibility with default georeferencing."""
-    print("\n=== Example 4: Backward Compatibility ===")
+def example_default_crs_fallback():
+    """Example showing the EPSG:25832 fallback when no CRS is supplied.
 
-    # Create model without specifying coordinate system (uses default)
-    builder = IfcModelBuilder()
-    builder.build_project(
+    :func:`init_ifc_project` treats ``coordinate_system`` and
+    ``coordinate_operation`` as optional: omit both and you get
+    EPSG:25832 with the identity coordinate operation — the BIM.HH
+    house default. Handy for quick prototyping in the project CRS.
+    """
+    print("\n=== Example 4: Default CRS (EPSG:25832 Fallback) ===")
+
+    # No coordinate_system argument — init_ifc_project defaults to EPSG:25832.
+    builder = init_ifc_project(
         project_name="Default Georef Project",
         site_name="Default Georef Site",
-        # No coordinate_system parameter - uses default
     )
     builder.save_ifc_to_output("example_default_georef.ifc")
-    print("✓ Saved default georeferencing project (backward compatible)")
+    print("OK Saved default-CRS project (EPSG:25832 fallback)")
 
 
 def example_coordinate_system_retrieval():
-    """Example showing how to retrieve coordinate system from existing model."""
+    """Example showing how to retrieve coordinate system from an existing model.
+
+    The CRS is persisted as ``IfcProjectedCRS`` by
+    :meth:`IfcModelMethods.edit_georeference`; reading it back is a plain
+    ``model.by_type("IfcProjectedCRS")`` lookup — no extra helper required.
+    """
     print("\n=== Example 5: Coordinate System Retrieval ===")
 
-    # First create a model with a specific coordinate system
-    builder = IfcModelBuilder()
-    builder.build_project(
-        project_name="Retrieval Test Project", site_name="Retrieval Test Site", coordinate_system="epsg_25832"
+    builder = init_ifc_project(
+        project_name="Retrieval Test Project",
+        site_name="Retrieval Test Site",
+        coordinate_system=CoordinateSystemTemplates.epsg_25832(),
     )
 
-    # Retrieve the coordinate system from the model
-    retrieved_crs = builder.ifc_creator.get_coordinate_system_from_model(builder.model)
+    projected_crs_entities = builder.model.by_type("IfcProjectedCRS")
+    if not projected_crs_entities:
+        print("No IfcProjectedCRS entity found in model")
+        return
+
+    projected_crs = projected_crs_entities[0]
+    retrieved_crs = CoordinateSystem(
+        name=projected_crs.Name,
+        description=projected_crs.Description,
+        geodetic_datum=projected_crs.GeodeticDatum,
+        vertical_datum=projected_crs.VerticalDatum,
+        map_projection=projected_crs.MapProjection,
+        map_zone=projected_crs.MapZone,
+    )
 
     print("Retrieved coordinate system:")
     print(f"  Name: {retrieved_crs.name}")
@@ -118,10 +149,9 @@ def example_coordinate_system_retrieval():
     print(f"  Geodetic Datum: {retrieved_crs.geodetic_datum}")
     print(f"  Map Projection: {retrieved_crs.map_projection}")
     print(f"  Map Zone: {retrieved_crs.map_zone}")
-    print(f"  Map Zone: {retrieved_crs.map_zone}")
 
     builder.save_ifc_to_output("example_retrieval_test.ifc")
-    print("✓ Saved retrieval test project")
+    print("OK Saved retrieval test project")
 
 
 def main():
@@ -130,15 +160,13 @@ def main():
     print("=" * 50)
 
     try:
-        # Create output directory if it doesn't exist
         output_dir = Path("output")
         output_dir.mkdir(exist_ok=True)
 
-        # Run all examples
         example_using_templates()
         example_custom_coordinate_system()
         example_enhanced_georeferencing()
-        example_backward_compatibility()
+        example_default_crs_fallback()
         example_coordinate_system_retrieval()
 
         print("\n" + "=" * 50)

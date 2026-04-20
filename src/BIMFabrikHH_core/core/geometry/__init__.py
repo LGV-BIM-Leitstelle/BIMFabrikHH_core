@@ -42,6 +42,9 @@ from ifcfactory import (
 # Advanced objects (depends on primitives)
 from .advanced_objects import ProjectBasePointNorthMesh, ProjectBasePointNorthQuad
 
+# Basepoint placement helper (depends on advanced_objects + georeferencing)
+from .basepoint import place_basepoint
+
 # Tree objects (depends on primitives)
 from .tree_objects import Crown, Tree, TreeCluster, Trunk
 
@@ -68,6 +71,7 @@ __all__ = [
     "BIMFactoryElement",
     "ProjectBasePointNorthMesh",
     "ProjectBasePointNorthQuad",
+    "place_basepoint",
     "Tree",
     "Trunk",
     "Crown",

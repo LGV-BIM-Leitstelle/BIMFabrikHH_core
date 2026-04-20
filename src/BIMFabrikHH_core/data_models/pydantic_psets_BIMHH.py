@@ -89,3 +89,19 @@ class Nullpunktobjekt(PropertySetTemplate):
     pset_modellinformation: Optional[Pset_Modellinformation] = None
     pset_georeferenzierung: Optional[Pset_Georeferenzierung] = None
     pset_hyperlink: Optional[Pset_Hyperlink] = None
+
+
+def default_bim_hamburg_hyperlink() -> Pset_Hyperlink:
+    """Return the canonical BIM.Hamburg ``Pset_Hyperlink``.
+
+    The class-level default for :attr:`Pset_Hyperlink.hyperlink_001_bemerkung`
+    is the condensed string ``"LinkZurHomepageVonBIM.Hamburg"`` kept for
+    backwards-compatibility with ``BIMFabrikHH_intern``. The tree / terrain /
+    city apps instead use the human-readable
+    ``"Link zur Homepage von BIM.Hamburg"`` — factored out here so all three
+    apps share a single source of truth.
+    """
+    return Pset_Hyperlink(
+        hyperlink_001="www.bim.hamburg.de",
+        hyperlink_001_bemerkung="Link zur Homepage von BIM.Hamburg",
+    )

@@ -1,15 +1,7 @@
-"""
-Basic tree modeling functionality for BIMFabrikHH.
+"""Basic trees IFC export (mesh trunk + icosphere crown via ``ifcopenshell.api``)."""
 
-This module contains the core tree modeling classes and functions.
-"""
+from BIMFabrikHH_core.data_models import TreeRecord
 
-from .app import BaumModeller
-from .baum_col_names import DfColTree
-from .baum_manager import BaumManager
+from .app import TreesBasicApp
 
-__all__ = [
-    "BaumModeller",
-    "BaumManager",
-    "DfColTree",
-]
+__all__ = ["TreeRecord", "TreesBasicApp"]

@@ -2,157 +2,124 @@
 Comprehensive Example: All BIMFabrikHH Examples Combined
 =======================================================
 
-This example demonstrates all the major functionalities of BIMFabrikHH
-by importing and running all the existing example functions from the
-various example directories.
+Runs every in-repo example ``main()`` in sequence so a single command
+produces the full suite of demo IFC files under
+``PathConfig.OUTPUT``. Useful as a smoke test after refactors and as a
+one-shot regeneration of the tutorial artefacts.
 
 Features demonstrated:
-- Basepoint creation with north arrow
-- City model processing from XML files
-- Tree modeling (basic and generic)
-- Terrain/DGM creation
+
+- Basepoint creation with north arrow (basic + generic)
+- City model from CityGML tiles (basic + generic / ``ifcfactory``)
+- Tree modelling (basic + generic / ``ifcfactory``)
+- Terrain / DGM creation (basic + generic / ``ifcfactory``)
 - City furniture (bus stations)
-- Primitive geometry objects
-- Standard profiles
-- Georeferencing
-- Pydantic data models
-- Modular apps with clean interfaces
+- Simple and enhanced georeferencing
 
-Usage:
+Usage::
+
     python all_examples.py
-
-This will create multiple IFC files demonstrating different aspects of the library.
 """
+
+from __future__ import annotations
 
 import os
 import time
 from pathlib import Path
 
-from primitive_objects.example_all_primitives_with_tree_and_dgm import main as create_primitives_all
-from primitive_objects.example_basic_primitives import main as create_primitives_basic
-from primitive_objects.example_boolean_operations import main as create_primitives_boolean
-from primitive_objects.example_complex_assemblies import main as create_primitives_assemblies
-from primitive_objects.example_materials_and_styles import main as create_primitives_materials
-from primitive_objects.example_ngon_cylinders import main as create_primitives_ngon_cylinders
-from primitive_objects.example_property_sets import main as create_primitives_psets
-from primitive_objects.example_transformations import main as create_primitives_transformations
-
 from BIMFabrikHH_core.config import get_logger
 from BIMFabrikHH_core.config.paths import PathConfig
+from basepoint.example_basepoint_basic import main as create_basepoint_basic
+from basepoint.example_basepoint_generic import main as create_basepoint_generic
 from city_furniture.example_bus_stations import main as create_city_furniture
-from city_model.basic.example_basic_city_model import main as create_city_model
+from city_model.basic.example_basic_city_model import main as create_city_model_basic
+from city_model.generic.example_generic_city_model import main as create_city_model_generic
 from georeferencing.example_enhanced_georeferencing import main as create_georeferencing_enhanced
 from georeferencing.example_simple_georeferencing import main as create_georeferencing
-from terrain.basic.example_basic_terrain import main as create_terrain
-from terrain.filtered.example_filtered_terrain import main as create_terrain_filtered
-from terrain.modular.example_modular_terrain import main as create_terrain_modular
-from terrain.optimized.example_optimized_terrain import main as create_terrain_optimized
-from trees.basic.example_basic_trees import main as create_trees
+from terrain.basic.example_basic_terrain import main as create_terrain_basic
+from terrain.generic.example_generic_terrain import main as create_terrain_generic
+from trees.basic.example_basic_trees import main as create_trees_basic
 from trees.generic.example_trees_generic import main as create_trees_generic
 
 logger = get_logger()
 
 
-def run_comprehensive_examples():
-    """Run all examples in sequence by importing their main functions."""
+def run_comprehensive_examples() -> None:
+    """Run all in-repo example ``main()`` functions in sequence."""
     print("BIMFabrikHH Comprehensive Example")
     print("=" * 60)
-    print("This example demonstrates all major functionalities of BIMFabrikHH")
-    print("by importing and running all existing example functions.")
+    print("Runs every in-repo example main() in a single pass.")
     print("=" * 60)
 
     start_time = time.perf_counter()
 
-    # Create output directory if it doesn't exist
     PathConfig.OUTPUT.mkdir(exist_ok=True)
 
-    # Store original working directory
     original_cwd = Path.cwd()
 
     try:
-        # Change to examples directory to ensure relative paths work correctly
+        # Some examples resolve asset paths relative to the examples/ folder.
         examples_dir = Path(__file__).parent
         os.chdir(examples_dir)
 
-        print("\n=== Running City Model Example ===")
-        print("--- Basic City Model ---")
-        create_city_model()
+        print("\n=== Basepoint Examples ===")
+        print("--- Basic Basepoint ---")
+        create_basepoint_basic()
+        print("--- Generic Basepoint (ifcfactory) ---")
+        create_basepoint_generic()
 
-        print("\n=== Running Trees Examples ===")
+        print("\n=== City Model Examples ===")
+        print("--- Basic City Model ---")
+        create_city_model_basic()
+        print("--- Generic City Model (ifcfactory) ---")
+        create_city_model_generic()
+
+        print("\n=== Trees Examples ===")
         print("--- Basic Trees ---")
-        create_trees()
-        print("--- Generic Trees (TreesGenericApp) ---")
+        create_trees_basic()
+        print("--- Generic Trees (ifcfactory) ---")
         create_trees_generic()
 
-        print("\n=== Running Terrain Examples ===")
-        print("--- Basic Terrain ---")
-        create_terrain()
-        print("--- Filtered Terrain ---")
-        create_terrain_filtered()
-        print("--- Optimized Terrain ---")
-        create_terrain_optimized()
-        print("--- Modular Terrain ---")
-        create_terrain_modular()
+        print("\n=== Terrain Examples ===")
+        print("--- Basic Terrain (adaptive-sampled DGM) ---")
+        create_terrain_basic()
+        print("--- Generic Terrain (ifcfactory) ---")
+        create_terrain_generic()
 
-        print("\n=== Running City Furniture Example ===")
+        print("\n=== City Furniture Example ===")
         create_city_furniture()
 
-        print("\n=== Running Primitive Objects Examples ===")
-        print("--- Basic Primitives ---")
-        create_primitives_basic()
-        print("--- Boolean Operations ---")
-        create_primitives_boolean()
-        print("--- Complex Assemblies ---")
-        create_primitives_assemblies()
-        print("--- Materials and Styles ---")
-        create_primitives_materials()
-        print("--- N-gon Cylinders ---")
-        create_primitives_ngon_cylinders()
-        print("--- Property Sets ---")
-        create_primitives_psets()
-        print("--- Transformations ---")
-        create_primitives_transformations()
-        print("--- All Primitives with Tree and DGM ---")
-        create_primitives_all()
-
-        print("\n=== Running Georeferencing Examples ===")
+        print("\n=== Georeferencing Examples ===")
         print("--- Simple Georeferencing ---")
         create_georeferencing()
         print("--- Enhanced Georeferencing ---")
         create_georeferencing_enhanced()
 
-    except Exception as e:
-        logger.error(f"Error during example execution: {e}")
+    except Exception as exc:
+        logger.error(f"Error during example execution: {exc}")
         import traceback
 
         traceback.print_exc()
         return
 
     finally:
-        # Restore original working directory
         os.chdir(original_cwd)
 
-    end_time = time.perf_counter()
-    total_time = end_time - start_time
+    total_time = time.perf_counter() - start_time
 
     print("\n" + "=" * 60)
     print("COMPREHENSIVE EXAMPLE COMPLETED SUCCESSFULLY!")
     print("=" * 60)
     print(f"Total execution time: {total_time:.2f} seconds")
-    print("\nAll example files have been created in their respective directories.")
-    print("You can now open these IFC files in any BIM software that supports IFC format.")
+    print("\nAll example files have been created under PathConfig.OUTPUT.")
+    print("Open them in any BIM software that supports IFC.")
     print("\nGenerated files include:")
-    print("  ✓ Basepoint with north arrow (basic)")
-    print("  ✓ Basepoint with Pydantic data models")
-    print("  ✓ City model from XML files (basic)")
-    print("  ✓ Tree models (basic, generic)")
-    print("  ✓ Digital ground model (basic, filtered, optimized, modular)")
-    print("  ✓ Bus station with multiple LODs")
-    print("  ✓ Complex geometric shapes (primitives suite)")
-    print("  ✓ All primitives with tree and DGM")
-    print("  ✓ Various profile types")
-    print("  ✓ Multiple georeferencing examples (simple, enhanced)")
-    print("  ✓ Modular terrain with clean interface")
+    print("  - Basepoint with north arrow (basic + generic)")
+    print("  - City model (basic + generic / ifcfactory)")
+    print("  - Tree models (basic + generic)")
+    print("  - Digital ground model (basic + generic)")
+    print("  - Bus station with multiple LODs")
+    print("  - Simple and enhanced georeferencing")
 
 
 if __name__ == "__main__":

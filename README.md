@@ -53,14 +53,23 @@ This project is under intensive development. Features are being added and improv
     - Street tree inventory from Hamburg OGC API
     - Automatic tree placement with realistic geometry
     - Support for different tree species and sizes
-    - Multiple processing modes: basic (`BaumModeller`) and generic (`TreesGenericApp` in `apps/trees/generic/app.py`, with `TreeRecord` input contract)
-    - The older generic elevation exporter (`BaumGenericElevationApp`, former `tree_model` dataclasses) was removed; migrate callers to `TreesGenericApp.build_ifc`
+    - Two record-builder apps sharing a single `TreeRecord` input contract:
+      - `TreesBasicApp` (`apps/trees/basic/app.py`): mesh trunk + icosphere crown via `ifcopenshell.api`.
+      - `TreesGenericApp` (`apps/trees/generic/app.py`): `ifcfactory.BIMFactoryElement` pipeline.
+    - Shared data-processing helpers in `apps/trees/processing.py` (`dataframe_to_records`, `build_tree_psets`, `calculate_tree_height`, `validate_tree_records`, `resolve_tree_dimensions`, `collect_pydantic_psets`). Both apps consume these so their `app.py` files hold only IFC-writing logic.
+    - DataFrame column mapping via `TreeColumnSchema` (`apps/trees/column_schema.py`) with presets `DEFAULT_OAF_SCHEMA` (Hamburg OGC API / surveying) and `BAUMKATASTER_SCHEMA` (Strassenbaumkataster).
+    - The older generic elevation exporter (`BaumGenericElevationApp`, former `tree_model` dataclasses) was removed; migrate callers to `TreesGenericApp.build_ifc` or `TreesBasicApp.build_ifc`.
 
 2. **Digital Terrain Models (DGM)**
-    - GeoTIFF processing and conversion
-    - TIN (Triangulated Irregular Network) generation
-    - Optimized mesh creation for large datasets
-    - Multiple processing modes: basic, filtered, optimized
+    - GeoTIFF processing and conversion (local paths or HTTP(S) URLs).
+    - Feature-preserving adaptive sampling: slope/curvature-based importance, boundary stitching, Delaunay triangulation.
+    - Two record-builder apps sharing a single `TerrainMesh` input contract (`data_models/terrain_mesh.py`):
+      - `TerrainBasicApp` (`apps/terrain/basic/app.py`): writes the mesh via `ifcopenshell.api`.
+      - `TerrainGenericApp` (`apps/terrain/generic/app.py`): writes the mesh via the `ifcfactory.BIMFactoryElement` pipeline (same pattern as `TreesGenericApp`).
+    - Shared meshing helpers live in `apps/terrain/processing.py` (`extract_mesh_adaptive`, `adaptive_sampling`, `generate_delaunay_mesh`, `sample_elevations_from_raster`, etc.).
+    - Shared IFC-adjacent helpers in `apps/terrain/_ifc_common.py` (`resolve_bbox_utm`, `fallback_nullpunkt`, `default_terrain_psets`, `place_basepoint`) keep basic and generic consistent.
+    - Pydantic pset defaults via `Pset_Objektinformation_DGM` and `Pset_Hyperlink` — callers may override by passing their own `psets=[...]`.
+    - Convenience one-shot on both apps: `from_geotiffs(tif_files, request_params=...)` chains mesh extraction and IFC export.
 
 3. **City Models (Stadtmodell)**
     - CityGML file parsing and conversion
@@ -117,7 +126,6 @@ graph TB
         numpy["numpy"]
         pandas["pandas"]
         pydantic["pydantic"]
-        pyvista["pyvista"]
         rasterio["rasterio"]
         pyproj["pyproj"]
         lxml["lxml"]
@@ -135,17 +143,18 @@ graph TB
     
     %% Applications
     subgraph city_apps ["City Model Applications"]
-        city_app["City App<br/>(CityModularApp)"]
+        city_basic["City App<br/>(CityBasicApp)"]
+        city_generic["City App<br/>(CityGenericApp)"]
     end
     
     subgraph tree_apps ["Tree Model Applications"]
-        trees_basic["Basic Trees<br/>(BaumModeller)"]
+        trees_basic["Basic Trees<br/>(TreesBasicApp)"]
         trees_generic["Generic Trees<br/>(TreesGenericApp)"]
     end
     
     subgraph terrain_apps ["Terrain Model Applications"]
-        terrain_basic["Basic Terrain"]
-        terrain_filtered["Filtered Terrain"]
+        terrain_basic["Basic Terrain<br/>(TerrainBasicApp)"]
+        terrain_generic["Generic Terrain<br/>(TerrainGenericApp)"]
     end
     
     subgraph basepoint_apps ["Basepoint Applications"]
@@ -161,20 +170,21 @@ graph TB
     numpy --> utils
     pandas --> data_models
     pydantic --> data_models
-    pyvista --> geometry
     rasterio --> utils
     pyproj --> utils
     lxml --> city_parser
     
     %% Core to Applications - Key relationships
-    ifc_modelbuilder -.->|Key Dependency| city_app
+    ifc_modelbuilder -.->|Key Dependency| city_basic
+    ifc_modelbuilder -.->|Key Dependency| city_generic
     ifc_modelbuilder -.->|Key Dependency| trees_basic
     ifc_modelbuilder -.->|Key Dependency| terrain_basic
     ifc_modelbuilder -.->|Key Dependency| basepoint_basic
     ifc_modelbuilder -.->|Key Dependency| basepoint_generic
     
     %% Data model dependencies
-    data_models -.->|Data Models| city_app
+    data_models -.->|Data Models| city_basic
+    data_models -.->|Data Models| city_generic
     data_models -.->|Data Models| trees_basic
     data_models -.->|Data Models| terrain_basic
     data_models -.->|Data Models| basepoint_basic
@@ -185,28 +195,31 @@ graph TB
     geometry --> basepoint_basic
     
     %% Utility dependencies
-    utils -.->|Utilities| city_app
+    utils -.->|Utilities| city_basic
+    utils -.->|Utilities| city_generic
     utils -.->|Utilities| trees_basic
     utils -.->|Utilities| terrain_basic
     
     %% Configuration dependencies
-    config --> city_app
+    config --> city_basic
+    config --> city_generic
     config --> trees_basic
     config --> terrain_basic
     config --> basepoint_basic
     config --> basepoint_generic
     
     %% Internal dependencies
-    city_parser --> city_app
+    city_parser --> city_basic
+    city_parser --> city_generic
     
     %% Styling
     classDef externalStyle fill:#cccccc,stroke:#333,stroke-width:2px
     classDef coreStyle fill:#698cbb,stroke:#333,stroke-width:2px,color:#fff
     classDef appStyle fill:#b0c4de,stroke:#333,stroke-width:2px
     
-    class ifcopenshell,ifcfactory,numpy,pandas,pydantic,pyvista,rasterio,pyproj,lxml externalStyle
+    class ifcopenshell,ifcfactory,numpy,pandas,pydantic,rasterio,pyproj,lxml externalStyle
     class ifc_modelbuilder,geometry,data_models,utils,city_parser,config coreStyle
-    class city_app,trees_basic,trees_generic,terrain_basic,terrain_filtered,basepoint_basic,basepoint_generic appStyle
+    class city_basic,city_generic,trees_basic,trees_generic,terrain_basic,terrain_generic,basepoint_basic,basepoint_generic appStyle
 ```
 
 ### Dependencies
@@ -223,15 +236,21 @@ BIMFabrikHH_core/
 │   └── BIMFabrikHH_core/
 │       ├── apps/                    # Application modules
 │       │   ├── city/               # City model processing (refactored)
-│       │   │   ├── app.py          # Main city application
-│       │   │   ├── parser.py       # CityGML parser (separated)
+│       │   │   ├── basic/app.py    # CityBasicApp (ifcopenshell.api)
+│       │   │   ├── generic/app.py  # CityGenericApp (ifcfactory)
+│       │   │   ├── processing.py   # parse_gml_files → List[Building]
+│       │   │   ├── _ifc_common.py  # Shared IFC helpers (basepoint)
+│       │   │   ├── parser.py       # CityGML streaming parser
 │       │   │   └── helpers.py      # City-specific helpers
 │       │   ├── trees/              # Tree modeling application
-│       │   │   ├── basic/          # Basic tree processing (BaumModeller)
-│       │   │   └── generic/        # TreesGenericApp (IFC trees from TreeRecord + psets)
+│       │   │   ├── basic/          # Basic tree processing (TreesBasicApp)
+│       │   │   ├── generic/        # TreesGenericApp (IFC trees from TreeRecord + psets)
+│       │   │   └── processing.py   # DataFrame→records, psets, height, validation
 │       │   ├── terrain/            # Digital terrain modeling
-│       │   │   ├── basic/          # Basic terrain processing
-│       │   │   └── filtered/       # Filtered terrain processing
+│       │   │   ├── basic/          # Record-builder DGM app (TerrainBasicApp, ifcopenshell.api)
+│       │   │   ├── generic/        # Record-builder DGM app (TerrainGenericApp, ifcfactory)
+│       │   │   ├── _ifc_common.py  # Shared IFC-adjacent helpers (basepoint, psets, bbox)
+│       │   │   └── processing.py   # Shared adaptive-sampling mesh helpers
 │       │   └── basepoint/          # Basepoint applications
 │       │       ├── basic/          # Basic basepoint
 │       │       └── generic/        # Generic basepoint
@@ -297,15 +316,42 @@ Handles IFC model creation and structure.
 - `reset_model()`: Resets the current model
 - `get_model()`: Returns the current IFC model
 
-#### CityGMLParser
+#### CityBasicApp
 
-Parses CityGML files and extracts building information.
+Record-builder city-model app built on ``ifcopenshell.api``. Parses
+CityGML/GML/XML tiles into a list of :class:`Building` records and
+writes a single IFC LoD1/LoD2 city model, including
+``IfcIndexedPolygonalFaceWithVoids`` for LoD2 courtyards.
 
 **Methods:**
 
-- `parse_gml_file(file_path)`: Parses a single CityGML file
-- `extract_buildings()`: Extracts building data from parsed files
-- `process_building_geometry()`: Processes building geometry data
+- `build_ifc(buildings, *, request_params, ...)`: Build the IFC from
+  pre-parsed :class:`Building` records.
+- `from_gml_files(gml_files, *, request_params, ...)`: One-shot
+  convenience — parses the files (optionally cropped by
+  ``request_params.bbox``) and calls :func:`build_ifc`.
+
+Both methods accept an explicit ``basepoint_origin: Optional[Tuple[float,
+float]]`` in EPSG:25832. When ``None`` the app falls back to the
+``request_params.bbox`` lower-left (reprojected WGS84 → EPSG:25832).
+
+#### CityGenericApp
+
+Same contract as :class:`CityBasicApp`, but built on the
+``ifcfactory`` ``BIMFactoryElement`` pipeline
+(:class:`MeshRepresentation` wrapped in :class:`Style`). Shorter code
+path, O(n) container assignment via ``BIMFactoryElement.build_in``,
+and uniform pset handling via :class:`Pset_Objektinformation_CityModel`
+/ :class:`Pset_Hyperlink`. LoD2 voids are passed through as nested
+ring lists on a best-effort basis; if strict
+``IfcIndexedPolygonalFaceWithVoids`` geometry is required, prefer
+:class:`CityBasicApp`.
+
+#### CityGMLParser (internal)
+
+Streaming CityGML parser used by :func:`parse_gml_files`. Kept public
+for advanced use but most consumers should go through
+:class:`CityBasicApp`.
 
 ### Data Models
 

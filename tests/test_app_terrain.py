@@ -1,265 +1,141 @@
-from unittest.mock import MagicMock, patch
+"""Tests for the refactored terrain app and its processing helpers.
+
+Covers the pure pieces that don't require a full IFC environment:
+:class:`TerrainMesh` semantics, the Pydantic DGM pset defaults, the
+Delaunay mesh generator, and the record-builder guard for empty input.
+"""
+
+from __future__ import annotations
 
 import numpy as np
 import pytest
 
-# Import the functions to test
-from BIMFabrikHH_core.apps.terrain.basic.app import (
-    create_combined_terrain_ifc,
-    extract_mesh_data,
-    preprocess_elevation_data,
-    process_terrain_folder_to_ifc,
+from BIMFabrikHH_core.apps.terrain import (
+    Pset_Objektinformation_DGM,
+    TerrainBasicApp,
+    TerrainMesh,
+    generate_delaunay_mesh,
 )
+from BIMFabrikHH_core.data_models import RequestParams
 
 
-@pytest.fixture
-def mock_model_params():
-    """
-    Create mock model parameters for testing.
-
-    Returns:
-        MockParams: Mock object containing bounding box and container parameters.
-    """
-
-    class MockBBox:
-        min_x = 0
-        min_y = 0
-        max_x = 1
-        max_y = 1
-
-    class MockParams:
-        bbox = MockBBox()
-        containers = []
-
-    return MockParams()
+# ---------------------------------------------------------------------------
+# TerrainMesh
+# ---------------------------------------------------------------------------
 
 
-@pytest.fixture
-def sample_elevation_data():
-    """
-    Sample elevation data for testing.
-
-    Returns:
-        np.ndarray: 3x3 array of elevation values for testing terrain processing.
-    """
-    return np.array([[10.0, 15.0, 20.0], [12.0, 18.0, 22.0], [8.0, 14.0, 16.0]], dtype=np.float32)
+def test_terrain_mesh_defaults_are_empty() -> None:
+    mesh = TerrainMesh()
+    assert mesh.vertices == []
+    assert mesh.faces == []
+    assert mesh.nullpunkt is None
+    assert mesh.is_empty() is True
 
 
-def test_preprocess_elevation_data_valid():
-    """
-    Test preprocess_elevation_data with valid elevation data.
-
-    Verifies that valid elevation data is processed correctly:
-    - Input array is preserved in shape and type
-    - All values remain finite (no NaN or inf)
-    - Output maintains float32 precision
-    """
-    data = np.array([[10.0, 15.0], [12.0, 18.0]], dtype=np.float32)
-    result = preprocess_elevation_data(data)
-
-    assert isinstance(result, np.ndarray)
-    assert result.dtype == np.float32
-    assert result.shape == data.shape
-    assert np.all(np.isfinite(result))
+def test_terrain_mesh_is_not_empty_when_geometry_is_set() -> None:
+    mesh = TerrainMesh(
+        vertices=[[0.0, 0.0, 0.0], [1.0, 0.0, 0.0], [0.0, 1.0, 0.0]],
+        faces=[[0, 1, 2]],
+        nullpunkt=(0.0, 0.0),
+    )
+    assert mesh.is_empty() is False
+    assert mesh.nullpunkt == (0.0, 0.0)
 
 
-def test_preprocess_elevation_data_with_nan():
-    """
-    Test preprocess_elevation_data with NaN values.
-
-    Verifies that NaN values in elevation data are properly handled:
-    - NaN values are replaced with 0.0
-    - All other values remain unchanged
-    - Result contains only finite values
-    """
-    data = np.array([[10.0, np.nan], [12.0, 18.0]], dtype=np.float32)
-    result = preprocess_elevation_data(data)
-
-    assert isinstance(result, np.ndarray)
-    assert np.all(np.isfinite(result))  # No NaN values
-    assert result[0, 1] == 0.0  # NaN should be replaced with 0
+def test_terrain_mesh_is_empty_when_only_vertices_exist() -> None:
+    mesh = TerrainMesh(vertices=[[0.0, 0.0, 0.0]], faces=[])
+    assert mesh.is_empty() is True
 
 
-def test_preprocess_elevation_data_constant():
-    """
-    Test preprocess_elevation_data with constant elevation values.
-
-    Verifies that terrain with constant elevation (flat terrain) is handled correctly:
-    - Constant data should result in zero values after preprocessing
-    - This represents the relative elevation change from the mean
-    """
-    data = np.full((3, 3), 15.0, dtype=np.float32)
-    result = preprocess_elevation_data(data)
-
-    assert isinstance(result, np.ndarray)
-    assert np.all(result == 0.0)  # Constant data should result in zeros
+# ---------------------------------------------------------------------------
+# Pset_Objektinformation_DGM
+# ---------------------------------------------------------------------------
 
 
-def test_preprocess_elevation_data_empty():
-    """
-    Test preprocess_elevation_data with empty array.
-
-    Verifies that empty elevation data is handled gracefully:
-    - Empty input should produce empty output
-    - No exceptions should be raised
-    - Output should maintain the same data type
-    """
-    data = np.array([], dtype=np.float32)
-    result = preprocess_elevation_data(data)
-
-    assert isinstance(result, np.ndarray)
-    assert result.size == 0
-
-
-@patch("BIMFabrikHH.apps.terrain.basic.app.rasterio")
-@patch("BIMFabrikHH.apps.terrain.basic.app.pv")
-@patch("BIMFabrikHH.apps.terrain.basic.app.Path")
-def test_extract_mesh_data_success(mock_path, mock_pv, mock_rasterio):
-    """
-    Test extract_mesh_data with successful processing.
-
-    Verifies the complete mesh extraction pipeline from GeoTIFF to mesh data:
-    - File existence and extension validation
-    - Rasterio data reading and transformation
-    - PyVista mesh generation and processing
-    - Output format validation (vertices and faces lists)
-
-    Args:
-        mock_path: Mocked Path for file operations.
-        mock_pv: Mocked PyVista for mesh processing.
-        mock_rasterio: Mocked rasterio for GeoTIFF reading.
-    """
-    # Mock file existence check
-    mock_path_instance = MagicMock()
-    mock_path_instance.exists.return_value = True
-    mock_path_instance.is_file.return_value = True
-    mock_path_instance.suffix = ".tif"
-    mock_path.return_value = mock_path_instance
-
-    # Mock rasterio operations
-    mock_src = MagicMock()
-    mock_src.height = 100
-    mock_src.width = 100
-    mock_src.read.return_value = np.array([[10.0, 15.0], [12.0, 18.0]])
-    mock_src.transform = MagicMock()
-    mock_src.transform.scale.return_value = MagicMock()
-
-    mock_rasterio.open.return_value.__enter__.return_value = mock_src
-
-    # Mock PyVista operations
-    mock_grid = MagicMock()
-    mock_mesh = MagicMock()
-    mock_mesh.points = np.array([[0, 0, 10], [1, 0, 15], [0, 1, 12], [1, 1, 18]])
-    mock_mesh.faces = np.array([3, 0, 1, 2, 3, 1, 3, 2])  # Triangle faces
-
-    mock_grid.extract_surface.return_value.triangulate.return_value.decimate.return_value = mock_mesh
-    mock_pv.StructuredGrid.return_value = mock_grid
-
-    # Test with valid file path
-    result_vertices, result_faces = extract_mesh_data("test.tif")
-
-    assert isinstance(result_vertices, list)
-    assert isinstance(result_faces, list)
-    assert len(result_vertices) > 0
-    assert len(result_faces) > 0
+def test_pset_objektinformation_dgm_defaults_match_template() -> None:
+    """Defaults must mirror the BIM.HH DGM property-set template."""
+    data = Pset_Objektinformation_DGM().model_dump(by_alias=True)
+    assert data["_ArtDGM"] == "Netz"
+    assert data["_AufnahmedatumHinweis"] == "undefiniert"
+    assert data["_AufnahmedatumVermessung"] == "undefiniert"
+    assert data["_Bauphase"] == "Vorarbeiten"
+    assert data["_Bemerkung"] == "undefiniert"
+    assert data["_DatenHerkunft"] == "SDP"
+    assert data["_IDEbene1"] == "Gelaende"
+    assert data["_IDEbene2"] == "Erdoberflaeche"
+    assert data["_IDEbene3"] == "Erdoberflaeche"
+    assert data["_LoG"] == 300
+    assert data["_LoI"] == 100
 
 
-def test_extract_mesh_data_file_not_found():
-    """
-    Test extract_mesh_data with non-existent file.
-
-    Verifies that the function handles missing files gracefully:
-    - Returns empty lists for vertices and faces
-    - No exceptions should be raised
-    - Function should complete successfully
-    """
-    result_vertices, result_faces = extract_mesh_data("nonexistent.tif")
-
-    assert result_vertices == []
-    assert result_faces == []
+def test_pset_objektinformation_dgm_accepts_alias_inputs() -> None:
+    pset = Pset_Objektinformation_DGM(
+        _ArtDGM="TIN",
+        _AufnahmedatumVermessung="2025-09-08",
+        _LoG=200,
+    )
+    data = pset.model_dump(by_alias=True)
+    assert data["_ArtDGM"] == "TIN"
+    assert data["_AufnahmedatumVermessung"] == "2025-09-08"
+    assert data["_LoG"] == 200
 
 
-def test_extract_mesh_data_invalid_extension():
-    """
-    Test extract_mesh_data with invalid file extension.
-
-    Verifies that the function rejects files with unsupported extensions:
-    - Only .tif files should be processed
-    - Other extensions should return empty results
-    - No exceptions should be raised
-    """
-    result_vertices, result_faces = extract_mesh_data("test.txt")
-
-    assert result_vertices == []
-    assert result_faces == []
+def test_pset_objektinformation_dgm_pset_name() -> None:
+    assert Pset_Objektinformation_DGM.pset_name == "Pset_Objektinformation"
 
 
-def test_create_combined_terrain_ifc_empty_data(mock_model_params):
-    """
-    Test create_combined_terrain_ifc with empty data.
+# ---------------------------------------------------------------------------
+# generate_delaunay_mesh
+# ---------------------------------------------------------------------------
 
-    Verifies that the function handles empty terrain data correctly:
-    - Empty vertices and faces should return None
-    - No IFC model should be created
-    - Function should complete without errors
-    """
-    result = create_combined_terrain_ifc([], [], mock_model_params)
+
+def test_generate_delaunay_mesh_returns_expected_shapes() -> None:
+    """A flat 4-corner square must produce 2 triangles over 4 vertices."""
+    x = np.array([0.0, 1.0, 1.0, 0.0])
+    y = np.array([0.0, 0.0, 1.0, 1.0])
+    z = np.array([0.0, 0.0, 0.0, 0.0])
+
+    vertices, faces = generate_delaunay_mesh(x, y, z)
+
+    assert len(vertices) == 4
+    assert len(faces) == 2
+    for face in faces:
+        assert len(face) == 3
+        for idx in face:
+            assert 0 <= idx < len(vertices)
+
+
+def test_generate_delaunay_mesh_too_few_points_returns_empty() -> None:
+    x = np.array([0.0, 1.0])
+    y = np.array([0.0, 0.0])
+    z = np.array([0.0, 0.0])
+
+    vertices, faces = generate_delaunay_mesh(x, y, z)
+
+    assert vertices == []
+    assert faces == []
+
+
+# ---------------------------------------------------------------------------
+# TerrainBasicApp.build_ifc (empty-input guard)
+# ---------------------------------------------------------------------------
+
+
+def test_build_ifc_returns_none_for_empty_mesh() -> None:
+    """``build_ifc`` must short-circuit on an empty mesh without raising."""
+    request = RequestParams(bbox=None, containers=[])
+    result = TerrainBasicApp.build_ifc(TerrainMesh(), request_params=request)
     assert result is None
 
 
-@patch("BIMFabrikHH.apps.terrain.basic.app.extract_mesh_data")
-@patch("BIMFabrikHH.apps.terrain.basic.app.create_combined_terrain_ifc")
-def test_process_terrain_folder_to_ifc_smoke(mock_create_combined, mock_extract_mesh, mock_model_params, tmp_path):
-    """
-    Smoke test for process_terrain_folder_to_ifc function.
-
-    Verifies that the complete terrain processing pipeline can be executed:
-    - Multiple GeoTIFF files are processed
-    - Mesh data is extracted for each file
-    - Combined IFC model is created
-    - Output file path is returned correctly
-
-    Args:
-        mock_create_combined: Mocked create_combined_terrain_ifc function.
-        mock_extract_mesh: Mocked extract_mesh_data function.
-        mock_model_params: Mock model parameters fixture.
-        tmp_path: Pytest temporary directory fixture.
-    """
-    # Setup mocks
-    mock_extract_mesh.return_value = ([[0, 0, 10], [1, 0, 15]], [[0, 1, 2]])  # vertices  # faces
-    mock_create_combined.return_value = tmp_path / "output_dgm.ifc"
-
-    # Test data
-    tif_files = ["test1.tif", "test2.tif"]
-
-    # Call the function
-    result = process_terrain_folder_to_ifc(folder_path=tmp_path, tif_files=tif_files, input_data=mock_model_params)
-
-    # Assert that extract_mesh_data was called for each file
-    assert mock_extract_mesh.call_count == len(tif_files)
-
-    # Assert that create_combined_terrain_ifc was called
-    mock_create_combined.assert_called_once()
-
-    # Assert that a result was returned
-    assert result == tmp_path / "output_dgm.ifc"
-
-
-def test_create_combined_terrain_ifc_smoke(mock_model_params):
-    """
-    Smoke test for create_combined_terrain_ifc function.
-
-    Verifies that the function exists and can be called without errors:
-    - Function is properly imported and accessible
-    - Can handle empty input data
-    - Returns expected result for empty data
-
-    Args:
-        mock_model_params: Mock model parameters fixture.
-    """
-    # Simple assertion that the function exists and can be imported
-    assert create_combined_terrain_ifc is not None
-
-    # Test with empty data to avoid complex mocking
-    result = create_combined_terrain_ifc([], [], mock_model_params)
-    assert result is None
+@pytest.mark.parametrize(
+    "vertices, faces",
+    [
+        ([], [[0, 1, 2]]),
+        ([[0.0, 0.0, 0.0]], []),
+    ],
+)
+def test_build_ifc_returns_none_for_partial_mesh(vertices, faces) -> None:
+    request = RequestParams(bbox=None, containers=[])
+    mesh = TerrainMesh(vertices=vertices, faces=faces)
+    assert TerrainBasicApp.build_ifc(mesh, request_params=request) is None

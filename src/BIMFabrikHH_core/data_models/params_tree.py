@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field
 
@@ -67,3 +67,14 @@ class RequestParams(BaseModel):
             }
         }
     }
+
+    @property
+    def bbox_as_wgs84_tuple(self) -> Optional[Tuple[float, float, float, float]]:
+        """Return ``bbox`` as ``(min_lon, min_lat, max_lon, max_lat)`` or ``None``.
+
+        Convenience accessor shared by every app that needs to feed the
+        bbox into a WGS84-only helper (parsers, basepoint fallback, ...).
+        """
+        if self.bbox is None:
+            return None
+        return (self.bbox.min_x, self.bbox.min_y, self.bbox.max_x, self.bbox.max_y)

@@ -36,12 +36,18 @@ from BIMFabrikHH_core.core.model_creator import IfcModelBuilder, IfcModelMethods
 from BIMFabrikHH_core.core.utils.math_operations import MathTool
 
 # Application imports
-from .apps.terrain.basic import create_combined_terrain_ifc, process_terrain_folder_to_ifc
-from .apps.trees.basic.app import BaumModeller
+from .apps.city.basic.app import CityBasicApp
+from .apps.city.generic.app import CityGenericApp
+from .apps.terrain.basic.app import TerrainBasicApp
+from .apps.terrain.generic.app import TerrainGenericApp
+from .apps.trees.basic.app import TreesBasicApp
+from .apps.trees.generic.app import TreesGenericApp
 
 # Data model imports
 from .data_models.params_bbox import BoundingBoxParams
 from .data_models.params_tree import Component, Container, RequestParams
+from .data_models.terrain_mesh import TerrainMesh
+from .data_models.tree_record import TreeRecord
 
 __all__ = [
     # Core functionality
@@ -49,14 +55,19 @@ __all__ = [
     "IfcModelMethods",
     "MathTool",
     # Applications
-    "BaumModeller",
-    "process_terrain_folder_to_ifc",
-    "create_combined_terrain_ifc",
+    "CityBasicApp",
+    "CityGenericApp",
+    "TerrainBasicApp",
+    "TerrainGenericApp",
+    "TreesBasicApp",
+    "TreesGenericApp",
     # Data models
     "BoundingBoxParams",
     "RequestParams",
     "Container",
     "Component",
+    "TerrainMesh",
+    "TreeRecord",
     # Configuration
     "PathConfig",
 ]

@@ -30,22 +30,29 @@ geospatial data processing: trees, digital terrain models, city models, and base
 from .basepoint.basic.app import BasepointBasicApp
 
 # City model applications
-from .city.app import CityGMLParser
+from .city.basic.app import CityBasicApp
+from .city.generic.app import CityGenericApp
+from .city.parser import CityGMLParser
 
 # Terrain applications
-from .terrain.basic import create_combined_terrain_ifc, process_terrain_folder_to_ifc
+from .terrain.basic.app import TerrainBasicApp
+from .terrain.generic.app import TerrainGenericApp
 
 # Tree applications
-from .trees.basic.app import BaumModeller
+from .trees.basic.app import TreesBasicApp
+from .trees.generic.app import TreesGenericApp
 
 __all__ = [
     # Basepoint applications
     "BasepointBasicApp",
     # City model applications
+    "CityBasicApp",
+    "CityGenericApp",
     "CityGMLParser",
     # Terrain applications
-    "process_terrain_folder_to_ifc",
-    "create_combined_terrain_ifc",
+    "TerrainBasicApp",
+    "TerrainGenericApp",
     # Tree applications
-    "BaumModeller",
+    "TreesBasicApp",
+    "TreesGenericApp",
 ]

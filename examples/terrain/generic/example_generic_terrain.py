@@ -1,20 +1,17 @@
-"""Basic terrain example.
+"""Generic terrain example.
 
-Creates a DGM from a single GeoTIFF using the adaptive-sampling
-:class:`TerrainBasicApp`. The mesh is feature-preserving (Delaunay over
-an importance-sampled point cloud with boundary stitching).
+Creates a DGM from a single GeoTIFF using :class:`TerrainGenericApp`
+(``ifcfactory`` / ``BIMFactoryElement`` pipeline). The mesh itself is
+still produced by the shared adaptive-sampling pipeline — only the IFC
+writing strategy differs from the basic app.
 
-Runs without a WGS84 ``bbox`` so the full raster is used. If you want to
-crop, pass a ``BoundingBoxParams`` whose WGS84 extent actually overlaps
-the raster (the example tile
-``dgm1_32_558_9270_1_hh_2022.tif`` covers UTM
-``(558000, 5927000) -> (559000, 5928000)`` in EPSG:25832).
+Runs without a WGS84 ``bbox`` so the full raster is used.
 """
 
 import time
 from pathlib import Path
 
-from BIMFabrikHH_core.apps.terrain.basic import TerrainBasicApp
+from BIMFabrikHH_core.apps.terrain.generic import TerrainGenericApp
 from BIMFabrikHH_core.config.logging_colors import get_logger
 from BIMFabrikHH_core.config.paths import PathConfig
 from BIMFabrikHH_core.data_models.params_tree import (
@@ -27,21 +24,21 @@ logger = get_logger()
 
 
 def main() -> None:
-    """Process a terrain GeoTIFF to create a basic DGM IFC."""
+    """Process a terrain GeoTIFF to create a generic DGM IFC."""
     start = time.perf_counter()
 
     terrain_folder = Path(__file__).parent
     tif_files = [str(PathConfig.ASSETS / "dgm1_32_558_9270_1_hh_2022.tif")]
-    output_file = terrain_folder / "example_dgm.ifc"
+    output_file = terrain_folder / "example_dgm_generic.ifc"
 
     container = Container(
         containerTitle="DGM_Container",
-        containerId="dgm_basic",
-        components={"description": Component(title="Description", value="Digital Ground Model (basic)")},
+        containerId="dgm_generic",
+        components={"description": Component(title="Description", value="Digital Ground Model (generic / ifcfactory)")},
     )
     request_body = RequestParams(bbox=None, containers=[container])
 
-    result = TerrainBasicApp.from_geotiffs(
+    result = TerrainGenericApp.from_geotiffs(
         tif_files=tif_files,
         request_params=request_body,
         min_points=500,

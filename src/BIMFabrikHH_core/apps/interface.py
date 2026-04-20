@@ -1,53 +1,26 @@
 """
-Base interfaces for BIMFabrikHH apps.
+Base interface for BIMFabrikHH record-builder apps.
 
-Two archetypes exist:
-
-* ``BboxSourceApp`` (future) — three-step pipeline that ingests geo data given
-  a bounding box and produces an IFC file (city GML, terrain TIF, ...). Today
-  the ``CityModularApp`` plays this role through the legacy ``UIAppInterface``
-  ABC below.
-* ``RecordBuilderApp`` — one-shot builder that takes already-prepared typed
-  records and writes an IFC file (trees, basepoints, ...). Implemented as a
-  ``typing.Protocol`` so any class exposing ``build_ifc(records, ...)`` counts
-  as one, without inheritance.
-
-``UIAppInterface`` is kept for the city app until it is migrated.
+All current apps (trees, terrain, city) follow the **record-builder**
+pattern: ``build_ifc(records, *, request_params, ...) -> Path``. The
+protocol below describes that contract structurally — any class exposing
+a compatible ``build_ifc`` counts as a record builder without needing
+to inherit from it.
 """
 
 from __future__ import annotations
 
-from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Any, Dict, List, Protocol, runtime_checkable
-
-from BIMFabrikHH_core.data_models.params_bbox import BoundingBoxParams
-from BIMFabrikHH_core.data_models.params_tree import RequestParams
-
-
-class UIAppInterface(ABC):
-    """Legacy 3-step contract for bbox-sourced apps (kept until full migration)."""
-
-    @abstractmethod
-    def get_data_in_bbox(self, bbox: BoundingBoxParams) -> List[Dict[str, Any]]:
-        """Step 1: Get raw data within bounding box."""
-
-    @abstractmethod
-    def process_data(self, raw_data: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-        """Step 2: Process and clean data."""
-
-    @abstractmethod
-    def create_ifc(self, processed_data: List[Dict[str, Any]], request_params: RequestParams) -> Path:
-        """Step 3: Create IFC using existing RequestParams model."""
+from typing import Any, List, Protocol, runtime_checkable
 
 
 @runtime_checkable
 class RecordBuilderApp(Protocol):
     """Structural contract for record-builder apps.
 
-    Any class (``@staticmethod`` or instance method) that exposes ``build_ifc``
-    with a records-first signature returning a ``Path`` satisfies this
-    protocol without needing to inherit it.
+    Any class (``@staticmethod`` or instance method) that exposes
+    ``build_ifc`` with a records-first signature returning a ``Path``
+    satisfies this protocol without needing to inherit it.
     """
 
     def build_ifc(self, records: List[Any], **kwargs: Any) -> Path:  # noqa: D401

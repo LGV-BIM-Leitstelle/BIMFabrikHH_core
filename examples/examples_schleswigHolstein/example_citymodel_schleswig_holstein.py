@@ -3,7 +3,7 @@ Schleswig-Holstein city model example — LoD1 and LoD2.
 
 ADV-style tiles under ``examples/assets/data_schleswigHolstein``.
 EPSG:25832 (ETRS89 / UTM zone 32N), tile ``32_573_6021_1_SH``.
-Uses ``export_citygml_tile_to_ifc`` (Hamburg defaults for hyperlink and layer).
+Uses :class:`CityBasicApp` (Hamburg defaults for hyperlink and layer).
 
 Place the downloaded CityGML files next to each other, for example::
 
@@ -16,21 +16,18 @@ that id (for example ``..._lod1_DESHPDHK0001uU4a.ifc``).
 
 import time
 from pathlib import Path
+from typing import Optional
 
-from BIMFabrikHH_core.apps.city.app import export_citygml_tile_to_ifc
+from BIMFabrikHH_core.apps.city import CityBasicApp
 from BIMFabrikHH_core.config import get_logger
 from BIMFabrikHH_core.config.paths import PathConfig
+from BIMFabrikHH_core.data_models.params_tree import Component, Container, RequestParams
 from BIMFabrikHH_core.data_models.pydantic_georeferencing import CoordinateSystemTemplates
 
 logger = get_logger()
 
-# ---------------------------------------------------------------------------
-# Export controls — edit these before running
-# ---------------------------------------------------------------------------
 EXPORT_LOD: str = "both"
-# None = full tile. Use one building id for a quick test run.
-FILTER_BUILDING_ID: str | None = None  # e.g. "DESHPDHK0001uU4a"
-# ---------------------------------------------------------------------------
+FILTER_BUILDING_ID: Optional[str] = None  # e.g. "DESHPDHK0001uU4a"
 
 SH_DATA = PathConfig.ASSETS / "data_schleswigHolstein"
 
@@ -50,21 +47,42 @@ LOD_CONFIG = {
 }
 
 
-def build_ifc_for_lod(lod_name: str, cfg: dict, building_id: str | None = None) -> tuple[bool, Path]:
-    gml_path = cfg["gml"]
+def _build_project_container(project_name: str, site_name: str, building_name: str) -> Container:
+    """Wrap project/site/building names in the ``Projektinformationen`` container."""
+    return Container(
+        containerTitle="Projektinformationen",
+        containerId="Projektinformationen",
+        components={
+            "projectname": Component(title="Projektname", value=project_name),
+            "sitename": Component(title="IfcSite", value=site_name),
+            "buildingname": Component(title="IfcBuilding", value=building_name),
+        },
+    )
+
+
+def build_ifc_for_lod(lod_name: str, cfg: dict, building_id: Optional[str] = None) -> tuple[bool, Path]:
+    gml_path: Path = cfg["gml"]
     output_path: Path = cfg["output"]
     resolved_out = output_path.with_stem(output_path.stem + f"_{building_id}") if building_id else output_path
 
     logger.info(f"[{lod_name.upper()}] Parsing {gml_path.name} ...")
 
-    result = export_citygml_tile_to_ifc(
-        gml_path,
-        output_path,
+    request_params = RequestParams(
+        bbox=None,
+        containers=[
+            _build_project_container(
+                project_name=cfg["project_name"],
+                site_name="SchleswigHolstein_Site",
+                building_name=f"SchleswigHolstein_{lod_name.upper()}",
+            )
+        ],
+    )
+
+    result = CityBasicApp.from_gml_files(
+        gml_files=[gml_path],
+        request_params=request_params,
         building_id_filter=building_id,
-        append_building_id_to_output_stem=building_id is not None,
-        project_name=cfg["project_name"],
-        site_name="SchleswigHolstein_Site",
-        building_container_name=f"SchleswigHolstein_{lod_name.upper()}",
+        output_path=resolved_out,
         coordinate_system=CoordinateSystemTemplates.epsg_25832(),
         representation_color=cfg["color"],
     )

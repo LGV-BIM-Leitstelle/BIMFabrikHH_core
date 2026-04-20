@@ -19,10 +19,13 @@ from pathlib import Path
 from typing import Callable, Dict, List, Optional, Union
 
 from ifcfactory import BIMFactoryElement
-from pydantic import BaseModel
 
+from BIMFabrikHH_core.apps.trees.processing import (
+    collect_pydantic_psets,
+    resolve_tree_dimensions,
+)
 from BIMFabrikHH_core.core.geometry.tree_objects_generic import RgbTuple, create_tree_element
-from BIMFabrikHH_core.core.model_creator import IfcModelBuilder, validate_ifc
+from BIMFabrikHH_core.core.model_creator import init_ifc_project, validate_ifc
 from BIMFabrikHH_core.data_models import TreeRecord
 from BIMFabrikHH_core.data_models.pydantic_georeferencing import CoordinateSystemTemplates
 
@@ -31,10 +34,6 @@ DEFAULT_TRUNK_COLOR: RgbTuple = (112, 69, 46)
 DEFAULT_CROWN_COLOR: RgbTuple = (33, 128, 46)
 DEFAULT_TRUNK_LAYER = "_BIM_SBK_Stamm"
 DEFAULT_CROWN_LAYER = "_BIM_SBK_Krone"
-
-# 5 cm diameter. A stammdurchmesser of 0 (e.g. newly planted tree) would
-# otherwise produce a degenerate cylinder.
-MIN_TRUNK_RADIUS = 0.025
 
 
 class TreesGenericApp:
@@ -77,12 +76,10 @@ class TreesGenericApp:
             Absolute path of the saved IFC file.
         """
         _t0 = time.perf_counter()
-        model_builder = IfcModelBuilder()
-        model_builder.build_project(
+        model_builder = init_ifc_project(
             project_name="Trees_Generic_Project",
-            coordinate_system=CoordinateSystemTemplates.gauss_kruger_hamburg(),
-            coordinate_operation=CoordinateSystemTemplates.get_default_coordinate_operation(),
             site_name="Trees_Generic_Site",
+            coordinate_system=CoordinateSystemTemplates.gauss_kruger_hamburg(),
         )
         if phase_timings is not None:
             phase_timings["project_setup_s"] = time.perf_counter() - _t0
@@ -147,37 +144,16 @@ def _tree_element_from_record(
 ):
     tree_name = record.name or f"Baum_{idx:03d}"
 
-    pset_templates: List[BaseModel] = []
-    if include_property_sets and record.psets:
-        for pset_name, pset_data in record.psets.items():
-            if isinstance(pset_data, BaseModel):
-                pset_templates.append(pset_data)
-            else:
-                logging.warning(
-                    "Tree %s: pset '%s' is not a pydantic BaseModel (got %s); skipped.",
-                    tree_name,
-                    pset_name,
-                    type(pset_data),
-                )
-    elif include_property_sets:
-        logging.debug("Tree %s: no psets attached to TreeRecord.", tree_name)
-
-    crown_radius = record.kronendurchmesser / 2
-    trunk_radius = max(MIN_TRUNK_RADIUS, record.stammdurchmesser / 2)
-    crown_diameter = record.kronendurchmesser
-
-    if record.baumhoehe is not None and record.baumhoehe > 0:
-        trunk_height = float(record.baumhoehe) + crown_radius
-    elif crown_diameter < 3:
-        trunk_height = 3.5
-    else:
-        trunk_height = 1.35 * crown_diameter
+    dims = resolve_tree_dimensions(record)
+    pset_templates = collect_pydantic_psets(
+        record, include_property_sets=include_property_sets
+    )
 
     return create_tree_element(
         position=record.position,
-        crown_radius=crown_radius,
-        trunk_radius=trunk_radius,
-        trunk_height=trunk_height,
+        crown_radius=dims.crown_radius,
+        trunk_radius=dims.trunk_radius,
+        trunk_height=dims.trunk_height,
         crown_detail=record.detail,
         trunk_segments=record.segments,
         psets=pset_templates,

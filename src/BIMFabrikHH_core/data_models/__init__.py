@@ -10,6 +10,7 @@ from .params_bbox import BoundingBoxParams
 from .params_tree import Component, Container, RequestParams
 
 # App input records
+from .terrain_mesh import TerrainMesh
 from .tree_record import TreeRecord
 
 # Default property set data and functions
@@ -32,10 +33,21 @@ from .pydantic_default_pset_data import (
 from .pydantic_georeferencing import CoordinateSystem, CoordinateSystemTemplates
 
 # Property set models
-from .pydantic_psets_BIMHH import Pset_Georeferenzierung, Pset_Hyperlink, Pset_Modellinformation, Pset_Objektinformation
+from .pydantic_psets_BIMHH import (
+    Pset_Georeferenzierung,
+    Pset_Hyperlink,
+    Pset_Modellinformation,
+    Pset_Objektinformation,
+    default_bim_hamburg_hyperlink,
+)
+from .pydantic_psets_terrain import Pset_Objektinformation_DGM
 
 # City model attribute models
-from .pydantic_psets_city_model import CityModelAttributes
+from .pydantic_psets_city_model import (
+    CityModelAttributes,
+    Pset_Objektinformation_CityModel,
+    city_attrs_to_pset,
+)
 
 __all__ = [
     # Core parameter models
@@ -44,17 +56,22 @@ __all__ = [
     "Container",
     "Component",
     # App input records
+    "TerrainMesh",
     "TreeRecord",
     # Georeferencing models
     "CoordinateSystem",
     "CoordinateSystemTemplates",
     # Property set models
     "Pset_Objektinformation",
+    "Pset_Objektinformation_DGM",
     "Pset_Modellinformation",
     "Pset_Georeferenzierung",
     "Pset_Hyperlink",
+    "default_bim_hamburg_hyperlink",
     # City model attribute models
     "CityModelAttributes",
+    "Pset_Objektinformation_CityModel",
+    "city_attrs_to_pset",
     # Default property set data
     "DefaultPsetObjektinformation",
     "DefaultPsetModellinformation",

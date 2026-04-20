@@ -1,55 +1,48 @@
 """
-Benchmark: ``BaumModeller`` vs ``TreesGenericApp`` (same synthetic trees, both with psets).
+Benchmark: ``TreesBasicApp`` vs ``TreesGenericApp`` (same synthetic trees, same psets).
 
-Writes ``perf_basic_{n}_trees.ifc`` and ``perf_generic_{n}_trees.ifc`` next to this script,
-prints phase timings, then runs ``python -m ifcopenshell.validate --rules`` on each file.
+Both apps consume the **same** ``list[TreeRecord]``. The only difference
+is the geometry + pset attach pipeline:
+
+- ``TreesBasicApp``: mesh trunk + icosphere crown via ``ifcopenshell.api``
+  and ``pset.add_pset`` / ``pset.edit_pset``.
+- ``TreesGenericApp``: ``ifcfactory.BIMFactoryElement`` (batched
+  ``build_in`` + native ``PropertySetTemplate`` attach).
+
+Writes ``perf_basic_{n}_trees.ifc`` and ``perf_generic_{n}_trees.ifc``
+next to this script, prints phase timings, then validates each IFC file
+via ``python -m ifcopenshell.validate --rules``.
 """
 
 from __future__ import annotations
 
 import contextlib
-import math
 import time
 from pathlib import Path
 from typing import Any, Dict, Generator, List, Tuple
 
 import ifcopenshell.api.pset as ifc_pset
-import pandas as pd
-from ifcfactory import ureg
 
-from BIMFabrikHH_core.apps.trees.basic.app import BaumModeller
-from BIMFabrikHH_core.apps.trees.generic import TreesGenericApp
-from BIMFabrikHH_core.core.model_creator import validate_ifc
-from BIMFabrikHH_core.data_models import TreeRecord
-from BIMFabrikHH_core.data_models.params_tree import BoundingBoxParams, Component, Container, RequestParams
-from BIMFabrikHH_core.data_models.pydantic_psets_tree import Pset_Bauwerk_Tree, Pset_Objektinformation_Tree
-
-# WGS84 bbox (Hamburg area); same pattern as ``example_basic_trees.py``.
-_BBOX = BoundingBoxParams(min_x=9.877815, min_y=53.492363, max_x=9.887343, max_y=53.496003)
-
-_CONTAINER = Container(
-    containerTitle="Trees_Container",
-    containerId="trees_perf",
-    components={
-        "description": Component(title="Description", value="Perf benchmark"),
-        "type": Component(title="Data Type", value="Tree Inventory"),
-    },
+from BIMFabrikHH_core.apps.trees import (
+    TreeRecord,
+    TreesBasicApp,
+    TreesGenericApp,
+    build_tree_psets,
 )
-_REQUEST = RequestParams(bbox=_BBOX, containers=[_CONTAINER])
+from BIMFabrikHH_core.core.model_creator import validate_ifc
 
-# Grid origin / step (EPSG:25832 metres, same scale as other tree examples).
+# Grid origin / step (EPSG:25832 metres).
 _E0 = 558_400.0
 _N0 = 5_927_500.0
 _GRID_COLS = 10
 _STEP_M = 4.0
 
-# Number of trees for both pipelines (no CLI — change here to benchmark a different size).
 TREE_COUNT = 100
 
 
 @contextlib.contextmanager
 def _time_ifc_pset_api_seconds() -> Generator[List[float], None, None]:
-    """Accumulate wall time spent inside ifcopenshell ``add_pset`` / ``edit_pset`` (benchmark only)."""
+    """Accumulate wall time spent inside ``ifcopenshell.api.pset`` calls (benchmark-only)."""
     acc = [0.0]
     orig_add = ifc_pset.add_pset
     orig_edit = ifc_pset.edit_pset
@@ -77,78 +70,50 @@ def _time_ifc_pset_api_seconds() -> Generator[List[float], None, None]:
         ifc_pset.edit_pset = orig_edit  # type: ignore[assignment]
 
 
-def _psets_for_basic_row(row: Dict[str, Any]) -> Dict[str, Any]:
-    """Pydantic psets aligned with ``baum_manager.place_trees_from_df`` / basic DataFrame fields."""
-    stammumfang = float(row["stammumfang"])
-    stammdurchmesser_m = max(0.05, stammumfang / math.pi)
-    kd = float(row["kronendurchmesser"])
-    pj = int(row["pflanzjahr_portal"])
-    obj = Pset_Objektinformation_Tree(
-        baumnummer=str(row["baumnummer"]),
-        gattung_deutsch=str(row["gattung_deutsch"]),
-        art_baum=str(row["art_deutsch"]),
-        pflanzjahr=pj,
-        kronendurchmesser=ureg.Quantity(kd, "meter"),
-        stammdurchmesser=ureg.Quantity(stammdurchmesser_m, "meter"),
-        stadtteil=str(row["stadtteil"]),
-        bezirk=str(row["bezirk"]),
-        status_vegetation="Bestand",
-        log=100,
-        loi=100,
-        aufnahmedatum_vermessung="undefiniert",
-    )
-    bau = Pset_Bauwerk_Tree(strassenname=str(row["strasse"]))
-    return {"Pset_Objektinformation": obj, "Pset_Bauwerk": bau}
-
-
-def _make_rows(count: int) -> Tuple[List[Dict[str, Any]], List[TreeRecord]]:
-    """Return (rows for basic DataFrame, records for TreesGenericApp) with matching positions/sizes and psets."""
-    basic_rows: List[Dict[str, Any]] = []
-    generic_records: List[TreeRecord] = []
-
+def _make_records(count: int) -> List[TreeRecord]:
+    """Build ``count`` synthetic tree records with full Pydantic psets."""
+    records: List[TreeRecord] = []
     for i in range(count):
         col = i % _GRID_COLS
-        row = i // _GRID_COLS
+        grid_row = i // _GRID_COLS
         easting = _E0 + col * _STEP_M
-        northing = _N0 + row * _STEP_M
+        northing = _N0 + grid_row * _STEP_M
         elevation = 5.0 + (i % 5) * 0.05
-        kronendurchmesser = 4.5 + (i % 11) * 0.1
-        stammumfang = 0.9 + (i % 5) * 0.05
-        stammdurchmesser = max(0.05, stammumfang / math.pi)
+        kronendurchmesser_m = 4.5 + (i % 11) * 0.1
+        stammdurchmesser_m = 0.25 + (i % 5) * 0.01
+        pflanzjahr = 1990 + (i % 20)
 
         sid = str(10_000 + i)
-        br = {
-            "kronendurchmesser": kronendurchmesser,
-            "stammumfang": stammumfang,
-            "Easting": easting,
-            "Northing": northing,
-            "Elevation": elevation,
-            "baumnummer": sid,
-            "baumid": sid,
-            "gattung_deutsch": "Bench",
-            "art_deutsch": "Species",
-            "sorte_deutsch": "Sorte",
-            "strasse": "Benchstrasse",
-            "stadtteil": "Hamburg",
-            "bezirk": "Hamburg-Mitte",
-            "pflanzjahr_portal": 1990 + (i % 20),
-        }
-        basic_rows.append(br)
-        generic_records.append(
+        psets = build_tree_psets(
+            baumnummer=sid,
+            gattung="Bench",
+            art="Species",
+            pflanzjahr=pflanzjahr,
+            kronendurchmesser_m=kronendurchmesser_m,
+            stammdurchmesser_m=stammdurchmesser_m,
+            baumhoehe_m=1.35 * kronendurchmesser_m,
+            baumhoehe_bemerkung="Benchmark synthetic height",
+            aufnahmedatum="undefiniert",
+            stadtteil="Hamburg",
+            bezirk="Hamburg-Mitte",
+            bemerkung="Perf benchmark",
+            status_vegetation="Bestand",
+            strasse="Benchstrasse",
+        )
+        records.append(
             TreeRecord(
                 name=f"Bench_{i:04d}",
                 position=(easting, northing, elevation),
-                kronendurchmesser=kronendurchmesser,
-                stammdurchmesser=stammdurchmesser,
-                # Align with basic defaults: OGC ``DEFAULT_LEVEL_OF_GEOMETRY`` is 1; basic trunk uses 5 segments.
-                # Crown mesh still differs (icosphere vs ifcfactory Sphere) — comparable LOD numbers only.
+                kronendurchmesser=kronendurchmesser_m,
+                stammdurchmesser=stammdurchmesser_m,
+                # Align with old basic defaults: crown LOD = 1, trunk segments = 5.
                 detail=1,
                 segments=5,
-                psets=_psets_for_basic_row(br),
+                psets=psets,
             )
         )
 
-    return basic_rows, generic_records
+    return records
 
 
 def _fmt_s(x: float | None) -> str:
@@ -184,11 +149,11 @@ def _print_phase_table(
     wall_basic: float,
     wall_gen: float,
 ) -> None:
-    """Print aligned table: phase vs seconds for each pipeline, plus generic % of basic time."""
+    """Print aligned phase-timings table with generic-vs-basic percentage column."""
     row_specs: List[Tuple[str, float | None, float | None]] = [
         ("Project / IFC setup (`build_project`)", basic.get("project_setup_s"), gen.get("project_setup_s")),
         (
-            "Tree geometry (basic: `create_tree` each row; generic: `create_tree_element` loop)",
+            "Tree geometry (basic: mesh per row; generic: `create_tree_element` loop)",
             basic.get("tree_geometry_s"),
             gen.get("prepare_elements_s"),
         ),
@@ -198,24 +163,16 @@ def _print_phase_table(
             gen.get("tree_pset_s"),
         ),
         ("Batch `BIMFactoryElement.build_in` (attach all to site)", None, gen.get("build_in_s")),
-        ("Basepoint quad (`BIMFactoryElement`)", basic.get("basepoint_s"), None),
         ("Save IFC file", basic.get("save_s"), gen.get("save_s")),
     ]
 
-    sum_b = sum(
-        basic.get(k, 0.0) for k in ("project_setup_s", "tree_geometry_s", "tree_pset_s", "basepoint_s", "save_s")
-    )
+    sum_b = sum(basic.get(k, 0.0) for k in ("project_setup_s", "tree_geometry_s", "tree_pset_s", "save_s"))
     sum_g = sum(gen.get(k, 0.0) for k in ("project_setup_s", "prepare_elements_s", "build_in_s", "save_s"))
     row_specs.append(("Sum of measured phases", sum_b, sum_g))
     row_total = ("Total (wall time, end-to-end)", wall_basic, wall_gen)
 
     rows: List[Tuple[str, str, str, str]] = [
-        (
-            label,
-            _fmt_s(bs),
-            _fmt_s(ps),
-            _fmt_pct_vs_basic(bs, ps, wall_basic, wall_gen),
-        )
+        (label, _fmt_s(bs), _fmt_s(ps), _fmt_pct_vs_basic(bs, ps, wall_basic, wall_gen))
         for label, bs, ps in row_specs
     ]
     rows.append(
@@ -231,7 +188,7 @@ def _print_phase_table(
     col_b, col_p, col_pct = 14, 14, 12
     sep = f"{'-' * w}  {'-' * col_b}  {'-' * col_p}  {'-' * col_pct}"
     print()
-    print(f"{'Phase':<{w}}  {'Basic (s)':>{col_b}}  {'Generic (s)':>{col_p}}  " f"{'% vs basic':>{col_pct}}")
+    print(f"{'Phase':<{w}}  {'Basic (s)':>{col_b}}  {'Generic (s)':>{col_p}}  {'% vs basic':>{col_pct}}")
     print(
         "  (row has both times: generic/basic × 100; generic-only: generic/basic wall × 100; "
         "basic-only: basic/generic wall × 100)"
@@ -256,27 +213,23 @@ def main() -> None:
     path_basic = here / f"perf_basic_{count}_trees.ifc"
     path_generic = here / f"perf_generic_{count}_trees.ifc"
 
-    basic_data, generic_records = _make_rows(count)
-    df = pd.DataFrame(basic_data)
+    records = _make_records(count)
 
     timings_basic: Dict[str, float] = {}
     timings_gen: Dict[str, float] = {}
 
     print(f"Benchmark: {count} trees (IFC in {here})")
     print(
-        "  Basic: BaumModeller + per-tree Psets (add_pset/edit_pset) | "
-        "Generic: geometry + Pset_Objektinformation / Pset_Bauwerk templates (BIMFactoryElement)"
+        "  Basic: TreesBasicApp (mesh + ifcopenshell.api psets) | "
+        "Generic: TreesGenericApp (ifcfactory BIMFactoryElement + Pydantic psets)"
     )
     print()
 
     t_wall_b0 = time.perf_counter()
-    modeller = BaumModeller()
-    _ = modeller.create_tree_model_from_df(
-        df,
-        _REQUEST,
-        tif_path=None,
-        use_geotiff_elevation=False,
+    _ = TreesBasicApp.build_ifc(
+        records,
         output_path=path_basic,
+        include_property_sets=True,
         phase_timings=timings_basic,
     )
     wall_basic = time.perf_counter() - t_wall_b0
@@ -284,7 +237,7 @@ def main() -> None:
     t_wall_p0 = time.perf_counter()
     with _time_ifc_pset_api_seconds() as pset_s:
         _ = TreesGenericApp.build_ifc(
-            generic_records,
+            records,
             output_path=path_generic,
             include_property_sets=True,
             phase_timings=timings_gen,

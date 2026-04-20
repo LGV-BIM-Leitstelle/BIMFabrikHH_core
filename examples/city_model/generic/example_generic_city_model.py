@@ -1,7 +1,9 @@
-"""Basic city-model example.
+"""Generic city-model example (ifcfactory pipeline).
 
-Parses a handful of Hamburg LoD1 tiles, crops by a WGS84 bbox, and
-writes a single IFC via the record-builder :class:`CityBasicApp`.
+Parses the same Hamburg LoD1 tiles as the basic example, cropped by a
+WGS84 bbox, and writes a single IFC via :class:`CityGenericApp` —
+``ifcfactory.BIMFactoryElement`` / ``MeshRepresentation`` / ``Style``
+instead of raw ``ifcopenshell.api`` calls.
 """
 
 import subprocess
@@ -9,14 +11,14 @@ import sys
 from pathlib import Path
 
 from BIMFabrikHH_core import BoundingBoxParams, Component, Container, PathConfig, RequestParams
-from BIMFabrikHH_core.apps.city import CityBasicApp
+from BIMFabrikHH_core.apps.city import CityGenericApp
 from BIMFabrikHH_core.config import get_logger
 
 logger = get_logger()
 
 
 def main() -> None:
-    """Process Hamburg LoD1 tiles into a single IFC city model."""
+    """Process Hamburg LoD1 tiles into a single IFC city model via ifcfactory."""
     citymodel_folder = Path(__file__).parent
     xml_files = [
         str(PathConfig.ASSETS / "LoD1_32_549_5935_1_HH.xml"),
@@ -41,8 +43,8 @@ def main() -> None:
         containers=[container],
     )
 
-    output_file = citymodel_folder / "example_basic_city_model.ifc"
-    result = CityBasicApp.from_gml_files(
+    output_file = citymodel_folder / "example_generic_city_model.ifc"
+    result = CityGenericApp.from_gml_files(
         gml_files=xml_files,
         request_params=request_body,
         folder_path=citymodel_folder,

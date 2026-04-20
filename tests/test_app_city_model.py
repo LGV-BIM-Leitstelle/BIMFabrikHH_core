@@ -1,130 +1,118 @@
-"""Test city model application functionality."""
+"""Unit tests for the record-builder :class:`CityBasicApp`."""
 
-from pathlib import Path
+import inspect
+from typing import get_type_hints
 
-from BIMFabrikHH_core.apps.city.app import CityModularApp
+import pytest
+
+from BIMFabrikHH_core.apps.city import CityBasicApp, parse_gml_files
+from BIMFabrikHH_core.apps.city.processing import _building_overlaps_bbox, _resolve_file_path
 from BIMFabrikHH_core.data_models.params_bbox import BoundingBoxParams
 from BIMFabrikHH_core.data_models.params_tree import Component, Container, RequestParams
+from BIMFabrikHH_core.data_models.pydantic_psets_city_model import (
+    Building,
+    CityModelAttributes,
+)
 
 
-class TestCityModularApp:
-    """Test the CityModularApp class."""
+class TestCityBasicAppContract:
+    """Verify the record-builder contract of :class:`CityBasicApp`."""
 
-    def test_city_modular_app_initialization(self):
-        """Test that CityModularApp can be initialized."""
-        gml_files = ["test1.xml", "test2.xml"]
-        app = CityModularApp(gml_files=gml_files)
+    def test_build_ifc_is_staticmethod(self):
+        """``build_ifc`` must be callable directly on the class."""
+        assert callable(CityBasicApp.build_ifc)
 
-        assert app.gml_files == gml_files
-        assert app.folder_path is None
-        assert app.parser is not None
+    def test_build_ifc_signature_required_args(self):
+        """``build_ifc`` accepts ``buildings`` positional + keyword-only extras."""
+        sig = inspect.signature(CityBasicApp.build_ifc)
+        params = sig.parameters
 
-    def test_city_modular_app_with_folder_path(self):
-        """Test that CityModularApp can be initialized with folder path."""
-        gml_files = ["test1.xml", "test2.xml"]
-        folder_path = Path("/test/path")
-        app = CityModularApp(gml_files=gml_files, folder_path=folder_path)
+        assert "buildings" in params
+        assert "request_params" in params
+        assert "basepoint_origin" in params
+        assert "output_path" in params
+        assert "output_name" in params
 
-        assert app.gml_files == gml_files
-        assert app.folder_path == folder_path
+    def test_from_gml_files_is_classmethod(self):
+        """``from_gml_files`` must be callable directly on the class."""
+        assert callable(CityBasicApp.from_gml_files)
 
-    def test_get_data_in_bbox_method_exists(self):
-        """Test that get_data_in_bbox method exists and is callable."""
-        app = CityModularApp(gml_files=[])
-        assert hasattr(app, "get_data_in_bbox")
-        assert callable(app.get_data_in_bbox)
+    def test_from_gml_files_signature(self):
+        sig = inspect.signature(CityBasicApp.from_gml_files)
+        params = sig.parameters
+        for name in ("gml_files", "request_params", "building_id_filter", "basepoint_origin"):
+            assert name in params, f"Missing parameter: {name}"
 
-    def test_process_data_method_exists(self):
-        """Test that process_data method exists and is callable."""
-        app = CityModularApp(gml_files=[])
-        assert hasattr(app, "process_data")
-        assert callable(app.process_data)
-
-    def test_create_ifc_method_exists(self):
-        """Test that create_ifc method exists and is callable."""
-        app = CityModularApp(gml_files=[])
-        assert hasattr(app, "create_ifc")
-        assert callable(app.create_ifc)
-
-    def test_ui_app_interface_compliance(self):
-        """Test that CityModularApp implements UIAppInterface methods."""
-        app = CityModularApp(gml_files=[])
-
-        # Check that all required methods exist
-        required_methods = ["get_data_in_bbox", "process_data", "create_ifc"]
-        for method_name in required_methods:
-            assert hasattr(app, method_name), f"Missing method: {method_name}"
-            assert callable(getattr(app, method_name)), f"Method {method_name} is not callable"
-
-    def test_method_signatures(self):
-        """Test that methods have correct signatures."""
-        app = CityModularApp(gml_files=[])
-
-        # Test get_data_in_bbox signature
-        import inspect
-
-        sig = inspect.signature(app.get_data_in_bbox)
-        assert "bbox" in sig.parameters
-
-        # Test process_data signature
-        sig = inspect.signature(app.process_data)
-        assert "raw_data" in sig.parameters
-
-        # Test create_ifc signature
-        sig = inspect.signature(app.create_ifc)
-        assert "processed_data" in sig.parameters
-        assert "request_params" in sig.parameters
+    def test_basepoint_origin_is_optional_tuple(self):
+        """The explicit-origin override defaults to ``None``."""
+        sig = inspect.signature(CityBasicApp.build_ifc)
+        assert sig.parameters["basepoint_origin"].default is None
 
 
-class TestCityModelIntegration:
-    """Test city model integration scenarios."""
+class TestCityProcessing:
+    """Unit tests for the pure data-processing helpers."""
 
-    def test_create_request_params(self):
-        """Test creating RequestParams for city model processing."""
-        bbox = BoundingBoxParams(min_x=9.7500, min_y=53.5813, max_x=9.7483, max_y=53.5856)
-        container = Container(
-            containerTitle="Test_Container",
-            containerId="test_id",
-            components={
-                "description": Component(title="Description", value="Test City Model"),
-                "type": Component(title="Model Type", value="Test Buildings"),
-            },
+    def test_resolve_file_path_none_folder(self):
+        assert _resolve_file_path("tile.xml", None) == "tile.xml"
+
+    def test_resolve_file_path_http_folder(self):
+        assert _resolve_file_path("tile.xml", "https://example.com/tiles") == (
+            "https://example.com/tiles/tile.xml"
         )
-        request_params = RequestParams(bbox=bbox, containers=[container])
 
-        assert request_params.bbox == bbox
-        assert len(request_params.containers) == 1
-        assert request_params.containers[0] == container
+    def test_resolve_file_path_absolute_folder(self):
+        assert _resolve_file_path("tile.xml", "/mnt/assets") == "/mnt/assets/tile.xml"
 
-    def test_city_modular_app_workflow(self):
-        """Test the complete workflow of CityModularApp."""
-        # This is a smoke test to ensure the workflow methods can be called
-        # without actual data files
-        gml_files = ["nonexistent.xml"]
-        app = CityModularApp(gml_files=gml_files)
+    def test_resolve_file_path_absolute_file_overrides_mounted(self):
+        assert _resolve_file_path("/abs/tile.xml", "/mnt/assets") == "/abs/tile.xml"
 
-        # Create test request params
-        bbox = BoundingBoxParams(min_x=9.7500, min_y=53.5813, max_x=9.7483, max_y=53.5856)
-        container = Container(
-            containerTitle="Test_Container",
-            containerId="test_id",
-            components={
-                "description": Component(title="Description", value="Test City Model"),
-                "type": Component(title="Model Type", value="Test Buildings"),
-            },
+    def test_building_overlaps_bbox_inside(self):
+        building = _make_building(
+            vertices=[(10.0, 10.0, 0.0), (20.0, 10.0, 0.0), (15.0, 20.0, 0.0)],
+            faces=[[0, 1, 2]],
         )
-        request_params = RequestParams(bbox=bbox, containers=[container])
+        assert _building_overlaps_bbox(building, bbox_epsg=(0.0, 0.0, 100.0, 100.0))
 
-        # Test that methods can be called (they may fail due to missing files, but that's expected)
-        try:
-            raw_data = app.get_data_in_bbox(bbox)
-            # This should return an empty list for nonexistent files
-            assert isinstance(raw_data, list)
-        except Exception:
-            # Expected for missing files
-            pass
+    def test_building_overlaps_bbox_outside(self):
+        building = _make_building(
+            vertices=[(500.0, 500.0, 0.0), (600.0, 500.0, 0.0), (550.0, 600.0, 0.0)],
+            faces=[[0, 1, 2]],
+        )
+        assert not _building_overlaps_bbox(building, bbox_epsg=(0.0, 0.0, 100.0, 100.0))
 
-        # Test process_data with empty data
-        processed_data = app.process_data([])
-        assert isinstance(processed_data, list)
-        assert len(processed_data) == 0
+    def test_parse_gml_files_with_empty_list(self):
+        """``parse_gml_files`` short-circuits cleanly when given nothing."""
+        buildings = parse_gml_files([])
+        assert buildings == []
+
+
+class TestCityBasicAppExecution:
+    """Smoke test — calling with no buildings must fail gracefully."""
+
+    def test_build_ifc_returns_none_for_empty_input(self):
+        request_params = _make_request_params(with_bbox=True)
+        result = CityBasicApp.build_ifc(buildings=[], request_params=request_params)
+        assert result is None
+
+
+def _make_building(vertices, faces) -> Building:
+    return Building(
+        id="test_building",
+        attributes=CityModelAttributes(),
+        vertices=vertices,
+        faces=faces,
+    )
+
+
+def _make_request_params(with_bbox: bool) -> RequestParams:
+    bbox = (
+        BoundingBoxParams(min_x=9.75, min_y=53.58, max_x=9.76, max_y=53.59) if with_bbox else None
+    )
+    container = Container(
+        containerTitle="Test_Container",
+        containerId="test_id",
+        components={
+            "description": Component(title="Description", value="Test City Model"),
+        },
+    )
+    return RequestParams(bbox=bbox, containers=[container])

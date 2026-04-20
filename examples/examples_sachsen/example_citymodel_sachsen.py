@@ -3,30 +3,26 @@ Sachsen city model example — LoD1 and LoD2.
 
 Parses the CityGML tiles from examples/assets/data_sachsen and writes two
 separate IFC files, one per LoD. Uses EPSG:25833 (UTM zone 33N, Sachsen).
-Uses ``export_citygml_tile_to_ifc`` (Hamburg pipeline: includes Pset_Hyperlink).
+Uses :class:`CityBasicApp` (Hamburg pipeline: includes Pset_Hyperlink).
 
 Outputs under ``PathConfig.OUTPUT``; with a building filter the stem includes
-that id (same as the app default).
+that id.
 """
 
 import time
 from pathlib import Path
+from typing import Optional
 
-from BIMFabrikHH_core.apps.city.app import export_citygml_tile_to_ifc
+from BIMFabrikHH_core.apps.city import CityBasicApp
 from BIMFabrikHH_core.config import get_logger
 from BIMFabrikHH_core.config.paths import PathConfig
+from BIMFabrikHH_core.data_models.params_tree import Component, Container, RequestParams
 from BIMFabrikHH_core.data_models.pydantic_georeferencing import CoordinateSystemTemplates
 
 logger = get_logger()
 
-# ---------------------------------------------------------------------------
-# Export controls — edit these before running
-# ---------------------------------------------------------------------------
-# Which LoD(s) to export: "lod1" | "lod2" | "both"
-EXPORT_LOD: str = "both"
-# Restrict export to a single building ID, or None for all buildings
-FILTER_BUILDING_ID: str | None = "DESNATPU1000C1qE"  # e.g. "DESNATPU1000C1qE"
-# ---------------------------------------------------------------------------
+EXPORT_LOD: str = "both"  # "lod1" | "lod2" | "both"
+FILTER_BUILDING_ID: Optional[str] = "DESNATPU1000C1qE"  # e.g. "DESNATPU1000C1qE"
 
 SACHSEN_DATA = PathConfig.ASSETS / "data_sachsen"
 
@@ -46,22 +42,43 @@ LOD_CONFIG = {
 }
 
 
-def build_ifc_for_lod(lod_name: str, cfg: dict, building_id: str | None = None) -> tuple[bool, Path]:
-    """Parse one CityGML file and write IFC via the shared city app export."""
-    gml_path = cfg["gml"]
+def _build_project_container(project_name: str, site_name: str, building_name: str) -> Container:
+    """Wrap project/site/building names in the ``Projektinformationen`` container."""
+    return Container(
+        containerTitle="Projektinformationen",
+        containerId="Projektinformationen",
+        components={
+            "projectname": Component(title="Projektname", value=project_name),
+            "sitename": Component(title="IfcSite", value=site_name),
+            "buildingname": Component(title="IfcBuilding", value=building_name),
+        },
+    )
+
+
+def build_ifc_for_lod(lod_name: str, cfg: dict, building_id: Optional[str] = None) -> tuple[bool, Path]:
+    """Parse one CityGML file and write IFC via :class:`CityBasicApp`."""
+    gml_path: Path = cfg["gml"]
     output_path: Path = cfg["output"]
     resolved_out = output_path.with_stem(output_path.stem + f"_{building_id}") if building_id else output_path
 
     logger.info(f"[{lod_name.upper()}] Parsing {gml_path.name} ...")
 
-    result = export_citygml_tile_to_ifc(
-        gml_path,
-        output_path,
+    request_params = RequestParams(
+        bbox=None,
+        containers=[
+            _build_project_container(
+                project_name=cfg["project_name"],
+                site_name="Sachsen_Site",
+                building_name=f"Sachsen_{lod_name.upper()}",
+            )
+        ],
+    )
+
+    result = CityBasicApp.from_gml_files(
+        gml_files=[gml_path],
+        request_params=request_params,
         building_id_filter=building_id,
-        append_building_id_to_output_stem=building_id is not None,
-        project_name=cfg["project_name"],
-        site_name="Sachsen_Site",
-        building_container_name=f"Sachsen_{lod_name.upper()}",
+        output_path=resolved_out,
         coordinate_system=CoordinateSystemTemplates.epsg_25833(),
         representation_color=cfg["color"],
     )

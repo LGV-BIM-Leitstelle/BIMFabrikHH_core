@@ -20,18 +20,45 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 """
 
 """
-Tree modeling application for BIMFabrikHH.
+Tree modeling applications for BIMFabrikHH.
 
-This module contains functionality for processing tree data from Hamburg's
-OGC API and converting it to IFC format.
+Two record-builder apps share the same ``TreeRecord`` input contract:
+
+- :class:`TreesBasicApp` — mesh trunk + icosphere crown via
+  ``ifcopenshell.api``.
+- :class:`TreesGenericApp` — ``ifcfactory.BIMFactoryElement`` pipeline.
+
+Data-processing helpers live in :mod:`BIMFabrikHH_core.apps.trees.processing`
+(DataFrame → list[TreeRecord] with psets; height rules; validation).
 """
 
-from .basic.app import BaumModeller
-from .basic.baum_col_names import DfColTree
-from .basic.baum_manager import BaumManager
+from BIMFabrikHH_core.data_models import TreeRecord
+
+from .basic.app import TreesBasicApp
+from .column_schema import BAUMKATASTER_SCHEMA, DEFAULT_OAF_SCHEMA, TreeColumnSchema
+from .generic.app import TreesGenericApp
+from .processing import (
+    TreeDimensions,
+    build_tree_psets,
+    calculate_tree_height,
+    collect_pydantic_psets,
+    dataframe_to_records,
+    resolve_tree_dimensions,
+    validate_tree_records,
+)
 
 __all__ = [
-    "BaumModeller",
-    "BaumManager",
-    "DfColTree",
+    "BAUMKATASTER_SCHEMA",
+    "DEFAULT_OAF_SCHEMA",
+    "TreeColumnSchema",
+    "TreeDimensions",
+    "TreeRecord",
+    "TreesBasicApp",
+    "TreesGenericApp",
+    "build_tree_psets",
+    "calculate_tree_height",
+    "collect_pydantic_psets",
+    "dataframe_to_records",
+    "resolve_tree_dimensions",
+    "validate_tree_records",
 ]

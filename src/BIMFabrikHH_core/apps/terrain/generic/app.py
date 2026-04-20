@@ -1,36 +1,24 @@
 """
-Basic Terrain Application
+Generic Terrain App
+===================
 
-Copyright (C) 2025 Freie und Hansestadt Hamburg, Landesbetrieb Geoinformation und Vermessung
-BIM-Leitstelle, Ahmed Salem <ahmed.salem@gv.hamburg.de>
+Build an IFC DGM from a :class:`TerrainMesh` using the ``ifcfactory``
+``BIMFactoryElement`` pipeline. Mirrors the open-house tutorial terrain
+pattern (``MeshRepresentation`` wrapped in ``Style``) and lets callers
+attach Pydantic property-set templates (``Pset_Objektinformation_DGM``
++ ``Pset_Hyperlink`` by default).
 
-This library is free software; you can redistribute it and/or
-modify it under the terms of the GNU Lesser General Public
-License as published by the Free Software Foundation; either
-version 2.1 of the License, or (at your option) any later version.
-
-This library is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-Lesser General Public License for more details.
-
-You should have received a copy of the GNU Lesser General Public
-License along with this library; if not, write to the Free Software
-Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
-
-Record-builder terrain app: takes a :class:`TerrainMesh` and writes an
-IFC file. Pure meshing lives in ``apps.terrain.processing``; this file
-only does the IFC writing and the convenience ``from_geotiffs`` one-shot
-that combines both steps.
+Shares the pure meshing pipeline (``extract_mesh_adaptive``) and the
+IFC-adjacent helpers (basepoint placement, bbox resolution, default
+psets) with :class:`TerrainBasicApp`.
 """
 
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, Dict, Iterable, Optional, Sequence, Tuple, Union
+from typing import Iterable, List, Optional, Sequence, Tuple, Union
 
-import numpy as np
-from ifcopenshell.api import geometry, pset, root, spatial
+from ifcfactory import BIMFactoryElement, MeshRepresentation, Style
 from pydantic import BaseModel
 
 from BIMFabrikHH_core.apps.terrain._ifc_common import (
@@ -42,32 +30,29 @@ from BIMFabrikHH_core.apps.terrain.processing import extract_mesh_adaptive
 from BIMFabrikHH_core.config.logging_colors import get_level_logger
 from BIMFabrikHH_core.core.geometry import place_basepoint
 from BIMFabrikHH_core.core.model_creator import init_ifc_project
-from BIMFabrikHH_core.core.model_creator.ifc_snippets import IfcSnippets
 from BIMFabrikHH_core.core.ogc_extractor.ogc_values_extractor import extract_psets_basepoint
 from BIMFabrikHH_core.data_models.params_tree import RequestParams
 from BIMFabrikHH_core.data_models.pydantic_psets_terrain import Pset_Objektinformation_DGM
 from BIMFabrikHH_core.data_models.terrain_mesh import TerrainMesh
 
-logger = get_level_logger("terrain_basic_app")
+logger = get_level_logger("terrain_generic_app")
 
-_TERRAIN_COLOR: str = "102, 204, 0"
+RgbTuple = Union[Tuple[float, float, float], Tuple[int, int, int]]
+
+_DEFAULT_TERRAIN_RGB: RgbTuple = (102, 204, 0)
+_DEFAULT_TERRAIN_LAYER: str = "_BIM_DGM_Gelaende"
+_DEFAULT_OUTPUT_NAME: str = "output_dgm_generic.ifc"
 _DEFAULT_BASEPOINT_SIZE: float = 5.0
-_DEFAULT_OUTPUT_NAME: str = "output_dgm.ifc"
 
 
-# ---------------------------------------------------------------------------
-# Public app class
-# ---------------------------------------------------------------------------
+class TerrainGenericApp:
+    """Record-builder terrain app built on ``ifcfactory``.
 
-
-class TerrainBasicApp:
-    """Record-builder terrain app.
-
-    Writes an IFC DGM from a :class:`TerrainMesh`. The mesh is generated
-    upstream by :func:`BIMFabrikHH_core.apps.terrain.processing.extract_mesh_adaptive`
-    (or any other caller-supplied producer). The convenience class method
-    :meth:`from_geotiffs` runs the default extractor and then builds the IFC
-    in one call.
+    ``build_ifc`` takes a prepared :class:`TerrainMesh` and writes the DGM
+    as a single ``IfcBuildingElementProxy`` with a ``MeshRepresentation``
+    styled via :class:`ifcfactory.Style`, then places the project
+    basepoint quad. :meth:`from_geotiffs` combines mesh extraction and
+    IFC building in one call.
     """
 
     @staticmethod
@@ -80,7 +65,10 @@ class TerrainBasicApp:
         output_name: str = _DEFAULT_OUTPUT_NAME,
         basepoint_size: float = _DEFAULT_BASEPOINT_SIZE,
         basepoint_origin: Optional[Tuple[float, float]] = None,
-        color: str = _TERRAIN_COLOR,
+        color: RgbTuple = _DEFAULT_TERRAIN_RGB,
+        cad_layer: str = _DEFAULT_TERRAIN_LAYER,
+        name: str = "DGM",
+        transparency: float = 0.0,
     ) -> Optional[Path]:
         """Build an IFC file from a prepared :class:`TerrainMesh`.
 
@@ -98,7 +86,10 @@ class TerrainBasicApp:
                 the basepoint quad. When ``None`` (default), falls back to
                 ``mesh.nullpunkt`` or the minimum ``(x, y)`` of the mesh
                 vertices.
-            color: RGB string used for the terrain surface style.
+            color: RGB as ``(R, G, B)`` in 0-255 **or** normalized 0-1 floats.
+            cad_layer: CAD layer name assigned to the terrain mesh.
+            name: IFC element name for the DGM.
+            transparency: 0.0 = opaque, 1.0 = fully transparent.
 
         Returns:
             Path to the saved IFC file, or ``None`` on failure.
@@ -118,12 +109,17 @@ class TerrainBasicApp:
                 logger.error("Failed to create IFC model")
                 return None
 
-            element = _create_terrain_element(model, builder.site, mesh, builder.body, color=color)
-            if element is None:
-                return None
-
             effective_psets = list(psets) if psets is not None else default_terrain_psets()
-            _attach_psets(model, element, effective_psets)
+            dgm_element = _terrain_element_from_mesh(
+                mesh=mesh,
+                name=name,
+                color=color,
+                cad_layer=cad_layer,
+                transparency=transparency,
+                psets=effective_psets,
+            )
+
+            BIMFactoryElement.build_in(model, inst=builder.site, items=[dgm_element])
 
             resolved_origin = (
                 basepoint_origin
@@ -163,6 +159,8 @@ class TerrainBasicApp:
         output_name: str = _DEFAULT_OUTPUT_NAME,
         basepoint_size: float = _DEFAULT_BASEPOINT_SIZE,
         basepoint_origin: Optional[Tuple[float, float]] = None,
+        color: RgbTuple = _DEFAULT_TERRAIN_RGB,
+        cad_layer: str = _DEFAULT_TERRAIN_LAYER,
     ) -> Optional[Path]:
         """One-shot: extract a mesh from GeoTIFFs, then build the IFC.
 
@@ -187,76 +185,43 @@ class TerrainBasicApp:
             output_name=output_name,
             basepoint_size=basepoint_size,
             basepoint_origin=basepoint_origin,
+            color=color,
+            cad_layer=cad_layer,
         )
 
 
 # ---------------------------------------------------------------------------
-# Module-level IFC writer helpers
+# Module-level helpers
 # ---------------------------------------------------------------------------
 
 
-def _create_terrain_element(
-    model,
-    site,
-    mesh: TerrainMesh,
-    body_context,
+def _terrain_element_from_mesh(
     *,
-    color: str,
-):
-    """Create the ``IfcBuildingElementProxy`` carrying the terrain mesh."""
-    element = root.create_entity(model, ifc_class="IfcBuildingElementProxy", name="DGM")
-    if element is None:
-        logger.error("Failed to create terrain element")
-        return None
+    mesh: TerrainMesh,
+    name: str,
+    color: RgbTuple,
+    cad_layer: str,
+    transparency: float,
+    psets: List[BaseModel],
+) -> BIMFactoryElement:
+    """Wrap the terrain mesh in a styled ``BIMFactoryElement`` ready for ``build_in``."""
+    vertices = [tuple(v) for v in mesh.vertices]
 
-    if site is not None:
-        spatial.assign_container(model, relating_structure=site, products=[element])
-    geometry.edit_object_placement(model, matrix=np.eye(4), product=element)
-
-    representation = geometry.add_mesh_representation(
-        model,
-        context=body_context,
-        vertices=[mesh.vertices],
-        faces=[mesh.faces],
-        edges=[[]],
+    mesh_item = MeshRepresentation(vertices=vertices, faces=mesh.faces)
+    styled_mesh = Style(
+        item=mesh_item,
+        rgb=color,
+        transparency=transparency,
+        cad_layer=cad_layer,
     )
-    if representation is None:
-        logger.error("Failed to create mesh representation")
-        return None
 
-    geometry.assign_representation(model, product=element, representation=representation)
-    IfcSnippets().assign_color_to_element(model, representation, color, 0.0)
-    return element
-
-
-def _attach_psets(model, product, pset_models: Sequence[BaseModel]) -> None:
-    """Attach every Pydantic pset model to ``product`` via ``ifcopenshell.api.pset``."""
-    for model_obj in pset_models:
-        pset_name = getattr(type(model_obj), "pset_name", None) or type(model_obj).__name__
-        properties = _pydantic_pset_to_ifc_dict(model_obj)
-        if not properties:
-            continue
-        pset_ifc = pset.add_pset(model, product=product, name=pset_name)
-        pset.edit_pset(model, pset=pset_ifc, properties=properties)
+    return BIMFactoryElement(
+        type="IfcBuildingElementProxy",
+        name=name,
+        qsets=False,
+        children=[styled_mesh],
+        psets=psets,
+    )
 
 
-def _pydantic_pset_to_ifc_dict(model_obj: BaseModel) -> Dict[str, Any]:
-    """Convert a Pydantic pset model to a flat dict usable by ``edit_pset``.
-
-    * Uses ``by_alias=True`` so serialization aliases (e.g. ``_ArtDGM``)
-      are used as IFC property names.
-    * Drops ``None`` values so they don't shadow defaults.
-    * Unwraps ``pint.Quantity`` values to their numeric magnitude (float)
-      to match plain-numeric IFC real properties.
-    """
-    raw = model_obj.model_dump(by_alias=True, exclude_none=True)
-    out: Dict[str, Any] = {}
-    for key, value in raw.items():
-        if hasattr(value, "to_base_units") and hasattr(value, "magnitude"):
-            out[key] = float(value.to_base_units().magnitude)
-        else:
-            out[key] = value
-    return out
-
-
-__all__ = ["TerrainBasicApp", "Pset_Objektinformation_DGM"]
+__all__ = ["TerrainGenericApp", "Pset_Objektinformation_DGM"]
