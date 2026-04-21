@@ -18,7 +18,6 @@ from BIMFabrikHH_core.apps.terrain import (
 )
 from BIMFabrikHH_core.data_models import RequestParams
 
-
 # ---------------------------------------------------------------------------
 # TerrainMesh
 # ---------------------------------------------------------------------------

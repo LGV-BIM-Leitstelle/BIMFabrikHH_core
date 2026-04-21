@@ -23,12 +23,7 @@ from typing import Any, Dict, Generator, List, Tuple
 
 import ifcopenshell.api.pset as ifc_pset
 
-from BIMFabrikHH_core.apps.trees import (
-    TreeRecord,
-    TreesBasicApp,
-    TreesGenericApp,
-    build_tree_psets,
-)
+from BIMFabrikHH_core.apps.trees import TreeRecord, TreesBasicApp, TreesGenericApp, build_tree_psets
 from BIMFabrikHH_core.core.model_creator import validate_ifc
 
 # Grid origin / step (EPSG:25832 metres).
@@ -172,8 +167,7 @@ def _print_phase_table(
     row_total = ("Total (wall time, end-to-end)", wall_basic, wall_gen)
 
     rows: List[Tuple[str, str, str, str]] = [
-        (label, _fmt_s(bs), _fmt_s(ps), _fmt_pct_vs_basic(bs, ps, wall_basic, wall_gen))
-        for label, bs, ps in row_specs
+        (label, _fmt_s(bs), _fmt_s(ps), _fmt_pct_vs_basic(bs, ps, wall_basic, wall_gen)) for label, bs, ps in row_specs
     ]
     rows.append(
         (

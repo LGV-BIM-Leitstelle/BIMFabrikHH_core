@@ -27,8 +27,6 @@ import os
 import time
 from pathlib import Path
 
-from BIMFabrikHH_core.config import get_logger
-from BIMFabrikHH_core.config.paths import PathConfig
 from basepoint.example_basepoint_basic import main as create_basepoint_basic
 from basepoint.example_basepoint_generic import main as create_basepoint_generic
 from city_furniture.example_bus_stations import main as create_city_furniture
@@ -40,6 +38,9 @@ from terrain.basic.example_basic_terrain import main as create_terrain_basic
 from terrain.generic.example_generic_terrain import main as create_terrain_generic
 from trees.basic.example_basic_trees import main as create_trees_basic
 from trees.generic.example_trees_generic import main as create_trees_generic
+
+from BIMFabrikHH_core.config import get_logger
+from BIMFabrikHH_core.config.paths import PathConfig
 
 logger = get_logger()
 

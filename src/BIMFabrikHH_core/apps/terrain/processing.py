@@ -174,9 +174,7 @@ def create_boundary_points(
     return np.array(boundary_x), np.array(boundary_y)
 
 
-def sample_elevations_from_raster(
-    src, x_coords: np.ndarray, y_coords: np.ndarray
-) -> np.ndarray:
+def sample_elevations_from_raster(src, x_coords: np.ndarray, y_coords: np.ndarray) -> np.ndarray:
     """Sample elevation values directly from an open rasterio dataset.
 
     Points that fall outside the raster return ``NaN``.
@@ -351,9 +349,7 @@ def extract_mesh_adaptive(
 
     for file in tif_list:
         if folder_path is not None:
-            path: Union[str, Path] = (
-                f"{folder_path}/{file}" if is_url(folder_path) else Path(folder_path) / file
-            )
+            path: Union[str, Path] = f"{folder_path}/{file}" if is_url(folder_path) else Path(folder_path) / file
         else:
             path = file
         logger.info(f"Processing {path}...")
@@ -401,9 +397,7 @@ def extract_mesh_adaptive(
                         & (boundary_y <= bounds.top)
                     )
                     if np.any(in_raster):
-                        sampled_z = sample_elevations_from_raster(
-                            src, boundary_x[in_raster], boundary_y[in_raster]
-                        )
+                        sampled_z = sample_elevations_from_raster(src, boundary_x[in_raster], boundary_y[in_raster])
                         boundary_z[in_raster] = np.where(
                             np.isnan(boundary_z[in_raster]), sampled_z, boundary_z[in_raster]
                         )

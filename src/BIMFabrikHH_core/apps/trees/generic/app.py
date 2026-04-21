@@ -20,10 +20,7 @@ from typing import Callable, Dict, List, Optional, Union
 
 from ifcfactory import BIMFactoryElement
 
-from BIMFabrikHH_core.apps.trees.processing import (
-    collect_pydantic_psets,
-    resolve_tree_dimensions,
-)
+from BIMFabrikHH_core.apps.trees.processing import collect_pydantic_psets, resolve_tree_dimensions
 from BIMFabrikHH_core.core.geometry.tree_objects_generic import RgbTuple, create_tree_element
 from BIMFabrikHH_core.core.model_creator import init_ifc_project, validate_ifc
 from BIMFabrikHH_core.data_models import TreeRecord
@@ -145,9 +142,7 @@ def _tree_element_from_record(
     tree_name = record.name or f"Baum_{idx:03d}"
 
     dims = resolve_tree_dimensions(record)
-    pset_templates = collect_pydantic_psets(
-        record, include_property_sets=include_property_sets
-    )
+    pset_templates = collect_pydantic_psets(record, include_property_sets=include_property_sets)
 
     return create_tree_element(
         position=record.position,

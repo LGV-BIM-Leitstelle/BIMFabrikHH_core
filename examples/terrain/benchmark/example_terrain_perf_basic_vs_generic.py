@@ -20,12 +20,7 @@ import time
 from pathlib import Path
 from typing import List, Tuple
 
-from BIMFabrikHH_core.apps.terrain import (
-    TerrainBasicApp,
-    TerrainGenericApp,
-    TerrainMesh,
-    extract_mesh_adaptive,
-)
+from BIMFabrikHH_core.apps.terrain import TerrainBasicApp, TerrainGenericApp, TerrainMesh, extract_mesh_adaptive
 from BIMFabrikHH_core.config.paths import PathConfig
 from BIMFabrikHH_core.core.model_creator import validate_ifc
 from BIMFabrikHH_core.data_models.params_tree import Component, Container, RequestParams

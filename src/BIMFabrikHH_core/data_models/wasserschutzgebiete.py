@@ -105,9 +105,7 @@ def _record_with_psets_from_payload(
         info=record.info,
         idherkunft=record.idherkunft,
     )
-    return record.model_copy(
-        update={"psets": {Pset_Objektinformation_Wasserschutzgebiet.pset_name: pset}}
-    )
+    return record.model_copy(update={"psets": {Pset_Objektinformation_Wasserschutzgebiet.pset_name: pset}})
 
 
 def records_from_geojson_feature_collection(

@@ -21,11 +21,7 @@ from typing import Iterable, List, Optional, Sequence, Tuple, Union
 from ifcfactory import BIMFactoryElement, MeshRepresentation, Style
 from pydantic import BaseModel
 
-from BIMFabrikHH_core.apps.terrain._ifc_common import (
-    default_terrain_psets,
-    fallback_nullpunkt,
-    resolve_bbox_utm,
-)
+from BIMFabrikHH_core.apps.terrain._ifc_common import default_terrain_psets, fallback_nullpunkt, resolve_bbox_utm
 from BIMFabrikHH_core.apps.terrain.processing import extract_mesh_adaptive
 from BIMFabrikHH_core.config.logging_colors import get_level_logger
 from BIMFabrikHH_core.core.geometry import place_basepoint
@@ -99,9 +95,7 @@ class TerrainGenericApp:
             return None
 
         try:
-            logger.info(
-                f"Creating IFC model with {len(mesh.vertices)} vertices and {len(mesh.faces)} faces..."
-            )
+            logger.info(f"Creating IFC model with {len(mesh.vertices)} vertices and {len(mesh.faces)} faces...")
 
             builder = init_ifc_project(request_params=request_params, building_name="DGM")
             model = builder.model

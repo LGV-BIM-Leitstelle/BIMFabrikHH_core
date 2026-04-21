@@ -35,10 +35,7 @@ import pandas as pd
 from ifcfactory import ureg
 from pydantic import BaseModel
 
-from BIMFabrikHH_core.data_models.pydantic_psets_tree import (
-    Pset_Bauwerk_Tree,
-    Pset_Objektinformation_Tree,
-)
+from BIMFabrikHH_core.data_models.pydantic_psets_tree import Pset_Bauwerk_Tree, Pset_Objektinformation_Tree
 from BIMFabrikHH_core.data_models.tree_record import TreeRecord
 
 from .column_schema import DEFAULT_OAF_SCHEMA, TreeColumnSchema
@@ -180,8 +177,7 @@ def calculate_tree_height(
         if final > measured:
             return (
                 final,
-                f"Gemessene Baumhoehe ({measured}m) auf Mindesthöhe "
-                f"{MIN_TREE_HEIGHT_M:.2f}m angepasst",
+                f"Gemessene Baumhoehe ({measured}m) auf Mindesthöhe " f"{MIN_TREE_HEIGHT_M:.2f}m angepasst",
             )
         return final, "Gemessene Baumhoehe"
 
@@ -195,8 +191,7 @@ def calculate_tree_height(
         )
     return (
         final,
-        f"{CROWN_TO_HEIGHT_RATIO} × {kronendurchmesser}m Kronendurchmesser "
-        f"= {calculated:.2f}m",
+        f"{CROWN_TO_HEIGHT_RATIO} × {kronendurchmesser}m Kronendurchmesser " f"= {calculated:.2f}m",
     )
 
 
@@ -253,9 +248,7 @@ def build_tree_psets(
         pflanzjahr=int(pflanzjahr),
         kronendurchmesser=ureg.Quantity(float(kronendurchmesser_m), "meter"),
         stammdurchmesser=(
-            ureg.Quantity(float(stammdurchmesser_m), "meter")
-            if stammdurchmesser_m is not None
-            else None
+            ureg.Quantity(float(stammdurchmesser_m), "meter") if stammdurchmesser_m is not None else None
         ),
         baumhoehe=ureg.Quantity(float(baumhoehe_m), "meter"),
         baumhoehe_bemerkung=baumhoehe_bemerkung,
@@ -363,17 +356,13 @@ def dataframe_to_records(
             except (TypeError, ValueError):
                 baumhoehe_in = None
 
-        height_m, height_remark = calculate_tree_height(
-            kronendurchmesser_m, baumhoehe_in
-        )
+        height_m, height_remark = calculate_tree_height(kronendurchmesser_m, baumhoehe_in)
 
         pflanzjahr_val = row_dict.get(schema.pflanzjahr_primary)
         if pflanzjahr_val is None or (isinstance(pflanzjahr_val, float) and pd.isna(pflanzjahr_val)):
             pflanzjahr_val = row_dict.get(schema.pflanzjahr_fallback)
         try:
-            pflanzjahr = (
-                int(float(pflanzjahr_val)) if pflanzjahr_val is not None else 9999
-            )
+            pflanzjahr = int(float(pflanzjahr_val)) if pflanzjahr_val is not None else 9999
         except (TypeError, ValueError):
             pflanzjahr = 9999
 
@@ -472,26 +461,18 @@ def validate_tree_records(
 
         if record.stammdurchmesser < 0 or record.stammdurchmesser > max_stammdurchmesser_m:
             errors.append(
-                f"{label}: stammdurchmesser out of range "
-                f"[0, {max_stammdurchmesser_m}]: {record.stammdurchmesser}"
+                f"{label}: stammdurchmesser out of range " f"[0, {max_stammdurchmesser_m}]: {record.stammdurchmesser}"
             )
 
         if record.baumhoehe is not None:
             if not (0.0 < float(record.baumhoehe) <= max_baumhoehe_m):
-                errors.append(
-                    f"{label}: baumhoehe out of range "
-                    f"(0, {max_baumhoehe_m}]: {record.baumhoehe}"
-                )
+                errors.append(f"{label}: baumhoehe out of range " f"(0, {max_baumhoehe_m}]: {record.baumhoehe}")
 
         if not (1 <= record.detail <= max_detail):
-            errors.append(
-                f"{label}: detail out of range [1, {max_detail}]: {record.detail}"
-            )
+            errors.append(f"{label}: detail out of range [1, {max_detail}]: {record.detail}")
 
         if record.segments < min_segments:
-            errors.append(
-                f"{label}: segments must be >= {min_segments}: {record.segments}"
-            )
+            errors.append(f"{label}: segments must be >= {min_segments}: {record.segments}")
 
     if errors:
         logger.error("Validation found %d error(s).", len(errors))

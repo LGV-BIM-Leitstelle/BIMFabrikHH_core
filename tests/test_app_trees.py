@@ -21,15 +21,8 @@ from BIMFabrikHH_core.apps.trees import (
     dataframe_to_records,
     validate_tree_records,
 )
-from BIMFabrikHH_core.apps.trees.processing import (
-    CROWN_TO_HEIGHT_RATIO,
-    MIN_TREE_HEIGHT_M,
-)
-from BIMFabrikHH_core.data_models.pydantic_psets_tree import (
-    Pset_Bauwerk_Tree,
-    Pset_Objektinformation_Tree,
-)
-
+from BIMFabrikHH_core.apps.trees.processing import CROWN_TO_HEIGHT_RATIO, MIN_TREE_HEIGHT_M
+from BIMFabrikHH_core.data_models.pydantic_psets_tree import Pset_Bauwerk_Tree, Pset_Objektinformation_Tree
 
 # ---------------------------------------------------------------------------
 # calculate_tree_height
@@ -120,9 +113,7 @@ def sample_df() -> pd.DataFrame:
 
 
 def test_dataframe_to_records_builds_one_record_per_row(sample_df: pd.DataFrame) -> None:
-    records = dataframe_to_records(
-        sample_df, aufnahmedatum="2026-04-01", source_name="unit-test"
-    )
+    records = dataframe_to_records(sample_df, aufnahmedatum="2026-04-01", source_name="unit-test")
     assert len(records) == 1
     rec = records[0]
     assert rec.position == (558406.01, 5927514.51, 5.2)

@@ -70,9 +70,7 @@ def init_ifc_project(
     extracted_site: Optional[str] = None
     extracted_building: Optional[str] = None
     if request_params is not None:
-        extracted_project, extracted_site, extracted_building = extract_project_info(
-            request_params.containers
-        )
+        extracted_project, extracted_site, extracted_building = extract_project_info(request_params.containers)
 
     crs = coordinate_system or CoordinateSystemTemplates.epsg_25832()
     coord_op = coordinate_operation or CoordinateSystemTemplates.get_default_coordinate_operation()

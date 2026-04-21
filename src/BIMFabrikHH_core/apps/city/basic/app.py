@@ -31,10 +31,7 @@ from BIMFabrikHH_core.core.geometry import place_basepoint
 from BIMFabrikHH_core.core.model_creator import IfcModelBuilder, init_ifc_project
 from BIMFabrikHH_core.core.model_creator.ifc_snippets import IfcSnippets
 from BIMFabrikHH_core.data_models.params_tree import RequestParams
-from BIMFabrikHH_core.data_models.pydantic_georeferencing import (
-    CoordinateOperation,
-    CoordinateSystem,
-)
+from BIMFabrikHH_core.data_models.pydantic_georeferencing import CoordinateOperation, CoordinateSystem
 from BIMFabrikHH_core.data_models.pydantic_psets_BIMHH import Pset_Hyperlink, default_bim_hamburg_hyperlink
 from BIMFabrikHH_core.data_models.pydantic_psets_city_model import Building
 
@@ -269,9 +266,7 @@ def _add_building_elements(
     owner_settings.get_application = lambda *_: None
 
     try:
-        elements = [
-            root.create_entity(model, ifc_class="IfcBuildingElementProxy", name=b.id) for b in buildings
-        ]
+        elements = [root.create_entity(model, ifc_class="IfcBuildingElementProxy", name=b.id) for b in buildings]
 
         for element, building in zip(elements, buildings):
             pset_ifc = pset.add_pset(model, product=element, name="Pset_Objektinformation")
@@ -314,9 +309,7 @@ def _add_building_elements(
         owner_settings.get_user = _orig_get_user
         owner_settings.get_application = _orig_get_app
 
-    IfcSnippets.batch_assign_layer_to_representations(
-        model, representations, layer_name, representation_color
-    )
+    IfcSnippets.batch_assign_layer_to_representations(model, representations, layer_name, representation_color)
 
 
 __all__ = ["CityBasicApp"]

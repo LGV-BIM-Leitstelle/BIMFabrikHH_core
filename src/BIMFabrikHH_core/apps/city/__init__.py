@@ -11,10 +11,7 @@ LoD2 void geometry when ``IfcShapeBuilder.mesh`` cannot emit
 ``IfcIndexedPolygonalFaceWithVoids``.
 """
 
-from BIMFabrikHH_core.data_models.pydantic_psets_city_model import (
-    Building,
-    Pset_Objektinformation_CityModel,
-)
+from BIMFabrikHH_core.data_models.pydantic_psets_city_model import Building, Pset_Objektinformation_CityModel
 
 from .basic.app import CityBasicApp
 from .generic.app import CityGenericApp

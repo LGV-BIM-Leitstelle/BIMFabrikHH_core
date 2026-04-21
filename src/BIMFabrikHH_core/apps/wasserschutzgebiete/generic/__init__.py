@@ -1,8 +1,6 @@
 """Generic Wasserschutzgebiete IFC export (extruded API polygons)."""
 
-from BIMFabrikHH_core.data_models.pydantic_psets_wasserschutzgebiete import (
-    Pset_Objektinformation_Wasserschutzgebiet,
-)
+from BIMFabrikHH_core.data_models.pydantic_psets_wasserschutzgebiete import Pset_Objektinformation_Wasserschutzgebiet
 from BIMFabrikHH_core.data_models.wasserschutzgebiete import (
     GeometryCrs,
     WasserschutzgebietRecord,

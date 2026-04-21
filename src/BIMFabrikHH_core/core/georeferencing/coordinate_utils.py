@@ -39,9 +39,7 @@ def convert_coordinate_to_float(coord: Any) -> float:
     try:
         value = float(coord)
     except (TypeError, ValueError) as e:
-        raise ValueError(
-            f"Cannot convert coordinate to float: {coord!r} (type={type(coord).__name__})"
-        ) from e
+        raise ValueError(f"Cannot convert coordinate to float: {coord!r} (type={type(coord).__name__})") from e
     if math.isinf(value) or math.isnan(value):
         raise ValueError(f"Coordinate is infinite or NaN: {coord!r}")
     return value

@@ -9,10 +9,6 @@ management throughout the application.
 from .params_bbox import BoundingBoxParams
 from .params_tree import Component, Container, RequestParams
 
-# App input records
-from .terrain_mesh import TerrainMesh
-from .tree_record import TreeRecord
-
 # Default property set data and functions
 from .pydantic_default_pset_data import (
     DefaultPsetData,
@@ -40,14 +36,14 @@ from .pydantic_psets_BIMHH import (
     Pset_Objektinformation,
     default_bim_hamburg_hyperlink,
 )
-from .pydantic_psets_terrain import Pset_Objektinformation_DGM
 
 # City model attribute models
-from .pydantic_psets_city_model import (
-    CityModelAttributes,
-    Pset_Objektinformation_CityModel,
-    city_attrs_to_pset,
-)
+from .pydantic_psets_city_model import CityModelAttributes, Pset_Objektinformation_CityModel, city_attrs_to_pset
+from .pydantic_psets_terrain import Pset_Objektinformation_DGM
+
+# App input records
+from .terrain_mesh import TerrainMesh
+from .tree_record import TreeRecord
 
 __all__ = [
     # Core parameter models

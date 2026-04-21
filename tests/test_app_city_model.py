@@ -9,10 +9,7 @@ from BIMFabrikHH_core.apps.city import CityBasicApp, parse_gml_files
 from BIMFabrikHH_core.apps.city.processing import _building_overlaps_bbox, _resolve_file_path
 from BIMFabrikHH_core.data_models.params_bbox import BoundingBoxParams
 from BIMFabrikHH_core.data_models.params_tree import Component, Container, RequestParams
-from BIMFabrikHH_core.data_models.pydantic_psets_city_model import (
-    Building,
-    CityModelAttributes,
-)
+from BIMFabrikHH_core.data_models.pydantic_psets_city_model import Building, CityModelAttributes
 
 
 class TestCityBasicAppContract:
@@ -56,9 +53,7 @@ class TestCityProcessing:
         assert _resolve_file_path("tile.xml", None) == "tile.xml"
 
     def test_resolve_file_path_http_folder(self):
-        assert _resolve_file_path("tile.xml", "https://example.com/tiles") == (
-            "https://example.com/tiles/tile.xml"
-        )
+        assert _resolve_file_path("tile.xml", "https://example.com/tiles") == ("https://example.com/tiles/tile.xml")
 
     def test_resolve_file_path_absolute_folder(self):
         assert _resolve_file_path("tile.xml", "/mnt/assets") == "/mnt/assets/tile.xml"
@@ -105,9 +100,7 @@ def _make_building(vertices, faces) -> Building:
 
 
 def _make_request_params(with_bbox: bool) -> RequestParams:
-    bbox = (
-        BoundingBoxParams(min_x=9.75, min_y=53.58, max_x=9.76, max_y=53.59) if with_bbox else None
-    )
+    bbox = BoundingBoxParams(min_x=9.75, min_y=53.58, max_x=9.76, max_y=53.59) if with_bbox else None
     container = Container(
         containerTitle="Test_Container",
         containerId="test_id",

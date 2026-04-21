@@ -30,9 +30,7 @@ logger = get_logger()
 def main() -> None:
     """Process tree data to create IFC."""
 
-    bbox_wgs84 = BoundingBoxParams(
-        min_x=9.877815, min_y=53.492363, max_x=9.887343, max_y=53.496003
-    )
+    bbox_wgs84 = BoundingBoxParams(min_x=9.877815, min_y=53.492363, max_x=9.887343, max_y=53.496003)
 
     schema = DEFAULT_OAF_SCHEMA
     sample_data = [
@@ -68,9 +66,7 @@ def main() -> None:
 
     tif_path = str(PathConfig.ASSETS / "dgm1_32_558_9270_1_hh_2022.tif")
     try:
-        df = extract_elevation_df_from_geotiff(
-            df, tif_path, schema.easting, schema.northing, schema.elevation
-        )
+        df = extract_elevation_df_from_geotiff(df, tif_path, schema.easting, schema.northing, schema.elevation)
     except Exception as e:
         logger.warning(f"DGM elevation extraction skipped: {e}")
 
@@ -82,9 +78,7 @@ def main() -> None:
         name_prefix="Demo_",
     )
 
-    bp_x, bp_y, *_ = bbox_wgs84_to_epsg25832(
-        (bbox_wgs84.min_x, bbox_wgs84.min_y, bbox_wgs84.max_x, bbox_wgs84.max_y)
-    )
+    bp_x, bp_y, *_ = bbox_wgs84_to_epsg25832((bbox_wgs84.min_x, bbox_wgs84.min_y, bbox_wgs84.max_x, bbox_wgs84.max_y))
 
     ifc_path = TreesBasicApp.build_ifc(
         records,

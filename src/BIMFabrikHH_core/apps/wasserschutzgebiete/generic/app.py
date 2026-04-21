@@ -21,6 +21,7 @@ from pathlib import Path
 from typing import Callable, List, Optional, Tuple, Union
 
 from ifcfactory import BIMFactoryElement, Extrusion, Polygon, Style
+from pydantic import BaseModel
 
 from BIMFabrikHH_core.config.logging_colors import get_level_logger
 from BIMFabrikHH_core.core.geometry import place_basepoint
@@ -29,11 +30,7 @@ from BIMFabrikHH_core.core.ogc_extractor import ring_xy_to_epsg25832
 from BIMFabrikHH_core.data_models.params_tree import RequestParams
 from BIMFabrikHH_core.data_models.pydantic_georeferencing import CoordinateOperation, CoordinateSystem
 from BIMFabrikHH_core.data_models.pydantic_psets_BIMHH import Pset_Hyperlink, default_bim_hamburg_hyperlink
-from BIMFabrikHH_core.data_models.wasserschutzgebiete import (
-    WasserschutzgebietRecord,
-    collect_wasserschutz_psets,
-)
-from pydantic import BaseModel
+from BIMFabrikHH_core.data_models.wasserschutzgebiete import WasserschutzgebietRecord, collect_wasserschutz_psets
 
 logger = get_level_logger("wasserschutzgebiete_generic_app")
 
@@ -76,9 +73,7 @@ def _wsg_element_from_record(
     extruded = Extrusion(basis=profile, depth=extrusion_depth)
     styled = Style(item=extruded, rgb=color, transparency=transparency, cad_layer=cad_layer)
 
-    pset_models: List[BaseModel] = collect_wasserschutz_psets(
-        record, include_property_sets=include_property_sets
-    )
+    pset_models: List[BaseModel] = collect_wasserschutz_psets(record, include_property_sets=include_property_sets)
     element_psets: List[BaseModel] = [*pset_models, shared_hyperlink]
 
     return BIMFactoryElement(

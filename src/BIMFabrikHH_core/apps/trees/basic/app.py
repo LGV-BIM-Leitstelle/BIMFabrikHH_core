@@ -51,11 +51,7 @@ from ifcopenshell.api import aggregate, pset, root, run, spatial
 from ifcopenshell.util import placement
 from pydantic import BaseModel
 
-from BIMFabrikHH_core.apps.trees.processing import (
-    TreeDimensions,
-    collect_pydantic_psets,
-    resolve_tree_dimensions,
-)
+from BIMFabrikHH_core.apps.trees.processing import TreeDimensions, collect_pydantic_psets, resolve_tree_dimensions
 from BIMFabrikHH_core.config.logging_colors import get_level_logger
 from BIMFabrikHH_core.core.geometry import place_basepoint
 from BIMFabrikHH_core.core.model_creator import init_ifc_project, validate_ifc
@@ -131,9 +127,7 @@ class TreesBasicApp:
             ``records`` is empty.
         """
         if not records:
-            logger.warning(
-                "TreesBasicApp.build_ifc called with 0 records; nothing to do."
-            )
+            logger.warning("TreesBasicApp.build_ifc called with 0 records; nothing to do.")
             return None
 
         _t_proj = time.perf_counter()
@@ -153,12 +147,8 @@ class TreesBasicApp:
 
         for idx, record in enumerate(records, 1):
             try:
-                dims = resolve_tree_dimensions(
-                    record, min_crown_radius_m=_MIN_CROWN_RADIUS_M
-                )
-                pset_models = collect_pydantic_psets(
-                    record, include_property_sets=include_property_sets
-                )
+                dims = resolve_tree_dimensions(record, min_crown_radius_m=_MIN_CROWN_RADIUS_M)
+                pset_models = collect_pydantic_psets(record, include_property_sets=include_property_sets)
 
                 _t0 = time.perf_counter()
                 product = _write_tree(
@@ -172,13 +162,11 @@ class TreesBasicApp:
                     snippets=snippets,
                 )
                 if phase_timings is not None:
-                    phase_timings["tree_geometry_s"] = phase_timings.get(
-                        "tree_geometry_s", 0.0
-                    ) + (time.perf_counter() - _t0)
+                    phase_timings["tree_geometry_s"] = phase_timings.get("tree_geometry_s", 0.0) + (
+                        time.perf_counter() - _t0
+                    )
             except Exception as e:
-                logger.error(
-                    "Failed to create tree %d (%s): %s", idx, record.name, e
-                )
+                logger.error("Failed to create tree %d (%s): %s", idx, record.name, e)
                 continue
 
             if not pset_models:
@@ -188,13 +176,9 @@ class TreesBasicApp:
                 _t0 = time.perf_counter()
                 _attach_psets(model, product, pset_models)
                 if phase_timings is not None:
-                    phase_timings["tree_pset_s"] = phase_timings.get(
-                        "tree_pset_s", 0.0
-                    ) + (time.perf_counter() - _t0)
+                    phase_timings["tree_pset_s"] = phase_timings.get("tree_pset_s", 0.0) + (time.perf_counter() - _t0)
             except Exception as e:
-                logger.error(
-                    "Error creating psets for tree %s: %s", record.name, e
-                )
+                logger.error("Error creating psets for tree %s: %s", record.name, e)
 
         if basepoint_origin is not None:
             _t_bp = time.perf_counter()
@@ -210,9 +194,7 @@ class TreesBasicApp:
 
         _t_save = time.perf_counter()
         try:
-            file_path = builder.save_ifc_to_output(
-                DEFAULT_OUTPUT_NAME, output_path=output_path
-            )
+            file_path = builder.save_ifc_to_output(DEFAULT_OUTPUT_NAME, output_path=output_path)
         except IOError as e:
             logger.error("Error saving IFC model: %s", e)
             return None
@@ -249,15 +231,9 @@ def _write_tree(
 ) -> Any:
     """Write trunk + crown + aggregate for one tree and return the aggregate."""
     name = record.name or f"Baum_{idx:04d}"
-    tree = root.create_entity(
-        model, ifc_class="IfcBuildingElementProxy", name=name
-    )
-    trunk = root.create_entity(
-        model, ifc_class="IfcBuildingElementProxy", name=f"Stamm_{idx:04d}"
-    )
-    crown = root.create_entity(
-        model, ifc_class="IfcBuildingElementProxy", name=f"Krone_{idx:04d}"
-    )
+    tree = root.create_entity(model, ifc_class="IfcBuildingElementProxy", name=name)
+    trunk = root.create_entity(model, ifc_class="IfcBuildingElementProxy", name=f"Stamm_{idx:04d}")
+    crown = root.create_entity(model, ifc_class="IfcBuildingElementProxy", name=f"Krone_{idx:04d}")
 
     x, y, z = (float(v) for v in record.position)
 
@@ -284,12 +260,8 @@ def _write_tree(
         snippets=snippets,
     )
 
-    spatial.assign_container(
-        model, relating_structure=container, products=[tree]
-    )
-    aggregate.assign_object(
-        model, relating_object=tree, products=[crown, trunk]
-    )
+    spatial.assign_container(model, relating_structure=container, products=[tree])
+    aggregate.assign_object(model, relating_object=tree, products=[crown, trunk])
     return tree
 
 
@@ -309,12 +281,8 @@ def _write_trunk(
     representation = ifc_geometry.add_mesh_representation(
         model, context=body, vertices=[vertices], faces=[faces], edges=None
     )
-    ifc_geometry.assign_representation(
-        model, product=trunk_entity, representation=representation
-    )
-    ifc_geometry.edit_object_placement(
-        model, matrix=_placement_matrix(x, y, z), product=trunk_entity
-    )
+    ifc_geometry.assign_representation(model, product=trunk_entity, representation=representation)
+    ifc_geometry.edit_object_placement(model, matrix=_placement_matrix(x, y, z), product=trunk_entity)
     snippets.assign_color_to_element(model, representation, _TRUNK_COLOR, 0.0)
 
 
@@ -331,9 +299,7 @@ def _write_crown(
     snippets: IfcSnippets,
 ) -> None:
     representation = _crown_representation(model, body, radius, level_of_geom or 1)
-    ifc_geometry.assign_representation(
-        model, product=crown_entity, representation=representation
-    )
+    ifc_geometry.assign_representation(model, product=crown_entity, representation=representation)
     snippets.assign_color_to_element(model, representation, _CROWN_COLOR, 0.0)
     run(
         "geometry.edit_object_placement",
@@ -346,9 +312,7 @@ def _write_crown(
 def _attach_psets(model: Any, product: Any, pset_models: List[BaseModel]) -> None:
     """Attach every Pydantic pset model to ``product`` via ``ifcopenshell.api.pset``."""
     for model_obj in pset_models:
-        pset_name = getattr(type(model_obj), "pset_name", None) or type(
-            model_obj
-        ).__name__
+        pset_name = getattr(type(model_obj), "pset_name", None) or type(model_obj).__name__
         properties = _pydantic_pset_to_ifc_dict(model_obj)
         if not properties:
             continue
@@ -361,9 +325,7 @@ def _attach_psets(model: Any, product: Any, pset_models: List[BaseModel]) -> Non
 # ---------------------------------------------------------------------------
 
 
-def _trunk_mesh(
-    radius: float, height: float, segments: int = _TRUNK_SEGMENTS
-) -> Tuple[list, list]:
+def _trunk_mesh(radius: float, height: float, segments: int = _TRUNK_SEGMENTS) -> Tuple[list, list]:
     """Build a simple cylindrical polygon trunk mesh, closed bottom."""
     angle_step = 2 * np.pi / segments
     bottom = [
@@ -386,9 +348,7 @@ def _trunk_mesh(
     return vertices, faces
 
 
-def _crown_representation(
-    model: Any, body: Any, radius: float, level_of_detail: int
-) -> Any:
+def _crown_representation(model: Any, body: Any, radius: float, level_of_detail: int) -> Any:
     vertices, faces = icosphere(level_of_detail)
     vertices = _scale_sphere_vertices(vertices, radius)
 

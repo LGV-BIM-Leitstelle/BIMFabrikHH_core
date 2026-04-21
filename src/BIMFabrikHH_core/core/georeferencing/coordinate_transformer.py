@@ -25,13 +25,9 @@ class CoordinateTransformer:
         """
         self.source_crs = CRS(source_crs)
         self.target_crs = CRS(target_crs)
-        self.transformer = Transformer.from_crs(
-            self.source_crs, self.target_crs, always_xy=True
-        )
+        self.transformer = Transformer.from_crs(self.source_crs, self.target_crs, always_xy=True)
 
-    def transform_point(
-        self, x: float, y: float, z: float = 0.0
-    ) -> Tuple[float, float, float]:
+    def transform_point(self, x: float, y: float, z: float = 0.0) -> Tuple[float, float, float]:
         """Transform a single point; ``z`` passes through unchanged."""
         x_t, y_t = self.transformer.transform(x, y)
         return float(x_t), float(y_t), float(z)

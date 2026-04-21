@@ -14,11 +14,7 @@ from pathlib import Path
 from BIMFabrikHH_core.apps.terrain.generic import TerrainGenericApp
 from BIMFabrikHH_core.config.logging_colors import get_logger
 from BIMFabrikHH_core.config.paths import PathConfig
-from BIMFabrikHH_core.data_models.params_tree import (
-    Component,
-    Container,
-    RequestParams,
-)
+from BIMFabrikHH_core.data_models.params_tree import Component, Container, RequestParams
 
 logger = get_logger()
 
