@@ -42,12 +42,20 @@ from .apps.terrain.basic.app import TerrainBasicApp
 from .apps.terrain.generic.app import TerrainGenericApp
 from .apps.trees.basic.app import TreesBasicApp
 from .apps.trees.generic.app import TreesGenericApp
+from .apps.wasserschutzgebiete.generic.app import WasserschutzgebieteGenericApp
 
 # Data model imports
 from .data_models.params_bbox import BoundingBoxParams
 from .data_models.params_tree import Component, Container, RequestParams
 from .data_models.terrain_mesh import TerrainMesh
 from .data_models.tree_record import TreeRecord
+from .data_models.wasserschutzgebiete import (
+    GeometryCrs,
+    WasserschutzgebietRecord,
+    collect_wasserschutz_psets,
+    load_wasserschutzgebiete_records,
+    records_from_geojson_feature_collection,
+)
 
 __all__ = [
     # Core functionality
@@ -61,6 +69,7 @@ __all__ = [
     "TerrainGenericApp",
     "TreesBasicApp",
     "TreesGenericApp",
+    "WasserschutzgebieteGenericApp",
     # Data models
     "BoundingBoxParams",
     "RequestParams",
@@ -68,6 +77,11 @@ __all__ = [
     "Component",
     "TerrainMesh",
     "TreeRecord",
+    "GeometryCrs",
+    "WasserschutzgebietRecord",
+    "collect_wasserschutz_psets",
+    "load_wasserschutzgebiete_records",
+    "records_from_geojson_feature_collection",
     # Configuration
     "PathConfig",
 ]

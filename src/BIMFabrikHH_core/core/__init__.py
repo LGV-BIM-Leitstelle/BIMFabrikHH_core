@@ -32,10 +32,21 @@ geometry processing, API communication, and data handling.
 from BIMFabrikHH_core.core.model_creator.ifc_snippets import IfcSnippets
 
 # OGC extractor imports
-from BIMFabrikHH_core.core.ogc_extractor.ogc_values_extractor import (
+from BIMFabrikHH_core.core.ogc_extractor import (
+    OgcGeometryCrs,
+    ensure_feature_collection,
     extract_level_of_geometry,
     extract_project_info,
     extract_psets_basepoint,
+    feature_identifier,
+    geojson_feature_properties,
+    iter_geojson_features,
+    parse_feature_linestring_path,
+    parse_feature_multilinestring_paths,
+    parse_feature_polygon_exterior_ring,
+    positions_to_xy_ring,
+    ring_xy_to_epsg25832,
+    strip_closing_duplicate_xy,
 )
 
 # Utility imports
@@ -56,6 +67,18 @@ __all__ = [
     "extract_project_info",
     "extract_level_of_geometry",
     "extract_psets_basepoint",
+    # OGC extractor (GeoJSON + request metadata)
+    "OgcGeometryCrs",
+    "ensure_feature_collection",
+    "feature_identifier",
+    "geojson_feature_properties",
+    "iter_geojson_features",
+    "parse_feature_linestring_path",
+    "parse_feature_multilinestring_paths",
+    "parse_feature_polygon_exterior_ring",
+    "positions_to_xy_ring",
+    "ring_xy_to_epsg25832",
+    "strip_closing_duplicate_xy",
     # Utilities
     "MathTool",
 ]
