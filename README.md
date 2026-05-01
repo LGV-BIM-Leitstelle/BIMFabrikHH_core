@@ -67,7 +67,7 @@ This project is under intensive development. Features are being added and improv
       - `TerrainBasicApp` (`apps/terrain/basic/app.py`): writes the mesh via `ifcopenshell.api`.
       - `TerrainGenericApp` (`apps/terrain/generic/app.py`): writes the mesh via the `ifcfactory.BIMFactoryElement` pipeline (same pattern as `TreesGenericApp`).
     - Shared meshing helpers live in `apps/terrain/processing.py` (`extract_mesh_adaptive`, `adaptive_sampling`, `generate_delaunay_mesh`, `sample_elevations_from_raster`, etc.).
-    - Shared IFC-adjacent helpers in `apps/terrain/_ifc_common.py` (`resolve_bbox_utm`, `fallback_nullpunkt`, `default_terrain_psets`, `place_basepoint`) keep basic and generic consistent.
+    - `core.georeferencing.bbox_request_params_to_epsg25832` projects the request WGS84 bbox to EPSG:25832. Terrain IFC helpers in `apps/terrain/_ifc_common.py` (`default_terrain_psets`) and `core.geometry.place_basepoint` keep basic and generic consistent; the Nullpunktobjekt is written only when `basepoint_origin` or `RequestParams.bbox` supplies placement (same rule as city apps).
     - Pydantic pset defaults via `Pset_Objektinformation_DGM` and `Pset_Hyperlink` — callers may override by passing their own `psets=[...]`.
     - Convenience one-shot on both apps: `from_geotiffs(tif_files, request_params=...)` chains mesh extraction and IFC export.
 

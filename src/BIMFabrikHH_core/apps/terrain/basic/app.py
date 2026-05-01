@@ -33,9 +33,10 @@ import numpy as np
 from ifcopenshell.api import geometry, pset, root, spatial
 from pydantic import BaseModel
 
-from BIMFabrikHH_core.apps.terrain._ifc_common import default_terrain_psets, fallback_nullpunkt, resolve_bbox_utm
+from BIMFabrikHH_core.apps.terrain._ifc_common import default_terrain_psets
 from BIMFabrikHH_core.apps.terrain.processing import extract_mesh_adaptive
 from BIMFabrikHH_core.config.logging_colors import get_level_logger
+from BIMFabrikHH_core.core.georeferencing import bbox_request_params_to_epsg25832
 from BIMFabrikHH_core.core.geometry import place_basepoint
 from BIMFabrikHH_core.core.model_creator import init_ifc_project
 from BIMFabrikHH_core.core.model_creator.ifc_snippets import IfcSnippets
@@ -91,9 +92,9 @@ class TerrainBasicApp:
             output_name: Default filename when ``output_path`` is ``None``.
             basepoint_size: Edge length of the basepoint quad (meters).
             basepoint_origin: Explicit ``(x, y)`` origin in EPSG:25832 for
-                the basepoint quad. When ``None`` (default), falls back to
-                ``mesh.nullpunkt`` or the minimum ``(x, y)`` of the mesh
-                vertices.
+                the basepoint quad. When ``None``, placement uses the request
+                WGS84 bbox lower-left (via :attr:`RequestParams.bbox_as_wgs84_tuple`)
+                if ``bbox`` is set; otherwise no Nullpunktobjekt is written.
             color: RGB string used for the terrain surface style.
 
         Returns:
@@ -119,15 +120,13 @@ class TerrainBasicApp:
             effective_psets = list(psets) if psets is not None else default_terrain_psets()
             _attach_psets(model, element, effective_psets)
 
-            resolved_origin = (
-                basepoint_origin
-                if basepoint_origin is not None
-                else (mesh.nullpunkt or fallback_nullpunkt(mesh.vertices))
-            )
             place_basepoint(
                 model=model,
                 site=builder.site,
-                basepoint_origin=resolved_origin,
+                basepoint_origin=basepoint_origin,
+                bbox_wgs84=(
+                    None if basepoint_origin is not None else request_params.bbox_as_wgs84_tuple
+                ),
                 size=basepoint_size,
                 psets=extract_psets_basepoint(request_params.containers or []),
             )
@@ -164,7 +163,7 @@ class TerrainBasicApp:
         The bbox from ``request_params`` (WGS84) is projected to
         EPSG:25832 before extraction.
         """
-        bbox_utm = resolve_bbox_utm(request_params)
+        bbox_utm = bbox_request_params_to_epsg25832(request_params)
         mesh = extract_mesh_adaptive(
             tif_files,
             folder_path=folder_path,

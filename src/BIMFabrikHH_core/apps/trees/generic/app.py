@@ -16,11 +16,12 @@ from __future__ import annotations
 import logging
 import time
 from pathlib import Path
-from typing import Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 from ifcfactory import BIMFactoryElement
 
 from BIMFabrikHH_core.apps.trees.processing import collect_pydantic_psets, resolve_tree_dimensions
+from BIMFabrikHH_core.core.geometry import place_basepoint
 from BIMFabrikHH_core.core.geometry.tree_objects_generic import RgbTuple, create_tree_element
 from BIMFabrikHH_core.core.model_creator import init_ifc_project, validate_ifc
 from BIMFabrikHH_core.data_models import TreeRecord
@@ -47,6 +48,10 @@ class TreesGenericApp:
         trunk_layer: str = DEFAULT_TRUNK_LAYER,
         crown_layer: str = DEFAULT_CROWN_LAYER,
         name_prefix: str = "",
+        basepoint_origin: Optional[Tuple[float, float]] = None,
+        basepoint_size: float = 1.0,
+        basepoint_psets: Optional[Dict[str, Any]] = None,
+        bbox_wgs84: Optional[Tuple[float, float, float, float]] = None,
         validate: bool = False,
         on_progress: Optional[Callable[[], None]] = None,
         phase_timings: Optional[Dict[str, float]] = None,
@@ -62,12 +67,22 @@ class TreesGenericApp:
                 normalized 0-1 floats (``ifcfactory.Style`` accepts both).
             trunk_layer / crown_layer: CAD layer names assigned via ``Style``.
             name_prefix: Prepended to every IFC tree name (e.g. ``"SBK_"``).
+            basepoint_origin: Optional ``(x, y)`` in EPSG:25832 for the
+                Nullpunktobjekt quad. When ``None``, ``bbox_wgs84`` may supply
+                placement (lower-left reprojected); if both are unset, no
+                basepoint is written (same contract as :func:`place_basepoint`).
+            basepoint_size: Edge length of the basepoint quad (metres); mirrors
+                :class:`TreesBasicApp`.
+            basepoint_psets: Optional property-set payload forwarded to
+                :func:`place_basepoint`.
+            bbox_wgs84: Optional ``(min_lon, min_lat, max_lon, max_lat)`` used
+                only when ``basepoint_origin`` is ``None``.
             validate: When ``True``, run ``ifcopenshell.validate --rules`` on
                 the written file.
             on_progress: Called after each tree is built (progress reporting).
             phase_timings: Mutable dict receiving per-phase wall time (seconds)
                 under the keys ``project_setup_s``, ``prepare_elements_s``,
-                ``build_in_s`` and ``save_s``.
+                ``build_in_s``, ``basepoint_s`` (when applicable) and ``save_s``.
 
         Returns:
             Absolute path of the saved IFC file.
@@ -113,6 +128,19 @@ class TreesGenericApp:
         BIMFactoryElement.build_in(model, inst=site, items=tree_elements, on_progress=on_progress)
         if phase_timings is not None:
             phase_timings["build_in_s"] = time.perf_counter() - _t0
+
+        if basepoint_origin is not None or bbox_wgs84 is not None:
+            _t_bp = time.perf_counter()
+            place_basepoint(
+                model=model,
+                site=site,
+                basepoint_origin=basepoint_origin,
+                bbox_wgs84=None if basepoint_origin is not None else bbox_wgs84,
+                size=basepoint_size,
+                psets=basepoint_psets or {},
+            )
+            if phase_timings is not None:
+                phase_timings["basepoint_s"] = time.perf_counter() - _t_bp
 
         _t0 = time.perf_counter()
         file_path = model_builder.save_ifc_to_output(DEFAULT_OUTPUT_NAME, output_path=output_path)

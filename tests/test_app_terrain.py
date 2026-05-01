@@ -5,10 +5,12 @@ Covers the pure pieces that don't require a full IFC environment:
 Delaunay mesh generator, and the record-builder guard for empty input.
 """
 
-from __future__ import annotations
+from pathlib import Path
 
 import numpy as np
 import pytest
+
+import ifcopenshell
 
 from BIMFabrikHH_core.apps.terrain import (
     Pset_Objektinformation_DGM,
@@ -17,6 +19,7 @@ from BIMFabrikHH_core.apps.terrain import (
     generate_delaunay_mesh,
 )
 from BIMFabrikHH_core.data_models import RequestParams
+from BIMFabrikHH_core.data_models.params_bbox import BoundingBoxParams
 
 # ---------------------------------------------------------------------------
 # TerrainMesh
@@ -138,3 +141,40 @@ def test_build_ifc_returns_none_for_partial_mesh(vertices, faces) -> None:
     request = RequestParams(bbox=None, containers=[])
     mesh = TerrainMesh(vertices=vertices, faces=faces)
     assert TerrainBasicApp.build_ifc(mesh, request_params=request) is None
+
+
+def test_build_ifc_omits_nullpunkt_without_bbox_or_explicit_origin(tmp_path: Path) -> None:
+    """No basepoint when neither ``basepoint_origin`` nor ``RequestParams.bbox`` is set."""
+    mesh = TerrainMesh(
+        vertices=[
+            [3560000.0, 5930000.0, 0.0],
+            [3560100.0, 5930000.0, 0.0],
+            [3560000.0, 5930100.0, 0.0],
+        ],
+        faces=[[0, 1, 2]],
+        nullpunkt=(3560000.0, 5930000.0),
+    )
+    request = RequestParams(bbox=None, containers=[])
+    result = TerrainBasicApp.build_ifc(mesh, request_params=request, output_path=tmp_path / "no_bp.ifc")
+    assert result is not None
+    ifc = ifcopenshell.open(str(result))
+    names = [e.Name for e in ifc.by_type("IfcBuildingElementProxy")]
+    assert not any(n == "Nullpunktobjekt" for n in names)
+
+
+def test_build_ifc_places_nullpunkt_from_request_bbox(tmp_path: Path) -> None:
+    mesh = TerrainMesh(
+        vertices=[
+            [3560000.0, 5930000.0, 0.0],
+            [3560100.0, 5930000.0, 0.0],
+            [3560000.0, 5930100.0, 0.0],
+        ],
+        faces=[[0, 1, 2]],
+        nullpunkt=(3560000.0, 5930000.0),
+    )
+    request = RequestParams(bbox=BoundingBoxParams(), containers=[])
+    result = TerrainBasicApp.build_ifc(mesh, request_params=request, output_path=tmp_path / "with_bp.ifc")
+    assert result is not None
+    ifc = ifcopenshell.open(str(result))
+    names = [e.Name for e in ifc.by_type("IfcBuildingElementProxy")]
+    assert "Nullpunktobjekt" in names

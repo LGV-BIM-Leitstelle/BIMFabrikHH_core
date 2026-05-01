@@ -13,9 +13,7 @@ different copy of this routine. This helper collapses them into one:
 * Falls back to the lower-left corner of a WGS84 bounding box,
   reprojected into EPSG:25832 (the city apps' historical default).
 * If neither is supplied, no basepoint is written and the function
-  returns quietly — callers that want to force a placement should
-  pre-resolve their own "app default" origin (e.g. terrain apps pass
-  ``mesh.nullpunkt``).
+  returns quietly.
 
 The basepoint is built using the :class:`BIMFactoryElement` +
 :class:`Transform` idiom (same as the generic apps) for a consistent

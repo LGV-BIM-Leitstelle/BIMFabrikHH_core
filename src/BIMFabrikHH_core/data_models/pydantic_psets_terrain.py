@@ -10,11 +10,13 @@ from __future__ import annotations
 from typing import ClassVar
 
 from ifcfactory import PropertySetTemplate
-from pydantic import AliasChoices, Field
+from pydantic import AliasChoices, ConfigDict, Field
 
 
 class Pset_Objektinformation_DGM(PropertySetTemplate):
     """``Pset_Objektinformation`` specialized for terrain (DGM) objects."""
+
+    model_config = ConfigDict(populate_by_name=True)
 
     pset_name: ClassVar[str] = "Pset_Objektinformation"
 

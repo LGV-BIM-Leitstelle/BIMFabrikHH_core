@@ -1,6 +1,8 @@
-from typing import Tuple
+from typing import Optional, Tuple
 
 from pyproj import Transformer
+
+from BIMFabrikHH_core.data_models.params_tree import RequestParams
 
 
 def bbox_wgs84_to_epsg25832(bbox: Tuple[float, float, float, float]) -> Tuple[float, float, float, float]:
@@ -19,3 +21,13 @@ def bbox_wgs84_to_epsg25832(bbox: Tuple[float, float, float, float]) -> Tuple[fl
     minx, maxx = min(x1, x2), max(x1, x2)
     miny, maxy = min(y1, y2), max(y1, y2)
     return minx, miny, maxx, maxy
+
+
+def bbox_request_params_to_epsg25832(
+    request_params: RequestParams,
+) -> Optional[Tuple[float, float, float, float]]:
+    """Return the request WGS84 bbox reprojected to EPSG:25832, or ``None`` if no bbox is set."""
+    bbox_wgs84 = request_params.bbox_as_wgs84_tuple
+    if bbox_wgs84 is None:
+        return None
+    return bbox_wgs84_to_epsg25832(bbox_wgs84)
