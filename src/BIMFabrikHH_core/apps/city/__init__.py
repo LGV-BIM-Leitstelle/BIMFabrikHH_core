@@ -15,14 +15,17 @@ from BIMFabrikHH_core.data_models.pydantic_psets_city_model import Building, Pse
 
 from .basic.app import CityBasicApp
 from .generic.app import CityGenericApp
+from .generic_entity import CityGenericEntityApp, parse_typed_gml_files
 from .parser import CityGMLParser
 from .processing import parse_gml_files
 
 __all__ = [
     "CityBasicApp",
     "CityGenericApp",
+    "CityGenericEntityApp",
     "CityGMLParser",
     "parse_gml_files",
+    "parse_typed_gml_files",
     "Building",
     "Pset_Objektinformation_CityModel",
 ]

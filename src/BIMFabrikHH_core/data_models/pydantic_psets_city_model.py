@@ -114,6 +114,25 @@ class CityModelBuildingData(BaseModel):
     buildings: List[Building]
 
 
+class TypedCityBuilding(BaseModel):
+    """One CityGML Building with classified boundary surfaces.
+
+    Used by :class:`CityGenericEntityApp` — each surface (wall, roof, …) is
+    kept separate as a :class:`BoundaryPolygon` rather than merged into one mesh.
+    """
+
+    id: str
+    """``gml:id`` of the ``bldg:Building``."""
+
+    gml_name: str | None = None
+    """First direct ``gml:name`` child of the building (if any)."""
+
+    lod: str
+    attributes: CityModelAttributes
+    boundaries: List = Field(default_factory=list)
+    """List of :class:`BoundaryPolygon` instances (imported from ``generic_entity``)."""
+
+
 def create_city_model_attributes(**kwargs) -> CityModelAttributes:
     """Create city model attributes with default values"""
     return CityModelAttributes(**kwargs)
@@ -122,6 +141,35 @@ def create_city_model_attributes(**kwargs) -> CityModelAttributes:
 def get_default_city_model_attributes() -> CityModelAttributes:
     """Get default city model attributes"""
     return CityModelAttributes()
+
+
+class Pset_BIMFabrikHH_Quantities(PropertySetTemplate):
+    """Geometric quantities for one CityGML boundary surface element.
+
+    Written to every ``IfcWall`` / ``IfcRoof`` / ``IfcSlab`` / … that is
+    produced by :class:`CityGenericEntityApp`.  Values are computed directly
+    from the polygon ring coordinates — not from the IFC geometry engine —
+    so inclined faces receive correct areas and slopes.
+    """
+
+    pset_name: ClassVar[str] = "BIMFabrikHH_Quantities"
+
+    GrossArea: Optional[float] = Field(
+        default=None,
+        description="True 3-D surface area of the polygon [m²].",
+    )
+    Perimeter: Optional[float] = Field(
+        default=None,
+        description="Ring perimeter [m].",
+    )
+    Tilt: Optional[float] = Field(
+        default=None,
+        description="Inclination from horizontal [°]. 0 = flat, 90 = vertical.",
+    )
+    SurfaceType: Optional[str] = Field(
+        default=None,
+        description="CityGML boundary surface type (WallSurface, RoofSurface, …).",
+    )
 
 
 def city_attrs_to_pset(

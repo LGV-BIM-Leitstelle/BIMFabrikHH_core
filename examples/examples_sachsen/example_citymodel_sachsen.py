@@ -22,7 +22,7 @@ from BIMFabrikHH_core.data_models.pydantic_georeferencing import CoordinateSyste
 logger = get_logger()
 
 EXPORT_LOD: str = "both"  # "lod1" | "lod2" | "both"
-FILTER_BUILDING_ID: Optional[str] = None  # "DESNATPU1000C1qE"  # e.g. "DESNATPU1000C1qE"
+FILTER_BUILDING_ID: Optional[str] = "DESNATPU1000C1qE"  # e.g. "DESNATPU1000C1qE"
 
 SACHSEN_DATA = PathConfig.ASSETS / "data_sachsen"
 
