@@ -10,9 +10,13 @@ Point3 = Tuple[float, float, float]
 
 
 class BoundaryPolygon(BaseModel):
-    """One polygon ring on a semantic boundary surface (exterior only for now)."""
+    """One polygon on a semantic boundary surface (exterior ring + optional interior rings/voids)."""
 
     ring: List[Point3] = Field(min_length=3)
+    interior_rings: List[List[Point3]] = Field(
+        default_factory=list,
+        description="Interior rings (courtyards / holes) parsed from gml:interior elements.",
+    )
     surface_type: str = Field(description="Local name: RoofSurface, WallSurface, …")
     source_part_id: str | None = Field(default=None, description="BuildingPart gml:id if any")
 

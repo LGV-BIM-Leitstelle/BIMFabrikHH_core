@@ -18,6 +18,8 @@ Stages covered here:
    pure per-record helpers consumed by ``TreesBasicApp`` and
    ``TreesGenericApp`` so their IFC-writing code is truly column- and
    data-agnostic.
+6. :func:`tree_crown_detail_from_containers` — OGC containers → crown
+   ``detail`` (uses :func:`~BIMFabrikHH_core.core.ogc_extractor.extract_level_of_geometry`).
 
 Pydantic handles type / required-field validation on :class:`TreeRecord`
 itself, so this module only layers on the domain knowledge (circumference
@@ -29,12 +31,13 @@ from __future__ import annotations
 import logging
 import math
 from dataclasses import dataclass
-from typing import Dict, Iterable, List, Optional
+from typing import Any, Dict, Iterable, List, Optional
 
 import pandas as pd
 from ifcfactory import ureg
 from pydantic import BaseModel
 
+from BIMFabrikHH_core.core.ogc_extractor.ogc_values_extractor import extract_level_of_geometry
 from BIMFabrikHH_core.data_models.pydantic_psets_tree import Pset_Bauwerk_Tree, Pset_Objektinformation_Tree
 from BIMFabrikHH_core.data_models.tree_record import TreeRecord
 
@@ -50,6 +53,7 @@ DEFAULT_KRONENDURCHMESSER_M: float = 5.0
 DEFAULT_STAMMUMFANG_CM: float = 100.0
 DEFAULT_DETAIL: int = 1
 DEFAULT_SEGMENTS: int = 8
+_MAX_TREE_CROWN_DETAIL: int = 4
 
 # Trunk-height fallback constants (used when ``baumhoehe`` is not set).
 _MIN_TRUNK_HEIGHT_M: float = 3.5
@@ -117,6 +121,24 @@ def resolve_tree_dimensions(
         trunk_radius=trunk_radius,
         trunk_height=trunk_height,
     )
+
+
+def tree_crown_detail_from_containers(containers: Any) -> int:
+    """``TreeRecord.detail`` (crown mesh / icosphere level) from OGC containers.
+
+    Uses :func:`BIMFabrikHH_core.core.ogc_extractor.extract_level_of_geometry`
+    then clamps to ``[1, _MAX_TREE_CROWN_DETAIL]`` so values fit
+    :class:`TreeRecord` and ``TreesGenericApp`` / ``TreesBasicApp``.
+
+    Args:
+        containers: Same shape as API request ``containers`` (optional list).
+
+    Returns:
+        Integer in ``1`` … ``4`` suitable for :func:`dataframe_to_records`
+        ``detail=`` and ``TreesBasicApp.build_ifc`` ``level_of_geom``.
+    """
+    lod = extract_level_of_geometry(containers or [])
+    return max(1, min(_MAX_TREE_CROWN_DETAIL, int(lod)))
 
 
 def collect_pydantic_psets(

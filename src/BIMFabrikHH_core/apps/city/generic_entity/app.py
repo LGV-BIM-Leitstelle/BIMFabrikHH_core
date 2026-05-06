@@ -84,15 +84,36 @@ def _ifc_root_name_from_gml(gml_id: str, gml_name: Optional[str]) -> str:
     return gml_id
 
 
-def _styled_mesh_for_ring(
-    ring: List[Tuple[float, float, float]],
+def _styled_mesh_for_boundary(
+    boundary: BoundaryPolygon,
     *,
     color: RgbTuple,
     cad_layer: str,
     transparency: float,
 ) -> Style:
-    vertices = [tuple(map(float, p)) for p in ring]
-    faces = [list(range(len(vertices)))]
+    """Build a ``Style`` wrapping a ``MeshRepresentation`` for one boundary polygon.
+
+    When ``boundary.interior_rings`` is non-empty the face is encoded as a
+    nested list ``[[outer_indices], [inner1_indices], …]`` so that
+    ``IfcShapeBuilder.mesh`` can emit ``IfcIndexedPolygonalFaceWithVoids``
+    for courtyard / atrium geometry.
+    """
+    exterior: List[Tuple[float, float, float]] = [tuple(map(float, p)) for p in boundary.ring]
+    vertices: List[Tuple[float, float, float]] = list(exterior)
+
+    if boundary.interior_rings:
+        outer_indices = list(range(len(exterior)))
+        offset = len(exterior)
+        inner_index_rings: List[List[int]] = []
+        for inner_ring in boundary.interior_rings:
+            inner: List[Tuple[float, float, float]] = [tuple(map(float, p)) for p in inner_ring]
+            inner_index_rings.append(list(range(offset, offset + len(inner))))
+            vertices.extend(inner)
+            offset += len(inner)
+        faces: List = [[outer_indices, *inner_index_rings]]
+    else:
+        faces = [list(range(len(exterior)))]
+
     mesh_item = MeshRepresentation(vertices=vertices, faces=faces)
     return Style(item=mesh_item, rgb=color, transparency=transparency, cad_layer=cad_layer)
 
@@ -113,7 +134,7 @@ def _element_for_boundary(
     element_name = "_".join(name_parts)
 
     effective_color = _ROOF_COLOR if boundary.surface_type == "RoofSurface" else color
-    styled = _styled_mesh_for_ring(boundary.ring, color=effective_color, cad_layer=cad_layer, transparency=transparency)
+    styled = _styled_mesh_for_boundary(boundary, color=effective_color, cad_layer=cad_layer, transparency=transparency)
     qty_pset = face_quantities_to_pset(compute_boundary_quantities(boundary))
 
     return BIMFactoryElement(

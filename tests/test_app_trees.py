@@ -19,9 +19,11 @@ from BIMFabrikHH_core.apps.trees import (
     build_tree_psets,
     calculate_tree_height,
     dataframe_to_records,
+    tree_crown_detail_from_containers,
     validate_tree_records,
 )
 from BIMFabrikHH_core.apps.trees.processing import CROWN_TO_HEIGHT_RATIO, MIN_TREE_HEIGHT_M
+from BIMFabrikHH_core.data_models.params_tree import Component, Container
 from BIMFabrikHH_core.data_models.pydantic_psets_tree import Pset_Bauwerk_Tree, Pset_Objektinformation_Tree
 
 # ---------------------------------------------------------------------------
@@ -131,6 +133,36 @@ def test_dataframe_to_records_attaches_both_psets(sample_df: pd.DataFrame) -> No
 
 def test_dataframe_to_records_handles_empty() -> None:
     assert dataframe_to_records(pd.DataFrame(), aufnahmedatum="undefiniert") == []
+
+
+# ---------------------------------------------------------------------------
+# tree_crown_detail_from_containers
+# ---------------------------------------------------------------------------
+
+
+def test_tree_crown_detail_defaults_when_no_containers() -> None:
+    assert tree_crown_detail_from_containers(None) == 1
+    assert tree_crown_detail_from_containers([]) == 1
+
+
+def test_tree_crown_detail_reads_ogc_container() -> None:
+    containers = [
+        Container(
+            containerId="level_of_geometry",
+            components={"level_of_geom": Component(title="level_of_geom", value=3)},
+        )
+    ]
+    assert tree_crown_detail_from_containers(containers) == 3
+
+
+def test_tree_crown_detail_clamps_to_max_four() -> None:
+    containers = [
+        Container(
+            containerId="level_of_geometry",
+            components={"level_of_geom": Component(title="level_of_geom", value=9)},
+        )
+    ]
+    assert tree_crown_detail_from_containers(containers) == 4
 
 
 # ---------------------------------------------------------------------------

@@ -35,10 +35,10 @@ from BIMFabrikHH_core.data_models.pydantic_psets_city_model import TypedCityBuil
 logger = get_logger()
 
 # Set to a gml:id string to export one building, or None for all.
-BUILDING_ID: Optional[str] = "DESNATPU1000E92G"  # e.g. "DESNATPU1000E92G"
+BUILDING_ID: Optional[str] = None  # "DESNATPU1000C1qE"
 
 # Number of buildings per output file. None = one file for everything.
-BATCH_SIZE: Optional[int] = 200
+BATCH_SIZE: Optional[int] = 250
 
 # Hard cap on total buildings processed. None = no limit.
 MAX_BUILDINGS: Optional[int] = None

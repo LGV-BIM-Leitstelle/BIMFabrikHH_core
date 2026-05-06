@@ -44,6 +44,7 @@ from .processing import (
     collect_pydantic_psets,
     dataframe_to_records,
     resolve_tree_dimensions,
+    tree_crown_detail_from_containers,
     validate_tree_records,
 )
 
@@ -60,5 +61,6 @@ __all__ = [
     "collect_pydantic_psets",
     "dataframe_to_records",
     "resolve_tree_dimensions",
+    "tree_crown_detail_from_containers",
     "validate_tree_records",
 ]

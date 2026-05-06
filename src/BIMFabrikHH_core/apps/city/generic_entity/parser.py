@@ -82,10 +82,22 @@ def _collect_polygons_for_surface(
 ) -> None:
     poly_xpath = etree.XPath(".//gml:Polygon", namespaces=ns)
     for polygon in poly_xpath(surface_elem):
-        exterior, _ = extract_polygon_with_voids(polygon, ns)
+        exterior, interiors = extract_polygon_with_voids(polygon, ns)
         exterior = _strip_closing_point(exterior)
         if len(exterior) >= 3:
-            boundaries.append(BoundaryPolygon(ring=exterior, surface_type=surface_type, source_part_id=part_id))
+            cleaned_interiors = [
+                _strip_closing_point(inner)
+                for inner in interiors
+                if len(_strip_closing_point(inner)) >= 3
+            ]
+            boundaries.append(
+                BoundaryPolygon(
+                    ring=exterior,
+                    interior_rings=cleaned_interiors,
+                    surface_type=surface_type,
+                    source_part_id=part_id,
+                )
+            )
 
 
 def extract_building_typed(
@@ -111,11 +123,21 @@ def extract_building_typed(
         poly_xpath = etree.XPath(".//gml:Polygon", namespaces=ns)
         for solid in lod1_solids:
             for polygon in poly_xpath(solid):
-                exterior, _ = extract_polygon_with_voids(polygon, ns)
+                exterior, interiors = extract_polygon_with_voids(polygon, ns)
                 exterior = _strip_closing_point(exterior)
                 if len(exterior) >= 3:
+                    cleaned_interiors = [
+                        _strip_closing_point(inner)
+                        for inner in interiors
+                        if len(_strip_closing_point(inner)) >= 3
+                    ]
                     boundaries.append(
-                        BoundaryPolygon(ring=exterior, surface_type="ClosureSurface", source_part_id=None)
+                        BoundaryPolygon(
+                            ring=exterior,
+                            interior_rings=cleaned_interiors,
+                            surface_type="ClosureSurface",
+                            source_part_id=None,
+                        )
                     )
     else:
         lod = "LoD2"
