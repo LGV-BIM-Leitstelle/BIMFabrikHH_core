@@ -28,6 +28,7 @@ def create_tree_element(
     name_prefix: str = "",
     trunk_layer: str = "_BIM_SBK_Stamm",
     crown_layer: str = "_BIM_SBK_Krone",
+    include_crown: bool = True,
 ) -> BIMFactoryElement:
     """
     Create a tree BIMFactoryElement with the given parameters.
@@ -52,6 +53,7 @@ def create_tree_element(
         name_prefix: Prefix to add to the tree name (e.g., "SBK_Mengestrasse_")
         trunk_layer: CAD layer name for trunk geometry (default: "_BIM_SBK_Stamm")
         crown_layer: CAD layer name for crown geometry (default: "_BIM_SBK_Krone")
+        include_crown: When ``False`` only the trunk cylinder is created (Baumstumpf).
 
     Returns:
         BIMFactoryElement representing the tree as a single object with proper ObjectPlacement
@@ -68,17 +70,17 @@ def create_tree_element(
     )
     components.append(trunk_component)
 
-    # Create crown component positioned at the top of the trunk (still at origin)
-    crown_component = Style(
-        item=Transform(
-            translation=(0.0, 0.0, trunk_height),  # Local translation within the tree object
-            item=Sphere(radius=crown_radius, detail=crown_detail),
-        ),
-        rgb=crown_color,
-        transparency=0.0,
-        cad_layer=crown_layer,
-    )
-    components.append(crown_component)
+    if include_crown:
+        crown_component = Style(
+            item=Transform(
+                translation=(0.0, 0.0, trunk_height),  # Local translation within the tree object
+                item=Sphere(radius=crown_radius, detail=crown_detail),
+            ),
+            rgb=crown_color,
+            transparency=0.0,
+            cad_layer=crown_layer,
+        )
+        components.append(crown_component)
 
     # Create the tree object with geometry at origin
     # Apply name prefix if provided

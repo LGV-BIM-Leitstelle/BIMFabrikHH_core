@@ -28,4 +28,5 @@ class TreeRecord(BaseModel):
     detail: int = 1
     segments: int = 8
     baumhoehe: Optional[float] = None
+    is_stump: bool = False
     psets: Dict[str, BaseModel] = Field(default_factory=dict)

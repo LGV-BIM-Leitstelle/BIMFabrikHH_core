@@ -20,7 +20,7 @@ from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 from ifcfactory import BIMFactoryElement
 
-from BIMFabrikHH_core.apps.trees.processing import collect_pydantic_psets, resolve_tree_dimensions
+from BIMFabrikHH_core.apps.trees.processing import MIN_TRUNK_RADIUS_M, collect_pydantic_psets, resolve_tree_dimensions
 from BIMFabrikHH_core.core.geometry import place_basepoint
 from BIMFabrikHH_core.core.geometry.tree_objects_generic import RgbTuple, create_tree_element
 from BIMFabrikHH_core.core.model_creator import init_ifc_project, validate_ifc
@@ -156,6 +156,9 @@ class TreesGenericApp:
         return result
 
 
+_DEFAULT_STUMP_HEIGHT_M: float = 0.5
+
+
 def _tree_element_from_record(
     *,
     record: TreeRecord,
@@ -168,10 +171,32 @@ def _tree_element_from_record(
     name_prefix: str,
 ):
     tree_name = record.name or f"Baum_{idx:03d}"
-
-    dims = resolve_tree_dimensions(record)
     pset_templates = collect_pydantic_psets(record, include_property_sets=include_property_sets)
 
+    if record.is_stump:
+        stump_height = (
+            float(record.baumhoehe)
+            if record.baumhoehe is not None and record.baumhoehe > 0
+            else _DEFAULT_STUMP_HEIGHT_M
+        )
+        trunk_radius = max(MIN_TRUNK_RADIUS_M, record.stammdurchmesser / 2)
+        return create_tree_element(
+            position=record.position,
+            crown_radius=0.0,
+            trunk_radius=trunk_radius,
+            trunk_height=stump_height,
+            trunk_segments=record.segments,
+            psets=pset_templates,
+            trunk_color=trunk_color,
+            crown_color=crown_color,
+            name=tree_name,
+            name_prefix=name_prefix,
+            trunk_layer=trunk_layer,
+            crown_layer=crown_layer,
+            include_crown=False,
+        )
+
+    dims = resolve_tree_dimensions(record)
     return create_tree_element(
         position=record.position,
         crown_radius=dims.crown_radius,
@@ -186,4 +211,5 @@ def _tree_element_from_record(
         name_prefix=name_prefix,
         trunk_layer=trunk_layer,
         crown_layer=crown_layer,
+        include_crown=True,
     )
