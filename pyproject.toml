@@ -33,7 +33,7 @@ pyproj = ">=0.0.0"
 python = ">=3.11,<3.12"
 rasterio = ">=1.4.3"
 scipy = ">=1.16.0,<2.0.0"
-ifcfactory = "^0.2.0"
+ifcfactory = "^0.3.0"
 
 [tool.poetry.extras]
 dev = [

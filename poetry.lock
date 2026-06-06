@@ -202,14 +202,14 @@ advanced = ["typst"]
 
 [[package]]
 name = "ifcfactory"
-version = "0.2.2"
+version = "0.3.0"
 description = "A modular geometry system for creating BIM elements with composable geometry creation"
 optional = false
 python-versions = "<3.13,>=3.11"
 groups = ["main"]
 files = [
-    {file = "ifcfactory-0.2.2-py3-none-any.whl", hash = "sha256:c3656665217743ef7526ff3ae4a9736952043c002cfd90181adea7eae70f168c"},
-    {file = "ifcfactory-0.2.2.tar.gz", hash = "sha256:a1840341cedc8004444c33327af64736f51f15654c00b0de222cf5678f8ae2cc"},
+    {file = "ifcfactory-0.3.0-py3-none-any.whl", hash = "sha256:a0da31df2a8182d3375937780063e02faced3a1b6413587b2caff036d9e4e70f"},
+    {file = "ifcfactory-0.3.0.tar.gz", hash = "sha256:0ad75c21ac6ca0557492a127cb6ad720eeee5e8da3dc42b8ff658b85f93c95b1"},
 ]
 
 [package.dependencies]
@@ -1163,4 +1163,4 @@ dev = []
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.11,<3.12"
-content-hash = "cbe66ebc7fe65a30c568a54f6996e64e5bbe5c6dfd9b6477fc0b7ada317cdb98"
+content-hash = "e60371f1bba923b64a49fdc98f4ed2aa8ef6e56d4acfc33e621bb73397c6daab"
