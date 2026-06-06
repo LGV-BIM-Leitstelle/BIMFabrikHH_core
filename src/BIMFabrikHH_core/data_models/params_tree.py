@@ -49,6 +49,13 @@ class RequestParams(BaseModel):
         default=None, description="Bounding box parameters (optional; if None, terrain uses full raster)"
     )
     containers: Optional[List[Container]] = None
+    use_dgm_elevation: bool = Field(
+        default=False,
+        description=(
+            "When true, download DGM GeoTIFF tiles and assign ground elevation to each tree. "
+            "Tree model generation only; defaults to false (elevation 0)."
+        ),
+    )
 
     model_config = {
         "json_schema_extra": {
