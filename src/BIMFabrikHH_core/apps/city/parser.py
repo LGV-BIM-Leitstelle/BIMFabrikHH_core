@@ -310,7 +310,7 @@ class CityGMLParser:
             all_polys = [(f, []) for f in faces] + list(faces_with_voids)
             vertices, face_structures = convert_faces_with_voids_to_ifc_format(all_polys)
             face_indices = [
-                [idx - 1 for idx in fs["coord_index"]]
+                list(fs["coord_index"])
                 for fs in face_structures
                 if fs["type"] != "IfcIndexedPolygonalFaceWithVoids"
             ]

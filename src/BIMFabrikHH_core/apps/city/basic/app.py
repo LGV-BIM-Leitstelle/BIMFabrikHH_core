@@ -205,7 +205,7 @@ def _create_combined_representation(
 
     if faces_with_voids:
         for fs in faces_with_voids:
-            parsed = parse_face_with_voids(fs)
+            parsed = parse_face_with_voids(fs, index_offset=1)
             if parsed is None:
                 continue
             outer, inners = parsed

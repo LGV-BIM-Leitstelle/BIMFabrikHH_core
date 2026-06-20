@@ -188,12 +188,12 @@ def convert_faces_with_voids_to_ifc_format(
     cursor = 0
     for ext, inners in faces_with_voids:
         ext_len = len(ext)
-        ext_indices = (inv[cursor : cursor + ext_len] + 1).tolist()
+        ext_indices = inv[cursor : cursor + ext_len].tolist()
         cursor += ext_len
         inner_idx_list = []
         for ring in inners:
             L = len(ring)
-            inner_idx_list.append((inv[cursor : cursor + L] + 1).tolist())
+            inner_idx_list.append(inv[cursor : cursor + L].tolist())
             cursor += L
         face_structures.append(
             {
