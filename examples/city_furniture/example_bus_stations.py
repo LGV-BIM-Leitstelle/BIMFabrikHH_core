@@ -6,22 +6,27 @@ This example demonstrates how to create bus station objects using
 the city_furniture module with primitive geometry.
 """
 
+from BIMFabrikHH_core.config import get_logger, setup_logging
 from BIMFabrikHH_core.core.geometry.city_furniture import (
     BusStationBuilder,
     BusStationConfig,
     create_bus_station_example,
 )
 from BIMFabrikHH_core.core.model_creator import IfcModelBuilder
-from BIMFabrikHH_core.data_models.pydantic_georeferencing import CoordinateSystemTemplates
+from BIMFabrikHH_core.data_models.pydantic_georeferencing import (
+    CoordinateSystemTemplates,
+)
+
+logger = get_logger()
 
 
 def main():
     """Create bus stations with different LODs using primitive objects."""
 
-    print("Creating bus station example...")
+    logger.info("Creating bus station example...")
     create_bus_station_example()
 
-    print("Creating custom bus station...")
+    logger.info("Creating custom bus station...")
     create_custom_bus_station()
 
 
@@ -82,8 +87,9 @@ def create_custom_bus_station():
     output_file = "bus_station_example.ifc"
     model.write(output_file)
 
-    print(f"bus station IFC model created successfully: {output_file}")
+    logger.info(f"bus station IFC model created successfully: {output_file}")
 
 
 if __name__ == "__main__":
+    setup_logging()
     main()

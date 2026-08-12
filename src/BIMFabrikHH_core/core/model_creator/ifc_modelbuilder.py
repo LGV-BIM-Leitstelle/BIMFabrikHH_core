@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 from pathlib import Path
 from typing import Optional, Union
 
-from BIMFabrikHH_core.config.logging_colors import get_level_logger
+from BIMFabrikHH_core.config.logging_config import get_logger
 from BIMFabrikHH_core.config.paths import PathConfig
 from BIMFabrikHH_core.core.model_creator.ifc_snippets import IfcSnippets
 from BIMFabrikHH_core.data_models.pydantic_georeferencing import (
@@ -48,7 +48,7 @@ class IfcModelBuilder:
         self.ifc_snippets = IfcSnippets()
         self.ifc_creator = IfcModelMethods()
         self.model = self.ifc_creator.create_model("IFC4")
-        self.logger = get_level_logger("IfcModelBuilder")
+        self.logger = get_logger("IfcModelBuilder")
 
         self.all_psets = None
         self.building = None

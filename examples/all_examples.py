@@ -26,31 +26,48 @@ from __future__ import annotations
 import os
 import time
 from pathlib import Path
+from typing import Callable
 
 from basepoint.example_basepoint_basic import main as create_basepoint_basic
 from basepoint.example_basepoint_generic import main as create_basepoint_generic
 from city_furniture.example_bus_stations import main as create_city_furniture
 from city_model.basic.example_basic_city_model import main as create_city_model_basic
-from city_model.generic.example_generic_city_model import main as create_city_model_generic
-from georeferencing.example_enhanced_georeferencing import main as create_georeferencing_enhanced
+from city_model.generic.example_generic_city_model import (
+    main as create_city_model_generic,
+)
+from georeferencing.example_enhanced_georeferencing import (
+    main as create_georeferencing_enhanced,
+)
 from georeferencing.example_simple_georeferencing import main as create_georeferencing
 from terrain.basic.example_basic_terrain import main as create_terrain_basic
 from terrain.generic.example_generic_terrain import main as create_terrain_generic
 from trees.basic.example_basic_trees import main as create_trees_basic
 from trees.generic.example_trees_generic import main as create_trees_generic
 
-from BIMFabrikHH_core.config import get_logger
+from BIMFabrikHH_core.config import get_logger, setup_logging
 from BIMFabrikHH_core.config.paths import PathConfig
 
 logger = get_logger()
 
 
+def _run_example(label: str, func: Callable[[], object]) -> None:
+    """Run a single example, skipping it if a required asset is missing.
+
+    ``FileNotFoundError`` (e.g. a CityGML asset that is not shipped with the
+    repository) is logged and swallowed so the remaining examples still run.
+    """
+    try:
+        func()
+    except FileNotFoundError as exc:
+        logger.warning(f"Skipping {label}: required asset not found ({exc})")
+
+
 def run_comprehensive_examples() -> None:
     """Run all in-repo example ``main()`` functions in sequence."""
-    print("BIMFabrikHH Comprehensive Example")
-    print("=" * 60)
-    print("Runs every in-repo example main() in a single pass.")
-    print("=" * 60)
+    logger.info("BIMFabrikHH Comprehensive Example")
+    logger.info("=" * 60)
+    logger.info("Runs every in-repo example main() in a single pass.")
+    logger.info("=" * 60)
 
     start_time = time.perf_counter()
 
@@ -63,38 +80,38 @@ def run_comprehensive_examples() -> None:
         examples_dir = Path(__file__).parent
         os.chdir(examples_dir)
 
-        print("\n=== Basepoint Examples ===")
-        print("--- Basic Basepoint ---")
-        create_basepoint_basic()
-        print("--- Generic Basepoint (ifcfactory) ---")
-        create_basepoint_generic()
+        logger.info("\n=== Basepoint Examples ===")
+        logger.info("--- Basic Basepoint ---")
+        _run_example("Basic Basepoint", create_basepoint_basic)
+        logger.info("--- Generic Basepoint (ifcfactory) ---")
+        _run_example("Generic Basepoint", create_basepoint_generic)
 
-        print("\n=== City Model Examples ===")
-        print("--- Basic City Model ---")
-        create_city_model_basic()
-        print("--- Generic City Model (ifcfactory) ---")
-        create_city_model_generic()
+        logger.info("\n=== City Model Examples ===")
+        logger.info("--- Basic City Model ---")
+        _run_example("Basic City Model", create_city_model_basic)
+        logger.info("--- Generic City Model (ifcfactory) ---")
+        _run_example("Generic City Model", create_city_model_generic)
 
-        print("\n=== Trees Examples ===")
-        print("--- Basic Trees ---")
-        create_trees_basic()
-        print("--- Generic Trees (ifcfactory) ---")
-        create_trees_generic()
+        logger.info("\n=== Trees Examples ===")
+        logger.info("--- Basic Trees ---")
+        _run_example("Basic Trees", create_trees_basic)
+        logger.info("--- Generic Trees (ifcfactory) ---")
+        _run_example("Generic Trees", create_trees_generic)
 
-        print("\n=== Terrain Examples ===")
-        print("--- Basic Terrain (adaptive-sampled DGM) ---")
-        create_terrain_basic()
-        print("--- Generic Terrain (ifcfactory) ---")
-        create_terrain_generic()
+        logger.info("\n=== Terrain Examples ===")
+        logger.info("--- Basic Terrain (adaptive-sampled DGM) ---")
+        _run_example("Basic Terrain", create_terrain_basic)
+        logger.info("--- Generic Terrain (ifcfactory) ---")
+        _run_example("Generic Terrain", create_terrain_generic)
 
-        print("\n=== City Furniture Example ===")
-        create_city_furniture()
+        logger.info("\n=== City Furniture Example ===")
+        _run_example("City Furniture", create_city_furniture)
 
-        print("\n=== Georeferencing Examples ===")
-        print("--- Simple Georeferencing ---")
-        create_georeferencing()
-        print("--- Enhanced Georeferencing ---")
-        create_georeferencing_enhanced()
+        logger.info("\n=== Georeferencing Examples ===")
+        logger.info("--- Simple Georeferencing ---")
+        _run_example("Simple Georeferencing", create_georeferencing)
+        logger.info("--- Enhanced Georeferencing ---")
+        _run_example("Enhanced Georeferencing", create_georeferencing_enhanced)
 
     except Exception as exc:
         logger.error(f"Error during example execution: {exc}")
@@ -108,20 +125,21 @@ def run_comprehensive_examples() -> None:
 
     total_time = time.perf_counter() - start_time
 
-    print("\n" + "=" * 60)
-    print("COMPREHENSIVE EXAMPLE COMPLETED SUCCESSFULLY!")
-    print("=" * 60)
-    print(f"Total execution time: {total_time:.2f} seconds")
-    print("\nAll example files have been created under PathConfig.OUTPUT.")
-    print("Open them in any BIM software that supports IFC.")
-    print("\nGenerated files include:")
-    print("  - Basepoint with north arrow (basic + generic)")
-    print("  - City model (basic + generic / ifcfactory)")
-    print("  - Tree models (basic + generic)")
-    print("  - Digital ground model (basic + generic)")
-    print("  - Bus station with multiple LODs")
-    print("  - Simple and enhanced georeferencing")
+    logger.info("\n" + "=" * 60)
+    logger.info("COMPREHENSIVE EXAMPLE COMPLETED SUCCESSFULLY!")
+    logger.info("=" * 60)
+    logger.info(f"Total execution time: {total_time:.2f} seconds")
+    logger.info("\nAll example files have been created under PathConfig.OUTPUT.")
+    logger.info("Open them in any BIM software that supports IFC.")
+    logger.info("\nGenerated files include:")
+    logger.info("  - Basepoint with north arrow (basic + generic)")
+    logger.info("  - City model (basic + generic / ifcfactory)")
+    logger.info("  - Tree models (basic + generic)")
+    logger.info("  - Digital ground model (basic + generic)")
+    logger.info("  - Bus station with multiple LODs")
+    logger.info("  - Simple and enhanced georeferencing")
 
 
 if __name__ == "__main__":
+    setup_logging()
     run_comprehensive_examples()

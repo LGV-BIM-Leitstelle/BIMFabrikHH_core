@@ -1,9 +1,12 @@
-# Ignore IDE settings of PyCharm
+# Ignore IDE settings of PyCharm/VSCode
 .idea/
+.vscode/
 
 *.ifc
 *.log
 *.dwg
+.env
+poetry.lock
 
 # Ignore Python cache files and folders
 **/__pycache__/

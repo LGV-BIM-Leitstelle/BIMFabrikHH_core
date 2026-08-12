@@ -96,21 +96,25 @@ def get_all_default_pset_data() -> dict:
 
 
 if __name__ == "__main__":
+    from BIMFabrikHH_core.config.logging_config import get_logger
+
+    logger = get_logger("pydantic_default_pset_data")
+
     # Test the models
-    print("Default Pset Objektinformation:")
-    print(get_default_pset_objektinfo_data())
+    logger.info("Default Pset Objektinformation:")
+    logger.info(get_default_pset_objektinfo_data())
 
-    print("\nDefault Pset Modellinformation:")
-    print(get_default_pset_modellinfo_data())
+    logger.info("Default Pset Modellinformation:")
+    logger.info(get_default_pset_modellinfo_data())
 
-    print("\nDefault Pset Georeferenzierung (GK):")
-    print(get_default_pset_geo_data_gk())
+    logger.info("Default Pset Georeferenzierung (GK):")
+    logger.info(get_default_pset_geo_data_gk())
 
-    print("\nDefault Pset Georeferenzierung (UTM):")
-    print(get_default_pset_geo_data_utm())
+    logger.info("Default Pset Georeferenzierung (UTM):")
+    logger.info(get_default_pset_geo_data_utm())
 
-    print("\nDefault Pset Hyperlink:")
-    print(get_default_pset_hyperlinkdata())
+    logger.info("Default Pset Hyperlink:")
+    logger.info(get_default_pset_hyperlinkdata())
 
-    print("\nAll Default Pset Data:")
-    print(get_all_default_pset_data())
+    logger.info("All Default Pset Data:")
+    logger.info(get_all_default_pset_data())

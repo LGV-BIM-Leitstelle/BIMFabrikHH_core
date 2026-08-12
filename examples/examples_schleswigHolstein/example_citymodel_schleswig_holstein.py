@@ -19,10 +19,12 @@ from pathlib import Path
 from typing import Optional
 
 from BIMFabrikHH_core.apps.city import CityBasicApp
-from BIMFabrikHH_core.config import get_logger
+from BIMFabrikHH_core.config import get_logger, setup_logging
 from BIMFabrikHH_core.config.paths import PathConfig
 from BIMFabrikHH_core.data_models.params_tree import Component, Container, RequestParams
-from BIMFabrikHH_core.data_models.pydantic_georeferencing import CoordinateSystemTemplates
+from BIMFabrikHH_core.data_models.pydantic_georeferencing import (
+    CoordinateSystemTemplates,
+)
 
 logger = get_logger()
 
@@ -106,10 +108,11 @@ def main():
         ok, out_path = build_ifc_for_lod(lod_name, cfg, building_id=FILTER_BUILDING_ID)
         elapsed = time.perf_counter() - t
         status = "OK" if ok else "FAIL"
-        print(f"{status} {lod_name.upper()}: {elapsed:.2f}s  ->  {out_path}")
+        logger.info(f"{status} {lod_name.upper()}: {elapsed:.2f}s  ->  {out_path}")
 
-    print(f"\nTotal: {time.perf_counter() - total_start:.2f}s")
+    logger.info(f"\nTotal: {time.perf_counter() - total_start:.2f}s")
 
 
 if __name__ == "__main__":
+    setup_logging()
     main()

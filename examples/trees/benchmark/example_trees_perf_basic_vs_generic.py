@@ -23,8 +23,16 @@ from typing import Any, Dict, Generator, List, Tuple
 
 import ifcopenshell.api.pset as ifc_pset
 
-from BIMFabrikHH_core.apps.trees import TreeRecord, TreesBasicApp, TreesGenericApp, build_tree_psets
+from BIMFabrikHH_core.apps.trees import (
+    TreeRecord,
+    TreesBasicApp,
+    TreesGenericApp,
+    build_tree_psets,
+)
+from BIMFabrikHH_core.config import get_logger, setup_logging
 from BIMFabrikHH_core.core.model_creator import validate_ifc
+
+logger = get_logger()
 
 # Grid origin / step (EPSG:25832 metres).
 _E0 = 558_400.0
@@ -181,23 +189,23 @@ def _print_phase_table(
     w = max(len(r[0]) for r in rows)
     col_b, col_p, col_pct = 14, 14, 12
     sep = f"{'-' * w}  {'-' * col_b}  {'-' * col_p}  {'-' * col_pct}"
-    print()
-    print(f"{'Phase':<{w}}  {'Basic (s)':>{col_b}}  {'Generic (s)':>{col_p}}  {'% vs basic':>{col_pct}}")
-    print(
+    logger.info("")
+    logger.info(f"{'Phase':<{w}}  {'Basic (s)':>{col_b}}  {'Generic (s)':>{col_p}}  {'% vs basic':>{col_pct}}")
+    logger.info(
         "  (row has both times: generic/basic × 100; generic-only: generic/basic wall × 100; "
         "basic-only: basic/generic wall × 100)"
     )
-    print(
+    logger.info(
         "  Generic Property sets column: seconds from this script's ifcopenshell.api.pset timing wrapper "
         "(subset of `build_in_s`; not added again in Sum of measured phases)."
     )
-    print(sep)
+    logger.info(sep)
     for label, b, p, pct in rows[:-1]:
-        print(f"{label:<{w}}  {b:>{col_b}}  {p:>{col_p}}  {pct:>{col_pct}}")
-    print(sep)
+        logger.info(f"{label:<{w}}  {b:>{col_b}}  {p:>{col_p}}  {pct:>{col_pct}}")
+    logger.info(sep)
     label, b, p, pct = rows[-1]
-    print(f"{label:<{w}}  {b:>{col_b}}  {p:>{col_p}}  {pct:>{col_pct}}")
-    print()
+    logger.info(f"{label:<{w}}  {b:>{col_b}}  {p:>{col_p}}  {pct:>{col_pct}}")
+    logger.info("")
 
 
 def main() -> None:
@@ -212,12 +220,12 @@ def main() -> None:
     timings_basic: Dict[str, float] = {}
     timings_gen: Dict[str, float] = {}
 
-    print(f"Benchmark: {count} trees (IFC in {here})")
-    print(
+    logger.info(f"Benchmark: {count} trees (IFC in {here})")
+    logger.info(
         "  Basic: TreesBasicApp (mesh + ifcopenshell.api psets) | "
         "Generic: TreesGenericApp (ifcfactory BIMFactoryElement + Pydantic psets)"
     )
-    print()
+    logger.info("")
 
     t_wall_b0 = time.perf_counter()
     _ = TreesBasicApp.build_ifc(
@@ -243,8 +251,9 @@ def main() -> None:
         validate_ifc(path)
 
     _print_phase_table(timings_basic, timings_gen, wall_basic, wall_gen)
-    print(f"IFC: {path_basic.name} | {path_generic.name}")
+    logger.info(f"IFC: {path_basic.name} | {path_generic.name}")
 
 
 if __name__ == "__main__":
+    setup_logging()
     main()

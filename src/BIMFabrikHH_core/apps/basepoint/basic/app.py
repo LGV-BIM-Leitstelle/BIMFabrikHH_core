@@ -1,9 +1,15 @@
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
 
+from BIMFabrikHH_core.config.logging_config import get_logger
 from BIMFabrikHH_core.core.geometry.advanced_objects import create_basepoint_quad
 from BIMFabrikHH_core.core.model_creator import IfcModelBuilder
-from BIMFabrikHH_core.data_models.pydantic_georeferencing import CoordinateSystem, CoordinateSystemTemplates
+from BIMFabrikHH_core.data_models.pydantic_georeferencing import (
+    CoordinateSystem,
+    CoordinateSystemTemplates,
+)
+
+logger = get_logger("basepoint_basic_app")
 
 
 class BasepointBasicApp:
@@ -62,7 +68,12 @@ class BasepointBasicApp:
 
         basepoint_entities = []
         for i, data in enumerate(basepoint_data, 1):
-            print(f"Adding basepoint {i}: size={data.get('size', 5.0)}, position={data['position']}")
+            logger.info(
+                "Adding basepoint %s: size=%s, position=%s",
+                i,
+                data.get("size", 5.0),
+                data["position"],
+            )
 
             # Create basepoint using new approach
             position = data.get("position", (0, 0, 0))
@@ -84,10 +95,10 @@ class BasepointBasicApp:
 
             basepoint_entities.append(basepoint_factory)
 
-        print(f"Created {len(basepoint_entities)} basepoints")
+        logger.info("Created %s basepoints", len(basepoint_entities))
 
         file_path = builder.save_ifc_to_output("output_basepoint_basic.ifc", output_path=output_path)
-        print(f"IFC model saved to {file_path}")
+        logger.info("IFC model saved to %s", file_path)
         return str(file_path)
 
     @staticmethod

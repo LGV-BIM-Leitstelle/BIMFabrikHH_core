@@ -34,16 +34,16 @@ python = ">=3.11,<3.12"
 rasterio = ">=1.4.3"
 scipy = ">=1.16.0,<2.0.0"
 ifcfactory = "^0.3.0"
+requests = "^2.34.2"
 
-[tool.poetry.extras]
-dev = [
-    "black",
-    "pytest",
-    "pytest-mock",
-    "pytest-cov",
-    "isort",
-    "autoflake"
-]
+[tool.poetry.group.dev.dependencies]
+black = "*"
+pytest = "*"
+pytest-mock = "*"
+pytest-cov = "*"
+isort = "*"
+autoflake = "*"
+ipykernel = "*"
 
 
 [build-system]

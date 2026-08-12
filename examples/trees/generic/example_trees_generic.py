@@ -20,7 +20,11 @@ from ifcfactory import ureg
 from pydantic import BaseModel
 
 from BIMFabrikHH_core.apps.trees.generic import TreeRecord, TreesGenericApp
-from BIMFabrikHH_core.data_models.pydantic_psets_tree import Pset_Bauwerk_Tree, Pset_Objektinformation_Tree
+from BIMFabrikHH_core.config import setup_logging
+from BIMFabrikHH_core.data_models.pydantic_psets_tree import (
+    Pset_Bauwerk_Tree,
+    Pset_Objektinformation_Tree,
+)
 
 TRUNK_COLOR: Tuple[float, float, float] = (0.44, 0.27, 0.18)
 CROWN_COLOR: Tuple[float, float, float] = (0.13, 0.50, 0.18)
@@ -139,4 +143,5 @@ def main() -> None:
 
 
 if __name__ == "__main__":
+    setup_logging()
     main()

@@ -37,21 +37,30 @@ from typing import Callable, List, Optional, Sequence, Tuple, Union
 from ifcfactory import BIMFactoryElement, MeshRepresentation, Style
 from pydantic import BaseModel
 
-from BIMFabrikHH_core.apps.city._ifc_common import clean_polygon_ring, parse_face_with_voids
+from BIMFabrikHH_core.apps.city._ifc_common import (
+    clean_polygon_ring,
+    parse_face_with_voids,
+)
 from BIMFabrikHH_core.apps.city.processing import parse_gml_files
-from BIMFabrikHH_core.config.logging_colors import get_level_logger
+from BIMFabrikHH_core.config.logging_config import get_logger
 from BIMFabrikHH_core.core.geometry import place_basepoint
 from BIMFabrikHH_core.core.model_creator import init_ifc_project
 from BIMFabrikHH_core.data_models.params_tree import RequestParams
-from BIMFabrikHH_core.data_models.pydantic_georeferencing import CoordinateOperation, CoordinateSystem
-from BIMFabrikHH_core.data_models.pydantic_psets_BIMHH import Pset_Hyperlink, default_bim_hamburg_hyperlink
+from BIMFabrikHH_core.data_models.pydantic_georeferencing import (
+    CoordinateOperation,
+    CoordinateSystem,
+)
+from BIMFabrikHH_core.data_models.pydantic_psets_BIMHH import (
+    Pset_Hyperlink,
+    default_bim_hamburg_hyperlink,
+)
 from BIMFabrikHH_core.data_models.pydantic_psets_city_model import (
     Building,
     Pset_Objektinformation_CityModel,
     city_attrs_to_pset,
 )
 
-logger = get_level_logger("city_generic_app")
+logger = get_logger("city_generic_app")
 
 RgbTuple = Union[Tuple[float, float, float], Tuple[int, int, int]]
 

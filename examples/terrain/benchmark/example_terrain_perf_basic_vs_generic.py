@@ -20,10 +20,18 @@ import time
 from pathlib import Path
 from typing import List, Tuple
 
-from BIMFabrikHH_core.apps.terrain import TerrainBasicApp, TerrainGenericApp, TerrainMesh, extract_mesh_adaptive
+from BIMFabrikHH_core.apps.terrain import (
+    TerrainBasicApp,
+    TerrainGenericApp,
+    TerrainMesh,
+    extract_mesh_adaptive,
+)
+from BIMFabrikHH_core.config import get_logger, setup_logging
 from BIMFabrikHH_core.config.paths import PathConfig
 from BIMFabrikHH_core.core.model_creator import validate_ifc
 from BIMFabrikHH_core.data_models.params_tree import Component, Container, RequestParams
+
+logger = get_logger()
 
 # Adaptive-sampling knobs (kept identical for both apps).
 _MIN_POINTS: int = 500
@@ -73,9 +81,9 @@ def _print_comparison(
     n_vertices = len(mesh.vertices)
     n_faces = len(mesh.faces)
 
-    print()
-    print(f"Mesh (shared): {n_vertices} vertices, {n_faces} faces")
-    print()
+    logger.info("")
+    logger.info(f"Mesh (shared): {n_vertices} vertices, {n_faces} faces")
+    logger.info("")
 
     rows: List[Tuple[str, str, str, str]] = [
         (
@@ -96,12 +104,12 @@ def _print_comparison(
     col_b, col_g, col_pct = 14, 14, 12
     sep = f"{'-' * label_w}  {'-' * col_b}  {'-' * col_g}  {'-' * col_pct}"
 
-    print(f"{'Metric':<{label_w}}  {'Basic':>{col_b}}  {'Generic':>{col_g}}  {'% vs basic':>{col_pct}}")
-    print("  (<100% = generic faster / smaller; applies to wall time only)")
-    print(sep)
+    logger.info(f"{'Metric':<{label_w}}  {'Basic':>{col_b}}  {'Generic':>{col_g}}  {'% vs basic':>{col_pct}}")
+    logger.info("  (<100% = generic faster / smaller; applies to wall time only)")
+    logger.info(sep)
     for label, b, g, pct in rows:
-        print(f"{label:<{label_w}}  {b:>{col_b}}  {g:>{col_g}}  {pct:>{col_pct}}")
-    print()
+        logger.info(f"{label:<{label_w}}  {b:>{col_b}}  {g:>{col_g}}  {pct:>{col_pct}}")
+    logger.info("")
 
 
 def main() -> None:
@@ -111,8 +119,8 @@ def main() -> None:
 
     tif_files = [str(PathConfig.ASSETS / "dgm1_32_558_9270_1_hh_2022.tif")]
 
-    print(f"Benchmark: DGM basic vs generic (IFC in {here})")
-    print(
+    logger.info(f"Benchmark: DGM basic vs generic (IFC in {here})")
+    logger.info(
         "  Basic:   TerrainBasicApp   (ifcopenshell.api)\n"
         "  Generic: TerrainGenericApp (ifcfactory BIMFactoryElement)"
     )
@@ -127,7 +135,7 @@ def main() -> None:
         move_to_origin=_MOVE_TO_ORIGIN,
     )
     if mesh.is_empty():
-        print("No valid terrain data to convert; aborting benchmark.")
+        logger.warning("No valid terrain data to convert; aborting benchmark.")
         return
 
     request_params = _make_request_params()
@@ -153,8 +161,9 @@ def main() -> None:
             validate_ifc(path)
 
     _print_comparison(mesh, path_basic, path_generic, wall_basic, wall_generic)
-    print(f"IFC: {path_basic.name} | {path_generic.name}")
+    logger.info(f"IFC: {path_basic.name} | {path_generic.name}")
 
 
 if __name__ == "__main__":
+    setup_logging()
     main()
