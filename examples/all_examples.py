@@ -26,6 +26,7 @@ from __future__ import annotations
 import os
 import time
 from pathlib import Path
+from typing import Callable
 
 from basepoint.example_basepoint_basic import main as create_basepoint_basic
 from basepoint.example_basepoint_generic import main as create_basepoint_generic
@@ -49,6 +50,18 @@ from BIMFabrikHH_core.config.paths import PathConfig
 logger = get_logger()
 
 
+def _run_example(label: str, func: Callable[[], object]) -> None:
+    """Run a single example, skipping it if a required asset is missing.
+
+    ``FileNotFoundError`` (e.g. a CityGML asset that is not shipped with the
+    repository) is logged and swallowed so the remaining examples still run.
+    """
+    try:
+        func()
+    except FileNotFoundError as exc:
+        logger.warning(f"Skipping {label}: required asset not found ({exc})")
+
+
 def run_comprehensive_examples() -> None:
     """Run all in-repo example ``main()`` functions in sequence."""
     logger.info("BIMFabrikHH Comprehensive Example")
@@ -69,36 +82,36 @@ def run_comprehensive_examples() -> None:
 
         logger.info("\n=== Basepoint Examples ===")
         logger.info("--- Basic Basepoint ---")
-        create_basepoint_basic()
+        _run_example("Basic Basepoint", create_basepoint_basic)
         logger.info("--- Generic Basepoint (ifcfactory) ---")
-        create_basepoint_generic()
+        _run_example("Generic Basepoint", create_basepoint_generic)
 
         logger.info("\n=== City Model Examples ===")
         logger.info("--- Basic City Model ---")
-        create_city_model_basic()
+        _run_example("Basic City Model", create_city_model_basic)
         logger.info("--- Generic City Model (ifcfactory) ---")
-        create_city_model_generic()
+        _run_example("Generic City Model", create_city_model_generic)
 
         logger.info("\n=== Trees Examples ===")
         logger.info("--- Basic Trees ---")
-        create_trees_basic()
+        _run_example("Basic Trees", create_trees_basic)
         logger.info("--- Generic Trees (ifcfactory) ---")
-        create_trees_generic()
+        _run_example("Generic Trees", create_trees_generic)
 
         logger.info("\n=== Terrain Examples ===")
         logger.info("--- Basic Terrain (adaptive-sampled DGM) ---")
-        create_terrain_basic()
+        _run_example("Basic Terrain", create_terrain_basic)
         logger.info("--- Generic Terrain (ifcfactory) ---")
-        create_terrain_generic()
+        _run_example("Generic Terrain", create_terrain_generic)
 
         logger.info("\n=== City Furniture Example ===")
-        create_city_furniture()
+        _run_example("City Furniture", create_city_furniture)
 
         logger.info("\n=== Georeferencing Examples ===")
         logger.info("--- Simple Georeferencing ---")
-        create_georeferencing()
+        _run_example("Simple Georeferencing", create_georeferencing)
         logger.info("--- Enhanced Georeferencing ---")
-        create_georeferencing_enhanced()
+        _run_example("Enhanced Georeferencing", create_georeferencing_enhanced)
 
     except Exception as exc:
         logger.error(f"Error during example execution: {exc}")
