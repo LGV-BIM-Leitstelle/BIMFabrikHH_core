@@ -51,14 +51,18 @@ from ifcopenshell.api import aggregate, pset, root, run, spatial
 from ifcopenshell.util import placement
 from pydantic import BaseModel
 
-from BIMFabrikHH_core.apps.trees.processing import TreeDimensions, collect_pydantic_psets, resolve_tree_dimensions
-from BIMFabrikHH_core.config.logging_colors import get_level_logger
+from BIMFabrikHH_core.apps.trees.processing import (
+    TreeDimensions,
+    collect_pydantic_psets,
+    resolve_tree_dimensions,
+)
+from BIMFabrikHH_core.config.logging_config import get_logger
 from BIMFabrikHH_core.core.geometry import place_basepoint
 from BIMFabrikHH_core.core.model_creator import init_ifc_project, validate_ifc
 from BIMFabrikHH_core.core.model_creator.ifc_snippets import IfcSnippets
 from BIMFabrikHH_core.data_models import TreeRecord
 
-logger = get_level_logger("trees_basic_app")
+logger = get_logger("trees_basic_app")
 
 DEFAULT_OUTPUT_NAME = "output_trees_basic.ifc"
 DEFAULT_LEVEL_OF_GEOMETRY: int = 1

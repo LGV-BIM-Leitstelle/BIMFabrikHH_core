@@ -23,16 +23,20 @@ from pydantic import BaseModel
 
 from BIMFabrikHH_core.apps.terrain._ifc_common import default_terrain_psets
 from BIMFabrikHH_core.apps.terrain.processing import extract_mesh_adaptive
-from BIMFabrikHH_core.config.logging_colors import get_level_logger
-from BIMFabrikHH_core.core.georeferencing import bbox_request_params_to_epsg25832
+from BIMFabrikHH_core.config.logging_config import get_logger
 from BIMFabrikHH_core.core.geometry import place_basepoint
+from BIMFabrikHH_core.core.georeferencing import bbox_request_params_to_epsg25832
 from BIMFabrikHH_core.core.model_creator import init_ifc_project
-from BIMFabrikHH_core.core.ogc_extractor.ogc_values_extractor import extract_psets_basepoint
+from BIMFabrikHH_core.core.ogc_extractor.ogc_values_extractor import (
+    extract_psets_basepoint,
+)
 from BIMFabrikHH_core.data_models.params_tree import RequestParams
-from BIMFabrikHH_core.data_models.pydantic_psets_terrain import Pset_Objektinformation_DGM
+from BIMFabrikHH_core.data_models.pydantic_psets_terrain import (
+    Pset_Objektinformation_DGM,
+)
 from BIMFabrikHH_core.data_models.terrain_mesh import TerrainMesh
 
-logger = get_level_logger("terrain_generic_app")
+logger = get_logger("terrain_generic_app")
 
 RgbTuple = Union[Tuple[float, float, float], Tuple[int, int, int]]
 
@@ -120,9 +124,7 @@ class TerrainGenericApp:
                 model=model,
                 site=builder.site,
                 basepoint_origin=basepoint_origin,
-                bbox_wgs84=(
-                    None if basepoint_origin is not None else request_params.bbox_as_wgs84_tuple
-                ),
+                bbox_wgs84=(None if basepoint_origin is not None else request_params.bbox_as_wgs84_tuple),
                 size=basepoint_size,
                 psets=extract_psets_basepoint(request_params.containers or []),
             )
@@ -198,9 +200,7 @@ def _terrain_element_from_mesh(
     psets: List[BaseModel],
 ) -> BIMFactoryElement:
     """Wrap the terrain mesh in a styled ``BIMFactoryElement`` ready for ``build_in``."""
-    vertices: List[Tuple[float, float, float]] = [
-        (float(v[0]), float(v[1]), float(v[2])) for v in mesh.vertices
-    ]
+    vertices: List[Tuple[float, float, float]] = [(float(v[0]), float(v[1]), float(v[2])) for v in mesh.vertices]
 
     mesh_item = MeshRepresentation(vertices=vertices, faces=mesh.faces)
     styled_mesh = Style(

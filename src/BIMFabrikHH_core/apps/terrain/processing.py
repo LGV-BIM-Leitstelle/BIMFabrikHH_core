@@ -21,10 +21,10 @@ import rasterio
 from rasterio.io import MemoryFile
 from scipy.spatial import Delaunay
 
-from BIMFabrikHH_core.config.logging_colors import get_level_logger
+from BIMFabrikHH_core.config.logging_config import get_logger
 from BIMFabrikHH_core.data_models.terrain_mesh import TerrainMesh
 
-logger = get_level_logger("terrain_processing")
+logger = get_logger("terrain_processing")
 
 
 # ---------------------------------------------------------------------------

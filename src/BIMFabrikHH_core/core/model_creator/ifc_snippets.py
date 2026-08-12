@@ -5,10 +5,10 @@ import ifcopenshell.util.placement
 from ifcopenshell.api import material, style
 from ifcopenshell.entity_instance import entity_instance
 
-from BIMFabrikHH_core.config.logging_colors import get_level_logger
+from BIMFabrikHH_core.config.logging_config import get_logger
 
 # Configure logger for this module
-logger = get_level_logger("ifc_snippets")
+logger = get_logger("ifc_snippets")
 
 
 class IfcSnippets:
@@ -154,7 +154,7 @@ class IfcSnippets:
                 and len(color_rgb) == 3
                 and all(isinstance(c, (float, int)) and 0.0 <= c <= 1.0 for c in color_rgb)
             ):
-                print(f"Warning: color_rgb must be a tuple of three floats in [0,1], got {color_rgb}")
+                logger.warning("color_rgb must be a tuple of three floats in [0,1], got %s", color_rgb)
                 return
             normalized_rgb = list(color_rgb)
 
@@ -189,7 +189,7 @@ class IfcSnippets:
                     styled_item = model.create_entity("IfcStyledItem", Item=item, Styles=[style_assignment])
 
         except Exception as e:
-            print(f"Warning: Could not assign color '{color_rgb}' to representation: {e}")
+            logger.warning("Could not assign color '%s' to representation: %s", color_rgb, e)
 
     @staticmethod
     def batch_assign_layer_to_representations(
@@ -261,7 +261,7 @@ class IfcSnippets:
                     LayerStyles=[surface_style],
                 )
         except Exception as e:
-            print(f"Warning: Could not assign layer '{layer_name}': {e}")
+            logger.warning("Could not assign layer '%s': %s", layer_name, e)
 
     @staticmethod
     def assign_layer_to_representation(
@@ -370,4 +370,4 @@ class IfcSnippets:
                             )
 
         except Exception as e:
-            print(f"Warning: Could not assign layer '{layer_name}': {e}")
+            logger.warning("Could not assign layer '%s': %s", layer_name, e)

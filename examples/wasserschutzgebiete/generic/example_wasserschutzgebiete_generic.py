@@ -18,7 +18,7 @@ from BIMFabrikHH_core.apps.wasserschutzgebiete.generic import (
     WasserschutzgebieteGenericApp,
     load_wasserschutzgebiete_records,
 )
-from BIMFabrikHH_core.config import get_logger
+from BIMFabrikHH_core.config import get_logger, setup_logging
 
 logger = get_logger()
 
@@ -77,4 +77,5 @@ def main() -> None:
 
 
 if __name__ == "__main__":
+    setup_logging()
     main()

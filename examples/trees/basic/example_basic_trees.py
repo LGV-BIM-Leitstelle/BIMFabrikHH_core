@@ -19,10 +19,12 @@ import pandas as pd
 
 from BIMFabrikHH_core import BoundingBoxParams, TreesBasicApp
 from BIMFabrikHH_core.apps.trees import DEFAULT_OAF_SCHEMA, dataframe_to_records
-from BIMFabrikHH_core.config import get_logger
+from BIMFabrikHH_core.config import get_logger, setup_logging
 from BIMFabrikHH_core.config.paths import PathConfig
 from BIMFabrikHH_core.core.georeferencing.crs_transform import bbox_wgs84_to_epsg25832
-from BIMFabrikHH_core.core.georeferencing.extract_elevation import extract_elevation_df_from_geotiff
+from BIMFabrikHH_core.core.georeferencing.extract_elevation import (
+    extract_elevation_df_from_geotiff,
+)
 
 logger = get_logger()
 
@@ -100,4 +102,5 @@ def main() -> None:
 
 
 if __name__ == "__main__":
+    setup_logging()
     main()

@@ -27,26 +27,37 @@ import ifcopenshell
 from ifcfactory import BIMFactoryElement, MeshRepresentation, Style
 
 from BIMFabrikHH_core.apps.city.generic_entity.models import (
-    BoundarySurfaceMapping,
     BoundaryPolygon,
+    BoundarySurfaceMapping,
     IfcProductClass,
     mapping_registry,
 )
-from BIMFabrikHH_core.apps.city.generic_entity.parser import CitygmlProfile, parse_typed_gml_files
+from BIMFabrikHH_core.apps.city.generic_entity.parser import (
+    CitygmlProfile,
+    parse_typed_gml_files,
+)
 from BIMFabrikHH_core.apps.city.generic_entity.quantities import (
     compute_boundary_quantities,
     face_quantities_to_pset,
 )
-from BIMFabrikHH_core.data_models.pydantic_psets_city_model import TypedCityBuilding
-from BIMFabrikHH_core.config.logging_colors import get_level_logger
+from BIMFabrikHH_core.config.logging_config import get_logger
 from BIMFabrikHH_core.core.geometry import place_basepoint
 from BIMFabrikHH_core.core.model_creator import init_ifc_project
 from BIMFabrikHH_core.data_models.params_tree import RequestParams
-from BIMFabrikHH_core.data_models.pydantic_georeferencing import CoordinateOperation, CoordinateSystem
-from BIMFabrikHH_core.data_models.pydantic_psets_BIMHH import Pset_Hyperlink, default_bim_hamburg_hyperlink
-from BIMFabrikHH_core.data_models.pydantic_psets_city_model import city_attrs_to_pset
+from BIMFabrikHH_core.data_models.pydantic_georeferencing import (
+    CoordinateOperation,
+    CoordinateSystem,
+)
+from BIMFabrikHH_core.data_models.pydantic_psets_BIMHH import (
+    Pset_Hyperlink,
+    default_bim_hamburg_hyperlink,
+)
+from BIMFabrikHH_core.data_models.pydantic_psets_city_model import (
+    TypedCityBuilding,
+    city_attrs_to_pset,
+)
 
-logger = get_level_logger("city_generic_entity_app")
+logger = get_logger("city_generic_entity_app")
 
 RgbTuple = Union[Tuple[float, float, float], Tuple[int, int, int]]
 

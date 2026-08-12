@@ -9,11 +9,11 @@ import json
 
 from pydantic_settings import BaseSettings
 
-from BIMFabrikHH_core.config.logging_colors import get_level_logger
+from BIMFabrikHH_core.config.logging_config import get_logger
 from BIMFabrikHH_core.config.paths import PathConfig
 
 # Configure logger for this module
-logger = get_level_logger("ogc_extractor_config")
+logger = get_logger("ogc_extractor_config")
 
 
 # Check for JSON configuration file

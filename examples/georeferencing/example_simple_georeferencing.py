@@ -6,12 +6,15 @@ This example shows how easy it is to add georeferencing to IFC models
 using the new CoordinateSystem model and templates.
 """
 
+from BIMFabrikHH_core.config import get_logger, setup_logging
 from BIMFabrikHH_core.core.model_creator.ifc_modelbuilder import IfcModelBuilder
 from BIMFabrikHH_core.data_models.pydantic_georeferencing import (
     CoordinateOperation,
     CoordinateSystem,
     CoordinateSystemTemplates,
 )
+
+logger = get_logger()
 
 
 def main():
@@ -20,10 +23,10 @@ def main():
     # Create a model builder
     builder = IfcModelBuilder()
 
-    print("=== Simple Georeferencing Example ===\n")
+    logger.info("=== Simple Georeferencing Example ===\n")
 
     # Example 1: Use default EPSG:25832 (simplest)
-    print("1. Using default EPSG:25832:")
+    logger.info("1. Using default EPSG:25832:")
     builder.build_project(
         project_name="Default Project",
         coordinate_system="epsg_25832",
@@ -32,10 +35,10 @@ def main():
         building_name="Default Building",
     )
     builder.save_ifc_to_output("example_default_georef.ifc")
-    print("   ✓ Saved as 'example_default_georef.ifc'\n")
+    logger.info("   ✓ Saved as 'example_default_georef.ifc'\n")
 
     # Example 2: Use a custom coordinate system
-    print("3. Using custom coordinate system:")
+    logger.info("3. Using custom coordinate system:")
     custom_crs = CoordinateSystem(
         name="Custom Hamburg CRS",
         geodetic_datum="ETRS89",
@@ -64,10 +67,10 @@ def main():
         building_name="Custom Building",
     )
     builder.save_ifc_to_output("example_custom_georef.ifc")
-    print("   ✓ Saved as 'example_custom_georef.ifc'\n")
+    logger.info("   ✓ Saved as 'example_custom_georef.ifc'\n")
 
     # Example 3b: Use custom coordinate system with custom operation
-    print("3b. Using custom coordinate system with custom transformation:")
+    logger.info("3b. Using custom coordinate system with custom transformation:")
     builder.reset_model()
     # Use the build_project method which handles the proper order of operations
     builder.build_project(
@@ -80,10 +83,10 @@ def main():
     # Note: The coordinate operation is currently handled internally with defaults
     # For custom operations, you would need to extend the build_project method
     builder.save_ifc_to_output("example_custom_transform_georef.ifc")
-    print("   ✓ Saved as 'example_custom_transform_georef.ifc'\n")
+    logger.info("   ✓ Saved as 'example_custom_transform_georef.ifc'\n")
 
     # Example 4: Use Gauß-Krüger Hamburg template
-    print("4. Using Gauß-Krüger Hamburg template:")
+    logger.info("4. Using Gauß-Krüger Hamburg template:")
     builder.reset_model()
     builder.build_project(
         project_name="Hamburg Project",
@@ -93,11 +96,12 @@ def main():
         building_name="Hamburg Building",
     )
     builder.save_ifc_to_output("example_hamburg_georef.ifc")
-    print("   ✓ Saved as 'example_hamburg_georef.ifc'\n")
+    logger.info("   ✓ Saved as 'example_hamburg_georef.ifc'\n")
 
-    print("=== All examples completed successfully! ===")
-    print("Check the 'output' directory for the generated IFC files.")
+    logger.info("=== All examples completed successfully! ===")
+    logger.info("Check the 'output' directory for the generated IFC files.")
 
 
 if __name__ == "__main__":
+    setup_logging()
     main()

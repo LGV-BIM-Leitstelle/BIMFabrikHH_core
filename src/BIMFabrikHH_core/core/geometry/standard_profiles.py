@@ -10,8 +10,20 @@ Follows the same pattern as city_furniture.py for consistency.
 from typing import List, Optional, Tuple
 
 import ifcopenshell
-from ifcfactory import BIMFactoryElement, Circle, Extrusion, Polygon, Rect, Style, Transform
+from ifcfactory import (
+    BIMFactoryElement,
+    Circle,
+    Extrusion,
+    Polygon,
+    Rect,
+    Style,
+    Transform,
+)
 from pydantic import BaseModel, Field
+
+from BIMFabrikHH_core.config.logging_config import get_logger
+
+logger = get_logger("standard_profiles")
 
 
 class StandardProfileConfig(BaseModel):
@@ -226,13 +238,13 @@ def create_standard_profiles_example():
     output_file = "standard_profiles_example.ifc"
     model.write(output_file)
 
-    print(f"Standard profiles IFC model created successfully: {output_file}")
-    print("Created profiles:")
-    print("  - Rectangular profile (gray)")
-    print("  - Circular profile (gray)")
-    print("  - Polygon profile (brown triangle)")
-    print("  - Rectangular profile (blue)")
-    print("  - Circular profile (pink)")
+    logger.info("Standard profiles IFC model created successfully: %s", output_file)
+    logger.info("Created profiles:")
+    logger.info("  - Rectangular profile (gray)")
+    logger.info("  - Circular profile (gray)")
+    logger.info("  - Polygon profile (brown triangle)")
+    logger.info("  - Rectangular profile (blue)")
+    logger.info("  - Circular profile (pink)")
 
 
 if __name__ == "__main__":

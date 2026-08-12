@@ -10,7 +10,7 @@ import time
 
 from BIMFabrikHH_core import Component, Container, RequestParams
 from BIMFabrikHH_core.apps.terrain.basic import TerrainBasicApp
-from BIMFabrikHH_core.config import get_logger
+from BIMFabrikHH_core.config import get_logger, setup_logging
 from BIMFabrikHH_core.config.paths import PathConfig
 
 logger = get_logger()
@@ -52,8 +52,8 @@ def main():
     )
 
     end = time.perf_counter()
-    print(f"Total process time: {end - start:.2f} seconds")
-    print(f"IFC model saved to: {output_path}")
+    logger.info(f"Total process time: {end - start:.2f} seconds")
+    logger.info(f"IFC model saved to: {output_path}")
 
     if result:
         logger.info(
@@ -65,4 +65,5 @@ def main():
 
 
 if __name__ == "__main__":
+    setup_logging()
     main()

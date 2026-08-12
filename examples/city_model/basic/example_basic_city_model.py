@@ -8,9 +8,15 @@ import subprocess
 import sys
 from pathlib import Path
 
-from BIMFabrikHH_core import BoundingBoxParams, Component, Container, PathConfig, RequestParams
+from BIMFabrikHH_core import (
+    BoundingBoxParams,
+    Component,
+    Container,
+    PathConfig,
+    RequestParams,
+)
 from BIMFabrikHH_core.apps.city import CityBasicApp
-from BIMFabrikHH_core.config import get_logger
+from BIMFabrikHH_core.config import get_logger, setup_logging
 
 logger = get_logger()
 
@@ -63,4 +69,5 @@ def main() -> None:
 
 
 if __name__ == "__main__":
+    setup_logging()
     main()

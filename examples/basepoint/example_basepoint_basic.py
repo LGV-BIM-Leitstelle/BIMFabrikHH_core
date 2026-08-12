@@ -8,7 +8,10 @@ import sys
 from pathlib import Path
 
 from BIMFabrikHH_core.apps.basepoint.basic.app import BasepointBasicApp
-from BIMFabrikHH_core.data_models.pydantic_georeferencing import CoordinateSystemTemplates
+from BIMFabrikHH_core.config import setup_logging
+from BIMFabrikHH_core.data_models.pydantic_georeferencing import (
+    CoordinateSystemTemplates,
+)
 
 _HERE = Path(__file__).resolve().parent
 _OUT = _HERE / "example_basepoint_basic.ifc"
@@ -27,4 +30,5 @@ def main() -> None:
 
 
 if __name__ == "__main__":
+    setup_logging()
     main()

@@ -28,7 +28,7 @@ import numpy
 import requests
 from lxml import etree
 
-from BIMFabrikHH_core.config.logging_colors import get_level_logger
+from BIMFabrikHH_core.config.logging_config import get_logger
 from BIMFabrikHH_core.core.utils.geometry_utils import (
     convert_faces_with_voids_to_ifc_format,
     convert_to_indexed_geometry,
@@ -38,7 +38,7 @@ from BIMFabrikHH_core.data_models.pydantic_psets_city_model import Building
 
 from .helpers import extract_attributes_from_xml
 
-logger = get_level_logger("city_app")
+logger = get_logger("city_app")
 
 Faces = List[List[Tuple[float, float, float]]]
 FacesWithVoids = List[Tuple[List[Tuple[float, float, float]], List[List[Tuple[float, float, float]]]]]

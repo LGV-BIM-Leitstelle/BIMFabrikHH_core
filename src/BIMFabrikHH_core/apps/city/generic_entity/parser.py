@@ -22,14 +22,14 @@ from typing import Dict, List, Literal, Optional, Sequence, Tuple, Union
 from lxml import etree
 
 from BIMFabrikHH_core.apps.city.generic_entity.models import BoundaryPolygon
-from BIMFabrikHH_core.data_models.pydantic_psets_city_model import TypedCityBuilding
 from BIMFabrikHH_core.apps.city.helpers import extract_attributes_from_xml
 from BIMFabrikHH_core.apps.city.parser import CityGMLParser
-from BIMFabrikHH_core.config.logging_colors import get_level_logger
+from BIMFabrikHH_core.config.logging_config import get_logger
 from BIMFabrikHH_core.core.georeferencing.crs_transform import bbox_wgs84_to_epsg25832
 from BIMFabrikHH_core.core.utils.geometry_utils import extract_polygon_with_voids
+from BIMFabrikHH_core.data_models.pydantic_psets_city_model import TypedCityBuilding
 
-logger = get_level_logger("city_generic_entity_parser")
+logger = get_logger("city_generic_entity_parser")
 
 CitygmlProfile = Literal["2.0", "1.0"]
 
@@ -86,9 +86,7 @@ def _collect_polygons_for_surface(
         exterior = _strip_closing_point(exterior)
         if len(exterior) >= 3:
             cleaned_interiors = [
-                _strip_closing_point(inner)
-                for inner in interiors
-                if len(_strip_closing_point(inner)) >= 3
+                _strip_closing_point(inner) for inner in interiors if len(_strip_closing_point(inner)) >= 3
             ]
             boundaries.append(
                 BoundaryPolygon(
@@ -127,9 +125,7 @@ def extract_building_typed(
                 exterior = _strip_closing_point(exterior)
                 if len(exterior) >= 3:
                     cleaned_interiors = [
-                        _strip_closing_point(inner)
-                        for inner in interiors
-                        if len(_strip_closing_point(inner)) >= 3
+                        _strip_closing_point(inner) for inner in interiors if len(_strip_closing_point(inner)) >= 3
                     ]
                     boundaries.append(
                         BoundaryPolygon(

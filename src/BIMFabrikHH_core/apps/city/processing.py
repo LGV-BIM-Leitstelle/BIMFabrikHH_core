@@ -15,11 +15,11 @@ from pathlib import Path
 from typing import List, Optional, Sequence, Tuple, Union
 
 from BIMFabrikHH_core.apps.city.parser import CityGMLParser
-from BIMFabrikHH_core.config.logging_colors import get_level_logger
+from BIMFabrikHH_core.config.logging_config import get_logger
 from BIMFabrikHH_core.core.georeferencing.crs_transform import bbox_wgs84_to_epsg25832
 from BIMFabrikHH_core.data_models.pydantic_psets_city_model import Building
 
-logger = get_level_logger("city_processing")
+logger = get_logger("city_processing")
 
 
 BboxWgs84 = Tuple[float, float, float, float]

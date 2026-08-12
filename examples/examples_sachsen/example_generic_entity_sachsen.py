@@ -26,10 +26,12 @@ from typing import List, Optional
 
 from BIMFabrikHH_core.apps.city import CityGenericEntityApp
 from BIMFabrikHH_core.apps.city.generic_entity import parse_typed_gml_files
-from BIMFabrikHH_core.config import get_logger
+from BIMFabrikHH_core.config import get_logger, setup_logging
 from BIMFabrikHH_core.config.paths import PathConfig
 from BIMFabrikHH_core.data_models.params_tree import Component, Container, RequestParams
-from BIMFabrikHH_core.data_models.pydantic_georeferencing import CoordinateSystemTemplates
+from BIMFabrikHH_core.data_models.pydantic_georeferencing import (
+    CoordinateSystemTemplates,
+)
 from BIMFabrikHH_core.data_models.pydantic_psets_city_model import TypedCityBuilding
 
 logger = get_logger()
@@ -152,4 +154,5 @@ def main() -> None:
 
 
 if __name__ == "__main__":
+    setup_logging()
     main()

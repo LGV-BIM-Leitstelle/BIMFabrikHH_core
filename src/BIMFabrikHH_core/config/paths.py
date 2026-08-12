@@ -27,11 +27,15 @@ class PathConfig:
 
 
 if __name__ == "__main__":
-    print(f"PROJECT_ROOT: {PathConfig.PROJECT_ROOT}")
-    print(f"ASSETS: {PathConfig.ASSETS}")
-    print(f"OUTPUT: {PathConfig.OUTPUT}")
-    print(f"EXAMPLES: {PathConfig.EXAMPLES}")
-    print(f"SRC: {PathConfig.SRC}")
-    print(f"TESTS: {PathConfig.TESTS}")
-    print(f"TEMP: {PathConfig.TEMP}")
-    print(f"CONFIG: {PathConfig.CONFIG}")
+    from BIMFabrikHH_core.config.logging_config import get_logger
+
+    logger = get_logger("paths")
+
+    logger.info("PROJECT_ROOT: %s", PathConfig.PROJECT_ROOT)
+    logger.info("ASSETS: %s", PathConfig.ASSETS)
+    logger.info("OUTPUT: %s", PathConfig.OUTPUT)
+    logger.info("EXAMPLES: %s", PathConfig.EXAMPLES)
+    logger.info("SRC: %s", PathConfig.SRC)
+    logger.info("TESTS: %s", PathConfig.TESTS)
+    logger.info("TEMP: %s", PathConfig.TEMP)
+    logger.info("CONFIG: %s", PathConfig.CONFIG)

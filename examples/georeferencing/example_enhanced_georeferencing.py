@@ -17,8 +17,14 @@ This example shows:
 
 from pathlib import Path
 
+from BIMFabrikHH_core.config import get_logger, setup_logging
 from BIMFabrikHH_core.core.model_creator import init_ifc_project
-from BIMFabrikHH_core.data_models.pydantic_georeferencing import CoordinateSystem, CoordinateSystemTemplates
+from BIMFabrikHH_core.data_models.pydantic_georeferencing import (
+    CoordinateSystem,
+    CoordinateSystemTemplates,
+)
+
+logger = get_logger()
 
 
 def example_using_templates():
@@ -29,39 +35,39 @@ def example_using_templates():
     ``gauss_kruger_hamburg``) so the output reflects what ``get_template``
     actually supports.
     """
-    print("=== Example 1: Using Predefined Templates ===")
+    logger.info("=== Example 1: Using Predefined Templates ===")
 
-    print("\n1. Creating project with EPSG:25832 (ETRS89 / UTM zone 32N)...")
+    logger.info("\n1. Creating project with EPSG:25832 (ETRS89 / UTM zone 32N)...")
     builder = init_ifc_project(
         project_name="EPSG25832 Project",
         site_name="EPSG25832 Site",
         coordinate_system=CoordinateSystemTemplates.epsg_25832(),
     )
     builder.save_ifc_to_output("example_epsg25832.ifc")
-    print("OK Saved EPSG:25832 project")
+    logger.info("OK Saved EPSG:25832 project")
 
-    print("\n2. Creating project with EPSG:25833 (ETRS89 / UTM zone 33N)...")
+    logger.info("\n2. Creating project with EPSG:25833 (ETRS89 / UTM zone 33N)...")
     builder = init_ifc_project(
         project_name="EPSG25833 Project",
         site_name="EPSG25833 Site",
         coordinate_system=CoordinateSystemTemplates.epsg_25833(),
     )
     builder.save_ifc_to_output("example_epsg25833.ifc")
-    print("OK Saved EPSG:25833 project")
+    logger.info("OK Saved EPSG:25833 project")
 
-    print("\n3. Creating project with Gauss-Krueger Hamburg coordinate system...")
+    logger.info("\n3. Creating project with Gauss-Krueger Hamburg coordinate system...")
     builder = init_ifc_project(
         project_name="GaussKruger Project",
         site_name="GaussKruger Site",
         coordinate_system=CoordinateSystemTemplates.gauss_kruger_hamburg(),
     )
     builder.save_ifc_to_output("example_gauss_kruger_hamburg.ifc")
-    print("OK Saved Gauss-Krueger Hamburg project")
+    logger.info("OK Saved Gauss-Krueger Hamburg project")
 
 
 def example_custom_coordinate_system():
     """Example creating a custom coordinate system."""
-    print("\n=== Example 2: Custom Coordinate System ===")
+    logger.info("\n=== Example 2: Custom Coordinate System ===")
 
     custom_crs = CoordinateSystem(
         name="Custom Local CRS",
@@ -78,12 +84,12 @@ def example_custom_coordinate_system():
         coordinate_system=custom_crs,
     )
     builder.save_ifc_to_output("example_custom_crs.ifc")
-    print("OK Saved custom coordinate system project")
+    logger.info("OK Saved custom coordinate system project")
 
 
 def example_enhanced_georeferencing():
     """Example using the enhanced georeferencing model."""
-    print("\n=== Example 3: Enhanced Georeferencing Model ===")
+    logger.info("\n=== Example 3: Enhanced Georeferencing Model ===")
 
     builder = init_ifc_project(
         project_name="Enhanced Georef Project",
@@ -91,7 +97,7 @@ def example_enhanced_georeferencing():
         coordinate_system=CoordinateSystemTemplates.epsg_25832(),
     )
     builder.save_ifc_to_output("example_enhanced_georef.ifc")
-    print("OK Saved enhanced georeferencing project")
+    logger.info("OK Saved enhanced georeferencing project")
 
 
 def example_default_crs_fallback():
@@ -102,7 +108,7 @@ def example_default_crs_fallback():
     EPSG:25832 with the identity coordinate operation — the BIM.HH
     house default. Handy for quick prototyping in the project CRS.
     """
-    print("\n=== Example 4: Default CRS (EPSG:25832 Fallback) ===")
+    logger.info("\n=== Example 4: Default CRS (EPSG:25832 Fallback) ===")
 
     # No coordinate_system argument — init_ifc_project defaults to EPSG:25832.
     builder = init_ifc_project(
@@ -110,7 +116,7 @@ def example_default_crs_fallback():
         site_name="Default Georef Site",
     )
     builder.save_ifc_to_output("example_default_georef.ifc")
-    print("OK Saved default-CRS project (EPSG:25832 fallback)")
+    logger.info("OK Saved default-CRS project (EPSG:25832 fallback)")
 
 
 def example_coordinate_system_retrieval():
@@ -120,7 +126,7 @@ def example_coordinate_system_retrieval():
     :meth:`IfcModelMethods.edit_georeference`; reading it back is a plain
     ``model.by_type("IfcProjectedCRS")`` lookup — no extra helper required.
     """
-    print("\n=== Example 5: Coordinate System Retrieval ===")
+    logger.info("\n=== Example 5: Coordinate System Retrieval ===")
 
     builder = init_ifc_project(
         project_name="Retrieval Test Project",
@@ -130,7 +136,7 @@ def example_coordinate_system_retrieval():
 
     projected_crs_entities = builder.model.by_type("IfcProjectedCRS")
     if not projected_crs_entities:
-        print("No IfcProjectedCRS entity found in model")
+        logger.warning("No IfcProjectedCRS entity found in model")
         return
 
     projected_crs = projected_crs_entities[0]
@@ -143,21 +149,21 @@ def example_coordinate_system_retrieval():
         map_zone=projected_crs.MapZone,
     )
 
-    print("Retrieved coordinate system:")
-    print(f"  Name: {retrieved_crs.name}")
-    print(f"  Description: {retrieved_crs.description}")
-    print(f"  Geodetic Datum: {retrieved_crs.geodetic_datum}")
-    print(f"  Map Projection: {retrieved_crs.map_projection}")
-    print(f"  Map Zone: {retrieved_crs.map_zone}")
+    logger.info("Retrieved coordinate system:")
+    logger.info(f"  Name: {retrieved_crs.name}")
+    logger.info(f"  Description: {retrieved_crs.description}")
+    logger.info(f"  Geodetic Datum: {retrieved_crs.geodetic_datum}")
+    logger.info(f"  Map Projection: {retrieved_crs.map_projection}")
+    logger.info(f"  Map Zone: {retrieved_crs.map_zone}")
 
     builder.save_ifc_to_output("example_retrieval_test.ifc")
-    print("OK Saved retrieval test project")
+    logger.info("OK Saved retrieval test project")
 
 
 def main():
     """Run all examples."""
-    print("Enhanced Georeferencing System Examples")
-    print("=" * 50)
+    logger.info("Enhanced Georeferencing System Examples")
+    logger.info("=" * 50)
 
     try:
         output_dir = Path("output")
@@ -169,16 +175,17 @@ def main():
         example_default_crs_fallback()
         example_coordinate_system_retrieval()
 
-        print("\n" + "=" * 50)
-        print("All examples completed successfully!")
-        print("Check the 'output' directory for generated IFC files.")
+        logger.info("\n" + "=" * 50)
+        logger.info("All examples completed successfully!")
+        logger.info("Check the 'output' directory for generated IFC files.")
 
     except Exception as e:
-        print(f"Error running examples: {e}")
+        logger.error(f"Error running examples: {e}")
         import traceback
 
         traceback.print_exc()
 
 
 if __name__ == "__main__":
+    setup_logging()
     main()

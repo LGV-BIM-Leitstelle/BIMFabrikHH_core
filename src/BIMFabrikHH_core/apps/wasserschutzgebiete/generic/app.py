@@ -23,16 +23,25 @@ from typing import Callable, List, Optional, Tuple, Union
 from ifcfactory import BIMFactoryElement, Extrusion, Polygon, Style
 from pydantic import BaseModel
 
-from BIMFabrikHH_core.config.logging_colors import get_level_logger
+from BIMFabrikHH_core.config.logging_config import get_logger
 from BIMFabrikHH_core.core.geometry import place_basepoint
 from BIMFabrikHH_core.core.model_creator import init_ifc_project
 from BIMFabrikHH_core.core.ogc_extractor import ring_xy_to_epsg25832
 from BIMFabrikHH_core.data_models.params_tree import RequestParams
-from BIMFabrikHH_core.data_models.pydantic_georeferencing import CoordinateOperation, CoordinateSystem
-from BIMFabrikHH_core.data_models.pydantic_psets_BIMHH import Pset_Hyperlink, default_bim_hamburg_hyperlink
-from BIMFabrikHH_core.data_models.wasserschutzgebiete import WasserschutzgebietRecord, collect_wasserschutz_psets
+from BIMFabrikHH_core.data_models.pydantic_georeferencing import (
+    CoordinateOperation,
+    CoordinateSystem,
+)
+from BIMFabrikHH_core.data_models.pydantic_psets_BIMHH import (
+    Pset_Hyperlink,
+    default_bim_hamburg_hyperlink,
+)
+from BIMFabrikHH_core.data_models.wasserschutzgebiete import (
+    WasserschutzgebietRecord,
+    collect_wasserschutz_psets,
+)
 
-logger = get_level_logger("wasserschutzgebiete_generic_app")
+logger = get_logger("wasserschutzgebiete_generic_app")
 
 RgbTuple = Union[Tuple[float, float, float], Tuple[int, int, int]]
 

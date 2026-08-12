@@ -12,7 +12,7 @@ import time
 from pathlib import Path
 
 from BIMFabrikHH_core.apps.terrain.generic import TerrainGenericApp
-from BIMFabrikHH_core.config.logging_colors import get_logger
+from BIMFabrikHH_core.config.logging_config import get_logger, setup_logging
 from BIMFabrikHH_core.config.paths import PathConfig
 from BIMFabrikHH_core.data_models.params_tree import Component, Container, RequestParams
 
@@ -44,7 +44,7 @@ def main() -> None:
     )
 
     end = time.perf_counter()
-    print(f"Total process time: {end - start:.2f} seconds")
+    logger.info(f"Total process time: {end - start:.2f} seconds")
 
     if result:
         logger.info(
@@ -56,4 +56,5 @@ def main() -> None:
 
 
 if __name__ == "__main__":
+    setup_logging()
     main()
