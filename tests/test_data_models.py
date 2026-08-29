@@ -142,7 +142,7 @@ class TestCoordinateOperation:
             "eastings": 3570605.5513,
             "northings": 5937434.3470,
             "orthogonal_height": 10.5,
-            "x_axis_abscissa": 0.0,
+            "x_axis_abscissa": 1.0,
             "x_axis_ordinate": 0.0,
             "scale": 1.0,
         }
@@ -153,6 +153,21 @@ class TestCoordinateOperation:
         assert geo.northings == 5937434.3470
         assert geo.orthogonal_height == 10.5
         assert geo.scale == 1.0
+
+    def test_rejects_zero_x_axis_direction(self):
+        with pytest.raises(ValidationError, match="x-axis direction cannot be the zero vector"):
+            CoordinateOperation(x_axis_abscissa=0.0, x_axis_ordinate=0.0)
+
+    @pytest.mark.parametrize("scale", [0.0, -1.0])
+    def test_rejects_non_positive_scale(self, scale):
+        with pytest.raises(ValidationError, match="scale must be greater than zero"):
+            CoordinateOperation(scale=scale)
+
+    def test_validates_assignment(self):
+        operation = CoordinateOperation()
+
+        with pytest.raises(ValidationError, match="x-axis direction cannot be the zero vector"):
+            operation.x_axis_abscissa = 0.0
 
 
 class TestCoordinateSystem:

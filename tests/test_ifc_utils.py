@@ -72,3 +72,21 @@ class TestIfcModelMethods:
         mock_aggregate.assign_object.assert_called_once_with(
             mock_model, products=[mock_site], relating_object=mock_project
         )
+
+    @patch("BIMFabrikHH_core.core.model_creator.ifc_utils.georeference.add_georeferencing")
+    def test_create_georeference_checks_created_entities(self, mock_add_georeferencing):
+        model = MagicMock()
+        model.by_type.side_effect = lambda ifc_class: [MagicMock(name=ifc_class)]
+
+        IfcModelMethods.create_georeference(model)
+
+        mock_add_georeferencing.assert_called_once_with(model)
+        assert model.by_type.call_count == 2
+
+    @patch("BIMFabrikHH_core.core.model_creator.ifc_utils.georeference.add_georeferencing")
+    def test_create_georeference_raises_when_entities_missing(self, mock_add_georeferencing):
+        model = MagicMock()
+        model.by_type.return_value = []
+
+        with pytest.raises(RuntimeError, match="failed to create IfcProjectedCRS"):
+            IfcModelMethods.create_georeference(model)

@@ -1,6 +1,7 @@
+import math
 from typing import Literal, Optional
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
 class CoordinateOperation(BaseModel):
@@ -8,10 +9,20 @@ class CoordinateOperation(BaseModel):
     Transformation parameters for local to projected CRS.
     """
 
-    eastings: float = Field(0.0, serialization_alias="Eastings", description="False easting in meters")
-    northings: float = Field(0.0, serialization_alias="Northings", description="False northing in meters")
+    eastings: float = Field(
+        0.0,
+        serialization_alias="Eastings",
+        description="Projected easting of the local engineering origin",
+    )
+    northings: float = Field(
+        0.0,
+        serialization_alias="Northings",
+        description="Projected northing of the local engineering origin",
+    )
     orthogonal_height: float = Field(
-        0.0, serialization_alias="OrthogonalHeight", description="Orthogonal height in meters"
+        0.0,
+        serialization_alias="OrthogonalHeight",
+        description="Projected height of the local engineering origin",
     )
     x_axis_abscissa: float = Field(
         1.0, serialization_alias="XAxisAbscissa", description="X-axis abscissa (cos of rotation angle)"
@@ -20,6 +31,26 @@ class CoordinateOperation(BaseModel):
         0.0, serialization_alias="XAxisOrdinate", description="X-axis ordinate (sin of rotation angle)"
     )
     scale: float = Field(1.0, serialization_alias="Scale", description="Scale factor")
+
+    model_config = ConfigDict(validate_assignment=True, extra="forbid")
+
+    @model_validator(mode="after")
+    def validate_transformation(self) -> "CoordinateOperation":
+        values = (
+            self.eastings,
+            self.northings,
+            self.orthogonal_height,
+            self.x_axis_abscissa,
+            self.x_axis_ordinate,
+            self.scale,
+        )
+        if not all(math.isfinite(value) for value in values):
+            raise ValueError("coordinate operation values must be finite")
+        if self.x_axis_abscissa == 0.0 and self.x_axis_ordinate == 0.0:
+            raise ValueError("x-axis direction cannot be the zero vector")
+        if self.scale <= 0.0:
+            raise ValueError("scale must be greater than zero")
+        return self
 
 
 class CoordinateSystem(BaseModel):
