@@ -41,8 +41,10 @@ from .apps.city.generic.app import CityGenericApp
 from .apps.city.generic_rust import CityRustApp
 from .apps.terrain.basic.app import TerrainBasicApp
 from .apps.terrain.generic.app import TerrainGenericApp
+from .apps.terrain.generic_rust import TerrainRustApp
 from .apps.trees.basic.app import TreesBasicApp
 from .apps.trees.generic.app import TreesGenericApp
+from .apps.trees.generic_rust import TreesRustApp
 from .apps.wasserschutzgebiete.generic.app import WasserschutzgebieteGenericApp
 
 # Data model imports
@@ -69,8 +71,10 @@ __all__ = [
     "CityRustApp",
     "TerrainBasicApp",
     "TerrainGenericApp",
+    "TerrainRustApp",
     "TreesBasicApp",
     "TreesGenericApp",
+    "TreesRustApp",
     "WasserschutzgebieteGenericApp",
     # Data models
     "BoundingBoxParams",

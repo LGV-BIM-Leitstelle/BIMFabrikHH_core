@@ -38,10 +38,12 @@ from .city.parser import CityGMLParser
 # Terrain applications
 from .terrain.basic.app import TerrainBasicApp
 from .terrain.generic.app import TerrainGenericApp
+from .terrain.generic_rust import TerrainRustApp
 
 # Tree applications
 from .trees.basic.app import TreesBasicApp
 from .trees.generic.app import TreesGenericApp
+from .trees.generic_rust import TreesRustApp
 
 __all__ = [
     # Basepoint applications
@@ -54,7 +56,9 @@ __all__ = [
     # Terrain applications
     "TerrainBasicApp",
     "TerrainGenericApp",
+    "TerrainRustApp",
     # Tree applications
     "TreesBasicApp",
     "TreesGenericApp",
+    "TreesRustApp",
 ]
