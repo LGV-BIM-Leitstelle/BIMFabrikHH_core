@@ -26,6 +26,7 @@ that combines both steps.
 
 from __future__ import annotations
 
+import warnings
 from pathlib import Path
 from typing import Any, Dict, Iterable, Optional, Sequence, Tuple, Union
 
@@ -62,13 +63,11 @@ _DEFAULT_OUTPUT_NAME: str = "output_dgm.ifc"
 
 
 class TerrainBasicApp:
-    """Record-builder terrain app.
+    """Deprecated. Use :class:`TerrainGenericApp` or :class:`TerrainRustApp`.
 
-    Writes an IFC DGM from a :class:`TerrainMesh`. The mesh is generated
-    upstream by :func:`BIMFabrikHH_core.apps.terrain.processing.extract_mesh_adaptive`
-    (or any other caller-supplied producer). The convenience class method
-    :meth:`from_geotiffs` runs the default extractor and then builds the IFC
-    in one call.
+    Writes an IFC DGM from a :class:`TerrainMesh` via ``ifcopenshell.api``.
+    The mesh is generated upstream by :func:`extract_mesh_adaptive`.
+    :meth:`from_geotiffs` runs the extractor and then builds the IFC.
     """
 
     @staticmethod
@@ -104,6 +103,11 @@ class TerrainBasicApp:
         Returns:
             Path to the saved IFC file, or ``None`` on failure.
         """
+        warnings.warn(
+            "TerrainBasicApp is deprecated; use TerrainGenericApp or TerrainRustApp instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         if mesh.is_empty():
             logger.warning("No valid terrain data to convert.")
             return None

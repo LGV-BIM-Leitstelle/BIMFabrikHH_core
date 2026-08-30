@@ -1,8 +1,9 @@
 """City model applications for BIMFabrikHH.
 
-:class:`CityBasicApp` writes LoD1/LoD2 city models via
-``ifcopenshell.api`` — the reference path that also handles
-``IfcIndexedPolygonalFaceWithVoids`` for LoD2 courtyards faithfully.
+:class:`CityBasicApp` (**deprecated**, use :class:`CityGenericApp` or
+:class:`CityRustApp`) writes
+LoD1/LoD2 city models via ``ifcopenshell.api`` — the old path that also
+handles ``IfcIndexedPolygonalFaceWithVoids`` for LoD2 courtyards.
 
 :class:`CityGenericApp` writes the same geometry via the
 ``ifcfactory`` ``BIMFactoryElement`` pipeline — shorter code and

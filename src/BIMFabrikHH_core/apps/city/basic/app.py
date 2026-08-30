@@ -18,6 +18,7 @@ contract:
 from __future__ import annotations
 
 import logging
+import warnings
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
 
@@ -44,7 +45,10 @@ _DEFAULT_BASEPOINT_SIZE: float = 8.0
 
 
 class CityBasicApp:
-    """Record-builder city app: ``List[Building] -> IFC file``."""
+    """Deprecated. Use :class:`CityGenericApp` or :class:`CityRustApp`.
+
+    Record-builder city app: ``List[Building] -> IFC file`` via ``ifcopenshell.api``.
+    """
 
     @staticmethod
     def build_ifc(
@@ -87,6 +91,11 @@ class CityBasicApp:
         Returns:
             Path to the saved IFC file, or ``None`` on failure.
         """
+        warnings.warn(
+            "CityBasicApp is deprecated; use CityGenericApp or CityRustApp instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         if not buildings:
             logger.error("No buildings to export.")
             return None

@@ -24,8 +24,9 @@ Tree modeling applications for BIMFabrikHH.
 
 Two record-builder apps share the same ``TreeRecord`` input contract:
 
-- :class:`TreesBasicApp` — mesh trunk + icosphere crown via
-  ``ifcopenshell.api``.
+- :class:`TreesBasicApp` — **deprecated**; use :class:`TreesGenericApp`
+  or :class:`TreesRustApp`.
+  Mesh trunk + icosphere crown via ``ifcopenshell.api``.
 - :class:`TreesGenericApp` — ``ifcfactory.BIMFactoryElement`` pipeline.
 - :class:`TreesRustApp` — ``bimfabrikhh_core_rs.trees_to_ifc`` (same ``TreeRecord`` list).
 

@@ -2,7 +2,9 @@
 
 Two record-builder apps share a single :class:`TerrainMesh` input:
 
-* :class:`TerrainBasicApp` — writes the mesh via ``ifcopenshell.api``.
+* :class:`TerrainBasicApp` — **deprecated**; use :class:`TerrainGenericApp`
+  or :class:`TerrainRustApp`.
+  Writes the mesh via ``ifcopenshell.api``.
 * :class:`TerrainGenericApp` — writes the mesh via the ``ifcfactory``
   ``BIMFactoryElement`` pipeline (same pattern as ``TreesGenericApp``).
 * :class:`TerrainRustApp` — ``bimfabrikhh_core_rs.terrain_to_ifc`` (same
