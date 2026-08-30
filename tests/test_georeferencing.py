@@ -9,6 +9,7 @@ from BIMFabrikHH_core.core.georeferencing.crs_transform import bbox_wgs84_to_eps
 from BIMFabrikHH_core.core.georeferencing.extract_elevation import (
     extract_elevation_df_from_geotiff,
     extract_elevation_point_from_geotiff,
+    fill_nodata_from_nearest,
 )
 
 
@@ -178,3 +179,23 @@ class TestExtractElevation:
         result = extract_elevation_point_from_geotiff(1000, 5000, "test_dem.tif")
 
         assert result == 0.0
+
+
+class TestFillNodataFromNearest:
+    def test_fills_from_nearest_valid_xy(self) -> None:
+        xs = np.array([0.0, 10.0, 100.0])
+        ys = np.array([0.0, 0.0, 0.0])
+        zs = np.array([1.5, -3.4e38, 9.0])
+        out, filled = fill_nodata_from_nearest(xs, ys, zs)
+        assert filled == 1
+        assert out[0] == 1.5
+        assert out[1] == 1.5
+        assert out[2] == 9.0
+
+    def test_all_nodata_becomes_zero(self) -> None:
+        xs = np.array([0.0, 5.0])
+        ys = np.array([0.0, 0.0])
+        zs = np.array([-9999.0, -9999.0])
+        out, filled = fill_nodata_from_nearest(xs, ys, zs, nodata=-9999.0)
+        assert filled == 0
+        assert out.tolist() == [0.0, 0.0]
