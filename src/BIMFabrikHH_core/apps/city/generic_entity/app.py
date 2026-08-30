@@ -10,8 +10,8 @@ rather than one merged proxy mesh.
 Custom geometric quantities (area, perimeter, tilt) are stored in
 `Pset_BIMFabrikHH_Quantities` on each surface element via
 `BIMFabrikHH_core.apps.city.generic_entity.quantities`.
-`ifc5d` QTO is run once in batch after all elements are built; disable with
-`export_quantity_sets=False`.
+Off by default; enable with `export_quantity_sets=True`.
+`ifc5d` QTO is run once in batch after all elements are built.
 
 CityGML profile `"1.0"` matches Hamburg / Sachsen tiles; use `"2.0"` when
 the file declares CityGML 2 / GML 3.2 namespaces.
@@ -215,7 +215,7 @@ class CityGenericEntityApp:
         mapping_extra: Tuple[BoundarySurfaceMapping, ...] = (),
         on_progress: Optional[Callable[[], None]] = None,
         phase_timings: Optional[PhaseTimings] = None,
-        export_quantity_sets: bool = True,
+        export_quantity_sets: bool = False,
         include_volume_in_quantity_sets: bool = False,
     ) -> Optional[Path]:
         if not buildings:
@@ -317,7 +317,7 @@ class CityGenericEntityApp:
         on_progress: Optional[Callable[[], None]] = None,
         phase_timings: Optional[PhaseTimings] = None,
         log_boundary_kinds: bool = False,
-        export_quantity_sets: bool = True,
+        export_quantity_sets: bool = False,
         include_volume_in_quantity_sets: bool = False,
     ) -> Optional[Path]:
         typed = parse_typed_gml_files(

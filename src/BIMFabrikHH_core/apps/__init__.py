@@ -32,6 +32,7 @@ from .basepoint.basic.app import BasepointBasicApp
 # City model applications
 from .city.basic.app import CityBasicApp
 from .city.generic.app import CityGenericApp
+from .city.generic_rust import CityRustApp
 from .city.parser import CityGMLParser
 
 # Terrain applications
@@ -48,6 +49,7 @@ __all__ = [
     # City model applications
     "CityBasicApp",
     "CityGenericApp",
+    "CityRustApp",
     "CityGMLParser",
     # Terrain applications
     "TerrainBasicApp",

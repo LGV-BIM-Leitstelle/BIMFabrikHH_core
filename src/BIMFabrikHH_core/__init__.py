@@ -38,6 +38,7 @@ from BIMFabrikHH_core.core.utils.math_operations import MathTool
 # Application imports
 from .apps.city.basic.app import CityBasicApp
 from .apps.city.generic.app import CityGenericApp
+from .apps.city.generic_rust import CityRustApp
 from .apps.terrain.basic.app import TerrainBasicApp
 from .apps.terrain.generic.app import TerrainGenericApp
 from .apps.trees.basic.app import TreesBasicApp
@@ -65,6 +66,7 @@ __all__ = [
     # Applications
     "CityBasicApp",
     "CityGenericApp",
+    "CityRustApp",
     "TerrainBasicApp",
     "TerrainGenericApp",
     "TreesBasicApp",
