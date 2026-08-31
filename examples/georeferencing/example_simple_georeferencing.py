@@ -37,23 +37,24 @@ def main():
     builder.save_ifc_to_output("example_default_georef.ifc")
     logger.info("   ✓ Saved as 'example_default_georef.ifc'\n")
 
-    # Example 2: Use a custom coordinate system
-    logger.info("3. Using custom coordinate system:")
+    # Example 2: Configure the coordinate system explicitly.
+    logger.info("2. Using an explicitly configured coordinate system:")
     custom_crs = CoordinateSystem(
-        name="Custom Hamburg CRS",
+        name="EPSG:25832",
         geodetic_datum="ETRS89",
-        description="Custom coordinate system for Hamburg area",
+        description="ETRS89 / UTM zone 32N",
         vertical_datum="DHHN2016",
         map_projection="Transverse Mercator",
-        map_zone="3",
+        map_zone="32",
     )
 
-    # Create a custom coordinate operation with actual transformation values
+    # Place a local origin near the project in the projected CRS. Geometry
+    # should use coordinates relative to this origin to retain precision.
     custom_operation = CoordinateOperation(
-        eastings=3570605.5513,
+        eastings=570605.5513,
         northings=5937434.3470,
         orthogonal_height=0.0,
-        x_axis_abscissa=0.0,
+        x_axis_abscissa=1.0,
         x_axis_ordinate=0.0,
         scale=1.0,
     )
@@ -69,8 +70,8 @@ def main():
     builder.save_ifc_to_output("example_custom_georef.ifc")
     logger.info("   ✓ Saved as 'example_custom_georef.ifc'\n")
 
-    # Example 3b: Use custom coordinate system with custom operation
-    logger.info("3b. Using custom coordinate system with custom transformation:")
+    # Example 3: Reuse the same explicit CRS and transformation.
+    logger.info("3. Reusing the explicit coordinate transformation:")
     builder.reset_model()
     # Use the build_project method which handles the proper order of operations
     builder.build_project(
@@ -80,8 +81,6 @@ def main():
         site_name="Custom Transform Site",
         building_name="Custom Transform Building",
     )
-    # Note: The coordinate operation is currently handled internally with defaults
-    # For custom operations, you would need to extend the build_project method
     builder.save_ifc_to_output("example_custom_transform_georef.ifc")
     logger.info("   ✓ Saved as 'example_custom_transform_georef.ifc'\n")
 
