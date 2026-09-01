@@ -1,4 +1,7 @@
+import datetime
+
 import pytest
+from ifcfactory import ureg
 from pydantic import ValidationError
 
 # Import the data models to test
@@ -229,7 +232,7 @@ class TestPsetModellinformation:
         assert pset.artteilmodell == "Bruecke"
         assert pset.auftraggeber == "Test Client"
         assert pset.ersteller == "Test Creator"
-        assert pset.erstelldatum == "2020-04-24"
+        assert pset.erstelldatum == datetime.date(2020, 4, 24)
         assert pset.gemobjektkatalog == "Allgemein/Master_V004"
         assert pset.projektname == "Test Project"
         assert pset.projektnummer == "12345"
@@ -270,7 +273,7 @@ class TestPsetHyperlink:
         pset = Pset_Hyperlink(**pset_data)
 
         assert pset.hyperlink_001 == "www.bim.hamburg.de"
-        assert pset.hyperlink_001_Bemerkung == "Link zur Homepage von BIM.Hamburg"
+        assert pset.hyperlink_001_bemerkung == "Link zur Homepage von BIM.Hamburg"
         assert pset.pset_name == "Pset_Hyperlink"
 
 
@@ -282,24 +285,16 @@ class TestPsetObjektinformationTree:
         pset_data = {
             "baumnummer": "T001",
             "gattung_deutsch": "Eiche",
-            "baumid": 12345,
-            "art_deutsch": "Stieleiche",
-            "sorte_deutsch": "Quercus robur",
             "pflanzjahr": 1990,
-            "kronendurchmesser": 15.5,
-            "stammumfang": 2.3,
+            "kronendurchmesser": ureg.Quantity(15.5, "meter"),
         }
 
         pset = Pset_Objektinformation_Tree(**pset_data)
 
         assert pset.baumnummer == "T001"
         assert pset.gattung_deutsch == "Eiche"
-        assert pset.baumid == 12345
-        assert pset.art_deutsch == "Stieleiche"
-        assert pset.sorte_deutsch == "Quercus robur"
         assert pset.pflanzjahr == 1990
-        assert pset.kronendurchmesser == 15.5
-        assert pset.stammumfang == 2.3
+        assert pset.kronendurchmesser.magnitude == 15.5
         assert pset.pset_name == "Pset_Objektinformation"
 
 
