@@ -5,6 +5,8 @@
 *.ifc
 *.log
 *.dwg
+logs/*
+!logs/.gitkeep
 .env
 poetry.lock
 
