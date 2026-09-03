@@ -16,7 +16,7 @@ from BIMFabrikHH_core.core.georeferencing.extract_elevation import (
 class TestCrsTransform:
     """Test cases for CRS transformation functions."""
 
-    @patch("BIMFabrikHH.core.georeferencing.crs_transform.Transformer")
+    @patch("BIMFabrikHH_core.core.georeferencing.crs_transform.Transformer")
     def test_bbox_wgs84_to_epsg25832_valid_input(self, mock_transformer):
         """Test bbox transformation with valid input."""
         # Mock the transformer
@@ -44,7 +44,7 @@ class TestCrsTransform:
         assert result[2] == 2000.0  # maxx
         assert result[3] == 6000.0  # maxy
 
-    @patch("BIMFabrikHH.core.georeferencing.crs_transform.Transformer")
+    @patch("BIMFabrikHH_core.core.georeferencing.crs_transform.Transformer")
     def test_bbox_wgs84_to_epsg25832_swapped_coordinates(self, mock_transformer):
         """Test bbox transformation with swapped min/max coordinates."""
         # Mock the transformer
@@ -66,7 +66,7 @@ class TestCrsTransform:
         assert result[2] == 2000.0  # maxx
         assert result[3] == 6000.0  # maxy
 
-    @patch("BIMFabrikHH.core.georeferencing.crs_transform.Transformer")
+    @patch("BIMFabrikHH_core.core.georeferencing.crs_transform.Transformer")
     def test_bbox_wgs84_to_epsg25832_transformation_error(self, mock_transformer):
         """Test bbox transformation with transformation error."""
         # Mock the transformer to raise an error
@@ -83,9 +83,9 @@ class TestCrsTransform:
 class TestExtractElevation:
     """Test cases for elevation extraction functions."""
 
-    @patch("BIMFabrikHH.core.georeferencing.extract_elevation.sample_gen")
-    @patch("BIMFabrikHH.core.georeferencing.extract_elevation.rasterio")
-    @patch("BIMFabrikHH.core.georeferencing.extract_elevation.Path")
+    @patch("BIMFabrikHH_core.core.georeferencing.extract_elevation.sample_gen")
+    @patch("BIMFabrikHH_core.core.georeferencing.extract_elevation.rasterio")
+    @patch("BIMFabrikHH_core.core.georeferencing.extract_elevation.Path")
     def test_extract_elevation_df_from_geotiff_valid_input(self, mock_path, mock_rasterio, mock_sample_gen):
         """Test elevation extraction from DataFrame with valid input."""
         mock_path.return_value.exists.return_value = True
@@ -103,7 +103,7 @@ class TestExtractElevation:
         assert len(result) == 3
         assert result["Elevation"].tolist() == [100.5, 101.2, 102.0]
 
-    @patch("BIMFabrikHH.core.georeferencing.extract_elevation.Path")
+    @patch("BIMFabrikHH_core.core.georeferencing.extract_elevation.Path")
     def test_extract_elevation_df_from_geotiff_file_not_found(self, mock_path):
         """Test elevation extraction with non-existent file."""
         mock_path.return_value.exists.return_value = False
@@ -112,8 +112,8 @@ class TestExtractElevation:
         with pytest.raises(FileNotFoundError, match="GeoTIFF file not found: nonexistent.tif"):
             extract_elevation_df_from_geotiff(df, "nonexistent.tif", "easting", "northing")
 
-    @patch("BIMFabrikHH.core.georeferencing.extract_elevation.rasterio")
-    @patch("BIMFabrikHH.core.georeferencing.extract_elevation.Path")
+    @patch("BIMFabrikHH_core.core.georeferencing.extract_elevation.rasterio")
+    @patch("BIMFabrikHH_core.core.georeferencing.extract_elevation.Path")
     def test_extract_elevation_point_from_geotiff_single_point(self, mock_path, mock_rasterio):
         """Test elevation extraction for single point."""
         mock_path.return_value.exists.return_value = True
@@ -130,8 +130,8 @@ class TestExtractElevation:
         assert isinstance(result, float)
         assert result == 150.75
 
-    @patch("BIMFabrikHH.core.georeferencing.extract_elevation.rasterio")
-    @patch("BIMFabrikHH.core.georeferencing.extract_elevation.Path")
+    @patch("BIMFabrikHH_core.core.georeferencing.extract_elevation.rasterio")
+    @patch("BIMFabrikHH_core.core.georeferencing.extract_elevation.Path")
     def test_extract_elevation_point_from_geotiff_multiple_points(self, mock_path, mock_rasterio):
         """Test elevation extraction for multiple points."""
         mock_path.return_value.exists.return_value = True
@@ -148,8 +148,8 @@ class TestExtractElevation:
         assert isinstance(result, list)
         assert result == [100.0, 200.0, 300.0]
 
-    @patch("BIMFabrikHH.core.georeferencing.extract_elevation.rasterio")
-    @patch("BIMFabrikHH.core.georeferencing.extract_elevation.Path")
+    @patch("BIMFabrikHH_core.core.georeferencing.extract_elevation.rasterio")
+    @patch("BIMFabrikHH_core.core.georeferencing.extract_elevation.Path")
     def test_extract_elevation_point_from_geotiff_out_of_bounds(self, mock_path, mock_rasterio):
         """Test elevation extraction for out-of-bounds coordinates."""
         mock_path.return_value.exists.return_value = True
@@ -163,8 +163,8 @@ class TestExtractElevation:
 
         assert result == 0.0
 
-    @patch("BIMFabrikHH.core.georeferencing.extract_elevation.rasterio")
-    @patch("BIMFabrikHH.core.georeferencing.extract_elevation.Path")
+    @patch("BIMFabrikHH_core.core.georeferencing.extract_elevation.rasterio")
+    @patch("BIMFabrikHH_core.core.georeferencing.extract_elevation.Path")
     def test_extract_elevation_point_from_geotiff_nodata_value(self, mock_path, mock_rasterio):
         """Test elevation extraction with nodata values."""
         mock_path.return_value.exists.return_value = True
