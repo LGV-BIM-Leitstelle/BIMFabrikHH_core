@@ -12,7 +12,13 @@ _WIN_DRIVE = re.compile(r"^([a-zA-Z]):(?:[\\/](.*))?$")
 
 
 def existing_local_dir(raw: str) -> Path | None:
-    """First existing directory: Windows ``C:\\…``, then WSL ``/mnt/c/…``."""
+    """First existing directory: Linux ``/mnt/c/…``, then Windows ``C:\\…``.
+
+    Deployment targets Linux, so the ``/mnt`` spelling is tried first. It is
+    also the safer of the two: to Linux a ``C:\\…`` string is not an absolute
+    path but a single relative filename, which would resolve against the
+    working directory if something ever created a directory by that name.
+    """
     text = raw.strip()
     if not text:
         return None
@@ -22,12 +28,12 @@ def existing_local_dir(raw: str) -> Path | None:
     win = _WIN_DRIVE.match(posix)
     if mnt:
         rest = (mnt.group(2) or "").replace("/", "\\")
-        candidates.append(Path(f"{mnt.group(1).upper()}:\\" + rest))
         candidates.append(Path(posix))
+        candidates.append(Path(f"{mnt.group(1).upper()}:\\" + rest))
     elif win:
         rest = win.group(2) or ""
-        candidates.append(Path(f"{win.group(1).upper()}:\\" + rest.replace("/", "\\")))
         candidates.append(Path(f"/mnt/{win.group(1).lower()}/{rest}"))
+        candidates.append(Path(f"{win.group(1).upper()}:\\" + rest.replace("/", "\\")))
     else:
         candidates.append(Path(text).expanduser())
     seen: list[Path] = []
@@ -38,6 +44,18 @@ def existing_local_dir(raw: str) -> Path | None:
         if candidate.is_dir():
             return candidate
     return None
+
+
+def local_dir_or_raw(raw: str) -> str:
+    """``raw`` as a directory this OS can open, else ``raw`` unchanged.
+
+    Dataset roots are configured as Windows paths, so a Linux worker has to use
+    the ``/mnt/…`` form before it can read anything beneath them. Remote
+    ``http(s)://`` roots have no local directory and come back untouched, so
+    callers can still fetch from them.
+    """
+    found = existing_local_dir(raw)
+    return str(found) if found is not None else raw
 
 
 class PathConfig:
