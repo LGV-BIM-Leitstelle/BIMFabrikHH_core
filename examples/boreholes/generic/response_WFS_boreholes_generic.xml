@@ -1,0 +1,2645 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<wfs:FeatureCollection xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.opengis.net/wfs/2.0 http://schemas.opengis.net/wfs/2.0/wfs.xsd http://www.opengis.net/gml/3.2 http://schemas.opengis.net/gml/3.2.1/gml.xsd http://www.infogeo.de/boreholeml/3.0 https://geodienste.hamburg.de/HH_WFS_BoreholeML3?SERVICE=WFS&amp;VERSION=2.0.0&amp;REQUEST=DescribeFeatureType&amp;OUTPUTFORMAT=text%2Fxml%3B+subtype%3Dgml%2F3.2.1&amp;TYPENAME=bml:Borehole&amp;NAMESPACES=xmlns(bml,http%3A%2F%2Fwww.infogeo.de%2Fboreholeml%2F3.0)" xmlns:wfs="http://www.opengis.net/wfs/2.0" timeStamp="2026-09-03T06:47:39Z" xmlns:gml="http://www.opengis.net/gml/3.2" numberMatched="unknown" numberReturned="0">
+  <!--NOTE: numberReturned attribute should be 'unknown' as well, but this would not validate against the current version of the WFS 2.0 schema (change upcoming). See change request (CR 144): https://portal.opengeospatial.org/files?artifact_id=43925.-->
+  <wfs:member>
+    <bml:Borehole xmlns:bml="http://www.infogeo.de/boreholeml/3.0" gml:id="BDHH_6428D107">
+      <bml:location>
+        <!--Inlined geometry 'BDHH_6428D107_BML_LOCATION'-->
+        <gml:Point gml:id="BDHH_6428D107_BML_LOCATION" srsName="urn:ogc:def:crs:EPSG::5555">
+          <gml:pos>565490.682 5926898.503 1.500</gml:pos>
+        </gml:Point>
+      </bml:location>
+      <bml:boreholePath>
+        <!--Inlined geometry 'BDHH_6428D107_BML_BOREHOLEPATH'-->
+        <gml:LineString gml:id="BDHH_6428D107_BML_BOREHOLEPATH" srsName="urn:ogc:def:crs:EPSG::5555">
+          <gml:posList>565490.680 5926898.500 1.500 565490.680 5926898.500 -8.500</gml:posList>
+        </gml:LineString>
+      </bml:boreholePath>
+      <bml:id>BDHH_6428D107</bml:id>
+      <bml:language>
+        <gmd:LanguageCode xmlns:gmd="http://www.isotc211.org/2005/gmd" codeListValue="deu" codeList="http://www.infogeo.de/boreholeml/3.0/codelists/LanguageCode.xml">deu</gmd:LanguageCode>
+      </bml:language>
+      <bml:shortName>
+        <gmd:LocalisedCharacterString xmlns:gmd="http://www.isotc211.org/2005/gmd" locale="http://www.infogeo.de/boreholeml/3.0/codelists/DE.xml">D107</gmd:LocalisedCharacterString>
+      </bml:shortName>
+      <bml:fullName>
+        <gmd:LocalisedCharacterString xmlns:gmd="http://www.isotc211.org/2005/gmd" locale="http://www.infogeo.de/boreholeml/3.0/codelists/DE.xml">B.IX/175</gmd:LocalisedCharacterString>
+      </bml:fullName>
+      <bml:databaseSource codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/DatabaseSourceList.xml">BDHH</bml:databaseSource>
+      <bml:totalLength uom="m">10.0</bml:totalLength>
+      <bml:exportDate>2015-07-10</bml:exportDate>
+      <bml:boreholeStatus codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/BoreholeStatusList.xml">ka</bml:boreholeStatus>
+      <bml:groundwaterEncountered xsi:nil="true"/>
+      <bml:boreholeSegment>
+        <bml:BoreholeSegment>
+          <bml:from uom="m">0.0</bml:from>
+          <bml:to uom="m">10.0</bml:to>
+          <bml:azimuth uom="deg">0.0</bml:azimuth>
+          <bml:inclination uom="deg">0.0</bml:inclination>
+          <bml:segmentDataQuality codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/SegmentDataQualityList.xml">A</bml:segmentDataQuality>
+        </bml:BoreholeSegment>
+      </bml:boreholeSegment>
+      <bml:codingStandard codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/CodingStandardList.xml">SEP3</bml:codingStandard>
+      <bml:organisation>
+        <bml:BoreholeProvider>
+          <gmd:individualName xmlns:gmd="http://www.isotc211.org/2005/gmd">
+            <gco:CharacterString xmlns:gco="http://www.isotc211.org/2005/gco">Maike Langer</gco:CharacterString>
+          </gmd:individualName>
+          <gmd:organisationName xmlns:gmd="http://www.isotc211.org/2005/gmd">
+            <gco:CharacterString xmlns:gco="http://www.isotc211.org/2005/gco">GLA-HH: Geologisches Landesamt Hamburg</gco:CharacterString>
+          </gmd:organisationName>
+          <gmd:contactInfo xmlns:gmd="http://www.isotc211.org/2005/gmd">
+            <gmd:CI_Contact>
+              <gmd:phone>
+                <gmd:CI_Telephone>
+                  <gmd:voice>
+                    <gco:CharacterString xmlns:gco="http://www.isotc211.org/2005/gco">+49 (0) 40-42840-5002</gco:CharacterString>
+                  </gmd:voice>
+                  <gmd:facsimile>
+                    <gco:CharacterString xmlns:gco="http://www.isotc211.org/2005/gco">+49 (0) 40 4279-40323</gco:CharacterString>
+                  </gmd:facsimile>
+                </gmd:CI_Telephone>
+              </gmd:phone>
+              <gmd:address>
+                <gmd:CI_Address>
+                  <gmd:deliveryPoint>
+                    <gco:CharacterString xmlns:gco="http://www.isotc211.org/2005/gco">Neuenfelder Straße 19</gco:CharacterString>
+                  </gmd:deliveryPoint>
+                  <gmd:city>
+                    <gco:CharacterString xmlns:gco="http://www.isotc211.org/2005/gco">Hamburg</gco:CharacterString>
+                  </gmd:city>
+                  <gmd:administrativeArea>
+                    <gco:CharacterString xmlns:gco="http://www.isotc211.org/2005/gco">Hamburg</gco:CharacterString>
+                  </gmd:administrativeArea>
+                  <gmd:postalCode>
+                    <gco:CharacterString xmlns:gco="http://www.isotc211.org/2005/gco">21109</gco:CharacterString>
+                  </gmd:postalCode>
+                  <gmd:country>
+                    <gco:CharacterString xmlns:gco="http://www.isotc211.org/2005/gco">Deutschland</gco:CharacterString>
+                  </gmd:country>
+                  <gmd:electronicMailAddress>
+                    <gco:CharacterString xmlns:gco="http://www.isotc211.org/2005/gco">maike.langer@bue.hamburg.de</gco:CharacterString>
+                  </gmd:electronicMailAddress>
+                </gmd:CI_Address>
+              </gmd:address>
+            </gmd:CI_Contact>
+          </gmd:contactInfo>
+          <gmd:role xmlns:gmd="http://www.isotc211.org/2005/gmd">
+            <gmd:CI_RoleCode codeListValue="resourceProvider" codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode">resourceProvider</gmd:CI_RoleCode>
+          </gmd:role>
+        </bml:BoreholeProvider>
+      </bml:organisation>
+      <bml:groundwater>
+        <bml:Groundwater>
+          <bml:entryDepth uom="m">1.1</bml:entryDepth>
+          <bml:balancedLevel uom="m"/>
+          <bml:endLevel uom="m"/>
+        </bml:Groundwater>
+      </bml:groundwater>
+      <bml:groundwaterObservation>
+        <bml:GroundwaterObservation>
+          <bml:drillingDepth uom="m">10.0</bml:drillingDepth>
+          <bml:groundwaterObservationType codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/GroundwaterObservationTypeList.xml">N</bml:groundwaterObservationType>
+          <bml:dateTime xsi:nil="true"/>
+          <bml:groundwaterLevel uom="m"/>
+          <bml:overflow xsi:nil="true"/>
+        </bml:GroundwaterObservation>
+      </bml:groundwaterObservation>
+      <bml:locationName>
+        <gn:GeographicalName xmlns:gn="urn:x-inspire:specification:gmlas:GeographicalNames:3.0">
+          <gn:language>deu</gn:language>
+          <gn:nativeness>endonym</gn:nativeness>
+          <gn:nameStatus>official</gn:nameStatus>
+          <gn:sourceOfName>Verwaltungsgebiete 1 : 250 000 (VG250), Bundesamt für Kartographie</gn:sourceOfName>
+          <gn:pronunciation xsi:nil="true"/>
+          <gn:spelling>
+            <gn:SpellingOfName>
+              <gn:text>Hamburg</gn:text>
+              <gn:script>latin</gn:script>
+            </gn:SpellingOfName>
+          </gn:spelling>
+          <gn:grammaticalGender xsi:nil="true"/>
+          <gn:grammaticalNumber xsi:nil="true"/>
+        </gn:GeographicalName>
+      </bml:locationName>
+      <bml:drillingMethod codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/DrillingMethodList.xml">UN</bml:drillingMethod>
+      <bml:drillingDate>1963-08-26</bml:drillingDate>
+      <bml:lastHorizon codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/LastHorizonList.xml">nb</bml:lastHorizon>
+      <bml:drillingPurpose codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/DrillingPurposeList.xml">UN</bml:drillingPurpose>
+      <bml:owner>Strom-u.Hafenbau</bml:owner>
+      <bml:project>Deichbau-Whbg.-Sued</bml:project>
+      <bml:layerDataLegalAvail codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/LegalAvailabilityList.xml">KE</bml:layerDataLegalAvail>
+      <bml:layerDataTechAvail codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/TechnicalAvailabilityList.xml">J</bml:layerDataTechAvail>
+      <bml:installationLegalAvail codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/LegalAvailabilityList.xml"/>
+      <bml:installationTechAvail codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/TechnicalAvailabilityList.xml">N</bml:installationTechAvail>
+      <bml:groundwaterLevelDataLegalAvail codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/LegalAvailabilityList.xml"/>
+      <bml:groundwaterLevelDataTechAvail codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/TechnicalAvailabilityList.xml">N</bml:groundwaterLevelDataTechAvail>
+      <bml:boreholeMeasurementLegalAvail codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/LegalAvailabilityList.xml"/>
+      <bml:boreholeMeasurementTechAvail codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/TechnicalAvailabilityList.xml">N</bml:boreholeMeasurementTechAvail>
+      <bml:archiveDataLegalAvail codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/LegalAvailabilityList.xml"/>
+      <bml:archiveDataTechAvail codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/TechnicalAvailabilityList.xml"/>
+      <bml:scansLegalAvail codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/LegalAvailabilityList.xml"/>
+      <bml:scansTechAvail codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/TechnicalAvailabilityList.xml"/>
+      <bml:samplesLegalAvail codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/LegalAvailabilityList.xml"/>
+      <bml:samplesTechAvail codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/TechnicalAvailabilityList.xml">N</bml:samplesTechAvail>
+      <bml:labDataLegalAvail codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/LegalAvailabilityList.xml"/>
+      <bml:labDataTechAvail codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/TechnicalAvailabilityList.xml"/>
+      <bml:origin>
+        <bml:Origin>
+          <bml:originalLocation srsName="31467" srsDimension="2">3565588.000000 5928831.000000</bml:originalLocation>
+          <bml:locationMethod codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/LocationMethodList.xml">D</bml:locationMethod>
+          <bml:elevation srsName="5783" srsDimension="1">1.5</bml:elevation>
+          <bml:levelMethod codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/LevelMethodList.xml">F</bml:levelMethod>
+        </bml:Origin>
+      </bml:origin>
+      <bml:intervalSeries>
+        <bml:IntervalSeries>
+          <bml:description>
+            <gmd:LocalisedCharacterString xmlns:gmd="http://www.isotc211.org/2005/gmd" locale="http://www.infogeo.de/boreholeml/3.0/codelists/DE.xml">Ersterfassung</gmd:LocalisedCharacterString>
+          </bml:description>
+          <bml:version>0</bml:version>
+          <bml:layer>
+            <bml:Interval>
+              <bml:from uom="m">0.0</bml:from>
+              <bml:to uom="m">0.8</bml:to>
+              <bml:rockCode>U(t)</bml:rockCode>
+              <bml:rockNameText>
+                <gmd:LocalisedCharacterString xmlns:gmd="http://www.isotc211.org/2005/gmd" locale="http://www.infogeo.de/boreholeml/3.0/codelists/DE.xml">Schluff (tonig)</gmd:LocalisedCharacterString>
+              </bml:rockNameText>
+              <bml:intervalType codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/IntervalTypeList.xml"/>
+              <bml:genesis codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/GenesisList.xml"/>
+              <bml:geoGenesis codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/GeoGenesisList.xml">lm</bml:geoGenesis>
+              <bml:carbonateContent codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/CarbonateContentList.xml"/>
+              <bml:waterContent codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/WaterContentList.xml"/>
+              <bml:consistency codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/ConsistencyList.xml"/>
+              <bml:compactness codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/CompactnessList.xml"/>
+              <bml:descriptiveText>
+                <gmd:LocalisedCharacterString xmlns:gmd="http://www.isotc211.org/2005/gmd" locale="http://www.infogeo.de/boreholeml/3.0/codelists/DE.xml"/>
+              </bml:descriptiveText>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml">U</bml:rockName>
+                  <bml:percentage>72.73</bml:percentage>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml">h4</bml:rockColor>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml">T</bml:rockName>
+                  <bml:percentage>27.27</bml:percentage>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml">h4</bml:rockColor>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:stratigraphy>
+                <bml:Stratigraphy>
+                  <bml:chronoStratigraphy codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/ChronoStratigraphyList.xml">Q2</bml:chronoStratigraphy>
+                  <bml:lithoStratigraphy>
+                    <gmd:LocalisedCharacterString xmlns:gmd="http://www.isotc211.org/2005/gmd">Holozän</gmd:LocalisedCharacterString>
+                  </bml:lithoStratigraphy>
+                </bml:Stratigraphy>
+              </bml:stratigraphy>
+            </bml:Interval>
+          </bml:layer>
+          <bml:layer>
+            <bml:Interval>
+              <bml:from uom="m">0.8</bml:from>
+              <bml:to uom="m">2.3</bml:to>
+              <bml:rockCode>fS</bml:rockCode>
+              <bml:rockNameText>
+                <gmd:LocalisedCharacterString xmlns:gmd="http://www.isotc211.org/2005/gmd" locale="http://www.infogeo.de/boreholeml/3.0/codelists/DE.xml">Feinsand</gmd:LocalisedCharacterString>
+              </bml:rockNameText>
+              <bml:intervalType codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/IntervalTypeList.xml"/>
+              <bml:genesis codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/GenesisList.xml">fl</bml:genesis>
+              <bml:geoGenesis codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/GeoGenesisList.xml"/>
+              <bml:carbonateContent codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/CarbonateContentList.xml"/>
+              <bml:waterContent codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/WaterContentList.xml"/>
+              <bml:consistency codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/ConsistencyList.xml"/>
+              <bml:compactness codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/CompactnessList.xml"/>
+              <bml:descriptiveText>
+                <gmd:LocalisedCharacterString xmlns:gmd="http://www.isotc211.org/2005/gmd" locale="http://www.infogeo.de/boreholeml/3.0/codelists/DE.xml"/>
+              </bml:descriptiveText>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml">fS</bml:rockName>
+                  <bml:percentage>100.0</bml:percentage>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml">h8</bml:rockColor>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:stratigraphy>
+                <bml:Stratigraphy>
+                  <bml:chronoStratigraphy codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/ChronoStratigraphyList.xml">Q2</bml:chronoStratigraphy>
+                  <bml:lithoStratigraphy>
+                    <gmd:LocalisedCharacterString xmlns:gmd="http://www.isotc211.org/2005/gmd">Holozän</gmd:LocalisedCharacterString>
+                  </bml:lithoStratigraphy>
+                </bml:Stratigraphy>
+              </bml:stratigraphy>
+            </bml:Interval>
+          </bml:layer>
+          <bml:layer>
+            <bml:Interval>
+              <bml:from uom="m">2.3</bml:from>
+              <bml:to uom="m">3.7</bml:to>
+              <bml:rockCode>fS</bml:rockCode>
+              <bml:rockNameText>
+                <gmd:LocalisedCharacterString xmlns:gmd="http://www.isotc211.org/2005/gmd" locale="http://www.infogeo.de/boreholeml/3.0/codelists/DE.xml">Feinsand</gmd:LocalisedCharacterString>
+              </bml:rockNameText>
+              <bml:intervalType codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/IntervalTypeList.xml"/>
+              <bml:genesis codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/GenesisList.xml">fl</bml:genesis>
+              <bml:geoGenesis codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/GeoGenesisList.xml"/>
+              <bml:carbonateContent codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/CarbonateContentList.xml"/>
+              <bml:waterContent codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/WaterContentList.xml"/>
+              <bml:consistency codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/ConsistencyList.xml"/>
+              <bml:compactness codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/CompactnessList.xml"/>
+              <bml:descriptiveText>
+                <gmd:LocalisedCharacterString xmlns:gmd="http://www.isotc211.org/2005/gmd" locale="http://www.infogeo.de/boreholeml/3.0/codelists/DE.xml"/>
+              </bml:descriptiveText>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml">fS</bml:rockName>
+                  <bml:percentage>100.0</bml:percentage>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml">h8</bml:rockColor>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:stratigraphy>
+                <bml:Stratigraphy>
+                  <bml:chronoStratigraphy codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/ChronoStratigraphyList.xml">Q2</bml:chronoStratigraphy>
+                  <bml:lithoStratigraphy>
+                    <gmd:LocalisedCharacterString xmlns:gmd="http://www.isotc211.org/2005/gmd">Holozän</gmd:LocalisedCharacterString>
+                  </bml:lithoStratigraphy>
+                </bml:Stratigraphy>
+              </bml:stratigraphy>
+            </bml:Interval>
+          </bml:layer>
+          <bml:layer>
+            <bml:Interval>
+              <bml:from uom="m">3.7</bml:from>
+              <bml:to uom="m">10.0</bml:to>
+              <bml:rockCode>mS</bml:rockCode>
+              <bml:rockNameText>
+                <gmd:LocalisedCharacterString xmlns:gmd="http://www.isotc211.org/2005/gmd" locale="http://www.infogeo.de/boreholeml/3.0/codelists/DE.xml">Mittelsand</gmd:LocalisedCharacterString>
+              </bml:rockNameText>
+              <bml:intervalType codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/IntervalTypeList.xml"/>
+              <bml:genesis codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/GenesisList.xml">fl</bml:genesis>
+              <bml:geoGenesis codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/GeoGenesisList.xml"/>
+              <bml:carbonateContent codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/CarbonateContentList.xml"/>
+              <bml:waterContent codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/WaterContentList.xml"/>
+              <bml:consistency codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/ConsistencyList.xml"/>
+              <bml:compactness codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/CompactnessList.xml"/>
+              <bml:descriptiveText>
+                <gmd:LocalisedCharacterString xmlns:gmd="http://www.isotc211.org/2005/gmd" locale="http://www.infogeo.de/boreholeml/3.0/codelists/DE.xml"/>
+              </bml:descriptiveText>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml">mS</bml:rockName>
+                  <bml:percentage>100.0</bml:percentage>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml">h8</bml:rockColor>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:stratigraphy>
+                <bml:Stratigraphy>
+                  <bml:chronoStratigraphy codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/ChronoStratigraphyList.xml">Q2</bml:chronoStratigraphy>
+                  <bml:lithoStratigraphy>
+                    <gmd:LocalisedCharacterString xmlns:gmd="http://www.isotc211.org/2005/gmd">Holozän</gmd:LocalisedCharacterString>
+                  </bml:lithoStratigraphy>
+                </bml:Stratigraphy>
+              </bml:stratigraphy>
+            </bml:Interval>
+          </bml:layer>
+        </bml:IntervalSeries>
+      </bml:intervalSeries>
+      <bml:drillingProcess xsi:nil="true"/>
+      <bml:boreholeFilling>
+        <bml:BoreholeFilling>
+          <bml:from uom="m"/>
+          <bml:to uom="m"/>
+          <bml:boreholeFillingMaterial codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/FillingMaterialList.xml"/>
+        </bml:BoreholeFilling>
+      </bml:boreholeFilling>
+      <bml:installationDetail xsi:nil="true"/>
+      <bml:investigation>
+        <bml:Investigation>
+          <bml:from uom="m"/>
+          <bml:to uom="m"/>
+          <bml:investigationType codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/InvestigationTypeList.xml"/>
+        </bml:Investigation>
+      </bml:investigation>
+      <bml:sampling>
+        <bml:Sampling>
+          <bml:from uom="m"/>
+          <bml:to uom="m"/>
+          <bml:sampleType codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/SampleTypeList.xml"/>
+          <bml:samplingPurpose codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/SamplingPurposeList.xml"/>
+        </bml:Sampling>
+      </bml:sampling>
+    </bml:Borehole>
+  </wfs:member>
+  <wfs:member>
+    <bml:Borehole xmlns:bml="http://www.infogeo.de/boreholeml/3.0" gml:id="BDHH_6428D507">
+      <bml:location>
+        <!--Inlined geometry 'BDHH_6428D507_BML_LOCATION'-->
+        <gml:Point gml:id="BDHH_6428D507_BML_LOCATION" srsName="urn:ogc:def:crs:EPSG::5555">
+          <gml:pos>565458.694 5926873.514 5.550</gml:pos>
+        </gml:Point>
+      </bml:location>
+      <bml:boreholePath>
+        <!--Inlined geometry 'BDHH_6428D507_BML_BOREHOLEPATH'-->
+        <gml:LineString gml:id="BDHH_6428D507_BML_BOREHOLEPATH" srsName="urn:ogc:def:crs:EPSG::5555">
+          <gml:posList>565458.690 5926873.510 5.550 565458.690 5926873.510 -12.750</gml:posList>
+        </gml:LineString>
+      </bml:boreholePath>
+      <bml:id>BDHH_6428D507</bml:id>
+      <bml:language>
+        <gmd:LanguageCode xmlns:gmd="http://www.isotc211.org/2005/gmd" codeListValue="deu" codeList="http://www.infogeo.de/boreholeml/3.0/codelists/LanguageCode.xml">deu</gmd:LanguageCode>
+      </bml:language>
+      <bml:shortName>
+        <gmd:LocalisedCharacterString xmlns:gmd="http://www.isotc211.org/2005/gmd" locale="http://www.infogeo.de/boreholeml/3.0/codelists/DE.xml">D507</gmd:LocalisedCharacterString>
+      </bml:shortName>
+      <bml:fullName>
+        <gmd:LocalisedCharacterString xmlns:gmd="http://www.isotc211.org/2005/gmd" locale="http://www.infogeo.de/boreholeml/3.0/codelists/DE.xml">B.1</gmd:LocalisedCharacterString>
+      </bml:fullName>
+      <bml:databaseSource codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/DatabaseSourceList.xml">BDHH</bml:databaseSource>
+      <bml:totalLength uom="m">18.3</bml:totalLength>
+      <bml:exportDate>2015-10-15</bml:exportDate>
+      <bml:boreholeStatus codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/BoreholeStatusList.xml">ka</bml:boreholeStatus>
+      <bml:groundwaterEncountered xsi:nil="true"/>
+      <bml:boreholeSegment>
+        <bml:BoreholeSegment>
+          <bml:from uom="m">0.0</bml:from>
+          <bml:to uom="m">18.3</bml:to>
+          <bml:azimuth uom="deg">0.0</bml:azimuth>
+          <bml:inclination uom="deg">0.0</bml:inclination>
+          <bml:segmentDataQuality codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/SegmentDataQualityList.xml">A</bml:segmentDataQuality>
+        </bml:BoreholeSegment>
+      </bml:boreholeSegment>
+      <bml:codingStandard codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/CodingStandardList.xml">SEP3</bml:codingStandard>
+      <bml:organisation>
+        <bml:BoreholeProvider>
+          <gmd:individualName xmlns:gmd="http://www.isotc211.org/2005/gmd">
+            <gco:CharacterString xmlns:gco="http://www.isotc211.org/2005/gco">Maike Langer</gco:CharacterString>
+          </gmd:individualName>
+          <gmd:organisationName xmlns:gmd="http://www.isotc211.org/2005/gmd">
+            <gco:CharacterString xmlns:gco="http://www.isotc211.org/2005/gco">GLA-HH: Geologisches Landesamt Hamburg</gco:CharacterString>
+          </gmd:organisationName>
+          <gmd:contactInfo xmlns:gmd="http://www.isotc211.org/2005/gmd">
+            <gmd:CI_Contact>
+              <gmd:phone>
+                <gmd:CI_Telephone>
+                  <gmd:voice>
+                    <gco:CharacterString xmlns:gco="http://www.isotc211.org/2005/gco">+49 (0) 40-42840-5002</gco:CharacterString>
+                  </gmd:voice>
+                  <gmd:facsimile>
+                    <gco:CharacterString xmlns:gco="http://www.isotc211.org/2005/gco">+49 (0) 40 4279-40323</gco:CharacterString>
+                  </gmd:facsimile>
+                </gmd:CI_Telephone>
+              </gmd:phone>
+              <gmd:address>
+                <gmd:CI_Address>
+                  <gmd:deliveryPoint>
+                    <gco:CharacterString xmlns:gco="http://www.isotc211.org/2005/gco">Neuenfelder Straße 19</gco:CharacterString>
+                  </gmd:deliveryPoint>
+                  <gmd:city>
+                    <gco:CharacterString xmlns:gco="http://www.isotc211.org/2005/gco">Hamburg</gco:CharacterString>
+                  </gmd:city>
+                  <gmd:administrativeArea>
+                    <gco:CharacterString xmlns:gco="http://www.isotc211.org/2005/gco">Hamburg</gco:CharacterString>
+                  </gmd:administrativeArea>
+                  <gmd:postalCode>
+                    <gco:CharacterString xmlns:gco="http://www.isotc211.org/2005/gco">21109</gco:CharacterString>
+                  </gmd:postalCode>
+                  <gmd:country>
+                    <gco:CharacterString xmlns:gco="http://www.isotc211.org/2005/gco">Deutschland</gco:CharacterString>
+                  </gmd:country>
+                  <gmd:electronicMailAddress>
+                    <gco:CharacterString xmlns:gco="http://www.isotc211.org/2005/gco">maike.langer@bue.hamburg.de</gco:CharacterString>
+                  </gmd:electronicMailAddress>
+                </gmd:CI_Address>
+              </gmd:address>
+            </gmd:CI_Contact>
+          </gmd:contactInfo>
+          <gmd:role xmlns:gmd="http://www.isotc211.org/2005/gmd">
+            <gmd:CI_RoleCode codeListValue="resourceProvider" codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode">resourceProvider</gmd:CI_RoleCode>
+          </gmd:role>
+        </bml:BoreholeProvider>
+      </bml:organisation>
+      <bml:locationName>
+        <gn:GeographicalName xmlns:gn="urn:x-inspire:specification:gmlas:GeographicalNames:3.0">
+          <gn:language>deu</gn:language>
+          <gn:nativeness>endonym</gn:nativeness>
+          <gn:nameStatus>official</gn:nameStatus>
+          <gn:sourceOfName>Verwaltungsgebiete 1 : 250 000 (VG250), Bundesamt für Kartographie</gn:sourceOfName>
+          <gn:pronunciation xsi:nil="true"/>
+          <gn:spelling>
+            <gn:SpellingOfName>
+              <gn:text>Hamburg</gn:text>
+              <gn:script>latin</gn:script>
+            </gn:SpellingOfName>
+          </gn:spelling>
+          <gn:grammaticalGender xsi:nil="true"/>
+          <gn:grammaticalNumber xsi:nil="true"/>
+        </gn:GeographicalName>
+      </bml:locationName>
+      <bml:drillingMethod codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/DrillingMethodList.xml">UN</bml:drillingMethod>
+      <bml:drillingDate>1983-07-07</bml:drillingDate>
+      <bml:lastHorizon codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/LastHorizonList.xml">nb</bml:lastHorizon>
+      <bml:drillingPurpose codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/DrillingPurposeList.xml">UN</bml:drillingPurpose>
+      <bml:owner>Dipl.Ing.-Burmann &amp; Mandel</bml:owner>
+      <bml:project>Pollhornweg-Pollh.Hauptdeich</bml:project>
+      <bml:layerDataLegalAvail codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/LegalAvailabilityList.xml"/>
+      <bml:layerDataTechAvail codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/TechnicalAvailabilityList.xml">N</bml:layerDataTechAvail>
+      <bml:installationLegalAvail codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/LegalAvailabilityList.xml"/>
+      <bml:installationTechAvail codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/TechnicalAvailabilityList.xml">N</bml:installationTechAvail>
+      <bml:groundwaterLevelDataLegalAvail codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/LegalAvailabilityList.xml"/>
+      <bml:groundwaterLevelDataTechAvail codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/TechnicalAvailabilityList.xml">N</bml:groundwaterLevelDataTechAvail>
+      <bml:boreholeMeasurementLegalAvail codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/LegalAvailabilityList.xml"/>
+      <bml:boreholeMeasurementTechAvail codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/TechnicalAvailabilityList.xml">N</bml:boreholeMeasurementTechAvail>
+      <bml:archiveDataLegalAvail codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/LegalAvailabilityList.xml">AN</bml:archiveDataLegalAvail>
+      <bml:archiveDataTechAvail codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/TechnicalAvailabilityList.xml">J</bml:archiveDataTechAvail>
+      <bml:scansLegalAvail codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/LegalAvailabilityList.xml">AN</bml:scansLegalAvail>
+      <bml:scansTechAvail codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/TechnicalAvailabilityList.xml">T</bml:scansTechAvail>
+      <bml:samplesLegalAvail codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/LegalAvailabilityList.xml"/>
+      <bml:samplesTechAvail codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/TechnicalAvailabilityList.xml">N</bml:samplesTechAvail>
+      <bml:labDataLegalAvail codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/LegalAvailabilityList.xml"/>
+      <bml:labDataTechAvail codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/TechnicalAvailabilityList.xml">N</bml:labDataTechAvail>
+      <bml:origin>
+        <bml:Origin>
+          <bml:originalLocation srsName="31467" srsDimension="2">3565556.000000 5928806.000000</bml:originalLocation>
+          <bml:locationMethod codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/LocationMethodList.xml">D</bml:locationMethod>
+          <bml:elevation srsName="5783" srsDimension="1">5.55</bml:elevation>
+          <bml:levelMethod codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/LevelMethodList.xml">F</bml:levelMethod>
+        </bml:Origin>
+      </bml:origin>
+      <bml:drillingProcess xsi:nil="true"/>
+      <bml:boreholeFilling>
+        <bml:BoreholeFilling>
+          <bml:from uom="m"/>
+          <bml:to uom="m"/>
+          <bml:boreholeFillingMaterial codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/FillingMaterialList.xml"/>
+        </bml:BoreholeFilling>
+      </bml:boreholeFilling>
+      <bml:installationDetail xsi:nil="true"/>
+    </bml:Borehole>
+  </wfs:member>
+  <wfs:member>
+    <bml:Borehole xmlns:bml="http://www.infogeo.de/boreholeml/3.0" gml:id="BDHH_6428D587">
+      <bml:location>
+        <!--Inlined geometry 'BDHH_6428D587_BML_LOCATION'-->
+        <gml:Point gml:id="BDHH_6428D587_BML_LOCATION" srsName="urn:ogc:def:crs:EPSG::5555">
+          <gml:pos>565440.702 5926888.508 5.650</gml:pos>
+        </gml:Point>
+      </bml:location>
+      <bml:boreholePath>
+        <!--Inlined geometry 'BDHH_6428D587_BML_BOREHOLEPATH'-->
+        <gml:LineString gml:id="BDHH_6428D587_BML_BOREHOLEPATH" srsName="urn:ogc:def:crs:EPSG::5555">
+          <gml:posList>565440.700 5926888.510 5.650 565440.700 5926888.510 -15.350</gml:posList>
+        </gml:LineString>
+      </bml:boreholePath>
+      <bml:id>BDHH_6428D587</bml:id>
+      <bml:language>
+        <gmd:LanguageCode xmlns:gmd="http://www.isotc211.org/2005/gmd" codeListValue="deu" codeList="http://www.infogeo.de/boreholeml/3.0/codelists/LanguageCode.xml">deu</gmd:LanguageCode>
+      </bml:language>
+      <bml:shortName>
+        <gmd:LocalisedCharacterString xmlns:gmd="http://www.isotc211.org/2005/gmd" locale="http://www.infogeo.de/boreholeml/3.0/codelists/DE.xml">D587</gmd:LocalisedCharacterString>
+      </bml:shortName>
+      <bml:fullName>
+        <gmd:LocalisedCharacterString xmlns:gmd="http://www.isotc211.org/2005/gmd" locale="http://www.infogeo.de/boreholeml/3.0/codelists/DE.xml">B 8114, (Ms 8114)</gmd:LocalisedCharacterString>
+      </bml:fullName>
+      <bml:databaseSource codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/DatabaseSourceList.xml">BDHH</bml:databaseSource>
+      <bml:totalLength uom="m">21.0</bml:totalLength>
+      <bml:exportDate>2015-07-07</bml:exportDate>
+      <bml:boreholeStatus codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/BoreholeStatusList.xml">ka</bml:boreholeStatus>
+      <bml:groundwaterEncountered xsi:nil="true"/>
+      <bml:boreholeSegment>
+        <bml:BoreholeSegment>
+          <bml:from uom="m">0.0</bml:from>
+          <bml:to uom="m">21.0</bml:to>
+          <bml:azimuth uom="deg">0.0</bml:azimuth>
+          <bml:inclination uom="deg">0.0</bml:inclination>
+          <bml:segmentDataQuality codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/SegmentDataQualityList.xml">A</bml:segmentDataQuality>
+        </bml:BoreholeSegment>
+      </bml:boreholeSegment>
+      <bml:codingStandard codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/CodingStandardList.xml">SEP3</bml:codingStandard>
+      <bml:organisation>
+        <bml:BoreholeProvider>
+          <gmd:individualName xmlns:gmd="http://www.isotc211.org/2005/gmd">
+            <gco:CharacterString xmlns:gco="http://www.isotc211.org/2005/gco">Maike Langer</gco:CharacterString>
+          </gmd:individualName>
+          <gmd:organisationName xmlns:gmd="http://www.isotc211.org/2005/gmd">
+            <gco:CharacterString xmlns:gco="http://www.isotc211.org/2005/gco">GLA-HH: Geologisches Landesamt Hamburg</gco:CharacterString>
+          </gmd:organisationName>
+          <gmd:contactInfo xmlns:gmd="http://www.isotc211.org/2005/gmd">
+            <gmd:CI_Contact>
+              <gmd:phone>
+                <gmd:CI_Telephone>
+                  <gmd:voice>
+                    <gco:CharacterString xmlns:gco="http://www.isotc211.org/2005/gco">+49 (0) 40-42840-5002</gco:CharacterString>
+                  </gmd:voice>
+                  <gmd:facsimile>
+                    <gco:CharacterString xmlns:gco="http://www.isotc211.org/2005/gco">+49 (0) 40 4279-40323</gco:CharacterString>
+                  </gmd:facsimile>
+                </gmd:CI_Telephone>
+              </gmd:phone>
+              <gmd:address>
+                <gmd:CI_Address>
+                  <gmd:deliveryPoint>
+                    <gco:CharacterString xmlns:gco="http://www.isotc211.org/2005/gco">Neuenfelder Straße 19</gco:CharacterString>
+                  </gmd:deliveryPoint>
+                  <gmd:city>
+                    <gco:CharacterString xmlns:gco="http://www.isotc211.org/2005/gco">Hamburg</gco:CharacterString>
+                  </gmd:city>
+                  <gmd:administrativeArea>
+                    <gco:CharacterString xmlns:gco="http://www.isotc211.org/2005/gco">Hamburg</gco:CharacterString>
+                  </gmd:administrativeArea>
+                  <gmd:postalCode>
+                    <gco:CharacterString xmlns:gco="http://www.isotc211.org/2005/gco">21109</gco:CharacterString>
+                  </gmd:postalCode>
+                  <gmd:country>
+                    <gco:CharacterString xmlns:gco="http://www.isotc211.org/2005/gco">Deutschland</gco:CharacterString>
+                  </gmd:country>
+                  <gmd:electronicMailAddress>
+                    <gco:CharacterString xmlns:gco="http://www.isotc211.org/2005/gco">maike.langer@bue.hamburg.de</gco:CharacterString>
+                  </gmd:electronicMailAddress>
+                </gmd:CI_Address>
+              </gmd:address>
+            </gmd:CI_Contact>
+          </gmd:contactInfo>
+          <gmd:role xmlns:gmd="http://www.isotc211.org/2005/gmd">
+            <gmd:CI_RoleCode codeListValue="resourceProvider" codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode">resourceProvider</gmd:CI_RoleCode>
+          </gmd:role>
+        </bml:BoreholeProvider>
+      </bml:organisation>
+      <bml:groundwater>
+        <bml:Groundwater>
+          <bml:entryDepth uom="m">4.2</bml:entryDepth>
+          <bml:balancedLevel uom="m"/>
+          <bml:endLevel uom="m"/>
+        </bml:Groundwater>
+      </bml:groundwater>
+      <bml:groundwaterObservation>
+        <bml:GroundwaterObservation>
+          <bml:drillingDepth uom="m">21.0</bml:drillingDepth>
+          <bml:groundwaterObservationType codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/GroundwaterObservationTypeList.xml">N</bml:groundwaterObservationType>
+          <bml:dateTime xsi:nil="true"/>
+          <bml:groundwaterLevel uom="m"/>
+          <bml:overflow xsi:nil="true"/>
+        </bml:GroundwaterObservation>
+      </bml:groundwaterObservation>
+      <bml:groundwaterObservation>
+        <bml:GroundwaterObservation>
+          <bml:drillingDepth uom="m">21.0</bml:drillingDepth>
+          <bml:groundwaterObservationType codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/GroundwaterObservationTypeList.xml">N</bml:groundwaterObservationType>
+          <bml:dateTime xsi:nil="true"/>
+          <bml:groundwaterLevel uom="m"/>
+          <bml:overflow xsi:nil="true"/>
+        </bml:GroundwaterObservation>
+      </bml:groundwaterObservation>
+      <bml:locationName>
+        <gn:GeographicalName xmlns:gn="urn:x-inspire:specification:gmlas:GeographicalNames:3.0">
+          <gn:language>deu</gn:language>
+          <gn:nativeness>endonym</gn:nativeness>
+          <gn:nameStatus>official</gn:nameStatus>
+          <gn:sourceOfName>Verwaltungsgebiete 1 : 250 000 (VG250), Bundesamt für Kartographie</gn:sourceOfName>
+          <gn:pronunciation xsi:nil="true"/>
+          <gn:spelling>
+            <gn:SpellingOfName>
+              <gn:text>Hamburg</gn:text>
+              <gn:script>latin</gn:script>
+            </gn:SpellingOfName>
+          </gn:spelling>
+          <gn:grammaticalGender xsi:nil="true"/>
+          <gn:grammaticalNumber xsi:nil="true"/>
+        </gn:GeographicalName>
+      </bml:locationName>
+      <bml:drillingMethod codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/DrillingMethodList.xml">UN</bml:drillingMethod>
+      <bml:drillingDate>1996-08-29</bml:drillingDate>
+      <bml:lastHorizon codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/LastHorizonList.xml">nb</bml:lastHorizon>
+      <bml:drillingPurpose codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/DrillingPurposeList.xml">UN</bml:drillingPurpose>
+      <bml:owner>FHH, UB-VOB-ANr.28/96/W1322-GWMst neu</bml:owner>
+      <bml:project>Dep. Pollhornweg, Altlastueberwachung</bml:project>
+      <bml:layerDataLegalAvail codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/LegalAvailabilityList.xml">KE</bml:layerDataLegalAvail>
+      <bml:layerDataTechAvail codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/TechnicalAvailabilityList.xml">J</bml:layerDataTechAvail>
+      <bml:installationLegalAvail codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/LegalAvailabilityList.xml"/>
+      <bml:installationTechAvail codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/TechnicalAvailabilityList.xml">N</bml:installationTechAvail>
+      <bml:groundwaterLevelDataLegalAvail codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/LegalAvailabilityList.xml"/>
+      <bml:groundwaterLevelDataTechAvail codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/TechnicalAvailabilityList.xml">N</bml:groundwaterLevelDataTechAvail>
+      <bml:boreholeMeasurementLegalAvail codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/LegalAvailabilityList.xml"/>
+      <bml:boreholeMeasurementTechAvail codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/TechnicalAvailabilityList.xml">N</bml:boreholeMeasurementTechAvail>
+      <bml:archiveDataLegalAvail codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/LegalAvailabilityList.xml"/>
+      <bml:archiveDataTechAvail codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/TechnicalAvailabilityList.xml"/>
+      <bml:scansLegalAvail codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/LegalAvailabilityList.xml"/>
+      <bml:scansTechAvail codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/TechnicalAvailabilityList.xml"/>
+      <bml:samplesLegalAvail codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/LegalAvailabilityList.xml"/>
+      <bml:samplesTechAvail codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/TechnicalAvailabilityList.xml">N</bml:samplesTechAvail>
+      <bml:labDataLegalAvail codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/LegalAvailabilityList.xml"/>
+      <bml:labDataTechAvail codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/TechnicalAvailabilityList.xml"/>
+      <bml:origin>
+        <bml:Origin>
+          <bml:originalLocation srsName="31467" srsDimension="2">3565538.000000 5928821.000000</bml:originalLocation>
+          <bml:locationMethod codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/LocationMethodList.xml">D</bml:locationMethod>
+          <bml:elevation srsName="5783" srsDimension="1">5.65</bml:elevation>
+          <bml:levelMethod codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/LevelMethodList.xml">K25</bml:levelMethod>
+        </bml:Origin>
+      </bml:origin>
+      <bml:intervalSeries>
+        <bml:IntervalSeries>
+          <bml:description>
+            <gmd:LocalisedCharacterString xmlns:gmd="http://www.isotc211.org/2005/gmd" locale="http://www.infogeo.de/boreholeml/3.0/codelists/DE.xml">Ersterfassung</gmd:LocalisedCharacterString>
+          </bml:description>
+          <bml:version>0</bml:version>
+          <bml:layer>
+            <bml:Interval>
+              <bml:from uom="m">0.0</bml:from>
+              <bml:to uom="m">0.3</bml:to>
+              <bml:rockCode>fS(h)</bml:rockCode>
+              <bml:rockNameText>
+                <gmd:LocalisedCharacterString xmlns:gmd="http://www.isotc211.org/2005/gmd" locale="http://www.infogeo.de/boreholeml/3.0/codelists/DE.xml">Feinsand (humos)</gmd:LocalisedCharacterString>
+              </bml:rockNameText>
+              <bml:intervalType codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/IntervalTypeList.xml"/>
+              <bml:genesis codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/GenesisList.xml"/>
+              <bml:geoGenesis codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/GeoGenesisList.xml">yf</bml:geoGenesis>
+              <bml:carbonateContent codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/CarbonateContentList.xml"/>
+              <bml:waterContent codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/WaterContentList.xml"/>
+              <bml:consistency codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/ConsistencyList.xml"/>
+              <bml:compactness codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/CompactnessList.xml"/>
+              <bml:descriptiveText>
+                <gmd:LocalisedCharacterString xmlns:gmd="http://www.isotc211.org/2005/gmd" locale="http://www.infogeo.de/boreholeml/3.0/codelists/DE.xml"/>
+              </bml:descriptiveText>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml">fS</bml:rockName>
+                  <bml:percentage>100.0</bml:percentage>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:stratigraphy>
+                <bml:Stratigraphy>
+                  <bml:chronoStratigraphy codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/ChronoStratigraphyList.xml">nb</bml:chronoStratigraphy>
+                </bml:Stratigraphy>
+              </bml:stratigraphy>
+            </bml:Interval>
+          </bml:layer>
+          <bml:layer>
+            <bml:Interval>
+              <bml:from uom="m">0.3</bml:from>
+              <bml:to uom="m">4.2</bml:to>
+              <bml:rockCode>fS(s, gs)</bml:rockCode>
+              <bml:rockNameText>
+                <gmd:LocalisedCharacterString xmlns:gmd="http://www.isotc211.org/2005/gmd" locale="http://www.infogeo.de/boreholeml/3.0/codelists/DE.xml">Feinsand (sandig, grobsandig)</gmd:LocalisedCharacterString>
+              </bml:rockNameText>
+              <bml:intervalType codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/IntervalTypeList.xml"/>
+              <bml:genesis codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/GenesisList.xml"/>
+              <bml:geoGenesis codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/GeoGenesisList.xml">yf</bml:geoGenesis>
+              <bml:carbonateContent codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/CarbonateContentList.xml">c0</bml:carbonateContent>
+              <bml:waterContent codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/WaterContentList.xml"/>
+              <bml:consistency codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/ConsistencyList.xml"/>
+              <bml:compactness codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/CompactnessList.xml"/>
+              <bml:descriptiveText>
+                <gmd:LocalisedCharacterString xmlns:gmd="http://www.isotc211.org/2005/gmd" locale="http://www.infogeo.de/boreholeml/3.0/codelists/DE.xml"/>
+              </bml:descriptiveText>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml">fS</bml:rockName>
+                  <bml:percentage>62.5</bml:percentage>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml">h4</bml:rockColor>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml">S</bml:rockName>
+                  <bml:percentage>18.75</bml:percentage>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml">h4</bml:rockColor>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml">gS</bml:rockName>
+                  <bml:percentage>18.75</bml:percentage>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml">h4</bml:rockColor>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:stratigraphy>
+                <bml:Stratigraphy>
+                  <bml:chronoStratigraphy codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/ChronoStratigraphyList.xml">nb</bml:chronoStratigraphy>
+                </bml:Stratigraphy>
+              </bml:stratigraphy>
+            </bml:Interval>
+          </bml:layer>
+          <bml:layer>
+            <bml:Interval>
+              <bml:from uom="m">4.2</bml:from>
+              <bml:to uom="m">4.6</bml:to>
+              <bml:rockCode>mS(fs)</bml:rockCode>
+              <bml:rockNameText>
+                <gmd:LocalisedCharacterString xmlns:gmd="http://www.isotc211.org/2005/gmd" locale="http://www.infogeo.de/boreholeml/3.0/codelists/DE.xml">Mittelsand (feinsandig)</gmd:LocalisedCharacterString>
+              </bml:rockNameText>
+              <bml:intervalType codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/IntervalTypeList.xml"/>
+              <bml:genesis codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/GenesisList.xml"/>
+              <bml:geoGenesis codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/GeoGenesisList.xml">yf</bml:geoGenesis>
+              <bml:carbonateContent codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/CarbonateContentList.xml">c0</bml:carbonateContent>
+              <bml:waterContent codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/WaterContentList.xml"/>
+              <bml:consistency codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/ConsistencyList.xml"/>
+              <bml:compactness codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/CompactnessList.xml"/>
+              <bml:descriptiveText>
+                <gmd:LocalisedCharacterString xmlns:gmd="http://www.isotc211.org/2005/gmd" locale="http://www.infogeo.de/boreholeml/3.0/codelists/DE.xml"/>
+              </bml:descriptiveText>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml">mS</bml:rockName>
+                  <bml:percentage>72.73</bml:percentage>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml">h4</bml:rockColor>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml">fS</bml:rockName>
+                  <bml:percentage>27.27</bml:percentage>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml">h4</bml:rockColor>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:stratigraphy>
+                <bml:Stratigraphy>
+                  <bml:chronoStratigraphy codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/ChronoStratigraphyList.xml">nb</bml:chronoStratigraphy>
+                </bml:Stratigraphy>
+              </bml:stratigraphy>
+            </bml:Interval>
+          </bml:layer>
+          <bml:layer>
+            <bml:Interval>
+              <bml:from uom="m">4.6</bml:from>
+              <bml:to uom="m">5.0</bml:to>
+              <bml:rockCode>mS(fs)</bml:rockCode>
+              <bml:rockNameText>
+                <gmd:LocalisedCharacterString xmlns:gmd="http://www.isotc211.org/2005/gmd" locale="http://www.infogeo.de/boreholeml/3.0/codelists/DE.xml">Mittelsand (feinsandig)</gmd:LocalisedCharacterString>
+              </bml:rockNameText>
+              <bml:intervalType codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/IntervalTypeList.xml"/>
+              <bml:genesis codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/GenesisList.xml"/>
+              <bml:geoGenesis codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/GeoGenesisList.xml">yf</bml:geoGenesis>
+              <bml:carbonateContent codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/CarbonateContentList.xml">c0</bml:carbonateContent>
+              <bml:waterContent codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/WaterContentList.xml"/>
+              <bml:consistency codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/ConsistencyList.xml"/>
+              <bml:compactness codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/CompactnessList.xml"/>
+              <bml:descriptiveText>
+                <gmd:LocalisedCharacterString xmlns:gmd="http://www.isotc211.org/2005/gmd" locale="http://www.infogeo.de/boreholeml/3.0/codelists/DE.xml">Schotter</gmd:LocalisedCharacterString>
+              </bml:descriptiveText>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml">mS</bml:rockName>
+                  <bml:percentage>72.73</bml:percentage>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml">fS</bml:rockName>
+                  <bml:percentage>27.27</bml:percentage>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:stratigraphy>
+                <bml:Stratigraphy>
+                  <bml:chronoStratigraphy codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/ChronoStratigraphyList.xml">nb</bml:chronoStratigraphy>
+                </bml:Stratigraphy>
+              </bml:stratigraphy>
+            </bml:Interval>
+          </bml:layer>
+          <bml:layer>
+            <bml:Interval>
+              <bml:from uom="m">5.0</bml:from>
+              <bml:to uom="m">5.2</bml:to>
+              <bml:rockCode>mS(fs), S</bml:rockCode>
+              <bml:rockNameText>
+                <gmd:LocalisedCharacterString xmlns:gmd="http://www.isotc211.org/2005/gmd" locale="http://www.infogeo.de/boreholeml/3.0/codelists/DE.xml">Mittelsand (feinsandig), Sand</gmd:LocalisedCharacterString>
+              </bml:rockNameText>
+              <bml:intervalType codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/IntervalTypeList.xml"/>
+              <bml:genesis codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/GenesisList.xml"/>
+              <bml:geoGenesis codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/GeoGenesisList.xml">yf</bml:geoGenesis>
+              <bml:carbonateContent codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/CarbonateContentList.xml">c0</bml:carbonateContent>
+              <bml:waterContent codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/WaterContentList.xml"/>
+              <bml:consistency codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/ConsistencyList.xml"/>
+              <bml:compactness codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/CompactnessList.xml"/>
+              <bml:descriptiveText>
+                <gmd:LocalisedCharacterString xmlns:gmd="http://www.isotc211.org/2005/gmd" locale="http://www.infogeo.de/boreholeml/3.0/codelists/DE.xml"/>
+              </bml:descriptiveText>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml">mS</bml:rockName>
+                  <bml:percentage>41.17</bml:percentage>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml">h8</bml:rockColor>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml">S</bml:rockName>
+                  <bml:percentage>41.17</bml:percentage>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml">h8</bml:rockColor>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml">fS</bml:rockName>
+                  <bml:percentage>17.65</bml:percentage>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml">h8</bml:rockColor>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:stratigraphy>
+                <bml:Stratigraphy>
+                  <bml:chronoStratigraphy codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/ChronoStratigraphyList.xml">nb</bml:chronoStratigraphy>
+                </bml:Stratigraphy>
+              </bml:stratigraphy>
+            </bml:Interval>
+          </bml:layer>
+          <bml:layer>
+            <bml:Interval>
+              <bml:from uom="m">5.2</bml:from>
+              <bml:to uom="m">8.4</bml:to>
+              <bml:rockCode>U(t, s, "gl")</bml:rockCode>
+              <bml:rockNameText>
+                <gmd:LocalisedCharacterString xmlns:gmd="http://www.isotc211.org/2005/gmd" locale="http://www.infogeo.de/boreholeml/3.0/codelists/DE.xml">Schluff (tonig, sandig, Glimmer)</gmd:LocalisedCharacterString>
+              </bml:rockNameText>
+              <bml:intervalType codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/IntervalTypeList.xml"/>
+              <bml:genesis codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/GenesisList.xml">sed</bml:genesis>
+              <bml:geoGenesis codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/GeoGenesisList.xml">wa</bml:geoGenesis>
+              <bml:carbonateContent codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/CarbonateContentList.xml">c0</bml:carbonateContent>
+              <bml:waterContent codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/WaterContentList.xml">feu2</bml:waterContent>
+              <bml:consistency codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/ConsistencyList.xml">wh</bml:consistency>
+              <bml:compactness codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/CompactnessList.xml"/>
+              <bml:descriptiveText>
+                <gmd:LocalisedCharacterString xmlns:gmd="http://www.isotc211.org/2005/gmd" locale="http://www.infogeo.de/boreholeml/3.0/codelists/DE.xml">junger</gmd:LocalisedCharacterString>
+              </bml:descriptiveText>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml">U</bml:rockName>
+                  <bml:percentage>62.5</bml:percentage>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml">h8</bml:rockColor>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml">T</bml:rockName>
+                  <bml:percentage>18.75</bml:percentage>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml">h8</bml:rockColor>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml">S</bml:rockName>
+                  <bml:percentage>18.75</bml:percentage>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml">h8</bml:rockColor>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:stratigraphy>
+                <bml:Stratigraphy>
+                  <bml:chronoStratigraphy codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/ChronoStratigraphyList.xml">Q1o</bml:chronoStratigraphy>
+                  <bml:lithoStratigraphy>
+                    <gmd:LocalisedCharacterString xmlns:gmd="http://www.isotc211.org/2005/gmd">Weichsel-Kaltzeit (Weichsel-Glazial)</gmd:LocalisedCharacterString>
+                  </bml:lithoStratigraphy>
+                </bml:Stratigraphy>
+              </bml:stratigraphy>
+            </bml:Interval>
+          </bml:layer>
+          <bml:layer>
+            <bml:Interval>
+              <bml:from uom="m">8.4</bml:from>
+              <bml:to uom="m">12.4</bml:to>
+              <bml:rockCode>fS</bml:rockCode>
+              <bml:rockNameText>
+                <gmd:LocalisedCharacterString xmlns:gmd="http://www.isotc211.org/2005/gmd" locale="http://www.infogeo.de/boreholeml/3.0/codelists/DE.xml">Feinsand</gmd:LocalisedCharacterString>
+              </bml:rockNameText>
+              <bml:intervalType codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/IntervalTypeList.xml"/>
+              <bml:genesis codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/GenesisList.xml"/>
+              <bml:geoGenesis codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/GeoGenesisList.xml"/>
+              <bml:carbonateContent codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/CarbonateContentList.xml">c0</bml:carbonateContent>
+              <bml:waterContent codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/WaterContentList.xml"/>
+              <bml:consistency codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/ConsistencyList.xml"/>
+              <bml:compactness codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/CompactnessList.xml"/>
+              <bml:descriptiveText>
+                <gmd:LocalisedCharacterString xmlns:gmd="http://www.isotc211.org/2005/gmd" locale="http://www.infogeo.de/boreholeml/3.0/codelists/DE.xml"/>
+              </bml:descriptiveText>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml">fS</bml:rockName>
+                  <bml:percentage>100.0</bml:percentage>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml">h8</bml:rockColor>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:stratigraphy>
+                <bml:Stratigraphy>
+                  <bml:chronoStratigraphy codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/ChronoStratigraphyList.xml">Q1o</bml:chronoStratigraphy>
+                  <bml:lithoStratigraphy>
+                    <gmd:LocalisedCharacterString xmlns:gmd="http://www.isotc211.org/2005/gmd">Weichsel-Kaltzeit (Weichsel-Glazial)</gmd:LocalisedCharacterString>
+                  </bml:lithoStratigraphy>
+                </bml:Stratigraphy>
+              </bml:stratigraphy>
+            </bml:Interval>
+          </bml:layer>
+          <bml:layer>
+            <bml:Interval>
+              <bml:from uom="m">12.4</bml:from>
+              <bml:to uom="m">15.2</bml:to>
+              <bml:rockCode>fS</bml:rockCode>
+              <bml:rockNameText>
+                <gmd:LocalisedCharacterString xmlns:gmd="http://www.isotc211.org/2005/gmd" locale="http://www.infogeo.de/boreholeml/3.0/codelists/DE.xml">Feinsand</gmd:LocalisedCharacterString>
+              </bml:rockNameText>
+              <bml:intervalType codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/IntervalTypeList.xml"/>
+              <bml:genesis codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/GenesisList.xml"/>
+              <bml:geoGenesis codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/GeoGenesisList.xml"/>
+              <bml:carbonateContent codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/CarbonateContentList.xml">c0</bml:carbonateContent>
+              <bml:waterContent codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/WaterContentList.xml"/>
+              <bml:consistency codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/ConsistencyList.xml"/>
+              <bml:compactness codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/CompactnessList.xml"/>
+              <bml:descriptiveText>
+                <gmd:LocalisedCharacterString xmlns:gmd="http://www.isotc211.org/2005/gmd" locale="http://www.infogeo.de/boreholeml/3.0/codelists/DE.xml"/>
+              </bml:descriptiveText>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml">fS</bml:rockName>
+                  <bml:percentage>100.0</bml:percentage>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml">h8</bml:rockColor>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:stratigraphy>
+                <bml:Stratigraphy>
+                  <bml:chronoStratigraphy codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/ChronoStratigraphyList.xml">Q1o</bml:chronoStratigraphy>
+                  <bml:lithoStratigraphy>
+                    <gmd:LocalisedCharacterString xmlns:gmd="http://www.isotc211.org/2005/gmd">Weichsel-Kaltzeit (Weichsel-Glazial)</gmd:LocalisedCharacterString>
+                  </bml:lithoStratigraphy>
+                </bml:Stratigraphy>
+              </bml:stratigraphy>
+            </bml:Interval>
+          </bml:layer>
+          <bml:layer>
+            <bml:Interval>
+              <bml:from uom="m">15.2</bml:from>
+              <bml:to uom="m">17.8</bml:to>
+              <bml:rockCode>mS(gs)</bml:rockCode>
+              <bml:rockNameText>
+                <gmd:LocalisedCharacterString xmlns:gmd="http://www.isotc211.org/2005/gmd" locale="http://www.infogeo.de/boreholeml/3.0/codelists/DE.xml">Mittelsand (grobsandig)</gmd:LocalisedCharacterString>
+              </bml:rockNameText>
+              <bml:intervalType codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/IntervalTypeList.xml"/>
+              <bml:genesis codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/GenesisList.xml"/>
+              <bml:geoGenesis codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/GeoGenesisList.xml"/>
+              <bml:carbonateContent codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/CarbonateContentList.xml">c0</bml:carbonateContent>
+              <bml:waterContent codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/WaterContentList.xml"/>
+              <bml:consistency codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/ConsistencyList.xml"/>
+              <bml:compactness codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/CompactnessList.xml"/>
+              <bml:descriptiveText>
+                <gmd:LocalisedCharacterString xmlns:gmd="http://www.isotc211.org/2005/gmd" locale="http://www.infogeo.de/boreholeml/3.0/codelists/DE.xml"/>
+              </bml:descriptiveText>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml">mS</bml:rockName>
+                  <bml:percentage>72.73</bml:percentage>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml">h8</bml:rockColor>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml">gS</bml:rockName>
+                  <bml:percentage>27.27</bml:percentage>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml">h8</bml:rockColor>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:stratigraphy>
+                <bml:Stratigraphy>
+                  <bml:chronoStratigraphy codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/ChronoStratigraphyList.xml"/>
+                  <bml:lithoStratigraphy>
+                    <gmd:LocalisedCharacterString xmlns:gmd="http://www.isotc211.org/2005/gmd">Holozän, Weichsel-Kaltzeit (Weichsel-Glazial)?</gmd:LocalisedCharacterString>
+                  </bml:lithoStratigraphy>
+                </bml:Stratigraphy>
+              </bml:stratigraphy>
+            </bml:Interval>
+          </bml:layer>
+          <bml:layer>
+            <bml:Interval>
+              <bml:from uom="m">17.8</bml:from>
+              <bml:to uom="m">19.8</bml:to>
+              <bml:rockCode>fG(gs, ms, x), S</bml:rockCode>
+              <bml:rockNameText>
+                <gmd:LocalisedCharacterString xmlns:gmd="http://www.isotc211.org/2005/gmd" locale="http://www.infogeo.de/boreholeml/3.0/codelists/DE.xml">Feinkies (grobsandig, mittelsandig, steinig), Sand</gmd:LocalisedCharacterString>
+              </bml:rockNameText>
+              <bml:intervalType codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/IntervalTypeList.xml"/>
+              <bml:genesis codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/GenesisList.xml"/>
+              <bml:geoGenesis codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/GeoGenesisList.xml"/>
+              <bml:carbonateContent codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/CarbonateContentList.xml">c3</bml:carbonateContent>
+              <bml:waterContent codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/WaterContentList.xml"/>
+              <bml:consistency codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/ConsistencyList.xml"/>
+              <bml:compactness codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/CompactnessList.xml"/>
+              <bml:descriptiveText>
+                <gmd:LocalisedCharacterString xmlns:gmd="http://www.isotc211.org/2005/gmd" locale="http://www.infogeo.de/boreholeml/3.0/codelists/DE.xml"/>
+              </bml:descriptiveText>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml">fG</bml:rockName>
+                  <bml:percentage>33.34</bml:percentage>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml">h8</bml:rockColor>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml">S</bml:rockName>
+                  <bml:percentage>33.34</bml:percentage>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml">h8</bml:rockColor>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml">gS</bml:rockName>
+                  <bml:percentage>11.11</bml:percentage>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml">h8</bml:rockColor>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml">mS</bml:rockName>
+                  <bml:percentage>11.11</bml:percentage>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml">h8</bml:rockColor>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml">X</bml:rockName>
+                  <bml:percentage>11.11</bml:percentage>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml">h8</bml:rockColor>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:stratigraphy>
+                <bml:Stratigraphy>
+                  <bml:chronoStratigraphy codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/ChronoStratigraphyList.xml">Q1o</bml:chronoStratigraphy>
+                  <bml:lithoStratigraphy>
+                    <gmd:LocalisedCharacterString xmlns:gmd="http://www.isotc211.org/2005/gmd">Weichsel-Kaltzeit (Weichsel-Glazial)</gmd:LocalisedCharacterString>
+                  </bml:lithoStratigraphy>
+                </bml:Stratigraphy>
+              </bml:stratigraphy>
+            </bml:Interval>
+          </bml:layer>
+          <bml:layer>
+            <bml:Interval>
+              <bml:from uom="m">19.8</bml:from>
+              <bml:to uom="m">20.2</bml:to>
+              <bml:rockCode>(gG-fG)(x)</bml:rockCode>
+              <bml:rockNameText>
+                <gmd:LocalisedCharacterString xmlns:gmd="http://www.isotc211.org/2005/gmd" locale="http://www.infogeo.de/boreholeml/3.0/codelists/DE.xml">Grobkies bis Feinkies (steinig)</gmd:LocalisedCharacterString>
+              </bml:rockNameText>
+              <bml:intervalType codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/IntervalTypeList.xml"/>
+              <bml:genesis codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/GenesisList.xml"/>
+              <bml:geoGenesis codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/GeoGenesisList.xml"/>
+              <bml:carbonateContent codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/CarbonateContentList.xml">c3</bml:carbonateContent>
+              <bml:waterContent codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/WaterContentList.xml"/>
+              <bml:consistency codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/ConsistencyList.xml"/>
+              <bml:compactness codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/CompactnessList.xml"/>
+              <bml:descriptiveText>
+                <gmd:LocalisedCharacterString xmlns:gmd="http://www.isotc211.org/2005/gmd" locale="http://www.infogeo.de/boreholeml/3.0/codelists/DE.xml"/>
+              </bml:descriptiveText>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml">gG</bml:rockName>
+                  <bml:percentage>41.17</bml:percentage>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml">h8</bml:rockColor>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml">fG</bml:rockName>
+                  <bml:percentage>41.17</bml:percentage>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml">h8</bml:rockColor>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml">X</bml:rockName>
+                  <bml:percentage>17.65</bml:percentage>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml">h8</bml:rockColor>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:stratigraphy>
+                <bml:Stratigraphy>
+                  <bml:chronoStratigraphy codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/ChronoStratigraphyList.xml">Q1o</bml:chronoStratigraphy>
+                  <bml:lithoStratigraphy>
+                    <gmd:LocalisedCharacterString xmlns:gmd="http://www.isotc211.org/2005/gmd">Weichsel-Kaltzeit (Weichsel-Glazial)</gmd:LocalisedCharacterString>
+                  </bml:lithoStratigraphy>
+                </bml:Stratigraphy>
+              </bml:stratigraphy>
+            </bml:Interval>
+          </bml:layer>
+          <bml:layer>
+            <bml:Interval>
+              <bml:from uom="m">20.2</bml:from>
+              <bml:to uom="m">21.0</bml:to>
+              <bml:rockCode>S(u, g, t)</bml:rockCode>
+              <bml:rockNameText>
+                <gmd:LocalisedCharacterString xmlns:gmd="http://www.isotc211.org/2005/gmd" locale="http://www.infogeo.de/boreholeml/3.0/codelists/DE.xml">Sand (schluffig, kiesig, tonig)</gmd:LocalisedCharacterString>
+              </bml:rockNameText>
+              <bml:intervalType codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/IntervalTypeList.xml"/>
+              <bml:genesis codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/GenesisList.xml"/>
+              <bml:geoGenesis codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/GeoGenesisList.xml">Mg</bml:geoGenesis>
+              <bml:carbonateContent codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/CarbonateContentList.xml">c3</bml:carbonateContent>
+              <bml:waterContent codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/WaterContentList.xml">feu2</bml:waterContent>
+              <bml:consistency codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/ConsistencyList.xml">hfe</bml:consistency>
+              <bml:compactness codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/CompactnessList.xml"/>
+              <bml:descriptiveText>
+                <gmd:LocalisedCharacterString xmlns:gmd="http://www.isotc211.org/2005/gmd" locale="http://www.infogeo.de/boreholeml/3.0/codelists/DE.xml"/>
+              </bml:descriptiveText>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml">S</bml:rockName>
+                  <bml:percentage>57.13</bml:percentage>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml">h8</bml:rockColor>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml">U</bml:rockName>
+                  <bml:percentage>14.29</bml:percentage>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml">h8</bml:rockColor>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml">G</bml:rockName>
+                  <bml:percentage>14.29</bml:percentage>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml">h8</bml:rockColor>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml">T</bml:rockName>
+                  <bml:percentage>14.29</bml:percentage>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml">h8</bml:rockColor>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:stratigraphy>
+                <bml:Stratigraphy>
+                  <bml:chronoStratigraphy codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/ChronoStratigraphyList.xml">Q1m</bml:chronoStratigraphy>
+                  <bml:lithoStratigraphy>
+                    <gmd:LocalisedCharacterString xmlns:gmd="http://www.isotc211.org/2005/gmd">Saale-Kaltzeit (Saale-Glazial)</gmd:LocalisedCharacterString>
+                  </bml:lithoStratigraphy>
+                </bml:Stratigraphy>
+              </bml:stratigraphy>
+            </bml:Interval>
+          </bml:layer>
+        </bml:IntervalSeries>
+      </bml:intervalSeries>
+      <bml:drillingProcess xsi:nil="true"/>
+      <bml:boreholeFilling>
+        <bml:BoreholeFilling>
+          <bml:from uom="m"/>
+          <bml:to uom="m"/>
+          <bml:boreholeFillingMaterial codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/FillingMaterialList.xml"/>
+        </bml:BoreholeFilling>
+      </bml:boreholeFilling>
+      <bml:installationDetail xsi:nil="true"/>
+      <bml:investigation>
+        <bml:Investigation>
+          <bml:from uom="m"/>
+          <bml:to uom="m"/>
+          <bml:investigationType codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/InvestigationTypeList.xml"/>
+        </bml:Investigation>
+      </bml:investigation>
+      <bml:sampling>
+        <bml:Sampling>
+          <bml:from uom="m"/>
+          <bml:to uom="m"/>
+          <bml:sampleType codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/SampleTypeList.xml"/>
+          <bml:samplingPurpose codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/SamplingPurposeList.xml"/>
+        </bml:Sampling>
+      </bml:sampling>
+    </bml:Borehole>
+  </wfs:member>
+  <wfs:member>
+    <bml:Borehole xmlns:bml="http://www.infogeo.de/boreholeml/3.0" gml:id="BDHH_6428D590">
+      <bml:location>
+        <!--Inlined geometry 'BDHH_6428D590_BML_LOCATION'-->
+        <gml:Point gml:id="BDHH_6428D590_BML_LOCATION" srsName="urn:ogc:def:crs:EPSG::5555">
+          <gml:pos>565439.702 5926908.500 5.760</gml:pos>
+        </gml:Point>
+      </bml:location>
+      <bml:boreholePath>
+        <!--Inlined geometry 'BDHH_6428D590_BML_BOREHOLEPATH'-->
+        <gml:LineString gml:id="BDHH_6428D590_BML_BOREHOLEPATH" srsName="urn:ogc:def:crs:EPSG::5555">
+          <gml:posList>565439.700 5926908.500 5.760 565439.700 5926908.500 -0.240</gml:posList>
+        </gml:LineString>
+      </bml:boreholePath>
+      <bml:id>BDHH_6428D590</bml:id>
+      <bml:language>
+        <gmd:LanguageCode xmlns:gmd="http://www.isotc211.org/2005/gmd" codeListValue="deu" codeList="http://www.infogeo.de/boreholeml/3.0/codelists/LanguageCode.xml">deu</gmd:LanguageCode>
+      </bml:language>
+      <bml:shortName>
+        <gmd:LocalisedCharacterString xmlns:gmd="http://www.isotc211.org/2005/gmd" locale="http://www.infogeo.de/boreholeml/3.0/codelists/DE.xml">D590</gmd:LocalisedCharacterString>
+      </bml:shortName>
+      <bml:fullName>
+        <gmd:LocalisedCharacterString xmlns:gmd="http://www.isotc211.org/2005/gmd" locale="http://www.infogeo.de/boreholeml/3.0/codelists/DE.xml">B 8125</gmd:LocalisedCharacterString>
+      </bml:fullName>
+      <bml:databaseSource codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/DatabaseSourceList.xml">BDHH</bml:databaseSource>
+      <bml:totalLength uom="m">6.0</bml:totalLength>
+      <bml:exportDate>2015-07-07</bml:exportDate>
+      <bml:boreholeStatus codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/BoreholeStatusList.xml">ka</bml:boreholeStatus>
+      <bml:groundwaterEncountered xsi:nil="true"/>
+      <bml:boreholeSegment>
+        <bml:BoreholeSegment>
+          <bml:from uom="m">0.0</bml:from>
+          <bml:to uom="m">6.0</bml:to>
+          <bml:azimuth uom="deg">0.0</bml:azimuth>
+          <bml:inclination uom="deg">0.0</bml:inclination>
+          <bml:segmentDataQuality codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/SegmentDataQualityList.xml">A</bml:segmentDataQuality>
+        </bml:BoreholeSegment>
+      </bml:boreholeSegment>
+      <bml:codingStandard codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/CodingStandardList.xml">SEP3</bml:codingStandard>
+      <bml:organisation>
+        <bml:BoreholeProvider>
+          <gmd:individualName xmlns:gmd="http://www.isotc211.org/2005/gmd">
+            <gco:CharacterString xmlns:gco="http://www.isotc211.org/2005/gco">Maike Langer</gco:CharacterString>
+          </gmd:individualName>
+          <gmd:organisationName xmlns:gmd="http://www.isotc211.org/2005/gmd">
+            <gco:CharacterString xmlns:gco="http://www.isotc211.org/2005/gco">GLA-HH: Geologisches Landesamt Hamburg</gco:CharacterString>
+          </gmd:organisationName>
+          <gmd:contactInfo xmlns:gmd="http://www.isotc211.org/2005/gmd">
+            <gmd:CI_Contact>
+              <gmd:phone>
+                <gmd:CI_Telephone>
+                  <gmd:voice>
+                    <gco:CharacterString xmlns:gco="http://www.isotc211.org/2005/gco">+49 (0) 40-42840-5002</gco:CharacterString>
+                  </gmd:voice>
+                  <gmd:facsimile>
+                    <gco:CharacterString xmlns:gco="http://www.isotc211.org/2005/gco">+49 (0) 40 4279-40323</gco:CharacterString>
+                  </gmd:facsimile>
+                </gmd:CI_Telephone>
+              </gmd:phone>
+              <gmd:address>
+                <gmd:CI_Address>
+                  <gmd:deliveryPoint>
+                    <gco:CharacterString xmlns:gco="http://www.isotc211.org/2005/gco">Neuenfelder Straße 19</gco:CharacterString>
+                  </gmd:deliveryPoint>
+                  <gmd:city>
+                    <gco:CharacterString xmlns:gco="http://www.isotc211.org/2005/gco">Hamburg</gco:CharacterString>
+                  </gmd:city>
+                  <gmd:administrativeArea>
+                    <gco:CharacterString xmlns:gco="http://www.isotc211.org/2005/gco">Hamburg</gco:CharacterString>
+                  </gmd:administrativeArea>
+                  <gmd:postalCode>
+                    <gco:CharacterString xmlns:gco="http://www.isotc211.org/2005/gco">21109</gco:CharacterString>
+                  </gmd:postalCode>
+                  <gmd:country>
+                    <gco:CharacterString xmlns:gco="http://www.isotc211.org/2005/gco">Deutschland</gco:CharacterString>
+                  </gmd:country>
+                  <gmd:electronicMailAddress>
+                    <gco:CharacterString xmlns:gco="http://www.isotc211.org/2005/gco">maike.langer@bue.hamburg.de</gco:CharacterString>
+                  </gmd:electronicMailAddress>
+                </gmd:CI_Address>
+              </gmd:address>
+            </gmd:CI_Contact>
+          </gmd:contactInfo>
+          <gmd:role xmlns:gmd="http://www.isotc211.org/2005/gmd">
+            <gmd:CI_RoleCode codeListValue="resourceProvider" codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode">resourceProvider</gmd:CI_RoleCode>
+          </gmd:role>
+        </bml:BoreholeProvider>
+      </bml:organisation>
+      <bml:groundwater>
+        <bml:Groundwater>
+          <bml:entryDepth uom="m">4.2</bml:entryDepth>
+          <bml:balancedLevel uom="m"/>
+          <bml:endLevel uom="m"/>
+        </bml:Groundwater>
+      </bml:groundwater>
+      <bml:groundwaterObservation>
+        <bml:GroundwaterObservation>
+          <bml:drillingDepth uom="m">6.0</bml:drillingDepth>
+          <bml:groundwaterObservationType codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/GroundwaterObservationTypeList.xml">N</bml:groundwaterObservationType>
+          <bml:dateTime xsi:nil="true"/>
+          <bml:groundwaterLevel uom="m"/>
+          <bml:overflow xsi:nil="true"/>
+        </bml:GroundwaterObservation>
+      </bml:groundwaterObservation>
+      <bml:locationName>
+        <gn:GeographicalName xmlns:gn="urn:x-inspire:specification:gmlas:GeographicalNames:3.0">
+          <gn:language>deu</gn:language>
+          <gn:nativeness>endonym</gn:nativeness>
+          <gn:nameStatus>official</gn:nameStatus>
+          <gn:sourceOfName>Verwaltungsgebiete 1 : 250 000 (VG250), Bundesamt für Kartographie</gn:sourceOfName>
+          <gn:pronunciation xsi:nil="true"/>
+          <gn:spelling>
+            <gn:SpellingOfName>
+              <gn:text>Hamburg</gn:text>
+              <gn:script>latin</gn:script>
+            </gn:SpellingOfName>
+          </gn:spelling>
+          <gn:grammaticalGender xsi:nil="true"/>
+          <gn:grammaticalNumber xsi:nil="true"/>
+        </gn:GeographicalName>
+      </bml:locationName>
+      <bml:drillingMethod codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/DrillingMethodList.xml">UN</bml:drillingMethod>
+      <bml:drillingDate>1965-09-02</bml:drillingDate>
+      <bml:lastHorizon codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/LastHorizonList.xml">nb</bml:lastHorizon>
+      <bml:drillingPurpose codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/DrillingPurposeList.xml">UN</bml:drillingPurpose>
+      <bml:owner>FHH, UB-VOB-ANr.28/96/W1322-GWMst neu</bml:owner>
+      <bml:project>Dep. Pollhornweg, Altlastueberwachung</bml:project>
+      <bml:layerDataLegalAvail codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/LegalAvailabilityList.xml">KE</bml:layerDataLegalAvail>
+      <bml:layerDataTechAvail codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/TechnicalAvailabilityList.xml">J</bml:layerDataTechAvail>
+      <bml:installationLegalAvail codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/LegalAvailabilityList.xml"/>
+      <bml:installationTechAvail codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/TechnicalAvailabilityList.xml">N</bml:installationTechAvail>
+      <bml:groundwaterLevelDataLegalAvail codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/LegalAvailabilityList.xml"/>
+      <bml:groundwaterLevelDataTechAvail codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/TechnicalAvailabilityList.xml">N</bml:groundwaterLevelDataTechAvail>
+      <bml:boreholeMeasurementLegalAvail codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/LegalAvailabilityList.xml"/>
+      <bml:boreholeMeasurementTechAvail codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/TechnicalAvailabilityList.xml">N</bml:boreholeMeasurementTechAvail>
+      <bml:archiveDataLegalAvail codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/LegalAvailabilityList.xml"/>
+      <bml:archiveDataTechAvail codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/TechnicalAvailabilityList.xml"/>
+      <bml:scansLegalAvail codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/LegalAvailabilityList.xml"/>
+      <bml:scansTechAvail codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/TechnicalAvailabilityList.xml"/>
+      <bml:samplesLegalAvail codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/LegalAvailabilityList.xml"/>
+      <bml:samplesTechAvail codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/TechnicalAvailabilityList.xml">N</bml:samplesTechAvail>
+      <bml:labDataLegalAvail codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/LegalAvailabilityList.xml"/>
+      <bml:labDataTechAvail codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/TechnicalAvailabilityList.xml"/>
+      <bml:origin>
+        <bml:Origin>
+          <bml:originalLocation srsName="31467" srsDimension="2">3565537.000000 5928841.000000</bml:originalLocation>
+          <bml:locationMethod codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/LocationMethodList.xml">D</bml:locationMethod>
+          <bml:elevation srsName="5783" srsDimension="1">5.76</bml:elevation>
+          <bml:levelMethod codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/LevelMethodList.xml">K25</bml:levelMethod>
+        </bml:Origin>
+      </bml:origin>
+      <bml:intervalSeries>
+        <bml:IntervalSeries>
+          <bml:description>
+            <gmd:LocalisedCharacterString xmlns:gmd="http://www.isotc211.org/2005/gmd" locale="http://www.infogeo.de/boreholeml/3.0/codelists/DE.xml">Ersterfassung</gmd:LocalisedCharacterString>
+          </bml:description>
+          <bml:version>0</bml:version>
+          <bml:layer>
+            <bml:Interval>
+              <bml:from uom="m">0.0</bml:from>
+              <bml:to uom="m">4.2</bml:to>
+              <bml:rockCode>mS(fs)</bml:rockCode>
+              <bml:rockNameText>
+                <gmd:LocalisedCharacterString xmlns:gmd="http://www.isotc211.org/2005/gmd" locale="http://www.infogeo.de/boreholeml/3.0/codelists/DE.xml">Mittelsand (feinsandig)</gmd:LocalisedCharacterString>
+              </bml:rockNameText>
+              <bml:intervalType codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/IntervalTypeList.xml"/>
+              <bml:genesis codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/GenesisList.xml"/>
+              <bml:geoGenesis codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/GeoGenesisList.xml">yf</bml:geoGenesis>
+              <bml:carbonateContent codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/CarbonateContentList.xml">c0</bml:carbonateContent>
+              <bml:waterContent codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/WaterContentList.xml"/>
+              <bml:consistency codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/ConsistencyList.xml"/>
+              <bml:compactness codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/CompactnessList.xml"/>
+              <bml:descriptiveText>
+                <gmd:LocalisedCharacterString xmlns:gmd="http://www.isotc211.org/2005/gmd" locale="http://www.infogeo.de/boreholeml/3.0/codelists/DE.xml"/>
+              </bml:descriptiveText>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml">mS</bml:rockName>
+                  <bml:percentage>72.73</bml:percentage>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml">h4</bml:rockColor>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml">fS</bml:rockName>
+                  <bml:percentage>27.27</bml:percentage>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml">h4</bml:rockColor>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:stratigraphy>
+                <bml:Stratigraphy>
+                  <bml:chronoStratigraphy codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/ChronoStratigraphyList.xml">nb</bml:chronoStratigraphy>
+                </bml:Stratigraphy>
+              </bml:stratigraphy>
+            </bml:Interval>
+          </bml:layer>
+          <bml:layer>
+            <bml:Interval>
+              <bml:from uom="m">4.2</bml:from>
+              <bml:to uom="m">4.5</bml:to>
+              <bml:rockCode>mS(fs)</bml:rockCode>
+              <bml:rockNameText>
+                <gmd:LocalisedCharacterString xmlns:gmd="http://www.isotc211.org/2005/gmd" locale="http://www.infogeo.de/boreholeml/3.0/codelists/DE.xml">Mittelsand (feinsandig)</gmd:LocalisedCharacterString>
+              </bml:rockNameText>
+              <bml:intervalType codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/IntervalTypeList.xml"/>
+              <bml:genesis codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/GenesisList.xml"/>
+              <bml:geoGenesis codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/GeoGenesisList.xml">yf</bml:geoGenesis>
+              <bml:carbonateContent codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/CarbonateContentList.xml">c0</bml:carbonateContent>
+              <bml:waterContent codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/WaterContentList.xml"/>
+              <bml:consistency codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/ConsistencyList.xml"/>
+              <bml:compactness codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/CompactnessList.xml"/>
+              <bml:descriptiveText>
+                <gmd:LocalisedCharacterString xmlns:gmd="http://www.isotc211.org/2005/gmd" locale="http://www.infogeo.de/boreholeml/3.0/codelists/DE.xml"/>
+              </bml:descriptiveText>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml">mS</bml:rockName>
+                  <bml:percentage>72.73</bml:percentage>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml">h4</bml:rockColor>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml">fS</bml:rockName>
+                  <bml:percentage>27.27</bml:percentage>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml">h4</bml:rockColor>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:stratigraphy>
+                <bml:Stratigraphy>
+                  <bml:chronoStratigraphy codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/ChronoStratigraphyList.xml">nb</bml:chronoStratigraphy>
+                </bml:Stratigraphy>
+              </bml:stratigraphy>
+            </bml:Interval>
+          </bml:layer>
+          <bml:layer>
+            <bml:Interval>
+              <bml:from uom="m">4.5</bml:from>
+              <bml:to uom="m">5.0</bml:to>
+              <bml:rockCode>mS(fs)</bml:rockCode>
+              <bml:rockNameText>
+                <gmd:LocalisedCharacterString xmlns:gmd="http://www.isotc211.org/2005/gmd" locale="http://www.infogeo.de/boreholeml/3.0/codelists/DE.xml">Mittelsand (feinsandig)</gmd:LocalisedCharacterString>
+              </bml:rockNameText>
+              <bml:intervalType codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/IntervalTypeList.xml"/>
+              <bml:genesis codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/GenesisList.xml"/>
+              <bml:geoGenesis codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/GeoGenesisList.xml">yf</bml:geoGenesis>
+              <bml:carbonateContent codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/CarbonateContentList.xml">c3</bml:carbonateContent>
+              <bml:waterContent codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/WaterContentList.xml"/>
+              <bml:consistency codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/ConsistencyList.xml"/>
+              <bml:compactness codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/CompactnessList.xml"/>
+              <bml:descriptiveText>
+                <gmd:LocalisedCharacterString xmlns:gmd="http://www.isotc211.org/2005/gmd" locale="http://www.infogeo.de/boreholeml/3.0/codelists/DE.xml">pruefen!</gmd:LocalisedCharacterString>
+              </bml:descriptiveText>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml">mS</bml:rockName>
+                  <bml:percentage>72.73</bml:percentage>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml">fS</bml:rockName>
+                  <bml:percentage>27.27</bml:percentage>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:stratigraphy>
+                <bml:Stratigraphy>
+                  <bml:chronoStratigraphy codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/ChronoStratigraphyList.xml">nb</bml:chronoStratigraphy>
+                </bml:Stratigraphy>
+              </bml:stratigraphy>
+            </bml:Interval>
+          </bml:layer>
+          <bml:layer>
+            <bml:Interval>
+              <bml:from uom="m">5.0</bml:from>
+              <bml:to uom="m">5.4</bml:to>
+              <bml:rockCode>mS(fs), S</bml:rockCode>
+              <bml:rockNameText>
+                <gmd:LocalisedCharacterString xmlns:gmd="http://www.isotc211.org/2005/gmd" locale="http://www.infogeo.de/boreholeml/3.0/codelists/DE.xml">Mittelsand (feinsandig), Sand</gmd:LocalisedCharacterString>
+              </bml:rockNameText>
+              <bml:intervalType codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/IntervalTypeList.xml"/>
+              <bml:genesis codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/GenesisList.xml"/>
+              <bml:geoGenesis codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/GeoGenesisList.xml">yf</bml:geoGenesis>
+              <bml:carbonateContent codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/CarbonateContentList.xml">c0</bml:carbonateContent>
+              <bml:waterContent codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/WaterContentList.xml"/>
+              <bml:consistency codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/ConsistencyList.xml"/>
+              <bml:compactness codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/CompactnessList.xml"/>
+              <bml:descriptiveText>
+                <gmd:LocalisedCharacterString xmlns:gmd="http://www.isotc211.org/2005/gmd" locale="http://www.infogeo.de/boreholeml/3.0/codelists/DE.xml"/>
+              </bml:descriptiveText>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml">mS</bml:rockName>
+                  <bml:percentage>41.17</bml:percentage>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml">h8</bml:rockColor>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml">S</bml:rockName>
+                  <bml:percentage>41.17</bml:percentage>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml">h8</bml:rockColor>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml">fS</bml:rockName>
+                  <bml:percentage>17.65</bml:percentage>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml">h8</bml:rockColor>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:stratigraphy>
+                <bml:Stratigraphy>
+                  <bml:chronoStratigraphy codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/ChronoStratigraphyList.xml">nb</bml:chronoStratigraphy>
+                </bml:Stratigraphy>
+              </bml:stratigraphy>
+            </bml:Interval>
+          </bml:layer>
+          <bml:layer>
+            <bml:Interval>
+              <bml:from uom="m">5.4</bml:from>
+              <bml:to uom="m">6.0</bml:to>
+              <bml:rockCode>U(t, s)</bml:rockCode>
+              <bml:rockNameText>
+                <gmd:LocalisedCharacterString xmlns:gmd="http://www.isotc211.org/2005/gmd" locale="http://www.infogeo.de/boreholeml/3.0/codelists/DE.xml">Schluff (tonig, sandig)</gmd:LocalisedCharacterString>
+              </bml:rockNameText>
+              <bml:intervalType codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/IntervalTypeList.xml"/>
+              <bml:genesis codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/GenesisList.xml">sed</bml:genesis>
+              <bml:geoGenesis codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/GeoGenesisList.xml">wa</bml:geoGenesis>
+              <bml:carbonateContent codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/CarbonateContentList.xml">c0</bml:carbonateContent>
+              <bml:waterContent codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/WaterContentList.xml">feu2</bml:waterContent>
+              <bml:consistency codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/ConsistencyList.xml">wh</bml:consistency>
+              <bml:compactness codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/CompactnessList.xml"/>
+              <bml:descriptiveText>
+                <gmd:LocalisedCharacterString xmlns:gmd="http://www.isotc211.org/2005/gmd" locale="http://www.infogeo.de/boreholeml/3.0/codelists/DE.xml">junger</gmd:LocalisedCharacterString>
+              </bml:descriptiveText>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml">U</bml:rockName>
+                  <bml:percentage>62.5</bml:percentage>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml">h8</bml:rockColor>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml">T</bml:rockName>
+                  <bml:percentage>18.75</bml:percentage>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml">h8</bml:rockColor>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml">S</bml:rockName>
+                  <bml:percentage>18.75</bml:percentage>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml">h8</bml:rockColor>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:lithology>
+                <bml:Lithology>
+                  <bml:rockName codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockNameList.xml"/>
+                  <bml:rockColor codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorList.xml"/>
+                  <bml:rockColorMixture codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/RockColorMixtureList.xml"/>
+                </bml:Lithology>
+              </bml:lithology>
+              <bml:stratigraphy>
+                <bml:Stratigraphy>
+                  <bml:chronoStratigraphy codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/ChronoStratigraphyList.xml">Q1o</bml:chronoStratigraphy>
+                  <bml:lithoStratigraphy>
+                    <gmd:LocalisedCharacterString xmlns:gmd="http://www.isotc211.org/2005/gmd">Weichsel-Kaltzeit (Weichsel-Glazial)</gmd:LocalisedCharacterString>
+                  </bml:lithoStratigraphy>
+                </bml:Stratigraphy>
+              </bml:stratigraphy>
+            </bml:Interval>
+          </bml:layer>
+        </bml:IntervalSeries>
+      </bml:intervalSeries>
+      <bml:drillingProcess xsi:nil="true"/>
+      <bml:boreholeFilling>
+        <bml:BoreholeFilling>
+          <bml:from uom="m"/>
+          <bml:to uom="m"/>
+          <bml:boreholeFillingMaterial codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/FillingMaterialList.xml"/>
+        </bml:BoreholeFilling>
+      </bml:boreholeFilling>
+      <bml:installationDetail xsi:nil="true"/>
+      <bml:investigation>
+        <bml:Investigation>
+          <bml:from uom="m"/>
+          <bml:to uom="m"/>
+          <bml:investigationType codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/InvestigationTypeList.xml"/>
+        </bml:Investigation>
+      </bml:investigation>
+      <bml:sampling>
+        <bml:Sampling>
+          <bml:from uom="m"/>
+          <bml:to uom="m"/>
+          <bml:sampleType codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/SampleTypeList.xml"/>
+          <bml:samplingPurpose codeSpace="http://www.infogeo.de/boreholeml/3.0/codelists/SamplingPurposeList.xml"/>
+        </bml:Sampling>
+      </bml:sampling>
+    </bml:Borehole>
+  </wfs:member>
+</wfs:FeatureCollection>

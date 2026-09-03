@@ -29,6 +29,9 @@ geospatial data processing: trees, digital terrain models, city models, and base
 # Basepoint applications
 from .basepoint.basic.app import BasepointBasicApp
 
+# Borehole applications
+from .boreholes.generic.app import BoreholesGenericApp
+
 # City model applications
 from .city.basic.app import CityBasicApp
 from .city.generic.app import CityGenericApp
@@ -45,6 +48,8 @@ from .trees.generic.app import TreesGenericApp
 __all__ = [
     # Basepoint applications
     "BasepointBasicApp",
+    # Borehole applications
+    "BoreholesGenericApp",
     # City model applications
     "CityBasicApp",
     "CityGenericApp",

@@ -1,0 +1,267 @@
+{
+  "description": "Korrigierte Zuordnung von DIN-4023-Farbcodes zu deutschen Farbnamen.",
+  "method": "Basisfarben: we=weiß, ge=gelb, gr=grau, bn=braun, sw=schwarz, bl=blau, ro=rot, vi=violett. Modifikatoren: h=hell, d=dunkel. Zusammensetzungen (=, Kombinationen) werden als Misch- oder Dominanzfarbe abgebildet.",
+  "note": "Die RGB-Werte sind als Ganzzahlen im Bereich 0..255 hinterlegt (DIN-Tabelle). Die Umrechnung auf 0..1 erfolgt im Code.",
+  "color_code_to_german_name": {
+    "we": "weiß",
+    "ge": "gelb",
+    "gr": "grau",
+    "bn": "braun",
+    "sw": "schwarz",
+    "bl": "blau",
+    "ro": "rot",
+    "vi": "violett",
+    "hge": "hellgelb",
+    "dge": "dunkelgelb",
+    "hgr": "hellgrau",
+    "dgr": "dunkelgrau",
+    "hbn": "hellbraun",
+    "dbn": "dunkelbraun",
+    "hbl": "hellblau",
+    "dbl": "dunkelblau",
+    "hro": "hellrot",
+    "dro": "dunkelrot",
+    "hvi": "hellviolett",
+    "dvi": "dunkelviolett",
+    "bn=gr": "graubraun",
+    "ge=gr": "gelbgrau",
+    "gegr": "gelbgrau",
+    "grwe": "hellgrau",
+    "we=hgr": "hellgrau",
+    "gebn": "gelbbraun",
+    "grbn": "graubraun",
+    "dgrbn": "dunkelbraun",
+    "bnsw": "schwarz",
+    "dgrsw": "schwarz",
+    "grsw": "schwarz",
+    "swgr": "grau",
+    "hgrbn": "graubraun",
+    "hbngr": "graubraun",
+    "hge=gr": "hellgrau",
+    "hgegr": "hellgrau",
+    "robn": "rotbraun",
+    "blgr": "blaugrau",
+    "grbl": "blaugrau",
+    "bngr": "graubraun",
+    "bnbu": "blaugrau",
+    "be": "gelb",
+    "swbn": "braun",
+    "sw-bn": "braun",
+    "sw-dgr": "dunkelgrau",
+    "dbn=": "dunkelbraun",
+    "rsw": "schwarz",
+    "rbn": "rotbraun",
+    "rbl": "blaugrau",
+    "rwe": "hellgrau",
+    "n": "grau",
+    "n=gr": "grau",
+    "nbu": "blaugrau",
+    "ngr": "grau",
+    "nsw": "schwarz",
+    "e": "grau",
+    "e=gr": "grau",
+    "ebn": "braun",
+    "egr": "grau",
+    "lgr": "hellgrau",
+    "unknown": "grau"
+  },
+  "german_name_to_rgb": {
+    "oliv": [
+      105,
+      99,
+      62
+    ],
+    "gelb": [
+      219,
+      171,
+      6
+    ],
+    "gelblichbraun": [
+      165,
+      105,
+      58
+    ],
+    "rosa": [
+      195,
+      114,
+      128
+    ],
+    "orange": [
+      198,
+      84,
+      47
+    ],
+    "dunkelbraun": [
+      93,
+      71,
+      64
+    ],
+    "rot": [
+      190,
+      77,
+      88
+    ],
+    "lila": [
+      135,
+      70,
+      128
+    ],
+    "violett": [
+      103,
+      81,
+      129
+    ],
+    "violettblau": [
+      65,
+      73,
+      108
+    ],
+    "dunkelblau": [
+      42,
+      76,
+      103
+    ],
+    "hellblau": [
+      47,
+      125,
+      183
+    ],
+    "gelbgrün": [
+      97,
+      154,
+      70
+    ],
+    "türkis": [
+      98,
+      213,
+      196
+    ],
+    "grün": [
+      45,
+      128,
+      74
+    ],
+    "grau": [
+      127,
+      127,
+      127
+    ],
+    "schwarz": [
+      0,
+      0,
+      0
+    ],
+    "weiß": [
+      254,
+      254,
+      254
+    ],
+    "hellgelb": [
+      237,
+      209,
+      89
+    ],
+    "dunkelgelb": [
+      184,
+      143,
+      13
+    ],
+    "hellgrau": [
+      199,
+      199,
+      199
+    ],
+    "dunkelgrau": [
+      84,
+      84,
+      84
+    ],
+    "braun": [
+      140,
+      102,
+      72
+    ],
+    "hellbraun": [
+      171,
+      125,
+      82
+    ],
+    "blau": [
+      56,
+      92,
+      158
+    ],
+    "hellrot": [
+      219,
+      117,
+      117
+    ],
+    "dunkelrot": [
+      138,
+      41,
+      51
+    ],
+    "hellviolett": [
+      158,
+      122,
+      168
+    ],
+    "dunkelviolett": [
+      71,
+      56,
+      99
+    ],
+    "blaugrau": [
+      115,
+      128,
+      148
+    ],
+    "gelbgrau": [
+      158,
+      153,
+      115
+    ],
+    "graubraun": [
+      117,
+      102,
+      87
+    ],
+    "gelbbraun": [
+      163,
+      125,
+      61
+    ],
+    "rotbraun": [
+      143,
+      69,
+      51
+    ]
+  },
+  "hauptgemengteil_visual_colors": {
+    "description": "IFC-Visualfarbe nach Hauptmengenanteil (DIN). Farbe (farbe) nur Metadatum. Fehlende Codes: weiß.",
+    "default": { "name": "weiß", "rgb": [254, 254, 254] },
+    "by_hauptgemengteil": {
+      "G:bo": { "name": "gelblichbraun", "rgb": [165, 105, 58] },
+      "G:y": { "name": "weiß", "rgb": [254, 254, 254] },
+      "H": { "name": "dunkelbraun", "rgb": [93, 71, 64] },
+      "S": { "name": "orange", "rgb": [198, 84, 47] },
+      "S-U": { "name": "weiß", "rgb": [254, 254, 254] },
+      "T": { "name": "violett", "rgb": [103, 81, 129] },
+      "U": { "name": "oliv", "rgb": [105, 99, 62] },
+      "fG": { "name": "gelb", "rgb": [219, 171, 6] },
+      "fS": { "name": "orange", "rgb": [198, 84, 47] },
+      "fS-mS": { "name": "orange", "rgb": [198, 84, 47] },
+      "ffS": { "name": "orange", "rgb": [198, 84, 47] },
+      "ffS-fS": { "name": "orange", "rgb": [198, 84, 47] },
+      "gG-fG": { "name": "gelb", "rgb": [219, 171, 6] },
+      "gS": { "name": "orange", "rgb": [198, 84, 47] },
+      "gS-mS": { "name": "orange", "rgb": [198, 84, 47] },
+      "mS": { "name": "orange", "rgb": [198, 84, 47] },
+      "mS-fS": { "name": "orange", "rgb": [198, 84, 47] },
+      "mS-gS": { "name": "orange", "rgb": [198, 84, 47] },
+      "hz": { "name": "weiß", "rgb": [254, 254, 254] },
+      "hz,zy('Draht','Glas'),\"Mf\"": { "name": "weiß", "rgb": [254, 254, 254] },
+      "zy": { "name": "weiß", "rgb": [254, 254, 254] }
+    }
+  }
+}
