@@ -160,7 +160,7 @@ Der Link wird wie in der intern-App aufgebaut (feste Basis + `sid` + ID):
 ```text
 https://geodienste.hamburg.de/app/render?sid=0x960470caL0x71973d4cL&id=BDHH_6434B1
 ```
-# funkktioniert
+# funktioniert
 ```text
 https://geodienste.hamburg.de/app/render?sid=0x960470caL0x71973d4cL&id=44372
 ```

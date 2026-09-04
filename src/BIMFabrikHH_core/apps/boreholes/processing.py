@@ -551,7 +551,7 @@ def _layer_psets(
         bodenart_ergaenzung=map_nebengemengteil(layer.nebengemengteil, soil_types),
         farbe=map_color_code(layer.farbe, colors),
         kalkgehalt=layer.kalkgehalt or UNDEFINED,
-        stratigrapfie=map_stratigraphy(layer.stratigraphie),
+        stratigraphie=map_stratigraphy(layer.stratigraphie),
     )
     schicht = Pset_Schicht(
         genese=layer.genese or UNDEFINED,
