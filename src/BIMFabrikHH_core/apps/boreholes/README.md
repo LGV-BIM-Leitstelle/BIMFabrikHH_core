@@ -156,11 +156,11 @@ Die Fixture ergibt 5 Layer und 6 Materialien.
 
 Der Link wird wie in der intern-App aufgebaut (feste Basis + `sid` + ID):
 
-# funktioniert nicht
+#### funktioniert nicht
 ```text
 https://geodienste.hamburg.de/app/render?sid=0x960470caL0x71973d4cL&id=BDHH_6434B1
 ```
-# funktioniert
+#### funktioniert
 ```text
 https://geodienste.hamburg.de/app/render?sid=0x960470caL0x71973d4cL&id=44372
 ```
@@ -219,18 +219,23 @@ unverändert durchgereicht, `_Farbe` zeigt also z. B. `h8` statt `h8 (…)`.
 Die Geometrie ist davon **nicht** betroffen, weil die Einfärbung aus dem
 Hauptgemengteil kommt. Zur Behebung wäre die `RockColorList`-Codeliste nötig.
 
+`RockColorList`-Codeliste liegt hier:
+https://schemas.bgr.de/boreholeml/codelists/v2/RockNameList.xml
+
 ### Stratigraphie teils unaufgelöst
 
 Die Tabelle in `processing.py` kennt `qh`, `qp`, `q`, `y`, `t`, `k`, `j`, `tr`.
 Der Dienst liefert aber auch `nb` und `Q1`, die unverändert durchgereicht
 werden. Zur Behebung wäre die `ChronoStratigraphyList`-Codeliste nötig.
 
+`ChronoStratigraphyList`-Codeliste liegt hier: https://schemas.bgr.de/boreholeml/codelists/v2/ChronoStratigraphyList.xml
+
 ### Weitere Einschränkungen
 
 - **Nebengemengteil-Codes** wie `yy`, `s4`, `hz4`, `x` fehlen in der
   Bodentabelle und werden durchgereicht. Der Klartext steht aber in
   `Pset_Schicht._GeologischeBezeichnung` (aus `bml:rockNameText`), z. B.
-  „Mudde (stark sandig, viel Holzreste, schwach torfig)“.
+  „Mudde (stark sandig, viel Holzreste, schwach torfig)“. **Ideen**: in lithology steht rockName ohne Zahl -> Besser auflösbar als aus RockCode? RockNameList verwenden:  https://schemas.bgr.de/boreholeml/codelists/v2/RockNameList.xml
 - **Schichten ohne Bodenart:** Enthält ein Interval weder `rockCode` noch
   gefüllte `rockName`, entsteht ein weißer Zylinder mit `_Bodenart =
   undefiniert`. Das ist echte Datenlage, kein Parserfehler.

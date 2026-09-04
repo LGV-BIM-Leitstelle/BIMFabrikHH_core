@@ -1,0 +1,376 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- version 2.0 - date: 2024-06-25 - designed for BoreholeML 3.1.0 -->
+<gmx:ML_CodeListDictionary xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:gco="http://www.isotc211.org/2005/gco" xmlns:gml="http://www.opengis.net/gml/3.2" xmlns:gmd="http://www.isotc211.org/2005/gmd" xmlns:gmx="http://www.isotc211.org/2005/gmx" xmlns:bmlcl="https://schemas.bgr.de/boreholeml/codelists/v2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.isotc211.org/2005/gmx http://schemas.opengis.net/iso/19139/20070417/gmx/gmx.xsd https://schemas.bgr.de/boreholeml/codelists/v2 https://schemas.bgr.de/boreholeml/codelists/v2/codelistItem_BMLCL.xsd" gml:id="RockColorList">
+	<gml:description>Farbton und Helligkeit des Gesteins</gml:description>
+	<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/RockColorList.xml">RockColorList</gml:identifier>
+	<gml:name>Gesteinsfarbe</gml:name>
+	<gml:remarks>version 2.0 - date: 2024-06-25 - designed for BoreholeML 3.1.0</gml:remarks>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_18_0001_0001">
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/RockColorList.xml">v</gml:identifier>
+			<gml:name>Value (Helligkeit)</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/RockColorList.xml" gml:id="_18_0001_0001_en">
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/RockColorList.xml">v</gml:identifier>
+					<gml:name>brightness</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>1</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/89601c4e-ee62-45ae-9372-b995f920ad5c</bmlcl:geolKA>
+			<bmlcl:modificationDate>2017-08-14</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_18_0002_0002">
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/RockColorList.xml">v1</gml:identifier>
+			<gml:name>hell</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/RockColorList.xml" gml:id="_18_0002_0002_en">
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/RockColorList.xml">v1</gml:identifier>
+					<gml:name>light</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>2</bmlcl:keyID>
+			<bmlcl:parentID>1</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>2</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/5ba395fe-b979-48ea-a26e-529eb40fdbe4</bmlcl:geolKA>
+			<bmlcl:modificationDate>2017-08-14</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_18_0003_0003">
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/RockColorList.xml">v2</gml:identifier>
+			<gml:name>dunkel</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/RockColorList.xml" gml:id="_18_0003_0003_en">
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/RockColorList.xml">v2</gml:identifier>
+					<gml:name>dark</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>3</bmlcl:keyID>
+			<bmlcl:parentID>1</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>2</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/40d4d30a-c415-43c6-8ea7-1671efd0fc6b</bmlcl:geolKA>
+			<bmlcl:modificationDate>2017-08-14</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_18_0004_0004">
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/RockColorList.xml">c</gml:identifier>
+			<gml:name>Chroma (Intensität)</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/RockColorList.xml" gml:id="_18_0004_0004_en">
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/RockColorList.xml">c</gml:identifier>
+					<gml:name>chroma (intensity)</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>4</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/a119a392-2b54-4638-9aab-d80c73c761bd</bmlcl:geolKA>
+			<bmlcl:modificationDate>2017-08-14</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_18_0005_0005">
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/RockColorList.xml">c1</gml:identifier>
+			<gml:name>rötlich</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/RockColorList.xml" gml:id="_18_0005_0005_en">
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/RockColorList.xml">c1</gml:identifier>
+					<gml:name>reddish</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>5</bmlcl:keyID>
+			<bmlcl:parentID>4</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>2</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/63fe2719-5256-4829-9772-504740e0ae03</bmlcl:geolKA>
+			<bmlcl:modificationDate>2017-08-14</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_18_0006_0006">
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/RockColorList.xml">c2</gml:identifier>
+			<gml:name>gelblich</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/RockColorList.xml" gml:id="_18_0006_0006_en">
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/RockColorList.xml">c2</gml:identifier>
+					<gml:name>yellowish</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>6</bmlcl:keyID>
+			<bmlcl:parentID>4</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>2</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/f8a50a19-0be2-44b7-8abd-12aea6f05c2d</bmlcl:geolKA>
+			<bmlcl:modificationDate>2017-08-14</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_18_0007_0007">
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/RockColorList.xml">c3</gml:identifier>
+			<gml:name>bräunlich</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/RockColorList.xml" gml:id="_18_0007_0007_en">
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/RockColorList.xml">c3</gml:identifier>
+					<gml:name>brownish</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>7</bmlcl:keyID>
+			<bmlcl:parentID>4</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>2</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/98f2a669-b9a3-487f-908d-2306e6cc4f2b</bmlcl:geolKA>
+			<bmlcl:modificationDate>2017-08-14</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_18_0008_0008">
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/RockColorList.xml">c4</gml:identifier>
+			<gml:name>grünlich</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/RockColorList.xml" gml:id="_18_0008_0008_en">
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/RockColorList.xml">c4</gml:identifier>
+					<gml:name>greenish</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>8</bmlcl:keyID>
+			<bmlcl:parentID>4</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>2</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/a816d4bb-f7c4-4a34-8ab4-a496a14a4443</bmlcl:geolKA>
+			<bmlcl:modificationDate>2017-08-14</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_18_0009_0009">
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/RockColorList.xml">c5</gml:identifier>
+			<gml:name>bläulich</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/RockColorList.xml" gml:id="_18_0009_0009_en">
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/RockColorList.xml">c5</gml:identifier>
+					<gml:name>blueish</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>9</bmlcl:keyID>
+			<bmlcl:parentID>4</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>2</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/0088b67a-a5ea-4f97-875f-1814980b8be2</bmlcl:geolKA>
+			<bmlcl:modificationDate>2017-08-14</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_18_0010_0010">
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/RockColorList.xml">c6</gml:identifier>
+			<gml:name>gräulich</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/RockColorList.xml" gml:id="_18_0010_0010_en">
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/RockColorList.xml">c6</gml:identifier>
+					<gml:name>greyish</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>10</bmlcl:keyID>
+			<bmlcl:parentID>4</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>2</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/31738458-1700-416d-b879-5030f15007be</bmlcl:geolKA>
+			<bmlcl:modificationDate>2017-08-14</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_18_0011_0011">
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/RockColorList.xml">h</gml:identifier>
+			<gml:name>Hue (Farbton)</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/RockColorList.xml" gml:id="_18_0011_0011_en">
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/RockColorList.xml">h</gml:identifier>
+					<gml:name>hue</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>11</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/ae72fb46-97f7-4e19-9598-9ce3efe8e080</bmlcl:geolKA>
+			<bmlcl:modificationDate>2017-08-14</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_18_0012_0012">
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/RockColorList.xml">h1</gml:identifier>
+			<gml:name>violett</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/RockColorList.xml" gml:id="_18_0012_0012_en">
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/RockColorList.xml">h1</gml:identifier>
+					<gml:name>purple</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>12</bmlcl:keyID>
+			<bmlcl:parentID>11</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>2</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/9d86256b-fe5b-44af-8816-6210902efa4e</bmlcl:geolKA>
+			<bmlcl:modificationDate>2017-08-14</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_18_0013_0013">
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/RockColorList.xml">h2</gml:identifier>
+			<gml:name>rot</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/RockColorList.xml" gml:id="_18_0013_0013_en">
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/RockColorList.xml">h2</gml:identifier>
+					<gml:name>red</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>13</bmlcl:keyID>
+			<bmlcl:parentID>11</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>2</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/84635c30-05c2-4882-9334-28f3dfecd588</bmlcl:geolKA>
+			<bmlcl:modificationDate>2017-08-14</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_18_0014_0014">
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/RockColorList.xml">h3</gml:identifier>
+			<gml:name>gelb</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/RockColorList.xml" gml:id="_18_0014_0014_en">
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/RockColorList.xml">h3</gml:identifier>
+					<gml:name>yellow</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>14</bmlcl:keyID>
+			<bmlcl:parentID>11</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>2</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/15421c68-3beb-4dec-aef5-ed64ba470d09</bmlcl:geolKA>
+			<bmlcl:modificationDate>2017-08-14</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_18_0015_0015">
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/RockColorList.xml">h4</gml:identifier>
+			<gml:name>braun</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/RockColorList.xml" gml:id="_18_0015_0015_en">
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/RockColorList.xml">h4</gml:identifier>
+					<gml:name>brown</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>15</bmlcl:keyID>
+			<bmlcl:parentID>11</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>2</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/991c3dde-3c8b-4957-ba7f-2733992a9e23</bmlcl:geolKA>
+			<bmlcl:modificationDate>2017-08-14</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_18_0016_0016">
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/RockColorList.xml">h5</gml:identifier>
+			<gml:name>grün</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/RockColorList.xml" gml:id="_18_0016_0016_en">
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/RockColorList.xml">h5</gml:identifier>
+					<gml:name>green</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>16</bmlcl:keyID>
+			<bmlcl:parentID>11</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>2</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/d80e0dd4-77c1-4dff-98e2-949d26935d78</bmlcl:geolKA>
+			<bmlcl:modificationDate>2017-08-14</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_18_0017_0017">
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/RockColorList.xml">h6</gml:identifier>
+			<gml:name>blau</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/RockColorList.xml" gml:id="_18_0017_0017_en">
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/RockColorList.xml">h6</gml:identifier>
+					<gml:name>blue</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>17</bmlcl:keyID>
+			<bmlcl:parentID>11</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>2</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/b725bb35-8aa8-46cc-bb49-d9e5e883f2b9</bmlcl:geolKA>
+			<bmlcl:modificationDate>2017-08-14</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_18_0018_0018">
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/RockColorList.xml">h7</gml:identifier>
+			<gml:name>weiss</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/RockColorList.xml" gml:id="_18_0018_0018_en">
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/RockColorList.xml">h7</gml:identifier>
+					<gml:name>white</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>18</bmlcl:keyID>
+			<bmlcl:parentID>11</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>2</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/b6a59304-bee8-4071-9f2b-2c01797e7353</bmlcl:geolKA>
+			<bmlcl:modificationDate>2017-08-14</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_18_0019_0019">
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/RockColorList.xml">h8</gml:identifier>
+			<gml:name>grau</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/RockColorList.xml" gml:id="_18_0019_0019_en">
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/RockColorList.xml">h8</gml:identifier>
+					<gml:name>grey</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>19</bmlcl:keyID>
+			<bmlcl:parentID>11</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>2</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/ee87cc6a-5b77-46f7-88bd-586f5131792f</bmlcl:geolKA>
+			<bmlcl:modificationDate>2017-08-14</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_18_0020_0020">
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/RockColorList.xml">h9</gml:identifier>
+			<gml:name>schwarz</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/RockColorList.xml" gml:id="_18_0020_0020_en">
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/RockColorList.xml">h9</gml:identifier>
+					<gml:name>black</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>20</bmlcl:keyID>
+			<bmlcl:parentID>11</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>2</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/6fccc62e-28b3-4f89-98f7-7a409393de80</bmlcl:geolKA>
+			<bmlcl:modificationDate>2017-08-14</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:alternativeExpression>
+		<gmx:ClAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/RockColorList.xml" gml:id="RockColorList_en">
+			<gml:description>color and brightness of a rock</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/RockColorList.xml">RockColorList</gml:identifier>
+			<gml:name>rock color</gml:name>
+			<gmx:locale xlink:href="EN.xml"/>
+		</gmx:ClAlternativeExpression>
+	</gmx:alternativeExpression>
+</gmx:ML_CodeListDictionary>
