@@ -1,4 +1,6 @@
-# Normalize all text files to LF in the repository, regardless of platform.
+# Keep LF in the repository and in the working tree on every platform.
+# Without this, a Windows editor rewrites whole files as CRLF and the diff
+# shows every line as changed.
 * text=auto eol=lf
 
 *.tif binary

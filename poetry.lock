@@ -93,6 +93,23 @@ files = [
 pyflakes = ">=3.0.0"
 
 [[package]]
+name = "bimfabrikhh-core-rs"
+version = "0.1.1"
+description = "Parse CityGML and write IFC4 STEP text from Rust, callable from Python"
+optional = false
+python-versions = ">=3.11"
+groups = ["main"]
+files = [
+    {file = "bimfabrikhh_core_rs-0.1.1-cp311-abi3-macosx_11_0_arm64.whl", hash = "sha256:b7104d3519c97abe353fc7752ce600424f14c0385cc9e35c2711d46ec578d4b9"},
+    {file = "bimfabrikhh_core_rs-0.1.1-cp311-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:6696161a547c7f8410dc1949741c4a81513704dc0b773182c6075b9452ca09d2"},
+    {file = "bimfabrikhh_core_rs-0.1.1-cp311-abi3-win_amd64.whl", hash = "sha256:273ca4c5f7e1349112c01f877445af6bd50d79d88e79365619950158678951ed"},
+    {file = "bimfabrikhh_core_rs-0.1.1.tar.gz", hash = "sha256:3a57cf345d638d73adbde1d56191479a53ca882ec5f329269f5daf9892f56bc7"},
+]
+
+[package.extras]
+psets = ["pydantic (>=2.0)"]
+
+[[package]]
 name = "black"
 version = "26.5.1"
 description = "The uncompromising code formatter."
@@ -2429,4 +2446,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.11,<3.12"
-content-hash = "4c7d0674032c8fa88a22c042991ded7254185807a95731f33a24e46f329f5212"
+content-hash = "4c6cc23a95503055138e600c68a29e1b0cf6227ef936ae9d8c83ef05d4ac7e27"

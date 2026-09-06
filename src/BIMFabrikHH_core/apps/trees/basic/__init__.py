@@ -1,4 +1,7 @@
-"""Basic trees IFC export (mesh trunk + icosphere crown via ``ifcopenshell.api``)."""
+"""Deprecated. Use :class:`TreesGenericApp` or :class:`TreesRustApp`.
+
+Basic trees IFC export (mesh trunk + icosphere crown via ``ifcopenshell.api``).
+"""
 
 from BIMFabrikHH_core.data_models import TreeRecord
 

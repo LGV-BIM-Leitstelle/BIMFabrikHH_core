@@ -119,7 +119,7 @@ class TestIfcModelBuilder:
         assert psets[0].idebene2 == "Test Level 2"
         assert psets[0].idebene3 == "Test Level 3"
         assert psets[1].hyperlink_001 == "http://test.com"
-        assert psets[1].hyperlink_001_Bemerkung == "Test Link"
+        assert psets[1].hyperlink_001_bemerkung == "Test Link"
 
     @patch.object(IfcModelMethods, "edit_georeference")
     @patch.object(IfcModelMethods, "create_georeference")

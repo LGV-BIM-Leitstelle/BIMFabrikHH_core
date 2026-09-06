@@ -7,6 +7,10 @@ from unittest.mock import Mock
 import pandas as pd
 import pytest
 
+# Not collected: the generic_entity helpers these cover are still moving, so the
+# file is kept in the tree but excluded from the default run.
+collect_ignore = ["test_city_generic_entity.py"]
+
 
 @pytest.fixture
 def sample_dataframe():

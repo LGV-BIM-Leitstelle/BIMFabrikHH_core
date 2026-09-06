@@ -2,9 +2,13 @@
 
 Two record-builder apps share a single :class:`TerrainMesh` input:
 
-* :class:`TerrainBasicApp` — writes the mesh via ``ifcopenshell.api``.
+* :class:`TerrainBasicApp` — **deprecated**; use :class:`TerrainGenericApp`
+  or :class:`TerrainRustApp`.
+  Writes the mesh via ``ifcopenshell.api``.
 * :class:`TerrainGenericApp` — writes the mesh via the ``ifcfactory``
   ``BIMFactoryElement`` pipeline (same pattern as ``TreesGenericApp``).
+* :class:`TerrainRustApp` — ``bimfabrikhh_core_rs.terrain_to_ifc`` (same
+  :class:`TerrainMesh`; Python still meshes).
 
 The shared meshing helpers in
 :mod:`BIMFabrikHH_core.apps.terrain.processing` produce the mesh (from
@@ -16,6 +20,7 @@ from BIMFabrikHH_core.data_models import Pset_Objektinformation_DGM, TerrainMesh
 
 from .basic.app import TerrainBasicApp
 from .generic.app import TerrainGenericApp
+from .generic_rust import TerrainRustApp
 from .processing import (
     adaptive_sampling,
     analyze_terrain_features,
@@ -29,6 +34,7 @@ from .processing import (
 __all__ = [
     "TerrainBasicApp",
     "TerrainGenericApp",
+    "TerrainRustApp",
     "TerrainMesh",
     "Pset_Objektinformation_DGM",
     "adaptive_sampling",
