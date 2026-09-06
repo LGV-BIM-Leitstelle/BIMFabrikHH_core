@@ -1,4 +1,4 @@
-"""Resolve the local Hamburg DGM1 tile folder on Windows or WSL."""
+"""DGM1 tiles shipped under ``examples/assets`` (path relative to this file)."""
 
 from __future__ import annotations
 
@@ -13,23 +13,15 @@ _DGM_TILES = [
     "dgm1_32_566_9340_1_hh_2022.tif",
 ]
 
-_DGM_DIR_CANDIDATES = (
-    Path(r"C:\_Lokale_Daten_ungesichert\___BIMFabrikHH_Datensaetze\dgm1_hh_2022-04-30"),
-    Path("/mnt/c/_Lokale_Daten_ungesichert/___BIMFabrikHH_Datensaetze/dgm1_hh_2022-04-30"),
-)
+# examples/terrain/generic/this file → examples/assets/dgm1_hh_2022-04-30
+_DGM_DIR = Path(__file__).resolve().parents[2] / "assets" / "dgm1_hh_2022-04-30"
 
 
 def resolve_dgm_dir() -> Path:
-    """Return the DGM1 folder that exists on this machine.
-
-    A hardcoded ``/mnt/c/...`` path becomes ``\\mnt\\c\\...`` under Windows
-    Python and GDAL then reports the file as missing.
-    """
-    for path in _DGM_DIR_CANDIDATES:
-        if path.is_dir():
-            return path
-    tried = "\n  ".join(str(p) for p in _DGM_DIR_CANDIDATES)
-    raise FileNotFoundError(f"DGM1 folder not found. Tried:\n  {tried}")
+    """Return ``examples/assets/dgm1_hh_2022-04-30``."""
+    if not _DGM_DIR.is_dir():
+        raise FileNotFoundError(f"DGM1 folder not found: {_DGM_DIR}")
+    return _DGM_DIR
 
 
 def dgm_tile_paths() -> list[str]:

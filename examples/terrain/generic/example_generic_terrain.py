@@ -1,6 +1,6 @@
 """Generic terrain example (no Bruchkanten).
 
-DGM1 tiles from ``___BIMFabrikHH_Datensaetze/dgm1_hh_2022-04-30`` for bbox
+DGM1 tiles from ``examples/assets/dgm1_hh_2022-04-30`` for bbox
 ``9.9769,53.5478–10.0031,53.5564``. Same tiles and crop as the guided
 example, without constrained street edges.
 """

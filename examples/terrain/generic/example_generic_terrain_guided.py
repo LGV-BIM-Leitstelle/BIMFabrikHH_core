@@ -1,6 +1,6 @@
 """Generic terrain example with ALKIS Nutzung Bruchkanten.
 
-DGM1 tiles from ``___BIMFabrikHH_Datensaetze/dgm1_hh_2022-04-30`` for bbox
+DGM1 tiles from ``examples/assets/dgm1_hh_2022-04-30`` for bbox
 ``9.9769,53.5478–10.0031,53.5564``. Nutzung outlines come from the Hamburg
 OAF (``guide_from_oaf=True``). Writing ``alkis_nutzung_weitere.geojson`` is
 optional and off by default (``write_geojson=False``).
