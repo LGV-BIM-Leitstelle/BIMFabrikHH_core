@@ -174,18 +174,12 @@ class IfcModelMethods:
         Add empty georeferencing entities to the IFC model (IFC4).
         This only creates the entities; you must set parameters with edit_georeference.
         """
-
-        # Create the georeferencing entities
         georeference.add_georeferencing(model)
 
         if not model.by_type("IfcProjectedCRS"):
-            import logging
-
-            logging.warning("Failed to create IfcProjectedCRS entity")
+            raise RuntimeError("failed to create IfcProjectedCRS")
         if not model.by_type("IfcMapConversion"):
-            import logging
-
-            logging.warning("Failed to create IfcMapConversion entity")
+            raise RuntimeError("failed to create IfcMapConversion")
 
     @staticmethod
     def edit_georeference(
@@ -194,7 +188,6 @@ class IfcModelMethods:
         """
         Edit georeferencing information in the IFC model using the provided CoordinateSystem and CoordinateOperation.
         """
-
         georeference.edit_georeferencing(
             model,
             projected_crs=coordinate_system.model_dump(by_alias=True),

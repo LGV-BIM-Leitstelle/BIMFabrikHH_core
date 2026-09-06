@@ -9,6 +9,7 @@
 # Keep logs/ in the repo; ignore files written there (including rotated logs)
 logs/*
 !logs/README.md
+!logs/.gitkeep
 .env
 poetry.lock
 

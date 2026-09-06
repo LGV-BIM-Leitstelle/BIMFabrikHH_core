@@ -1,4 +1,7 @@
+import datetime
+
 import pytest
+from ifcfactory import ureg
 from pydantic import ValidationError
 
 # Import the data models to test
@@ -142,7 +145,7 @@ class TestCoordinateOperation:
             "eastings": 3570605.5513,
             "northings": 5937434.3470,
             "orthogonal_height": 10.5,
-            "x_axis_abscissa": 0.0,
+            "x_axis_abscissa": 1.0,
             "x_axis_ordinate": 0.0,
             "scale": 1.0,
         }
@@ -153,6 +156,21 @@ class TestCoordinateOperation:
         assert geo.northings == 5937434.3470
         assert geo.orthogonal_height == 10.5
         assert geo.scale == 1.0
+
+    def test_rejects_zero_x_axis_direction(self):
+        with pytest.raises(ValidationError, match="x-axis direction cannot be the zero vector"):
+            CoordinateOperation(x_axis_abscissa=0.0, x_axis_ordinate=0.0)
+
+    @pytest.mark.parametrize("scale", [0.0, -1.0])
+    def test_rejects_non_positive_scale(self, scale):
+        with pytest.raises(ValidationError, match="scale must be greater than zero"):
+            CoordinateOperation(scale=scale)
+
+    def test_validates_assignment(self):
+        operation = CoordinateOperation()
+
+        with pytest.raises(ValidationError, match="x-axis direction cannot be the zero vector"):
+            operation.x_axis_abscissa = 0.0
 
 
 class TestCoordinateSystem:
@@ -214,7 +232,7 @@ class TestPsetModellinformation:
         assert pset.artteilmodell == "Bruecke"
         assert pset.auftraggeber == "Test Client"
         assert pset.ersteller == "Test Creator"
-        assert pset.erstelldatum == "2020-04-24"
+        assert pset.erstelldatum == datetime.date(2020, 4, 24)
         assert pset.gemobjektkatalog == "Allgemein/Master_V004"
         assert pset.projektname == "Test Project"
         assert pset.projektnummer == "12345"
@@ -255,7 +273,7 @@ class TestPsetHyperlink:
         pset = Pset_Hyperlink(**pset_data)
 
         assert pset.hyperlink_001 == "www.bim.hamburg.de"
-        assert pset.hyperlink_001_Bemerkung == "Link zur Homepage von BIM.Hamburg"
+        assert pset.hyperlink_001_bemerkung == "Link zur Homepage von BIM.Hamburg"
         assert pset.pset_name == "Pset_Hyperlink"
 
 
@@ -267,24 +285,16 @@ class TestPsetObjektinformationTree:
         pset_data = {
             "baumnummer": "T001",
             "gattung_deutsch": "Eiche",
-            "baumid": 12345,
-            "art_deutsch": "Stieleiche",
-            "sorte_deutsch": "Quercus robur",
             "pflanzjahr": 1990,
-            "kronendurchmesser": 15.5,
-            "stammumfang": 2.3,
+            "kronendurchmesser": ureg.Quantity(15.5, "meter"),
         }
 
         pset = Pset_Objektinformation_Tree(**pset_data)
 
         assert pset.baumnummer == "T001"
         assert pset.gattung_deutsch == "Eiche"
-        assert pset.baumid == 12345
-        assert pset.art_deutsch == "Stieleiche"
-        assert pset.sorte_deutsch == "Quercus robur"
         assert pset.pflanzjahr == 1990
-        assert pset.kronendurchmesser == 15.5
-        assert pset.stammumfang == 2.3
+        assert pset.kronendurchmesser.magnitude == 15.5
         assert pset.pset_name == "Pset_Objektinformation"
 
 

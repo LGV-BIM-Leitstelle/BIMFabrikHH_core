@@ -2,3 +2,7 @@
 # Without this, a Windows editor rewrites whole files as CRLF and the diff
 # shows every line as changed.
 * text=auto eol=lf
+
+*.tif binary
+*.tiff binary
+*.ifc text eol=lf
