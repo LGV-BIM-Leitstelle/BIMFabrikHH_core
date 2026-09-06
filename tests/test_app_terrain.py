@@ -13,10 +13,25 @@ import pytest
 import ifcopenshell
 
 from BIMFabrikHH_core.apps.terrain import (
+    GuideRing,
     Pset_Objektinformation_DGM,
     TerrainBasicApp,
     TerrainMesh,
+    collect_guide_rings,
     generate_delaunay_mesh,
+    split_mesh_by_nutzart,
+)
+from BIMFabrikHH_core.apps.terrain.processing import (
+    build_water_polygon_meshes,
+    drop_points_inside_rings,
+    flatten_planar_water_z,
+)
+from BIMFabrikHH_core.data_models.streets import (
+    ALKIS_NUTZUNG_WEITERE_GEOJSON,
+    DEFAULT_NUTZARTEN,
+    WEITERE_NUTZARTEN,
+    StreetRecord,
+    write_nutzung_geojson,
 )
 from BIMFabrikHH_core.data_models import RequestParams
 from BIMFabrikHH_core.data_models.params_bbox import BoundingBoxParams
@@ -105,6 +120,132 @@ def test_generate_delaunay_mesh_returns_expected_shapes() -> None:
         assert len(face) == 3
         for idx in face:
             assert 0 <= idx < len(vertices)
+
+
+def test_collect_guide_rings_clips_to_bbox() -> None:
+    """Street outlines that leave the crop must be clipped so the TIN stays rectangular."""
+    rec = StreetRecord(
+        feature_id=1,
+        rings=[[(-10.0, -10.0), (20.0, -10.0), (20.0, 20.0), (-10.0, 20.0)]],
+        geometry_crs="EPSG:25832",
+        nutzart="Strassenverkehr",
+    )
+    bbox = (0.0, 0.0, 10.0, 10.0)
+    rings = collect_guide_rings([rec], spacing=100.0, bbox_utm=bbox)
+    assert len(rings) == 1
+    xs, ys = rings[0].xy[:, 0], rings[0].xy[:, 1]
+    assert rings[0].nutzart == "Strassenverkehr"
+    assert xs.min() >= 0.0 - 1e-9
+    assert ys.min() >= 0.0 - 1e-9
+    assert xs.max() <= 10.0 + 1e-9
+    assert ys.max() <= 10.0 + 1e-9
+
+
+def test_collect_guide_rings_drops_rings_outside_bbox() -> None:
+    rec = StreetRecord(
+        feature_id=2,
+        rings=[[(100.0, 100.0), (110.0, 100.0), (110.0, 110.0)]],
+        geometry_crs="EPSG:25832",
+    )
+    assert collect_guide_rings([rec], spacing=100.0, bbox_utm=(0.0, 0.0, 10.0, 10.0)) == []
+
+
+def test_split_mesh_by_nutzart_keeps_unknown_types() -> None:
+    mesh = TerrainMesh(
+        vertices=[[0.0, 0.0, 0.0], [2.0, 0.0, 0.0], [1.0, 2.0, 0.0], [10.0, 10.0, 0.0], [12.0, 10.0, 0.0], [11.0, 12.0, 0.0]],
+        faces=[[0, 1, 2], [3, 4, 5]],
+    )
+    park = GuideRing(
+        xy=np.array([[-0.1, -0.1], [2.1, -0.1], [2.1, 2.1], [-0.1, 2.1]]),
+        nutzart="Sport Freizeit Und Erholungsflaeche",
+        label="Sport Freizeit Und Erholungsflaeche",
+    )
+    parts = split_mesh_by_nutzart(mesh, [park])
+    assert "Sport Freizeit Und Erholungsflaeche" in parts
+    assert len(parts["Sport Freizeit Und Erholungsflaeche"].faces) == 1
+
+
+def test_split_mesh_by_nutzart_groups_one_type() -> None:
+    """Two street triangles become one Strassenverkehr mesh; the rest stays DGM."""
+    mesh = TerrainMesh(
+        vertices=[
+            [0.0, 0.0, 0.0],
+            [2.0, 0.0, 0.0],
+            [2.0, 2.0, 0.0],
+            [0.0, 2.0, 0.0],
+            [10.0, 10.0, 0.0],
+            [12.0, 10.0, 0.0],
+            [10.0, 12.0, 0.0],
+        ],
+        faces=[[0, 1, 2], [0, 2, 3], [4, 5, 6]],
+    )
+    street = GuideRing(
+        xy=np.array([[-0.1, -0.1], [2.1, -0.1], [2.1, 2.1], [-0.1, 2.1]]),
+        nutzart="Strassenverkehr",
+    )
+    parts = split_mesh_by_nutzart(mesh, [street])
+    assert set(parts) == {"DGM", "Strassenverkehr"}
+    assert len(parts["Strassenverkehr"].faces) == 2
+    assert len(parts["DGM"].faces) == 1
+
+
+def test_drop_points_inside_water_rings() -> None:
+    ring = GuideRing(
+        xy=np.array([[0.0, 0.0], [2.0, 0.0], [2.0, 2.0], [0.0, 2.0]]),
+        nutzart="Fliessgewaesser",
+    )
+    x = np.array([1.0, 3.0])
+    y = np.array([1.0, 3.0])
+    z = np.array([5.0, 6.0])
+    xo, yo, zo = drop_points_inside_rings(x, y, z, [ring])
+    assert list(xo) == [3.0]
+    assert list(zo) == [6.0]
+
+
+def test_write_nutzung_geojson_filters_weitere(tmp_path: Path) -> None:
+    data = {
+        "type": "FeatureCollection",
+        "features": [
+            {
+                "type": "Feature",
+                "properties": {"nutzart": "Strassenverkehr"},
+                "geometry": {"type": "Polygon", "coordinates": [[[0, 0], [1, 0], [1, 1], [0, 0]]]},
+            },
+            {
+                "type": "Feature",
+                "properties": {"nutzart": "Wohnbauflaeche"},
+                "geometry": {"type": "Polygon", "coordinates": [[[2, 2], [3, 2], [3, 3], [2, 2]]]},
+            },
+        ],
+    }
+    dest = tmp_path / ALKIS_NUTZUNG_WEITERE_GEOJSON
+    write_nutzung_geojson(data, dest, nutzarten=WEITERE_NUTZARTEN)
+    written = dest.read_text(encoding="utf-8")
+    assert "Wohnbauflaeche" in written
+    assert "Strassenverkehr" not in written
+    assert DEFAULT_NUTZARTEN.isdisjoint(WEITERE_NUTZARTEN)
+
+
+def test_build_water_polygon_meshes_one_ngon() -> None:
+    ring = GuideRing(
+        xy=np.array([[0.0, 0.0], [2.0, 0.0], [2.0, 2.0], [0.0, 2.0]]),
+        nutzart="Fliessgewaesser",
+    )
+    meshes = build_water_polygon_meshes([ring], [np.array([1.0, 1.1, 1.2, 1.0])])
+    water = meshes["Fliessgewaesser"]
+    assert len(water.faces) == 1
+    assert len(water.faces[0]) == 4
+    assert len(water.vertices) == 4
+
+
+def test_flatten_planar_water_uses_median() -> None:
+    ring = GuideRing(
+        xy=np.array([[0.0, 0.0], [1.0, 0.0], [1.0, 1.0]]),
+        nutzart="Stehendes Gewaesser",
+    )
+    z = np.array([2.0, 4.0, np.nan])
+    flatten_planar_water_z([ring], [z])
+    assert np.allclose(z, 3.0)
 
 
 def test_generate_delaunay_mesh_too_few_points_returns_empty() -> None:

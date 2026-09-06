@@ -40,6 +40,7 @@ from .apps.city.basic.app import CityBasicApp
 from .apps.city.generic.app import CityGenericApp
 from .apps.terrain.basic.app import TerrainBasicApp
 from .apps.terrain.generic.app import TerrainGenericApp
+from .apps.streets.generic.app import StreetsGenericApp
 from .apps.trees.basic.app import TreesBasicApp
 from .apps.trees.generic.app import TreesGenericApp
 from .apps.wasserschutzgebiete.generic.app import WasserschutzgebieteGenericApp
@@ -47,6 +48,16 @@ from .apps.wasserschutzgebiete.generic.app import WasserschutzgebieteGenericApp
 # Data model imports
 from .data_models.params_bbox import BoundingBoxParams
 from .data_models.params_tree import Component, Container, RequestParams
+from .data_models.streets import (
+    DEFAULT_NUTZARTEN,
+    GUIDE_NUTZARTEN,
+    StreetRecord,
+    collect_street_psets,
+    load_streets_records,
+)
+from .data_models.streets import (
+    records_from_geojson_feature_collection as streets_records_from_geojson_feature_collection,
+)
 from .data_models.terrain_mesh import TerrainMesh
 from .data_models.tree_record import TreeRecord
 from .data_models.wasserschutzgebiete import (
@@ -70,6 +81,7 @@ __all__ = [
     "TreesBasicApp",
     "TreesGenericApp",
     "WasserschutzgebieteGenericApp",
+    "StreetsGenericApp",
     # Data models
     "BoundingBoxParams",
     "RequestParams",
@@ -82,6 +94,12 @@ __all__ = [
     "collect_wasserschutz_psets",
     "load_wasserschutzgebiete_records",
     "records_from_geojson_feature_collection",
+    "DEFAULT_NUTZARTEN",
+    "GUIDE_NUTZARTEN",
+    "StreetRecord",
+    "collect_street_psets",
+    "load_streets_records",
+    "streets_records_from_geojson_feature_collection",
     # Configuration
     "PathConfig",
 ]

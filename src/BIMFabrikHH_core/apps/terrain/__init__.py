@@ -17,13 +17,18 @@ from BIMFabrikHH_core.data_models import Pset_Objektinformation_DGM, TerrainMesh
 from .basic.app import TerrainBasicApp
 from .generic.app import TerrainGenericApp
 from .processing import (
+    GuideRing,
     adaptive_sampling,
     analyze_terrain_features,
+    collect_guide_rings,
+    collect_guide_xy,
+    generate_constrained_mesh,
     create_boundary_points,
     extract_mesh_adaptive,
     filter_and_add_boundary,
     generate_delaunay_mesh,
     sample_elevations_from_raster,
+    split_mesh_by_nutzart,
 )
 
 __all__ = [
@@ -33,6 +38,11 @@ __all__ = [
     "Pset_Objektinformation_DGM",
     "adaptive_sampling",
     "analyze_terrain_features",
+    "GuideRing",
+    "collect_guide_rings",
+    "collect_guide_xy",
+    "generate_constrained_mesh",
+    "split_mesh_by_nutzart",
     "create_boundary_points",
     "extract_mesh_adaptive",
     "filter_and_add_boundary",

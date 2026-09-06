@@ -7,14 +7,18 @@ live here; all IFC-writing logic lives in each app's ``app.py``.
 
 Public entry point:
     :func:`extract_mesh_adaptive` — feature-preserving adaptive sampling
-    for one or more GeoTIFFs, returning a :class:`TerrainMesh`.
+    for one or more GeoTIFFs, returning a :class:`TerrainMesh`. Optional
+    ALKIS ``Nutzung`` rings (``guide_records``) are used as **Bruchkanten**
+    (constrained edges) in a Constrained Delaunay triangulation.
 """
 
 from __future__ import annotations
 
+import time
+from dataclasses import dataclass
 from io import BytesIO
 from pathlib import Path
-from typing import Iterable, List, Optional, Tuple, Union
+from typing import Any, Dict, FrozenSet, Iterable, List, Optional, Sequence, Tuple, Union
 
 import numpy as np
 import rasterio
@@ -22,9 +26,55 @@ from rasterio.io import MemoryFile
 from scipy.spatial import Delaunay
 
 from BIMFabrikHH_core.config.logging_config import get_logger
+from BIMFabrikHH_core.core.georeferencing.coordinate_transformer import CoordinateTransformer
+from BIMFabrikHH_core.core.ogc_extractor import strip_closing_duplicate_xy
+from BIMFabrikHH_core.data_models.streets import nutzung_split_label
 from BIMFabrikHH_core.data_models.terrain_mesh import TerrainMesh
 
 logger = get_logger("terrain_processing")
+
+DEFAULT_GUIDE_EDGE_SPACING_M: float = 5.0
+NUTZART_ORDER: Tuple[str, ...] = (
+    "Strassenverkehr|Fahrbahn",
+    "Strassenverkehr|Begleitfläche Straßenverkehr",
+    "Strassenverkehr",
+    "Weg",
+    "Bahnverkehr",
+    "Platz",
+    "Wohnbauflaeche",
+    "Industrie Und Gewerbeflaeche",
+    "Flaeche Gemischter Nutzung",
+    "Flaeche Besonderer Funktionaler Praegung",
+    "Sport Freizeit Und Erholungsflaeche",
+    "Fliessgewaesser",
+    "Stehendes Gewaesser",
+    "Hafenbecken",
+    "Meer",
+    "Schiffsverkehr",
+    "Unland Vegetationslose Flaeche",
+)
+WATER_EMPTY_INTERIOR: FrozenSet[str] = frozenset(
+    {
+        "Fliessgewaesser",
+        "Stehendes Gewaesser",
+        "Hafenbecken",
+        "Meer",
+        "Schiffsverkehr",
+    }
+)
+WATER_PLANAR: FrozenSet[str] = frozenset({"Stehendes Gewaesser", "Hafenbecken", "Meer"})
+_WGS84 = "EPSG:4326"
+_UTM32 = "EPSG:25832"
+
+
+@dataclass(frozen=True)
+class GuideRing:
+    """One ALKIS Nutzung exterior ring in EPSG:25832, with its split label."""
+
+    xy: np.ndarray
+    nutzart: str = ""
+    bez: str = ""
+    label: str = ""
 
 
 # ---------------------------------------------------------------------------
@@ -174,6 +224,143 @@ def create_boundary_points(
     return np.array(boundary_x), np.array(boundary_y)
 
 
+# ---------------------------------------------------------------------------
+# Optional ALKIS street-outline guide (soft constraint)
+# ---------------------------------------------------------------------------
+
+
+def _densify_ring_xy(ring_xy: np.ndarray, spacing: float) -> np.ndarray:
+    """Insert vertices along edges longer than ``spacing`` metres."""
+    if len(ring_xy) < 3 or spacing <= 0:
+        return ring_xy
+    out: List[np.ndarray] = []
+    n = len(ring_xy)
+    for i in range(n):
+        a = ring_xy[i]
+        b = ring_xy[(i + 1) % n]
+        out.append(a)
+        dist = float(np.hypot(b[0] - a[0], b[1] - a[1]))
+        steps = int(dist // spacing)
+        for k in range(1, steps):
+            t = k / steps
+            out.append(a * (1.0 - t) + b * t)
+    return np.asarray(out, dtype=float)
+
+
+def _clip_ring_to_bbox(
+    ring_xy: np.ndarray,
+    bbox: Tuple[float, float, float, float],
+) -> Optional[np.ndarray]:
+    """Sutherland–Hodgman clip of a closed ring to an axis-aligned rectangle."""
+    min_x, min_y, max_x, max_y = bbox
+    if max_x <= min_x or max_y <= min_y or len(ring_xy) < 3:
+        return None
+
+    def _clip(
+        poly: List[Tuple[float, float]],
+        inside,
+        intersect,
+    ) -> List[Tuple[float, float]]:
+        if not poly:
+            return []
+        out: List[Tuple[float, float]] = []
+        prev = poly[-1]
+        prev_in = inside(prev)
+        for curr in poly:
+            curr_in = inside(curr)
+            if curr_in:
+                if not prev_in:
+                    out.append(intersect(prev, curr))
+                out.append(curr)
+            elif prev_in:
+                out.append(intersect(prev, curr))
+            prev = curr
+            prev_in = curr_in
+        return out
+
+    def _lerp_x(a: Tuple[float, float], b: Tuple[float, float], x: float) -> Tuple[float, float]:
+        ax, ay = a
+        bx, by = b
+        dx = bx - ax
+        t = 0.0 if dx == 0.0 else (x - ax) / dx
+        return (x, ay + t * (by - ay))
+
+    def _lerp_y(a: Tuple[float, float], b: Tuple[float, float], y: float) -> Tuple[float, float]:
+        ax, ay = a
+        bx, by = b
+        dy = by - ay
+        t = 0.0 if dy == 0.0 else (y - ay) / dy
+        return (ax + t * (bx - ax), y)
+
+    poly = [(float(x), float(y)) for x, y in ring_xy]
+    poly = _clip(poly, lambda p: p[0] >= min_x, lambda a, b: _lerp_x(a, b, min_x))
+    poly = _clip(poly, lambda p: p[0] <= max_x, lambda a, b: _lerp_x(a, b, max_x))
+    poly = _clip(poly, lambda p: p[1] >= min_y, lambda a, b: _lerp_y(a, b, min_y))
+    poly = _clip(poly, lambda p: p[1] <= max_y, lambda a, b: _lerp_y(a, b, max_y))
+    if len(poly) < 3:
+        return None
+    arr = np.asarray(poly, dtype=float)
+    arr[:, 0] = np.clip(arr[:, 0], min_x, max_x)
+    arr[:, 1] = np.clip(arr[:, 1], min_y, max_y)
+    return arr
+
+
+def collect_guide_rings(
+    records: Sequence[Any],
+    *,
+    spacing: float = DEFAULT_GUIDE_EDGE_SPACING_M,
+    bbox_utm: Optional[Tuple[float, float, float, float]] = None,
+) -> List[GuideRing]:
+    """Densify ALKIS Nutzung exterior rings to ``(N, 2)`` arrays in EPSG:25832.
+
+    ``records`` are :class:`StreetRecord`-like objects (``rings``, ``geometry_crs``).
+    When ``bbox_utm`` is set, each ring is clipped to that rectangle so Bruchkanten
+    cannot extend the TIN past the same crop used for the unguided DGM.
+    """
+    transformer: Optional[CoordinateTransformer] = None
+    out: List[GuideRing] = []
+
+    for rec in records:
+        rings = getattr(rec, "rings", None) or []
+        source_crs = getattr(rec, "geometry_crs", _UTM32)
+        nutzart = str(getattr(rec, "nutzart", "") or "")
+        bez = str(getattr(rec, "bez", "") or "")
+        label = nutzung_split_label(nutzart, bez)
+        for ring in rings:
+            cleaned = strip_closing_duplicate_xy(list(ring))
+            if len(cleaned) < 3:
+                continue
+            if source_crs == _UTM32:
+                arr = np.asarray(cleaned, dtype=float)
+            else:
+                if transformer is None:
+                    transformer = CoordinateTransformer(_WGS84, _UTM32)
+                xe, yn = transformer.transform_xy_batch([p[0] for p in cleaned], [p[1] for p in cleaned])
+                arr = np.column_stack((xe, yn))
+            if bbox_utm is not None:
+                arr = _clip_ring_to_bbox(arr, bbox_utm)
+                if arr is None:
+                    continue
+            arr = _densify_ring_xy(arr, spacing)
+            if len(arr) >= 2:
+                out.append(GuideRing(xy=arr, nutzart=nutzart, bez=bez, label=label))
+    return out
+
+
+def collect_guide_xy(
+    records: Sequence[Any],
+    *,
+    spacing: float = DEFAULT_GUIDE_EDGE_SPACING_M,
+    bbox_utm: Optional[Tuple[float, float, float, float]] = None,
+) -> Tuple[np.ndarray, np.ndarray]:
+    """Flatten :func:`collect_guide_rings` to ``(x, y)`` arrays."""
+    rings = collect_guide_rings(records, spacing=spacing, bbox_utm=bbox_utm)
+    if not rings:
+        return np.empty(0, dtype=float), np.empty(0, dtype=float)
+    stacked = np.vstack([r.xy for r in rings])
+    return stacked[:, 0], stacked[:, 1]
+
+
 def sample_elevations_from_raster(src, x_coords: np.ndarray, y_coords: np.ndarray) -> np.ndarray:
     """Sample elevation values directly from an open rasterio dataset.
 
@@ -246,6 +433,304 @@ def generate_delaunay_mesh(
         return [], []
 
 
+def generate_constrained_mesh(
+    x_coords: np.ndarray,
+    y_coords: np.ndarray,
+    z_values: np.ndarray,
+    rings_xy: Sequence[np.ndarray],
+    rings_z: Sequence[np.ndarray],
+    *,
+    snap_decimals: int = 3,
+) -> Tuple[List[List[float]], List[List[int]]]:
+    """Constrained Delaunay TIN with ALKIS rings as Bruchkanten.
+
+    Terrain points and breakline vertices are snapped in XY, then Shewchuk
+    Triangle honours consecutive ring edges whose both endpoints have a
+    valid DGM height. Requires the ``triangle`` package.
+    """
+    try:
+        import triangle as tr
+    except ImportError as exc:
+        raise ImportError(
+            "Hard Bruchkanten need the 'triangle' package (Shewchuk Triangle). "
+            "Install it with: pip install triangle"
+        ) from exc
+
+    index_of: dict[Tuple[float, float], int] = {}
+    points_xy: List[List[float]] = []
+    points_z: List[float] = []
+
+    def _add(px: float, py: float, pz: float) -> int:
+        key = (round(float(px), snap_decimals), round(float(py), snap_decimals))
+        existing = index_of.get(key)
+        if existing is not None:
+            return existing
+        idx = len(points_xy)
+        index_of[key] = idx
+        points_xy.append([float(px), float(py)])
+        points_z.append(float(pz))
+        return idx
+
+    for px, py, pz in zip(x_coords, y_coords, z_values):
+        if np.isnan(pz):
+            continue
+        _add(px, py, pz)
+
+    segments: List[List[int]] = []
+    for ring_xy, ring_z in zip(rings_xy, rings_z):
+        if len(ring_xy) < 2:
+            continue
+        idxs: List[Optional[int]] = []
+        for (px, py), pz in zip(ring_xy, ring_z):
+            if np.isnan(pz):
+                idxs.append(None)
+            else:
+                idxs.append(_add(px, py, pz))
+        n = len(idxs)
+        for i in range(n):
+            a, b = idxs[i], idxs[(i + 1) % n]
+            if a is not None and b is not None and a != b:
+                segments.append([a, b])
+
+    if len(points_xy) < 3:
+        logger.error("Not enough points for constrained triangulation")
+        return [], []
+
+    if not segments:
+        logger.warning("No valid Bruchkante segments; falling back to unconstrained Delaunay")
+        return generate_delaunay_mesh(
+            np.asarray(points_xy)[:, 0],
+            np.asarray(points_xy)[:, 1],
+            np.asarray(points_z),
+        )
+
+    try:
+        result = tr.triangulate(
+            {"vertices": np.asarray(points_xy, dtype=float), "segments": np.asarray(segments, dtype=np.int32)},
+            "pc",
+        )
+        tri_xy = np.asarray(result["vertices"], dtype=float)
+        faces_arr = np.asarray(result["triangles"], dtype=int)
+        if faces_arr.size and faces_arr.min() >= 1 and faces_arr.max() == len(tri_xy):
+            faces_arr = faces_arr - 1
+        z_of = {
+            (round(float(p[0]), snap_decimals), round(float(p[1]), snap_decimals)): float(z)
+            for p, z in zip(points_xy, points_z)
+        }
+        vertices: List[List[float]] = []
+        for x, y in tri_xy:
+            z = z_of.get((round(float(x), snap_decimals), round(float(y), snap_decimals)))
+            if z is None and points_xy:
+                d2 = (np.asarray(points_xy)[:, 0] - x) ** 2 + (np.asarray(points_xy)[:, 1] - y) ** 2
+                z = points_z[int(np.argmin(d2))]
+            vertices.append([float(x), float(y), float(z if z is not None else 0.0)])
+        valid = (faces_arr >= 0) & (faces_arr < len(vertices))
+        faces = faces_arr[valid.all(axis=1)].tolist() if faces_arr.size else []
+        logger.info(
+            "CDT mesh: %d vertices, %d faces, %d Bruchkante segments",
+            len(vertices),
+            len(faces),
+            len(segments),
+        )
+        return vertices, faces
+    except Exception as e:
+        logger.error("Error during constrained triangulation: %s", e)
+        return [], []
+
+
+def _points_in_ring(px: np.ndarray, py: np.ndarray, ring_xy: np.ndarray) -> np.ndarray:
+    """Vectorized ray-cast; ``px``/``py`` are 1-D, ``ring_xy`` is an open exterior ring."""
+    x = ring_xy[:, 0]
+    y = ring_xy[:, 1]
+    x2 = np.roll(x, -1)
+    y2 = np.roll(y, -1)
+    yi = y[:, None]
+    yj = y2[:, None]
+    xi = x[:, None]
+    xj = x2[:, None]
+    denom = yj - yi
+    denom = np.where(denom == 0.0, 1e-12, denom)
+    intersects = ((yi > py) != (yj > py)) & (px < (xj - xi) * (py - yi) / denom + xi)
+    return np.mod(intersects.sum(axis=0), 2).astype(bool)
+
+
+def drop_points_inside_rings(
+    x_coords: np.ndarray,
+    y_coords: np.ndarray,
+    z_values: np.ndarray,
+    rings: Sequence[GuideRing],
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Remove points whose XY lies inside any of ``rings`` (water interiors)."""
+    if len(x_coords) == 0 or not rings:
+        return x_coords, y_coords, z_values
+    inside = np.zeros(len(x_coords), dtype=bool)
+    for ring in rings:
+        if len(ring.xy) < 3:
+            continue
+        xmin, ymin = ring.xy.min(axis=0)
+        xmax, ymax = ring.xy.max(axis=0)
+        cand = (~inside) & (x_coords >= xmin) & (x_coords <= xmax) & (y_coords >= ymin) & (y_coords <= ymax)
+        if not np.any(cand):
+            continue
+        idx = np.flatnonzero(cand)
+        hit = _points_in_ring(x_coords[idx], y_coords[idx], ring.xy)
+        inside[idx[hit]] = True
+    n_drop = int(np.sum(inside))
+    if n_drop:
+        logger.info("Dropped %d interior points inside water Flächen", n_drop)
+    keep = ~inside
+    return x_coords[keep], y_coords[keep], z_values[keep]
+
+
+def flatten_planar_water_z(
+    rings: Sequence[GuideRing],
+    rings_z: Sequence[np.ndarray],
+    *,
+    planar_nutzarten: FrozenSet[str] = WATER_PLANAR,
+) -> None:
+    """Set standing-water / harbour / sea rings to one Z (median shoreline)."""
+    for ring, ring_z in zip(rings, rings_z):
+        if ring.nutzart not in planar_nutzarten:
+            continue
+        valid = ring_z[~np.isnan(ring_z)]
+        if valid.size == 0:
+            logger.warning("No shoreline Z for planar water %s; ring left unset", ring.nutzart)
+            continue
+        plane_z = float(np.median(valid))
+        ring_z[:] = plane_z
+        logger.info(
+            "Planar water %s: %d vertices at Z=%.3f (median shoreline)",
+            ring.nutzart,
+            len(ring_z),
+            plane_z,
+        )
+
+
+def _ring_signed_area_xy(xy: np.ndarray) -> float:
+    x, y = xy[:, 0], xy[:, 1]
+    return float(0.5 * np.sum(x * np.roll(y, -1) - np.roll(x, -1) * y))
+
+
+def build_water_polygon_meshes(
+    rings: Sequence[GuideRing],
+    rings_z: Sequence[np.ndarray],
+    *,
+    origin_shift: Optional[Tuple[float, float]] = None,
+) -> Dict[str, TerrainMesh]:
+    """One n-gon face per water ring (no interior triangulation).
+
+    Rings of the same ``nutzart`` are grouped into one mesh. Vertices keep
+    shoreline Z (or the planar median already written into ``rings_z``).
+    """
+    grouped: Dict[str, List[Tuple[np.ndarray, np.ndarray]]] = {}
+    for ring, ring_z in zip(rings, rings_z):
+        if ring.nutzart not in WATER_EMPTY_INTERIOR or len(ring.xy) < 3:
+            continue
+        z = np.asarray(ring_z, dtype=float)
+        if z.size != len(ring.xy):
+            continue
+        if np.all(np.isnan(z)):
+            continue
+        fill = float(np.nanmedian(z))
+        z = np.where(np.isnan(z), fill, z)
+        grouped.setdefault(ring.nutzart, []).append((ring.xy, z))
+
+    out: Dict[str, TerrainMesh] = {}
+    ox, oy = origin_shift if origin_shift is not None else (0.0, 0.0)
+    for nutzart, items in grouped.items():
+        vertices: List[List[float]] = []
+        faces: List[List[int]] = []
+        for xy, z in items:
+            if _ring_signed_area_xy(xy) < 0:
+                xy = xy[::-1]
+                z = z[::-1]
+            start = len(vertices)
+            for (x, y), zi in zip(xy, z):
+                vertices.append([float(x) - ox, float(y) - oy, float(zi)])
+            faces.append(list(range(start, start + len(xy))))
+        if vertices and faces:
+            out[nutzart] = TerrainMesh(vertices=vertices, faces=faces)
+            logger.info(
+                "Water polygons %s: %d Flaeche(n), %d vertices (no interior edges)",
+                nutzart,
+                len(faces),
+                len(vertices),
+            )
+    return out
+
+
+def _submesh(mesh: TerrainMesh, face_indices: Sequence[int]) -> TerrainMesh:
+    """Copy ``mesh`` faces ``face_indices`` and remap unused vertices away."""
+    if not face_indices:
+        return TerrainMesh(vertices=[], faces=[], nullpunkt=mesh.nullpunkt)
+    faces = [mesh.faces[i] for i in face_indices]
+    used = sorted({int(i) for face in faces for i in face})
+    remap = {old: new for new, old in enumerate(used)}
+    vertices = [mesh.vertices[i] for i in used]
+    remapped = [[remap[a], remap[b], remap[c]] for a, b, c in faces]
+    return TerrainMesh(vertices=vertices, faces=remapped, nullpunkt=mesh.nullpunkt)
+
+
+def split_mesh_by_nutzart(
+    mesh: TerrainMesh,
+    rings: Sequence[GuideRing],
+    *,
+    nutzarten: Sequence[str] = NUTZART_ORDER,
+) -> Dict[str, TerrainMesh]:
+    """Split a TIN into one mesh per Nutzung type plus leftover ``DGM``.
+
+    Triangle centroids are tested against the (clipped) ALKIS rings. All
+    Flächen of the same ``nutzart`` become one mesh — not one object per
+    feature. Faces that miss every ring stay on ``DGM``.
+    """
+    if mesh.is_empty() or not rings:
+        return {"DGM": mesh}
+
+    verts = np.asarray(mesh.vertices, dtype=float)
+    faces = np.asarray(mesh.faces, dtype=int)
+    cx = verts[faces, 0].mean(axis=1)
+    cy = verts[faces, 1].mean(axis=1)
+
+    labels = np.full(len(faces), "DGM", dtype=object)
+    by_type: Dict[str, List[GuideRing]] = {}
+    for ring in rings:
+        key = ring.label or nutzung_split_label(ring.nutzart, ring.bez) or ring.nutzart
+        if not key:
+            continue
+        by_type.setdefault(key, []).append(ring)
+
+    assigned = np.zeros(len(faces), dtype=bool)
+    ordered = [k for k in nutzarten if k in by_type]
+    ordered.extend(sorted(k for k in by_type if k not in nutzarten))
+    for key in ordered:
+        todo = ~assigned
+        if not np.any(todo):
+            break
+        inside = np.zeros(len(faces), dtype=bool)
+        for ring in by_type[key]:
+            xmin, ymin = ring.xy.min(axis=0)
+            xmax, ymax = ring.xy.max(axis=0)
+            cand = todo & (cx >= xmin) & (cx <= xmax) & (cy >= ymin) & (cy <= ymax)
+            if not np.any(cand):
+                continue
+            idx = np.flatnonzero(cand)
+            hit = _points_in_ring(cx[idx], cy[idx], ring.xy)
+            inside[idx[hit]] = True
+        labels[inside] = key
+        assigned |= inside
+
+    parts: Dict[str, TerrainMesh] = {}
+    for key in ("DGM", *ordered):
+        idxs = np.flatnonzero(labels == key)
+        if len(idxs) == 0:
+            continue
+        part = _submesh(mesh, idxs.tolist())
+        if not part.is_empty():
+            parts[key] = part
+            logger.info("Trennen %s: %d faces, %d vertices", key, len(part.faces), len(part.vertices))
+    return parts or {"DGM": mesh}
+
+
 # ---------------------------------------------------------------------------
 # Top-level extractor
 # ---------------------------------------------------------------------------
@@ -294,6 +779,9 @@ def extract_mesh_adaptive(
     bbox_utm: Optional[Tuple[float, float, float, float]] = None,
     buffer_meters: float = 100.0,
     move_to_origin: bool = False,
+    guide_records: Optional[Sequence[Any]] = None,
+    guide_edge_spacing_m: float = DEFAULT_GUIDE_EDGE_SPACING_M,
+    water_meshes: Optional[Dict[str, TerrainMesh]] = None,
 ) -> TerrainMesh:
     """Extract a :class:`TerrainMesh` from one or more GeoTIFFs.
 
@@ -319,6 +807,16 @@ def extract_mesh_adaptive(
         move_to_origin: When ``True`` and ``bbox_utm`` is provided, the
             output mesh is translated so ``(bbox.min_x, bbox.min_y)``
             becomes ``(0, 0)`` and the nullpunkt reflects that.
+        guide_records: Optional ALKIS ``Nutzung`` records. When given,
+            densified ring edges become Bruchkanten in a constrained
+            Delaunay TIN. Water rings drop interior DGM points; standing
+            water / harbour / sea use one shoreline-median Z. When
+            ``water_meshes`` is a dict, each water type is stored there
+            as one n-gon per ring (no triangle fan). ``None`` / empty
+            keeps the original unconstrained mesh.
+        guide_edge_spacing_m: Spacing of vertices along each Bruchkante
+            (DGM Z is sampled on those points). Extra samples *around*
+            the street are not added.
 
     Returns:
         A :class:`TerrainMesh`. ``nullpunkt`` is set to the bbox corner
@@ -334,7 +832,19 @@ def extract_mesh_adaptive(
     boundary_x: Optional[np.ndarray] = None
     boundary_y: Optional[np.ndarray] = None
     boundary_z: Optional[np.ndarray] = None
+    guide_rings: List[GuideRing] = []
+    guide_rings_z: List[np.ndarray] = []
     expanded_bbox: Optional[Tuple[float, float, float, float]] = None
+
+    if guide_records:
+        guide_rings = collect_guide_rings(guide_records, spacing=guide_edge_spacing_m, bbox_utm=bbox_utm)
+        guide_rings_z = [np.full(len(r.xy), np.nan) for r in guide_rings]
+        if guide_rings:
+            logger.info(
+                "Prepared %d ALKIS rings (%d vertices) as Bruchkanten",
+                len(guide_rings),
+                int(sum(len(r.xy) for r in guide_rings)),
+            )
 
     if bbox_utm is not None:
         expanded_bbox = (
@@ -403,6 +913,27 @@ def extract_mesh_adaptive(
                         )
                         logger.info(f"Sampled {np.sum(in_raster)} boundary elevations from GeoTIFF")
 
+                if guide_rings:
+                    bounds = src.bounds
+                    sampled_n = 0
+                    for ring, ring_z in zip(guide_rings, guide_rings_z):
+                        ring_xy = ring.xy
+                        todo = np.isnan(ring_z)
+                        in_raster = (
+                            todo
+                            & (ring_xy[:, 0] >= bounds.left)
+                            & (ring_xy[:, 0] <= bounds.right)
+                            & (ring_xy[:, 1] >= bounds.bottom)
+                            & (ring_xy[:, 1] <= bounds.top)
+                        )
+                        if not np.any(in_raster):
+                            continue
+                        sampled_z = sample_elevations_from_raster(src, ring_xy[in_raster, 0], ring_xy[in_raster, 1])
+                        ring_z[in_raster] = sampled_z
+                        sampled_n += int(np.sum(in_raster))
+                    if sampled_n:
+                        logger.info("Sampled %d Bruchkante elevations from GeoTIFF", sampled_n)
+
         except Exception as e:
             logger.error(f"Error processing {path}: {e}")
             continue
@@ -416,6 +947,17 @@ def extract_mesh_adaptive(
 
     logger.info(f"Combined {len(x_coords)} interior points from {len(tif_list)} files")
 
+    if guide_rings:
+        water_rings = [r for r in guide_rings if r.nutzart in WATER_EMPTY_INTERIOR]
+        if water_rings:
+            x_coords, y_coords, z_values = drop_points_inside_rings(
+                x_coords, y_coords, z_values, water_rings
+            )
+        flatten_planar_water_z(guide_rings, guide_rings_z)
+        if water_meshes is not None:
+            shift = (bbox_utm[0], bbox_utm[1]) if (move_to_origin and bbox_utm is not None) else None
+            water_meshes.update(build_water_polygon_meshes(guide_rings, guide_rings_z, origin_shift=shift))
+
     if bbox_utm is not None and boundary_x is not None and boundary_z is not None:
         x_coords, y_coords, z_values = filter_and_add_boundary(
             x_coords, y_coords, z_values, boundary_x, boundary_y, boundary_z, bbox_utm
@@ -425,7 +967,15 @@ def extract_mesh_adaptive(
         logger.error("Not enough valid points for triangulation")
         return TerrainMesh(vertices=[], faces=[], nullpunkt=None)
 
-    vertices, faces = generate_delaunay_mesh(x_coords, y_coords, z_values)
+    t_tri = time.perf_counter()
+    if guide_rings:
+        vertices, faces = generate_constrained_mesh(
+            x_coords, y_coords, z_values, [r.xy for r in guide_rings], guide_rings_z
+        )
+        logger.info("Triangulation (CDT) took %.3f s", time.perf_counter() - t_tri)
+    else:
+        vertices, faces = generate_delaunay_mesh(x_coords, y_coords, z_values)
+        logger.info("Triangulation (Delaunay) took %.3f s", time.perf_counter() - t_tri)
     if not vertices or not faces:
         return TerrainMesh(vertices=[], faces=[], nullpunkt=None)
 
@@ -449,8 +999,20 @@ def extract_mesh_adaptive(
 
 
 __all__ = [
+    "DEFAULT_GUIDE_EDGE_SPACING_M",
+    "GuideRing",
+    "NUTZART_ORDER",
+    "WATER_EMPTY_INTERIOR",
+    "WATER_PLANAR",
+    "drop_points_inside_rings",
+    "flatten_planar_water_z",
+    "build_water_polygon_meshes",
     "adaptive_sampling",
     "analyze_terrain_features",
+    "collect_guide_rings",
+    "collect_guide_xy",
+    "generate_constrained_mesh",
+    "split_mesh_by_nutzart",
     "create_boundary_points",
     "download_to_memory",
     "extract_mesh_adaptive",
