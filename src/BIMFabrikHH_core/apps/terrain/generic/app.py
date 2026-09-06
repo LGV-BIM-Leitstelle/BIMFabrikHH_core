@@ -25,6 +25,7 @@ from ifcopenshell.util.shape_builder import ShapeBuilder
 from pydantic import BaseModel
 
 from BIMFabrikHH_core.apps.terrain._ifc_common import default_terrain_psets
+from BIMFabrikHH_core.apps.terrain.landxml import terrain_mesh_to_landxml
 from BIMFabrikHH_core.apps.terrain.processing import (
     DEFAULT_GUIDE_EDGE_SPACING_M,
     NUTZART_ORDER,
@@ -230,6 +231,8 @@ class TerrainGenericApp:
         trennen: bool = False,
         guide_from_oaf: bool = False,
         write_geojson: bool = False,
+        export_landxml: bool = False,
+        landxml_path: Optional[Union[str, Path]] = None,
     ) -> Optional[Path]:
         """One-shot: extract a mesh from GeoTIFFs, then build the IFC.
 
@@ -249,6 +252,11 @@ class TerrainGenericApp:
         the request bbox. ``write_geojson`` (default ``False``) optionally
         writes ``alkis_nutzung_verkehr.geojson`` and
         ``alkis_nutzung_weitere.geojson`` next to ``output_path``.
+
+        ``export_landxml`` (default ``False``) additionally writes a LandXML
+        1.2 TIN with one ``<Surface>`` per part (DGM + each Nutzung type),
+        the exact same triangles as the IFC. ``landxml_path`` overrides the
+        destination; otherwise it is the IFC path with a ``.xml`` suffix.
         """
         if guide_from_oaf and guide_records is None:
             bbox_wgs84 = request_params.bbox_as_wgs84_tuple
@@ -293,7 +301,7 @@ class TerrainGenericApp:
                     if not water_mesh.is_empty():
                         split[key] = water_mesh
                         logger.info(
-                            "Water n-gons %s: %d Flaeche(n), %d vertices",
+                            "Water triangles %s: %d face(s), %d vertices",
                             key,
                             len(water_mesh.faces),
                             len(water_mesh.vertices),
@@ -331,6 +339,21 @@ class TerrainGenericApp:
             ifc_s,
             mesh_s + ifc_s,
         )
+
+        if export_landxml and result is not None:
+            surfaces: List[Tuple[str, TerrainMesh]] = (
+                [(label, part) for label, part, _ in parts]
+                if parts
+                else [("DGM", mesh)]
+            )
+            xml_dest = Path(landxml_path) if landxml_path is not None else Path(result).with_suffix(".xml")
+            try:
+                terrain_mesh_to_landxml(surfaces, xml_dest)
+            except Exception as e:  # keep IFC result even if LandXML fails
+                logger.error("LandXML export failed: %s", e)
+        elif export_landxml and result is None:
+            logger.warning("Skipping LandXML export because IFC build failed")
+
         return result
 
 
@@ -351,16 +374,14 @@ def _color_for_label(label: str, fallback: RgbTuple) -> RgbTuple:
 
 
 class _TerrainMeshRepresentation(MeshRepresentation):
-    """Terrain as ``IfcTriangulatedFaceSet``, water as ``IfcPolygonalFaceSet``.
+    """Terrain (incl. water) as a single ``IfcTriangulatedFaceSet``.
 
-    n-gon faces (water rings) keep a single polygonal face so viewers do
-    not draw a triangle fan inside the Fläche.
+    Every part is triangle-only, so the IFC and the LandXML export describe
+    the exact same geometry.
     """
 
     def build(self, model: ifcopenshell.file):
         builder = ShapeBuilder(model)
-        if any(len(face) != 3 for face in self.faces):
-            return builder.polygonal_face_set(self.vertices, self.faces)
         return builder.triangulated_face_set(self.vertices, self.faces)
 
 

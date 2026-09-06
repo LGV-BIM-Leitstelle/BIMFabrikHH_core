@@ -12,6 +12,8 @@ import pytest
 
 import ifcopenshell
 
+from xml.etree import ElementTree as ET
+
 from BIMFabrikHH_core.apps.terrain import (
     GuideRing,
     Pset_Objektinformation_DGM,
@@ -20,10 +22,13 @@ from BIMFabrikHH_core.apps.terrain import (
     collect_guide_rings,
     generate_delaunay_mesh,
     split_mesh_by_nutzart,
+    terrain_mesh_to_landxml,
 )
 from BIMFabrikHH_core.apps.terrain.processing import (
+    _invalid_z,
     build_water_polygon_meshes,
     drop_points_inside_rings,
+    drop_sliver_faces,
     flatten_planar_water_z,
 )
 from BIMFabrikHH_core.data_models.streets import (
@@ -122,6 +127,21 @@ def test_generate_delaunay_mesh_returns_expected_shapes() -> None:
             assert 0 <= idx < len(vertices)
 
 
+def test_drop_sliver_faces_removes_collinear_frame_triangle() -> None:
+    vertices = [[0.0, 0.0, 1.0], [1.0, 0.0, 1.0], [2.0, 0.0, 1.0], [1.0, 1.0, 1.0]]
+    faces = [[0, 1, 2], [0, 1, 3]]
+    verts, tris = drop_sliver_faces(vertices, faces)
+    assert len(tris) == 1
+    assert all(len(face) == 3 for face in tris)
+    assert len(verts) == 3
+
+
+def test_invalid_z_treats_zero_fill_and_gdal_nodata() -> None:
+    z = np.array([5.0, 0.0, -3.4e38, np.nan, 1.2])
+    bad = _invalid_z(z, nodata=-3.4e38)
+    assert list(bad) == [False, True, True, True, False]
+
+
 def test_collect_guide_rings_clips_to_bbox() -> None:
     """Street outlines that leave the crop must be clipped so the TIN stays rectangular."""
     rec = StreetRecord(
@@ -189,6 +209,38 @@ def test_split_mesh_by_nutzart_groups_one_type() -> None:
     assert len(parts["DGM"].faces) == 1
 
 
+def test_split_mesh_does_not_bridge_separate_same_type_rings() -> None:
+    """A CDT face that jumps the gap between two Wohnbau rings stays on DGM."""
+    mesh = TerrainMesh(
+        vertices=[
+            [0.0, 0.0, 0.0],
+            [1.0, 0.0, 0.0],
+            [0.0, 1.0, 0.0],
+            [3.0, 0.0, 0.0],
+            [4.0, 0.0, 0.0],
+            [3.0, 1.0, 0.0],
+        ],
+        faces=[
+            [0, 1, 2],  # inside left ring
+            [3, 4, 5],  # inside right ring
+            [1, 3, 2],  # bridge: verts on both rings, centroid in the gap / left
+        ],
+    )
+    left = GuideRing(
+        xy=np.array([[-0.1, -0.1], [1.1, -0.1], [1.1, 1.1], [-0.1, 1.1]]),
+        nutzart="Wohnbauflaeche",
+        label="Wohnbauflaeche",
+    )
+    right = GuideRing(
+        xy=np.array([[2.9, -0.1], [4.1, -0.1], [4.1, 1.1], [2.9, 1.1]]),
+        nutzart="Wohnbauflaeche",
+        label="Wohnbauflaeche",
+    )
+    parts = split_mesh_by_nutzart(mesh, [left, right])
+    assert len(parts["Wohnbauflaeche"].faces) == 2
+    assert len(parts["DGM"].faces) == 1
+
+
 def test_drop_points_inside_water_rings() -> None:
     ring = GuideRing(
         xy=np.array([[0.0, 0.0], [2.0, 0.0], [2.0, 2.0], [0.0, 2.0]]),
@@ -226,16 +278,51 @@ def test_write_nutzung_geojson_filters_weitere(tmp_path: Path) -> None:
     assert DEFAULT_NUTZARTEN.isdisjoint(WEITERE_NUTZARTEN)
 
 
-def test_build_water_polygon_meshes_one_ngon() -> None:
+def test_terrain_mesh_to_landxml_round_trip(tmp_path: Path) -> None:
+    ns = {"lx": "http://www.landxml.org/schema/LandXML-1.2"}
+    dgm = TerrainMesh(
+        vertices=[[10.0, 20.0, 5.0], [12.0, 20.0, 5.5], [11.0, 22.0, 6.0]],
+        faces=[[0, 1, 2]],
+    )
+    # A 4-vertex face must fan-triangulate to 2 <F> entries.
+    water = TerrainMesh(
+        vertices=[[0.0, 0.0, 1.0], [2.0, 0.0, 1.0], [2.0, 2.0, 1.0], [0.0, 2.0, 1.0]],
+        faces=[[0, 1, 2], [0, 2, 3]],
+    )
+    dest = tmp_path / "dgm.xml"
+    terrain_mesh_to_landxml([("DGM", dgm), ("Fliessgewaesser", water)], dest, epsg=25832)
+
+    root = ET.parse(dest).getroot()
+    surfaces = root.findall(".//lx:Surface", ns)
+    assert [s.get("name") for s in surfaces] == ["DGM", "Fliessgewaesser"]
+
+    cs = root.find(".//lx:CoordinateSystem", ns)
+    assert cs is not None and cs.get("epsgCode") == "25832"
+
+    dgm_surface = surfaces[0]
+    points = dgm_surface.findall(".//lx:P", ns)
+    faces = dgm_surface.findall(".//lx:F", ns)
+    assert [p.get("id") for p in points] == ["1", "2", "3"]
+    # Point ids are 1-based; face references them.
+    assert faces[0].text.split() == ["1", "2", "3"]
+    # LandXML order is northing easting elevation (Y X Z).
+    assert points[0].text.split() == ["20.0000", "10.0000", "5.0000"]
+
+    water_faces = surfaces[1].findall(".//lx:F", ns)
+    assert len(water_faces) == 2
+
+
+def test_build_water_meshes_are_triangles() -> None:
     ring = GuideRing(
         xy=np.array([[0.0, 0.0], [2.0, 0.0], [2.0, 2.0], [0.0, 2.0]]),
         nutzart="Fliessgewaesser",
     )
     meshes = build_water_polygon_meshes([ring], [np.array([1.0, 1.1, 1.2, 1.0])])
     water = meshes["Fliessgewaesser"]
-    assert len(water.faces) == 1
-    assert len(water.faces[0]) == 4
+    # A 4-vertex ring fan-triangulates to 2 triangles, no interior points added.
     assert len(water.vertices) == 4
+    assert all(len(face) == 3 for face in water.faces)
+    assert len(water.faces) == 2
 
 
 def test_flatten_planar_water_uses_median() -> None:

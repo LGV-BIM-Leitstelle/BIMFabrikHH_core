@@ -7,8 +7,12 @@ optional and off by default (``write_geojson=False``).
 
 ``trennen=True`` writes one IFC object per Nutzung type (all Flächen of
 that type together) plus leftover DGM, each with colour and ALKIS psets.
+
+Pass ``--xml`` to also write a LandXML 1.2 TIN next to the IFC.
 """
 
+import argparse
+import sys
 import time
 from pathlib import Path
 
@@ -17,26 +21,31 @@ from BIMFabrikHH_core.config.logging_config import get_logger, setup_logging
 from BIMFabrikHH_core.data_models.params_bbox import BoundingBoxParams
 from BIMFabrikHH_core.data_models.params_tree import Component, Container, RequestParams
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from local_dgm import dgm_tile_paths
+
 logger = get_logger()
 
 # Persist OAF responses as GeoJSON next to the IFC. Off by default.
 WRITE_GEOJSON = False
-_DGM_DIR = Path("/mnt/c/_Lokale_Daten_ungesichert/___BIMFabrikHH_Datensaetze/dgm1_hh_2022-04-30")
-_DGM_TILES = [
-    "dgm1_32_564_9330_1_hh_2022.tif",
-    "dgm1_32_564_9340_1_hh_2022.tif",
-    "dgm1_32_565_9330_1_hh_2022.tif",
-    "dgm1_32_565_9340_1_hh_2022.tif",
-    "dgm1_32_566_9330_1_hh_2022.tif",
-    "dgm1_32_566_9340_1_hh_2022.tif",
-]
+
+
+def _parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Guided DGM example (IFC, optional LandXML).")
+    parser.add_argument(
+        "--xml",
+        action="store_true",
+        help="Also write a LandXML 1.2 TIN next to the IFC (off by default).",
+    )
+    return parser.parse_args()
 
 
 def main() -> None:
+    args = _parse_args()
     start = time.perf_counter()
 
     terrain_folder = Path(__file__).parent
-    tif_files = [str(_DGM_DIR / name) for name in _DGM_TILES]
+    tif_files = dgm_tile_paths()
     output_file = terrain_folder / "example_dgm_generic_guided.ifc"
 
     container = Container(
@@ -63,6 +72,7 @@ def main() -> None:
         output_path=output_file,
         guide_from_oaf=True,
         write_geojson=WRITE_GEOJSON,
+        export_landxml=args.xml,
         trennen=True,
     )
 

@@ -16,6 +16,7 @@ from BIMFabrikHH_core.data_models import Pset_Objektinformation_DGM, TerrainMesh
 
 from .basic.app import TerrainBasicApp
 from .generic.app import TerrainGenericApp
+from .landxml import terrain_mesh_to_landxml
 from .processing import (
     GuideRing,
     adaptive_sampling,
@@ -48,4 +49,5 @@ __all__ = [
     "filter_and_add_boundary",
     "generate_delaunay_mesh",
     "sample_elevations_from_raster",
+    "terrain_mesh_to_landxml",
 ]

@@ -113,6 +113,23 @@ def download_to_memory(url: str, timeout: int = 120) -> Optional[BytesIO]:
 # ---------------------------------------------------------------------------
 
 
+# GDAL float32 nodata and the 0.0 fill used in some Hamburg DGM1 holes.
+_NODATA_SENTINEL = -1e20
+_ZERO_FILL = 0.0
+_MIN_FACE_AREA_XY = 1e-3
+
+
+def _invalid_z(values: np.ndarray, nodata: Optional[float] = None) -> np.ndarray:
+    """True where ``values`` are missing, GDAL nodata, or the 0.0 DGM fill."""
+    v = np.asarray(values, dtype=float)
+    invalid = ~np.isfinite(v)
+    invalid |= v <= _NODATA_SENTINEL
+    if nodata is not None and np.isfinite(float(nodata)):
+        invalid |= np.isclose(v, float(nodata))
+    invalid |= v == _ZERO_FILL
+    return invalid
+
+
 def analyze_terrain_features(elevation_data: np.ndarray) -> np.ndarray:
     """Detect important terrain features using gradient analysis.
 
@@ -145,6 +162,7 @@ def adaptive_sampling(
     *,
     min_points: int = 1000,
     importance_threshold: float = 0.1,
+    nodata: Optional[float] = None,
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Sample points adaptively based on terrain importance.
 
@@ -157,33 +175,44 @@ def adaptive_sampling(
             importance are kept instead.
         importance_threshold: Minimum normalized importance to retain a
             point (0–1 scale).
+        nodata: Raster nodata value. Those cells, non-finite values, and
+            the ``0.0`` Hamburg DGM fill are never sampled.
 
     Returns:
         ``(x_coords, y_coords, z_values)`` arrays in the raster CRS.
     """
-    elevation_data = np.nan_to_num(elevation_data, nan=0.0)
+    elevation = np.asarray(elevation_data, dtype=float)
+    valid = ~_invalid_z(elevation, nodata)
+    if not np.any(valid):
+        return np.array([]), np.array([]), np.array([])
 
-    importance = analyze_terrain_features(elevation_data)
+    filled = elevation.copy()
+    filled[~valid] = float(np.median(elevation[valid]))
+    importance = analyze_terrain_features(filled)
+    importance[~valid] = 0.0
 
     importance_range = importance.max() - importance.min()
     if importance_range > 0:
         importance = (importance - importance.min()) / importance_range
     else:
         importance = np.ones_like(importance)
+        importance[~valid] = 0.0
 
-    height, width = elevation_data.shape
+    height, width = elevation.shape
     x = np.linspace(transform[2], transform[2] + transform[0] * width, width)
     y = np.linspace(transform[5], transform[5] + transform[4] * height, height)
     x_grid, y_grid = np.meshgrid(x, y)
 
-    mask = importance > importance_threshold
+    mask = (importance > importance_threshold) & valid
 
-    if np.sum(mask) < min_points:
-        flat_importance = importance.flatten()
-        threshold = np.sort(flat_importance)[-min_points]
-        mask = importance > threshold
+    if int(np.sum(mask)) < min_points:
+        ranked = np.argsort(importance.ravel())
+        take = ranked[-min_points:]
+        top = np.zeros_like(importance, dtype=bool)
+        top.ravel()[take] = True
+        mask = top & valid
 
-    return x_grid[mask], y_grid[mask], elevation_data[mask]
+    return x_grid[mask], y_grid[mask], elevation[mask]
 
 
 # ---------------------------------------------------------------------------
@@ -364,11 +393,40 @@ def collect_guide_xy(
 def sample_elevations_from_raster(src, x_coords: np.ndarray, y_coords: np.ndarray) -> np.ndarray:
     """Sample elevation values directly from an open rasterio dataset.
 
-    Points that fall outside the raster return ``NaN``.
+    Points outside the raster, GDAL nodata, and the ``0.0`` DGM fill return ``NaN``.
     """
     coords = list(zip(x_coords, y_coords))
     samples = list(src.sample(coords))
-    return np.array([s[0] if len(s) > 0 else np.nan for s in samples])
+    values = np.array([s[0] if len(s) > 0 else np.nan for s in samples], dtype=float)
+    values[_invalid_z(values, getattr(src, "nodata", None))] = np.nan
+    return values
+
+
+def drop_sliver_faces(
+    vertices: List[List[float]],
+    faces: List[List[int]],
+    *,
+    min_area_xy: float = _MIN_FACE_AREA_XY,
+) -> Tuple[List[List[float]], List[List[int]]]:
+    """Remove triangles with near-zero XY area (collinear frame slivers)."""
+    if not vertices or not faces:
+        return vertices, faces
+    verts = np.asarray(vertices, dtype=float)
+    tris = np.asarray(faces, dtype=int)
+    if tris.ndim != 2 or tris.shape[1] < 3:
+        return vertices, faces
+    a, b, c = verts[tris[:, 0]], verts[tris[:, 1]], verts[tris[:, 2]]
+    area = 0.5 * np.abs((b[:, 0] - a[:, 0]) * (c[:, 1] - a[:, 1]) - (b[:, 1] - a[:, 1]) * (c[:, 0] - a[:, 0]))
+    keep = area >= min_area_xy
+    dropped = int((~keep).sum())
+    if dropped:
+        logger.info("Dropped %d sliver faces (XY area < %g m²)", dropped, min_area_xy)
+    kept = tris[keep]
+    if len(kept) == 0:
+        return [], []
+    used = np.unique(kept)
+    remap = {int(old): new for new, old in enumerate(used)}
+    return verts[used].tolist(), [[remap[int(i)] for i in tri] for tri in kept]
 
 
 def filter_and_add_boundary(
@@ -554,6 +612,39 @@ def _points_in_ring(px: np.ndarray, py: np.ndarray, ring_xy: np.ndarray) -> np.n
     return np.mod(intersects.sum(axis=0), 2).astype(bool)
 
 
+def _points_near_ring(px: np.ndarray, py: np.ndarray, ring_xy: np.ndarray, tol: float) -> np.ndarray:
+    """True when each point lies within ``tol`` metres of a ring edge."""
+    if len(px) == 0:
+        return np.zeros(0, dtype=bool)
+    x1, y1 = ring_xy[:, 0], ring_xy[:, 1]
+    x2, y2 = np.roll(x1, -1), np.roll(y1, -1)
+    dx, dy = x2 - x1, y2 - y1
+    length2 = dx * dx + dy * dy
+    length2 = np.where(length2 == 0.0, 1.0, length2)
+    t = ((px[:, None] - x1) * dx + (py[:, None] - y1) * dy) / length2
+    t = np.clip(t, 0.0, 1.0)
+    dist2 = (px[:, None] - (x1 + t * dx)) ** 2 + (py[:, None] - (y1 + t * dy)) ** 2
+    return np.any(dist2 <= tol * tol, axis=1)
+
+
+def _points_in_or_on_ring(
+    px: np.ndarray,
+    py: np.ndarray,
+    ring_xy: np.ndarray,
+    *,
+    tol: float = 0.05,
+) -> np.ndarray:
+    """Inside the ring or on its outline (CDT vertices sit on Bruchkanten)."""
+    inside = _points_in_ring(px, py, ring_xy)
+    todo = ~inside
+    if not np.any(todo):
+        return inside
+    near = _points_near_ring(px[todo], py[todo], ring_xy, tol)
+    inside = inside.copy()
+    inside[np.flatnonzero(todo)[near]] = True
+    return inside
+
+
 def drop_points_inside_rings(
     x_coords: np.ndarray,
     y_coords: np.ndarray,
@@ -617,10 +708,13 @@ def build_water_polygon_meshes(
     *,
     origin_shift: Optional[Tuple[float, float]] = None,
 ) -> Dict[str, TerrainMesh]:
-    """One n-gon face per water ring (no interior triangulation).
+    """Triangulated water surfaces with no interior DGM points.
 
-    Rings of the same ``nutzart`` are grouped into one mesh. Vertices keep
-    shoreline Z (or the planar median already written into ``rings_z``).
+    Each water ring becomes a triangle fan over its own boundary vertices
+    only, so the interior stays empty (no terrain samples) while both the
+    IFC and LandXML export see identical triangles. Rings of the same
+    ``nutzart`` are grouped into one mesh. Vertices keep shoreline Z (or the
+    planar median already written into ``rings_z``).
     """
     grouped: Dict[str, List[Tuple[np.ndarray, np.ndarray]]] = {}
     for ring, ring_z in zip(rings, rings_z):
@@ -647,11 +741,15 @@ def build_water_polygon_meshes(
             start = len(vertices)
             for (x, y), zi in zip(xy, z):
                 vertices.append([float(x) - ox, float(y) - oy, float(zi)])
-            faces.append(list(range(start, start + len(xy))))
+            # Fan-triangulate the ring boundary (no interior points added).
+            for k in range(1, len(xy) - 1):
+                faces.append([start, start + k, start + k + 1])
+        if vertices and faces:
+            vertices, faces = drop_sliver_faces(vertices, faces)
         if vertices and faces:
             out[nutzart] = TerrainMesh(vertices=vertices, faces=faces)
             logger.info(
-                "Water polygons %s: %d Flaeche(n), %d vertices (no interior edges)",
+                "Water triangles %s: %d face(s), %d vertices (no interior points)",
                 nutzart,
                 len(faces),
                 len(vertices),
@@ -679,9 +777,11 @@ def split_mesh_by_nutzart(
 ) -> Dict[str, TerrainMesh]:
     """Split a TIN into one mesh per Nutzung type plus leftover ``DGM``.
 
-    Triangle centroids are tested against the (clipped) ALKIS rings. All
-    Flächen of the same ``nutzart`` become one mesh — not one object per
-    feature. Faces that miss every ring stay on ``DGM``.
+    A triangle belongs to a Fläche only when its centroid **and all three
+    vertices** lie in that same ring (vertices on the outline count). That
+    stops CDT faces that jump the gap between two nearby rings of the same
+    type. All Flächen of one ``nutzart`` are still one IFC object; they are
+    just no longer stitched together. Faces that miss every ring stay ``DGM``.
     """
     if mesh.is_empty() or not rings:
         return {"DGM": mesh}
@@ -715,7 +815,17 @@ def split_mesh_by_nutzart(
                 continue
             idx = np.flatnonzero(cand)
             hit = _points_in_ring(cx[idx], cy[idx], ring.xy)
-            inside[idx[hit]] = True
+            idx = idx[hit]
+            if len(idx) == 0:
+                continue
+            in_same = np.ones(len(idx), dtype=bool)
+            for corner in range(3):
+                in_same &= _points_in_or_on_ring(
+                    verts[faces[idx, corner], 0],
+                    verts[faces[idx, corner], 1],
+                    ring.xy,
+                )
+            inside[idx[in_same]] = True
         labels[inside] = key
         assigned |= inside
 
@@ -879,6 +989,7 @@ def extract_mesh_adaptive(
                     transform,
                     min_points=min_points,
                     importance_threshold=importance_threshold,
+                    nodata=src.nodata,
                 )
 
                 if expanded_bbox is not None:
@@ -944,6 +1055,10 @@ def extract_mesh_adaptive(
     x_coords = np.concatenate(all_x)
     y_coords = np.concatenate(all_y)
     z_values = np.concatenate(all_z)
+    keep_z = ~_invalid_z(z_values)
+    if not np.all(keep_z):
+        logger.info("Dropped %d interior points with nodata/fill Z", int((~keep_z).sum()))
+        x_coords, y_coords, z_values = x_coords[keep_z], y_coords[keep_z], z_values[keep_z]
 
     logger.info(f"Combined {len(x_coords)} interior points from {len(tif_list)} files")
 
@@ -978,6 +1093,9 @@ def extract_mesh_adaptive(
         logger.info("Triangulation (Delaunay) took %.3f s", time.perf_counter() - t_tri)
     if not vertices or not faces:
         return TerrainMesh(vertices=[], faces=[], nullpunkt=None)
+    vertices, faces = drop_sliver_faces(vertices, faces)
+    if not vertices or not faces:
+        return TerrainMesh(vertices=[], faces=[], nullpunkt=None)
 
     arr = np.array(vertices)
     arr[:, 0] = np.round(arr[:, 0], 6)
@@ -1004,6 +1122,7 @@ __all__ = [
     "NUTZART_ORDER",
     "WATER_EMPTY_INTERIOR",
     "WATER_PLANAR",
+    "drop_sliver_faces",
     "drop_points_inside_rings",
     "flatten_planar_water_z",
     "build_water_polygon_meshes",
