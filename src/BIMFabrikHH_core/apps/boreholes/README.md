@@ -201,6 +201,14 @@ Bezeichnung darin (Bohrung 44381 liegt auf Blatt 6428 und heißt `B.IX/182`).
 **Es gibt also keine Umrechnung zwischen beiden IDs**, und der WFS liefert die
 Archivnummer nirgends — es ist keine numerische ID im Feature vorhanden.
 
+**Zuordnung**: Im Bohrarchiv 
+(https://suche.transparenz.hamburg.de/dataset/bohrarchiv37) 
+liegt zu jedem Schichtdatensatz  Archiv-ID als <ogr:ID_STAMMDATEN> vor,
+sowie die beiden Komponenten aus denen sich die GML-Feature-ID des WFS
+zusammensetzt: <ogr:E_DGK5> und <ogr:ARCHIVKURZBEZEICHNUNG>.
+Falls sich keine andere Quelle findet, kann das Mapping daraus regelmäßig
+(automatisiert) extrahiert werden.
+
 **Was zur Behebung fehlt:** eine externe Zuordnung `BoreholeML-ID →
 Archivnummer`. `build_borehole_hyperlink(..., portal_id="44381")` nimmt die
 Nummer bereits an, sobald es eine Quelle dafür gibt.
