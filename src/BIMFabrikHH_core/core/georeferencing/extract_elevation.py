@@ -12,6 +12,50 @@ from rasterio.sample import sample_gen
 # Configure logging
 logger = logging.getLogger(__name__)
 
+# Hamburg DGM1 nodata is often ``float32`` min, not a water height.
+_MAX_ABS_ELEVATION_M = 10_000.0
+
+
+def elevation_ok(z: float, nodata: Optional[float] = None) -> bool:
+    """True if ``z`` is a usable NHN height (not NaN / GeoTIFF nodata)."""
+    try:
+        value = float(z)
+    except (TypeError, ValueError):
+        return False
+    if not np.isfinite(value) or abs(value) >= _MAX_ABS_ELEVATION_M:
+        return False
+    if nodata is not None and value == float(nodata):
+        return False
+    return True
+
+
+def fill_nodata_from_nearest(
+    xs: np.ndarray,
+    ys: np.ndarray,
+    zs: np.ndarray,
+    nodata: Optional[float] = None,
+) -> tuple[np.ndarray, int]:
+    """Replace bad Z with the Z of the nearest valid XY sample.
+
+    Same idea as rust ``terrain`` fill. If nothing is valid, bad Z becomes ``0``.
+    """
+    xs = np.asarray(xs, dtype=float)
+    ys = np.asarray(ys, dtype=float)
+    out = np.asarray(zs, dtype=float).copy()
+    ok = np.array([elevation_ok(z, nodata) for z in out], dtype=bool)
+    if not np.any(ok):
+        out[~ok] = 0.0
+        return out, 0
+    valid_i = np.flatnonzero(ok)
+    filled = 0
+    for i in np.flatnonzero(~ok):
+        dx = xs[valid_i] - xs[i]
+        dy = ys[valid_i] - ys[i]
+        j = valid_i[int(np.argmin(dx * dx + dy * dy))]
+        out[i] = out[j]
+        filled += 1
+    return out, filled
+
 
 def _is_url(path: str) -> bool:
     """Check if a path is a URL."""
@@ -39,14 +83,12 @@ def _extract_elevations_from_dataset(src, df: pd.DataFrame, easting_col: str, no
     coords = list(zip(df[easting_col].values, df[northing_col].values))
     sample_values = list(sample_gen(src, coords, indexes=1))
     elevations = np.array(sample_values).flatten()
+    xs = df[easting_col].to_numpy()
+    ys = df[northing_col].to_numpy()
+    elevations, filled = fill_nodata_from_nearest(xs, ys, elevations, src.nodata)
 
-    # Handle nodata values
-    mask_nodata = (elevations == src.nodata) | np.isnan(elevations)
-    elevations[mask_nodata] = 0.0
-
-    invalid_count = np.sum(mask_nodata)
-    if invalid_count > 0:
-        logger.warning(f"Rows without elevation data (set to 0): {invalid_count} rows")
+    if filled > 0:
+        logger.warning("Rows without elevation data (filled from nearest valid): %s rows", filled)
     else:
         logger.info("All rows successfully assigned elevation values")
 
@@ -152,22 +194,13 @@ def extract_elevation_df_from_geotiff_optimized(
 
             # Convert to numpy array
             elevations = np.array(sample_values).flatten()
-
-            # Create mask for invalid values
-            mask_nodata = (elevations == src.nodata) | np.isnan(elevations)
-
-            # Count invalid values before setting them to 0
-            invalid_count = np.sum(mask_nodata)
-
-            # Set invalid values to 0
-            elevations[mask_nodata] = 0.0
-
-            # Assign to DataFrame
+            elevations, filled = fill_nodata_from_nearest(
+                df[easting_col].to_numpy(), df[northing_col].to_numpy(), elevations, src.nodata
+            )
             df[elevation_col] = elevations.astype(float)
 
-            # Log basic results
-            if invalid_count > 0:
-                logger.warning(f"Rows without elevation data (set to 0): {invalid_count} rows")
+            if filled > 0:
+                logger.warning("Rows without elevation data (filled from nearest valid): %s rows", filled)
             else:
                 logger.info("All rows successfully assigned elevation values")
 
@@ -263,8 +296,12 @@ def extract_elevation_point_from_geotiff(
 
                 # Convert to numpy array and handle nodata
                 elevations = np.array(sample_values).flatten()
-                mask_nodata = (elevations == src.nodata) | np.isnan(elevations)
-                elevations[mask_nodata] = 0.0
+                elevations, _ = fill_nodata_from_nearest(
+                    np.asarray(easting, dtype=float),
+                    np.asarray(northing, dtype=float),
+                    elevations,
+                    src.nodata,
+                )
 
                 return elevations.astype(float).tolist()
             else:

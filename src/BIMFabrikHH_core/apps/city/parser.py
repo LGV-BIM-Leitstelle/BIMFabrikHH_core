@@ -44,13 +44,6 @@ Faces = List[List[Tuple[float, float, float]]]
 FacesWithVoids = List[Tuple[List[Tuple[float, float, float]], List[List[Tuple[float, float, float]]]]]
 
 
-# Map of mounted paths to actual file system paths
-MOUNTED_PATHS = {
-    "/citymodel_lod1": r"C:\_Lokale_Daten_ungesichert\__GitHubProjects\__DatenAPI_BIMFabrikHH\LoD1-DE_HH_2023-04-01",
-    "/citymodel_lod2": r"C:\_Lokale_Daten_ungesichert\__GitHubProjects\__DatenAPI_BIMFabrikHH\LoD2-DE_HH_2023-04-01",
-}
-
-
 class CityGMLParser:
     """
     Parses CityGML files and extracts building geometry and properties for IFC conversion.
@@ -110,20 +103,6 @@ class CityGMLParser:
             except requests.RequestException as e:
                 raise FileNotFoundError(f"Failed to fetch CityGML from URL: {filepath} - {e}")
 
-        # Check if it's a mounted path
-        if filepath.startswith("/"):
-            for mount_point, real_path in MOUNTED_PATHS.items():
-                if filepath.startswith(mount_point):
-                    relative_path = filepath[len(mount_point) :].lstrip("/")
-                    full_path = Path(real_path) / relative_path
-                    if full_path.exists():
-                        return full_path
-                    else:
-                        logger.error(f"File not found at actual path: {full_path}")
-                        raise FileNotFoundError(f"CityGML file not found: {filepath} (actual path: {full_path})")
-            raise FileNotFoundError(f"No matching mount point found for: {filepath}")
-
-        # Regular file system path
         file_path = Path(filepath)
         if not file_path.exists():
             raise FileNotFoundError(f"CityGML file not found: {filepath}")

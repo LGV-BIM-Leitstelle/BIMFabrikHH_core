@@ -41,6 +41,7 @@ from __future__ import annotations
 
 import random
 import time
+import warnings
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
 
@@ -81,7 +82,10 @@ _TRUNK_SEGMENTS: int = 5
 
 
 class TreesBasicApp:
-    """Record-builder app: ``list[TreeRecord] -> IFC path`` (mesh geometry)."""
+    """Deprecated. Use :class:`TreesGenericApp` or :class:`TreesRustApp`.
+
+    Record-builder app: ``list[TreeRecord] -> IFC path`` via ``ifcopenshell.api``.
+    """
 
     @staticmethod
     def build_ifc(
@@ -130,6 +134,11 @@ class TreesBasicApp:
             Absolute path of the saved IFC file, or ``None`` when
             ``records`` is empty.
         """
+        warnings.warn(
+            "TreesBasicApp is deprecated; use TreesGenericApp or TreesRustApp instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         if not records:
             logger.warning("TreesBasicApp.build_ifc called with 0 records; nothing to do.")
             return None

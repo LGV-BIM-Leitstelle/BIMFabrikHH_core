@@ -51,12 +51,32 @@ def get_example_files():
     return [(file_path, rel_path) for file_path, rel_path in files if rel_path.replace("\\", "/") not in excluded]
 
 
-# Generate test IDs from relative paths
-_example_files_list = get_example_files()
-_example_ids = [rel_path.replace("\\", "/") for _, rel_path in _example_files_list]
+# Examples that run a heavy end-to-end build and write a large mesh IFC. They
+# stay in the suite but are marked ``slow`` so the default run skips them; run
+# them with ``-m slow``. On the ``/mnt/c`` Windows mount their IFC write stalls
+# for minutes (per-op 9p latency); on native Linux they finish in seconds.
+SLOW_EXAMPLES = {
+    "terrain/basic/example_basic_terrain.py",
+    "terrain/generic/example_generic_terrain.py",
+    "terrain/benchmark/example_terrain_perf_basic_vs_generic.py",
+    "trees/benchmark/example_trees_perf_basic_vs_generic.py",
+    "examples_sachsen/example_terrain_sachsen.py",
+    "examples_sachsen/example_generic_entity_sachsen.py",
+    "examples_schleswigHolstein/example_citymodel_schleswig_holstein.py",
+}
 
 
-@pytest.mark.parametrize("file_path,rel_path", _example_files_list, ids=_example_ids)
+def _example_params():
+    """Parametrization for :func:`test_example_main`, slow ones marked."""
+    params = []
+    for file_path, rel_path in get_example_files():
+        test_id = rel_path.replace("\\", "/")
+        marks = [pytest.mark.slow] if test_id in SLOW_EXAMPLES else []
+        params.append(pytest.param(file_path, rel_path, marks=marks, id=test_id))
+    return params
+
+
+@pytest.mark.parametrize("file_path,rel_path", _example_params())
 def test_example_main(file_path, rel_path):
     """Test that each example's main() function runs without errors."""
     # Change to examples directory so relative paths work
