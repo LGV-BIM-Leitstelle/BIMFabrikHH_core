@@ -228,7 +228,7 @@ Die Geometrie ist davon **nicht** betroffen, weil die Einfärbung aus dem
 Hauptgemengteil kommt. Zur Behebung wäre die `RockColorList`-Codeliste nötig.
 
 `RockColorList`-Codeliste liegt hier:
-https://schemas.bgr.de/boreholeml/codelists/v2/RockNameList.xml
+https://schemas.bgr.de/boreholeml/codelists/v2/RockColorList.xml
 
 ### Stratigraphie teils unaufgelöst
 
