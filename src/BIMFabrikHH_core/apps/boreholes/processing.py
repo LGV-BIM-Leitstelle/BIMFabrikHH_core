@@ -43,6 +43,7 @@ UNDEFINED = "undefiniert"
 ASSETS_DIR = Path(__file__).resolve().parent / "assets"
 _SOIL_TYPES_FILE = "soil_type_mapping.json"
 _COLORS_FILE = "color_code_mapping.json"
+_ARCHIVE_ID_FILE = "archive_id_mapping.json"
 
 # Borehole viewer of the Hamburg geodienste portal. ``sid`` identifies the
 # area and is constant for the tested extent (carried over from the intern
@@ -80,6 +81,12 @@ def load_color_code_mapping() -> Dict[str, Any]:
     return _load_config_json(_COLORS_FILE)
 
 
+@lru_cache(maxsize=1)
+def load_archive_id_mapping() -> Dict[str, Any]:
+    """Load the id table; empty dict when the file is missing."""
+    return _load_config_json(_ARCHIVE_ID_FILE)
+
+
 def _load_config_json(filename: str) -> Dict[str, Any]:
     path = ASSETS_DIR / filename
     try:
@@ -106,6 +113,22 @@ def _extract_meaning(mapped_symbol: str) -> Optional[str]:
     """Pull ``Meaning`` out of a ``Code (Meaning)`` string."""
     match = re.fullmatch(r".+\s\((.+)\)", mapped_symbol)
     return match.group(1) if match else None
+
+
+def map_archive_id(borehole_id: str, archive_id_mapping: Optional[Dict[str, Any]] = None) -> str:
+    """Map a BoreholeML ID to ``"archive_id"`` ("Archivnummer") assigned by Geologisches Landesamt Hamburg.
+
+    Args:
+        id: BoreholeML ID.
+        archive_id_mapping: Table from :func:`extract_id_mapping`.
+
+    Returns:
+        ``"archive_id"``.
+    """
+    text = _clean(borehole_id)
+    mapping = archive_id_mapping if archive_id_mapping is not None else load_archive_id_mapping()
+
+    return mapping.get(text, "")
 
 
 def map_soil_symbol(symbol_value: Any, soil_type_mapping: Optional[Dict[str, Any]] = None) -> str:
@@ -571,12 +594,15 @@ def _record_from_borehole(
     *,
     soil_types: Dict[str, Any],
     colors: Dict[str, Any],
+    map_archive_ids: Dict[str, Any],
 ) -> Optional[BoreholeRecord]:
     """Build one :class:`BoreholeRecord`; ``None`` when unusable."""
     borehole_id = _text(borehole, f"{{{BML_NS}}}id") or _clean(borehole.get(f"{{{GML_NS}}}id"))
     if not borehole_id:
         logger.warning("Skipping bml:Borehole without id")
         return None
+
+    archive_id = map_archive_id(borehole_id, map_archive_ids)
 
     position = _borehole_position(borehole)
     if position is None:
@@ -589,6 +615,7 @@ def _record_from_borehole(
 
     record = BoreholeRecord(
         borehole_id=borehole_id,
+        archive_id=archive_id,
         aufschlussbezeichnung=full_name or short_name or borehole_id,
         easting=easting,
         northing=northing,
@@ -628,7 +655,7 @@ def _record_from_borehole(
             laenge_baugrundaufschluss=record.endteufe,
         ),
         Pset_Hyperlink.pset_name: build_borehole_hyperlink(
-            record.borehole_id,
+            record.archive_id,
             record.aufschlussbezeichnung,
         ),
     }
@@ -656,10 +683,11 @@ def records_from_boreholeml(
     root = _as_root(source)
     soil_types = load_soil_type_mapping()
     colors = load_color_code_mapping()
+    archive_ids = load_archive_id_mapping()
 
     records: List[BoreholeRecord] = []
     for borehole in _iter_borehole_elements(root):
-        record = _record_from_borehole(borehole, soil_types=soil_types, colors=colors)
+        record = _record_from_borehole(borehole, soil_types=soil_types, colors=colors, map_archive_ids=archive_ids)
         if record is not None:
             records.append(record)
 

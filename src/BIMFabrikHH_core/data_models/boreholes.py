@@ -61,7 +61,8 @@ class BoreholeRecord(BaseModel):
 
     model_config = ConfigDict(arbitrary_types_allowed=True, extra="ignore")
 
-    borehole_id: str = Field(description="``bml:id``, e.g. ``BDHH_6434B1``")
+    borehole_id: str = Field(description="``bml:id``, e.g. ``BDHH_6428D107``")
+    archive_id: str = Field(description="``Archivnummer``, e.g. ``44372``")
     aufschlussbezeichnung: str = Field(default="", description="``bml:fullName`` (fallback ``shortName``)")
     easting: float = Field(description="EPSG:25832 easting in m")
     northing: float = Field(description="EPSG:25832 northing in m")
