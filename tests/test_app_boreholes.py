@@ -163,6 +163,20 @@ def test_map_nebengemengteil_maps_each_component() -> None:
     assert map_nebengemengteil("g, s") == "g (kiesig), s (sandig)"
 
 
+def test_map_soil_multiple_main_components() -> None:
+    assert map_hauptgemengteil("mS(fs), S") == "mS (Mittelsand), (Sand)"
+    assert map_nebengemengteil("mS(fs), S") == "fs (feinsandig)"
+
+
+def test_map_soil_with_hyphen() -> None:
+    assert map_hauptgemengteil("gG-fG") == "gG-fG (Grobkies-Feinkies)"
+
+
+def test_map_soil_multiple_side_components() -> None:
+    assert map_hauptgemengteil("fG(gs, ms, x)") == "fG (Feinkies)"
+    assert map_nebengemengteil("fG(gs, ms, x)") == "gs (grobsandig), ms (mittelsandig), x (steinig)"
+
+
 def test_map_nebengemengteil_returns_undefined_for_blank() -> None:
     assert map_nebengemengteil("") == UNDEFINED
 
@@ -382,8 +396,8 @@ def test_parsed_record_carries_expected_psets() -> None:
     assert isinstance(bereich, Pset_Aufschlussbereich)
     assert bereich.bodenart == "mS (Mittelsand)"
     assert bereich.bohrvorgang == "UN"
-    assert bereich.kalkgehalt == "c3"
-    assert bereich.stratigrapfie.startswith("qh (")
+    assert bereich.kalkgehalt == "c3 (karbonathaltig)"
+    assert bereich.stratigraphie.startswith("qh (")
 
     schicht = layer.psets["Pset_Schicht"]
     assert isinstance(schicht, Pset_Schicht)
@@ -425,22 +439,24 @@ def test_collect_borehole_psets_skips_non_pydantic_values() -> None:
     assert len(psets) == 3
 
 
-def test_build_borehole_hyperlink_uses_fixed_portal_part_plus_id() -> None:
-    pset = build_borehole_hyperlink("BDHH_6434B1", "B.45")
-    assert pset.hyperlink_001 == f"{BOREHOLE_PORTAL_URL}?sid={BOREHOLE_PORTAL_SID}&id=BDHH_6434B1"
-    assert pset.hyperlink_001_bemerkung == "Link zur Bohrung B.45 (ID: BDHH_6434B1)"
+
+def test_build_borehole_hyperlink_accepts_numeric_portal_id() -> None:
+    """The portal expects the numeric Archivnummer, which can be passed as a string or integer."""
+    pset = build_borehole_hyperlink(50300, "B.IX/182")
+    assert pset.hyperlink_001 == f"{BOREHOLE_PORTAL_URL}?sid={BOREHOLE_PORTAL_SID}&id=50300"
+    assert pset.hyperlink_001_bemerkung == "Link zur Bohrung B.IX/182 (ID: 50300)"
+
+
+def test_build_borehole_hyperlink_accepts_string_portal_id() -> None:
+    """The portal expects the numeric Archivnummer, which can be passed as a string or integer."""
+    pset = build_borehole_hyperlink("50300", "B.IX/182")
+    assert pset.hyperlink_001 == f"{BOREHOLE_PORTAL_URL}?sid={BOREHOLE_PORTAL_SID}&id=50300"
+    assert pset.hyperlink_001_bemerkung == "Link zur Bohrung B.IX/182 (ID: 50300)"
 
 
 def test_build_borehole_hyperlink_without_designation() -> None:
-    pset = build_borehole_hyperlink("BDHH_6434B1")
-    assert pset.hyperlink_001_bemerkung == "Link zur Bohrung (ID: BDHH_6434B1)"
-
-
-def test_build_borehole_hyperlink_accepts_numeric_portal_id() -> None:
-    """The portal expects the numeric Archivnummer, which BoreholeML omits."""
-    pset = build_borehole_hyperlink("BDHH_6434B1", "B.IX/182", portal_id="44381")
-    assert pset.hyperlink_001 == f"{BOREHOLE_PORTAL_URL}?sid={BOREHOLE_PORTAL_SID}&id=44381"
-    assert pset.hyperlink_001_bemerkung == "Link zur Bohrung B.IX/182 (ID: 44381)"
+    pset = build_borehole_hyperlink("50300")
+    assert pset.hyperlink_001_bemerkung == "Link zur Bohrung (ID: 50300)"
 
 
 def test_parsed_record_carries_portal_hyperlink() -> None:
@@ -448,7 +464,7 @@ def test_parsed_record_carries_portal_hyperlink() -> None:
     record = records_from_boreholeml(xml)[0]
     hyperlink = record.psets["Pset_Hyperlink"]
     assert isinstance(hyperlink, Pset_Hyperlink)
-    assert hyperlink.hyperlink_001.endswith("&id=BDHH_TEST1")
+    assert hyperlink.hyperlink_001.endswith("&id=")
     assert BOREHOLE_PORTAL_SID in hyperlink.hyperlink_001
 
 

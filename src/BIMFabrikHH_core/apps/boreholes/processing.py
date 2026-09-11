@@ -327,7 +327,7 @@ def map_rock_color(value: Any, rock_color_mapping: Optional[Dict[str, Any]] = No
     if not code or code.lower() == UNDEFINED:
         return UNDEFINED
 
-    mapping = rock_color_mapping if rock_color_mapping is not None else load_din_color_mapping()
+    mapping = rock_color_mapping if rock_color_mapping is not None else load_rock_color_mapping()
     german_name = mapping.get(code, "")
     return f"{code} ({german_name})" if german_name else code
 
@@ -405,7 +405,7 @@ def visual_color_for_hauptgemengteil(
 
 
 def build_borehole_hyperlink(
-    borehole_id: str,
+    archive_id: int | str,
     aufschlussbezeichnung: str = "",
     *,
     portal_id: Optional[str] = None,
@@ -413,24 +413,21 @@ def build_borehole_hyperlink(
     """Build the geodienste borehole-viewer link, as in the intern app.
 
     The URL is the fixed ``{BOREHOLE_PORTAL_URL}?sid={BOREHOLE_PORTAL_SID}``
-    part plus the borehole id.
+    part plus the borehole archive id.
 
     Note:
-        The portal expects the numeric Archivnummer that the intern app read
-        from its SQLite ``id_stammdaten`` column. BoreholeML only publishes
-        the textual ``bml:id`` (e.g. ``BDHH_6434B1``), which the portal
-        rejects, so pass ``portal_id`` once that number is available from
-        another source.
-
+        The portal expects the numeric Archivnummer (e.g. ``BDHH_6434B1``)
+        assigned by Geologisches Landesamt Hamburg, not the textual ``bml:id``
+        (e.g. ``BDHH_6434B1``), which the portal rejects.
     Args:
-        borehole_id: ``bml:id`` of the borehole, used as ``id`` by default.
+        portal_id: Explicit ``id`` query value.
         aufschlussbezeichnung: Designation for the remark text.
-        portal_id: Explicit ``id`` query value, overriding ``borehole_id``.
+        
 
     Returns:
         ``Pset_Hyperlink`` with the URL and a German remark.
     """
-    link_id = portal_id or borehole_id
+    link_id = str(archive_id)
     url = f"{BOREHOLE_PORTAL_URL}?sid={BOREHOLE_PORTAL_SID}&id={link_id}"
     if aufschlussbezeichnung:
         bemerkung = f"Link zur Bohrung {aufschlussbezeichnung} (ID: {link_id})"
