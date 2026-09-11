@@ -281,8 +281,7 @@ BIMFabrikHH_core/
 ├── examples/                       # Usage examples
 │   └── all_examples.py            # Run all examples
 ├── tests/                         # Test suite
-│   └── examples/                  # Example tests
-│       └── test_examples.py      # Automated example testing
+│   └── examples/                  # Example discovery only (does not run scripts)
 ├── output/                        # Generated output files
 └── docs/                          # Documentation
 ```
