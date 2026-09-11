@@ -24,17 +24,21 @@ from ifcfactory import BIMFactoryElement, MeshRepresentation, Style
 from ifcopenshell.util.shape_builder import ShapeBuilder
 from pydantic import BaseModel
 
-from BIMFabrikHH_core.apps.terrain._ifc_common import default_terrain_psets
-from BIMFabrikHH_core.apps.terrain.landxml import terrain_mesh_to_landxml
+from BIMFabrikHH_core.apps.terrain._ifc_common import (
+    DEFAULT_TERRAIN_LAYER,
+    DEFAULT_TERRAIN_RGB,
+    RgbTuple,
+    default_terrain_psets,
+    terrain_part_psets,
+    terrain_part_style,
+)
+from BIMFabrikHH_core.apps.terrain.landxml import export_terrain_landxml
 from BIMFabrikHH_core.apps.terrain.processing import (
     DEFAULT_GUIDE_EDGE_SPACING_M,
-    NUTZART_ORDER,
-    collect_guide_rings,
+    build_landuse_parts,
     extract_mesh_adaptive,
-    split_mesh_by_nutzart,
+    resolve_guide_records,
 )
-from BIMFabrikHH_core.data_models.pydantic_psets_BIMHH import default_bim_hamburg_hyperlink
-from BIMFabrikHH_core.data_models.streets import load_guide_records_from_oaf, pset_for_nutzung_group
 from BIMFabrikHH_core.config.logging_config import get_logger
 from BIMFabrikHH_core.core.geometry import place_basepoint
 from BIMFabrikHH_core.core.georeferencing import bbox_request_params_to_epsg25832
@@ -43,6 +47,7 @@ from BIMFabrikHH_core.core.ogc_extractor.ogc_values_extractor import (
     extract_psets_basepoint,
 )
 from BIMFabrikHH_core.data_models.params_tree import RequestParams
+from BIMFabrikHH_core.data_models.pydantic_georeferencing import CoordinateSystem
 from BIMFabrikHH_core.data_models.pydantic_psets_terrain import (
     Pset_Objektinformation_DGM,
 )
@@ -50,50 +55,8 @@ from BIMFabrikHH_core.data_models.terrain_mesh import TerrainMesh
 
 logger = get_logger("terrain_generic_app")
 
-RgbTuple = Union[Tuple[float, float, float], Tuple[int, int, int]]
-
-_DEFAULT_TERRAIN_RGB: RgbTuple = (220, 40, 40)
-_DEFAULT_TERRAIN_LAYER: str = "_BIM_DGM_Gelaende"
-# Land-use types share a magenta ramp (light → dark). Grünfläche is park green.
-_NUTZART_RGB: dict[str, RgbTuple] = {
-    "DGM": (220, 40, 40),
-    "Strassenverkehr": (110, 110, 115),
-    "Strassenverkehr|Fahrbahn": (55, 55, 60),
-    "Strassenverkehr|Begleitfläche Straßenverkehr": (175, 175, 180),
-    "Weg": (230, 120, 40),
-    "Bahnverkehr": (90, 75, 75),
-    "Platz": (236, 186, 220),
-    "Wohnbauflaeche": (228, 168, 210),
-    "Flaeche Gemischter Nutzung": (220, 154, 202),
-    "Industrie Und Gewerbeflaeche": (212, 140, 194),
-    "Flaeche Besonderer Funktionaler Praegung": (204, 128, 186),
-    "Sport Freizeit Und Erholungsflaeche": (36, 150, 52),
-    "Fliessgewaesser": (198, 226, 245),
-    "Stehendes Gewaesser": (198, 226, 245),
-    "Hafenbecken": (170, 210, 235),
-    "Meer": (170, 210, 235),
-    "Schiffsverkehr": (170, 210, 235),
-    "Unland Vegetationslose Flaeche": (242, 241, 239),
-}
-_NUTZART_LAYER: dict[str, str] = {
-    "Strassenverkehr": "_BIM_DGM_Strassenverkehr",
-    "Strassenverkehr|Fahrbahn": "_BIM_DGM_Fahrbahn",
-    "Strassenverkehr|Begleitfläche Straßenverkehr": "_BIM_DGM_Begleitflaeche",
-    "Weg": "_BIM_DGM_Weg",
-    "Bahnverkehr": "_BIM_DGM_Bahnverkehr",
-    "Platz": "_BIM_DGM_Platz",
-    "Wohnbauflaeche": "_BIM_DGM_Wohnbau",
-    "Industrie Und Gewerbeflaeche": "_BIM_DGM_Gewerbe",
-    "Flaeche Gemischter Nutzung": "_BIM_DGM_GemischteNutzung",
-    "Flaeche Besonderer Funktionaler Praegung": "_BIM_DGM_FunktionalePraegung",
-    "Sport Freizeit Und Erholungsflaeche": "_BIM_DGM_Freizeit",
-    "Fliessgewaesser": "_BIM_DGM_Fliessgewaesser",
-    "Stehendes Gewaesser": "_BIM_DGM_StehendesGewaesser",
-    "Hafenbecken": "_BIM_DGM_Hafenbecken",
-    "Meer": "_BIM_DGM_Meer",
-    "Schiffsverkehr": "_BIM_DGM_Schiffsverkehr",
-    "Unland Vegetationslose Flaeche": "_BIM_DGM_Unland",
-}
+_DEFAULT_TERRAIN_RGB: RgbTuple = DEFAULT_TERRAIN_RGB
+_DEFAULT_TERRAIN_LAYER: str = DEFAULT_TERRAIN_LAYER
 _DEFAULT_OUTPUT_NAME: str = "output_dgm_generic.ifc"
 _DEFAULT_BASEPOINT_SIZE: float = 5.0
 
@@ -123,6 +86,7 @@ class TerrainGenericApp:
         name: str = "DGM",
         transparency: float = 0.0,
         parts: Optional[Sequence[Tuple[str, TerrainMesh, Optional[Sequence[BaseModel]]]]] = None,
+        coordinate_system: Optional[CoordinateSystem] = None,
     ) -> Optional[Path]:
         """Build an IFC file from a prepared :class:`TerrainMesh`.
 
@@ -144,9 +108,9 @@ class TerrainGenericApp:
             cad_layer: CAD layer name assigned to the terrain mesh.
             name: IFC element name for the DGM.
             transparency: 0.0 = opaque, 1.0 = fully transparent.
-            parts: Optional ``(label, mesh, psets)`` pieces from ``trennen``.
-                Each Nutzung type becomes one object (all Flächen of that type
-                together) plus leftover DGM. When ``None``, one mesh is written.
+            parts: Optional ``(label, mesh, psets)`` pieces from
+                ``merge_parcels`` or ``split_by_landuse``. When ``None``, one
+                mesh is written.
 
         Returns:
             Path to the saved IFC file, or ``None`` on failure.
@@ -163,7 +127,11 @@ class TerrainGenericApp:
             n_faces = sum(len(part.faces) for _, part, _ in export_parts if not part.is_empty())
             logger.info("Creating IFC model with %d part(s), %d faces…", len(export_parts), n_faces)
 
-            builder = init_ifc_project(request_params=request_params, building_name="DGM")
+            builder = init_ifc_project(
+                request_params=request_params,
+                building_name="DGM",
+                coordinate_system=coordinate_system,
+            )
             model = builder.model
             if model is None:
                 logger.error("Failed to create IFC model")
@@ -174,9 +142,9 @@ class TerrainGenericApp:
             for label, part, part_psets in export_parts:
                 if part.is_empty():
                     continue
-                part_color = _color_for_label(label, color)
-                part_layer = _NUTZART_LAYER.get(label, cad_layer if label == "DGM" else f"_BIM_DGM_{_safe_label(label)}")
-                part_name = name if label == "DGM" else f"{name}_{_safe_label(label)}"
+                part_name, part_color, part_layer = terrain_part_style(
+                    label, color=color, cad_layer=cad_layer, name=name
+                )
                 elements.append(
                     _terrain_element_from_mesh(
                         mesh=part,
@@ -228,11 +196,13 @@ class TerrainGenericApp:
         cad_layer: str = _DEFAULT_TERRAIN_LAYER,
         guide_records: Optional[Sequence[Any]] = None,
         guide_edge_spacing_m: float = DEFAULT_GUIDE_EDGE_SPACING_M,
-        trennen: bool = False,
+        merge_parcels: bool = True,
+        split_by_landuse: bool = False,
         guide_from_oaf: bool = False,
         write_geojson: bool = False,
         export_landxml: bool = False,
         landxml_path: Optional[Union[str, Path]] = None,
+        coordinate_system: Optional[CoordinateSystem] = None,
     ) -> Optional[Path]:
         """One-shot: extract a mesh from GeoTIFFs, then build the IFC.
 
@@ -244,8 +214,16 @@ class TerrainGenericApp:
         polygons), their outlines become Bruchkanten in a constrained
         Delaunay TIN. Omit it for the original unconstrained mesh.
 
-        ``trennen`` (guided only) splits the TIN into one IFC object per
-        Nutzung type (all Flächen of that type together) plus leftover DGM.
+        ``merge_parcels`` (guided default) splits the TIN, then folds
+        Siedlung and Unland into one dark-sand ``Parcels`` object.
+        Leftover DGM (Gebäude / no Nutzung) stays separate so gap
+        triangles do not stitch getrennte Flächen. Traffic, Grünfläche,
+        and water stay split. Water rings are then cut out of every
+        non-water part so the Fläche underneath is holed. Bruchkanten
+        stay in the TIN.
+
+        ``split_by_landuse`` (guided only) splits into one IFC object per
+        Nutzung type plus leftover DGM and wins over ``merge_parcels``.
         ALKIS attributes go on each part as ``Pset_Objektinformation``.
 
         ``guide_from_oaf`` pulls ALKIS ``Nutzung`` from the Hamburg OAF for
@@ -258,21 +236,13 @@ class TerrainGenericApp:
         the exact same triangles as the IFC. ``landxml_path`` overrides the
         destination; otherwise it is the IFC path with a ``.xml`` suffix.
         """
-        if guide_from_oaf and guide_records is None:
-            bbox_wgs84 = request_params.bbox_as_wgs84_tuple
-            if bbox_wgs84 is None:
-                logger.warning("guide_from_oaf=True needs RequestParams.bbox")
-            else:
-                geojson_dir = Path(output_path).parent if output_path is not None else None
-                if write_geojson and geojson_dir is None:
-                    logger.warning("write_geojson=True needs output_path to know where to save")
-                guide_records = load_guide_records_from_oaf(
-                    bbox_wgs84,
-                    write_geojson=bool(write_geojson and geojson_dir is not None),
-                    output_dir=geojson_dir,
-                )
-        elif write_geojson:
-            logger.warning("write_geojson=True is ignored unless guide_from_oaf fetches Nutzung")
+        guide_records = resolve_guide_records(
+            guide_records,
+            request_params.bbox_as_wgs84_tuple,
+            guide_from_oaf=guide_from_oaf,
+            write_geojson=write_geojson,
+            output_dir=(Path(output_path).parent if output_path is not None else None),
+        )
 
         bbox_utm = bbox_request_params_to_epsg25832(request_params)
         t0 = time.perf_counter()
@@ -288,36 +258,23 @@ class TerrainGenericApp:
             guide_edge_spacing_m=guide_edge_spacing_m,
             water_meshes=water_meshes,
         )
-        parts: Optional[List[Tuple[str, TerrainMesh, Optional[Sequence[BaseModel]]]]] = None
-        if trennen:
-            if not guide_records:
-                logger.warning("trennen=True needs guide_records; writing a single DGM")
-            else:
-                rings = collect_guide_rings(
-                    guide_records, spacing=guide_edge_spacing_m, bbox_utm=bbox_utm
-                )
-                split = split_mesh_by_nutzart(mesh, rings)
-                for key, water_mesh in water_meshes.items():
-                    if not water_mesh.is_empty():
-                        split[key] = water_mesh
-                        logger.info(
-                            "Water triangles %s: %d face(s), %d vertices",
-                            key,
-                            len(water_mesh.faces),
-                            len(water_mesh.vertices),
-                        )
-                hyperlink = default_bim_hamburg_hyperlink()
-                ordered = [key for key in ("DGM", *NUTZART_ORDER) if key in split]
-                ordered.extend(sorted(key for key in split if key not in ordered))
-                parts = []
-                for key in ordered:
-                    if key == "DGM":
-                        part_psets: Optional[Sequence[BaseModel]] = (
-                            list(psets) if psets is not None else default_terrain_psets()
-                        )
-                    else:
-                        part_psets = [pset_for_nutzung_group(guide_records, label=key), hyperlink]
-                    parts.append((key, split[key], part_psets))
+        labeled = build_landuse_parts(
+            mesh,
+            guide_records,
+            bbox_utm=bbox_utm,
+            water_meshes=water_meshes,
+            spacing=guide_edge_spacing_m,
+            split_by_landuse=split_by_landuse,
+            merge_parcels=merge_parcels,
+        )
+        parts: Optional[List[Tuple[str, TerrainMesh, Optional[Sequence[BaseModel]]]]] = (
+            [
+                (key, part, terrain_part_psets(key, guide_records, dgm_psets=psets))
+                for key, part in labeled
+            ]
+            if labeled
+            else None
+        )
         mesh_s = time.perf_counter() - t0
         t1 = time.perf_counter()
         result = cls.build_ifc(
@@ -331,6 +288,7 @@ class TerrainGenericApp:
             color=color,
             cad_layer=cad_layer,
             parts=parts,
+            coordinate_system=coordinate_system,
         )
         ifc_s = time.perf_counter() - t1
         logger.info(
@@ -340,19 +298,16 @@ class TerrainGenericApp:
             mesh_s + ifc_s,
         )
 
-        if export_landxml and result is not None:
+        if export_landxml:
             surfaces: List[Tuple[str, TerrainMesh]] = (
-                [(label, part) for label, part, _ in parts]
-                if parts
-                else [("DGM", mesh)]
+                [(label, part) for label, part, _ in parts] if parts else [("DGM", mesh)]
             )
-            xml_dest = Path(landxml_path) if landxml_path is not None else Path(result).with_suffix(".xml")
-            try:
-                terrain_mesh_to_landxml(surfaces, xml_dest)
-            except Exception as e:  # keep IFC result even if LandXML fails
-                logger.error("LandXML export failed: %s", e)
-        elif export_landxml and result is None:
-            logger.warning("Skipping LandXML export because IFC build failed")
+            export_terrain_landxml(
+                result,
+                surfaces,
+                landxml_path=landxml_path,
+                epsg=_epsg_code(coordinate_system),
+            )
 
         return result
 
@@ -362,15 +317,16 @@ class TerrainGenericApp:
 # ---------------------------------------------------------------------------
 
 
-def _safe_label(label: str) -> str:
-    return label.replace("|", "_").replace(" ", "_")[:80]
-
-
-def _color_for_label(label: str, fallback: RgbTuple) -> RgbTuple:
-    if label in _NUTZART_RGB:
-        return _NUTZART_RGB[label]
-    base = label.split("|", 1)[0]
-    return _NUTZART_RGB.get(base, fallback)
+def _epsg_code(coordinate_system: Optional[CoordinateSystem]) -> int:
+    if coordinate_system is None:
+        return 25832
+    name = (coordinate_system.name or "").strip().upper()
+    if name.startswith("EPSG:"):
+        try:
+            return int(name.split(":", 1)[1])
+        except ValueError:
+            return 25832
+    return 25832
 
 
 class _TerrainMeshRepresentation(MeshRepresentation):

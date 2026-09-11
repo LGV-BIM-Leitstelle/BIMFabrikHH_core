@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import ClassVar
+from typing import ClassVar, Optional
 
 from ifcfactory import PropertySetTemplate
 from pydantic import AliasChoices, ConfigDict, Field
@@ -60,10 +60,10 @@ class Pset_Objektinformation_Strasse(PropertySetTemplate):
         serialization_alias="_Oid",
         default="",
     )
-    aktualit: str = Field(
+    aktualit: Optional[str] = Field(
         validation_alias=AliasChoices("aktualit", "_Aktualit"),
         serialization_alias="_Aktualit",
-        default="",
+        default=None,
     )
 
 

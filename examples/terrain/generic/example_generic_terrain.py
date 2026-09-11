@@ -1,8 +1,8 @@
 """Generic terrain example (no Bruchkanten).
 
 DGM1 tiles from ``examples/assets/dgm1_hh_2022-04-30`` for bbox
-``9.9769,53.5478–10.0031,53.5564``. Same tiles and crop as the guided
-example, without constrained street edges.
+``9.9769,53.5478–9.991435,53.55622`` (Innenstadt / Alster, ~0.90 km²). Same tiles and
+crop as the guided example, without constrained street edges.
 """
 
 import sys
@@ -11,11 +11,10 @@ from pathlib import Path
 
 from BIMFabrikHH_core.apps.terrain.generic import TerrainGenericApp
 from BIMFabrikHH_core.config.logging_config import get_logger, setup_logging
-from BIMFabrikHH_core.data_models.params_bbox import BoundingBoxParams
 from BIMFabrikHH_core.data_models.params_tree import Component, Container, RequestParams
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from local_dgm import dgm_tile_paths
+from local_dgm import EXAMPLE_BBOX, dgm_tile_paths
 
 logger = get_logger()
 
@@ -25,7 +24,7 @@ def main() -> None:
     start = time.perf_counter()
 
     terrain_folder = Path(__file__).parent
-    tif_files = dgm_tile_paths()
+    tif_files = dgm_tile_paths(EXAMPLE_BBOX)
     output_file = terrain_folder / "example_dgm_generic.ifc"
 
     container = Container(
@@ -34,7 +33,7 @@ def main() -> None:
         components={"description": Component(title="Description", value="Digital Ground Model (generic / ifcfactory)")},
     )
     request_body = RequestParams(
-        bbox=BoundingBoxParams(min_x=9.9769, min_y=53.5478, max_x=10.0031, max_y=53.5564),
+        bbox=EXAMPLE_BBOX,
         containers=[container],
     )
 

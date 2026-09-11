@@ -20,7 +20,9 @@ from BIMFabrikHH_core.apps.terrain import (
     TerrainBasicApp,
     TerrainMesh,
     collect_guide_rings,
+    cut_water_from_parts,
     generate_delaunay_mesh,
+    merge_parcel_meshes,
     split_mesh_by_nutzart,
     terrain_mesh_to_landxml,
 )
@@ -30,12 +32,16 @@ from BIMFabrikHH_core.apps.terrain.processing import (
     drop_points_inside_rings,
     drop_sliver_faces,
     flatten_planar_water_z,
+    smooth_flowing_water_z,
+    snap_vertices_to_planar_water_z,
 )
 from BIMFabrikHH_core.data_models.streets import (
     ALKIS_NUTZUNG_WEITERE_GEOJSON,
     DEFAULT_NUTZARTEN,
+    PARCELS_LABEL,
     WEITERE_NUTZARTEN,
     StreetRecord,
+    pset_for_parcel_group,
     write_nutzung_geojson,
 )
 from BIMFabrikHH_core.data_models import RequestParams
@@ -241,6 +247,97 @@ def test_split_mesh_does_not_bridge_separate_same_type_rings() -> None:
     assert len(parts["DGM"].faces) == 1
 
 
+def test_cut_water_from_parts_holes_the_flaeche_underneath() -> None:
+    """A Wohnbau triangle whose centroid sits in a water ring is removed."""
+    mesh = TerrainMesh(
+        vertices=[
+            [0.0, 0.0, 0.0],
+            [1.0, 0.0, 0.0],
+            [0.0, 1.0, 0.0],
+            [10.0, 10.0, 0.0],
+            [12.0, 10.0, 0.0],
+            [10.0, 12.0, 0.0],
+        ],
+        faces=[[0, 1, 2], [3, 4, 5]],
+    )
+    water = GuideRing(
+        xy=np.array([[-0.2, -0.2], [1.2, -0.2], [1.2, 1.2], [-0.2, 1.2]]),
+        nutzart="Fliessgewaesser",
+        label="Fliessgewaesser",
+    )
+    water_mesh = TerrainMesh(
+        vertices=[[0.0, 0.0, 1.0], [1.0, 0.0, 1.0], [0.0, 1.0, 1.0]],
+        faces=[[0, 1, 2]],
+    )
+    parts = cut_water_from_parts(
+        {"Wohnbauflaeche": mesh, "Fliessgewaesser": water_mesh},
+        [water],
+    )
+    assert "Wohnbauflaeche" in parts
+    assert len(parts["Wohnbauflaeche"].faces) == 1
+    assert parts["Fliessgewaesser"].faces == [[0, 1, 2]]
+
+
+def test_merge_parcel_meshes_folds_siedlung_and_unland_only() -> None:
+    """Leftover DGM stays out so gap triangles cannot stitch getrennte Flächen."""
+    tri = TerrainMesh(
+        vertices=[[0.0, 0.0, 0.0], [1.0, 0.0, 0.0], [0.0, 1.0, 0.0]],
+        faces=[[0, 1, 2]],
+    )
+    parts = merge_parcel_meshes(
+        {
+            "DGM": tri,
+            "Wohnbauflaeche": tri,
+            "Unland Vegetationslose Flaeche": tri,
+            "Strassenverkehr": tri,
+            "Sport Freizeit Und Erholungsflaeche": tri,
+            "Fliessgewaesser": tri,
+        }
+    )
+    assert set(parts) == {
+        PARCELS_LABEL,
+        "DGM",
+        "Strassenverkehr",
+        "Sport Freizeit Und Erholungsflaeche",
+        "Fliessgewaesser",
+    }
+    assert len(parts[PARCELS_LABEL].faces) == 2
+    assert len(parts["DGM"].faces) == 1
+    assert "Wohnbauflaeche" not in parts
+
+
+def test_pset_for_parcel_group_summarizes_siedlung_records() -> None:
+    records = [
+        StreetRecord(
+            feature_id=1,
+            rings=[[(0.0, 0.0), (1.0, 0.0), (1.0, 1.0)]],
+            nutzart="Wohnbauflaeche",
+            oid="a",
+        ),
+        StreetRecord(
+            feature_id=2,
+            rings=[[(2.0, 2.0), (3.0, 2.0), (3.0, 3.0)]],
+            nutzart="Unland Vegetationslose Flaeche",
+            oid="b",
+        ),
+        StreetRecord(
+            feature_id=3,
+            rings=[[(4.0, 4.0), (5.0, 4.0), (5.0, 5.0)]],
+            nutzart="Weg",
+            oid="c",
+        ),
+    ]
+    pset = pset_for_parcel_group(records)
+    data = pset.model_dump(by_alias=True)
+    assert data["_IDEbene1"] == "Siedlung"
+    assert data["_IDEbene2"] == PARCELS_LABEL
+    assert "Wohnbauflaeche" in data["_Nutzart"]
+    assert "Unland Vegetationslose Flaeche" in data["_Nutzart"]
+    assert "Weg" not in data["_Nutzart"]
+    assert data["_Oid"] == "a; b"
+    assert data.get("_Aktualit") is None
+
+
 def test_drop_points_inside_water_rings() -> None:
     ring = GuideRing(
         xy=np.array([[0.0, 0.0], [2.0, 0.0], [2.0, 2.0], [0.0, 2.0]]),
@@ -312,6 +409,36 @@ def test_terrain_mesh_to_landxml_round_trip(tmp_path: Path) -> None:
     assert len(water_faces) == 2
 
 
+def test_build_water_meshes_drop_fans_outside_concave_ring() -> None:
+    """A C-shaped water ring must not keep a triangle across the opening."""
+    ring = GuideRing(
+        xy=np.array(
+            [
+                [0.0, 0.0],
+                [3.0, 0.0],
+                [3.0, 1.0],
+                [1.0, 1.0],
+                [1.0, 2.0],
+                [3.0, 2.0],
+                [3.0, 3.0],
+                [0.0, 3.0],
+            ]
+        ),
+        nutzart="Fliessgewaesser",
+    )
+    z = np.ones(8)
+    water = build_water_polygon_meshes([ring], [z])["Fliessgewaesser"]
+    assert len(water.faces) >= 2
+    verts = np.asarray(water.vertices)
+    centroids = [(verts[face, 0].mean(), verts[face, 1].mean()) for face in water.faces]
+    for cx, cy in centroids:
+        # Opening of the C is around x>1, 1<y<2 — no kept centroid there.
+        assert not (cx > 1.2 and 1.15 < cy < 1.85)
+    # Constrained fill must reach both arms (Delaunay+centroid left gaps here).
+    assert any(cx > 1.2 and cy < 1.0 for cx, cy in centroids)
+    assert any(cx > 1.2 and cy > 2.0 for cx, cy in centroids)
+
+
 def test_build_water_meshes_are_triangles() -> None:
     ring = GuideRing(
         xy=np.array([[0.0, 0.0], [2.0, 0.0], [2.0, 2.0], [0.0, 2.0]]),
@@ -319,7 +446,7 @@ def test_build_water_meshes_are_triangles() -> None:
     )
     meshes = build_water_polygon_meshes([ring], [np.array([1.0, 1.1, 1.2, 1.0])])
     water = meshes["Fliessgewaesser"]
-    # A 4-vertex ring fan-triangulates to 2 triangles, no interior points added.
+    # A 4-vertex ring Delaunay-triangulates to 2 triangles, no interior points.
     assert len(water.vertices) == 4
     assert all(len(face) == 3 for face in water.faces)
     assert len(water.faces) == 2
@@ -333,6 +460,67 @@ def test_flatten_planar_water_uses_median() -> None:
     z = np.array([2.0, 4.0, np.nan])
     flatten_planar_water_z([ring], [z])
     assert np.allclose(z, 3.0)
+
+
+def test_flatten_planar_water_levels_fliessgewaesser() -> None:
+    """Opposite Ufer must not tilt a canal; one median Z per ring."""
+    ring = GuideRing(
+        xy=np.array([[0.0, 0.0], [10.0, 0.0], [10.0, 4.0], [0.0, 4.0]]),
+        nutzart="Fliessgewaesser",
+    )
+    z = np.array([2.0, 2.0, 8.0, 8.0])
+    flatten_planar_water_z([ring], [z])
+    assert np.allclose(z, 5.0)
+
+
+def test_smooth_flowing_water_kills_spike_keeps_slope() -> None:
+    xs = np.arange(0.0, 101.0, 10.0)
+    bottom = np.column_stack([xs, np.zeros_like(xs)])
+    top = np.column_stack([xs[::-1], np.full(len(xs), 4.0)])
+    xy = np.vstack([bottom, top])
+    z_bottom = 10.0 - xs / 10.0
+    z = np.concatenate([z_bottom, z_bottom[::-1]])
+    spike_i = 5
+    z[spike_i] = 50.0
+    ring = GuideRing(xy=xy, nutzart="Fliessgewaesser")
+    smooth_flowing_water_z([ring], [z], window_m=30.0, flowing_nutzarten={"Fliessgewaesser"})
+    assert z[spike_i] < 10.0
+    assert z[0] > z[10]
+    assert abs(z[0] - 10.0) < 1.5
+    assert abs(z[10] - 0.0) < 1.5
+
+
+def test_smooth_flowing_water_leaves_standing() -> None:
+    pond = GuideRing(
+        xy=np.array([[0.0, 0.0], [2.0, 0.0], [2.0, 2.0], [0.0, 2.0]]),
+        nutzart="Stehendes Gewaesser",
+    )
+    z = np.array([2.0, 4.0, 4.0, 2.0])
+    smooth_flowing_water_z([pond], [z])
+    assert np.array_equal(z, [2.0, 4.0, 4.0, 2.0])
+
+
+def test_snap_vertices_to_planar_water_median() -> None:
+    """Bank verts on any water ring take that ring's median plane."""
+    pond = GuideRing(
+        xy=np.array([[0.0, 0.0], [2.0, 0.0], [2.0, 2.0], [0.0, 2.0]]),
+        nutzart="Stehendes Gewaesser",
+    )
+    river = GuideRing(
+        xy=np.array([[10.0, 10.0], [12.0, 10.0], [12.0, 12.0], [10.0, 12.0]]),
+        nutzart="Fliessgewaesser",
+    )
+    pond_z = np.array([2.0, 4.0, 4.0, 2.0])
+    river_z = np.array([8.0, 8.0, 8.0, 8.0])
+    flatten_planar_water_z([pond, river], [pond_z, river_z])
+    verts = snap_vertices_to_planar_water_z(
+        [[0.0, 0.0, 9.0], [1.0, 5.0, 9.0], [10.0, 10.0, 9.0]],
+        [pond, river],
+        [pond_z, river_z],
+    )
+    assert verts[0][2] == 3.0
+    assert verts[1][2] == 9.0
+    assert verts[2][2] == 8.0
 
 
 def test_generate_delaunay_mesh_too_few_points_returns_empty() -> None:

@@ -28,7 +28,12 @@ from scipy.spatial import Delaunay
 from BIMFabrikHH_core.config.logging_config import get_logger
 from BIMFabrikHH_core.core.georeferencing.coordinate_transformer import CoordinateTransformer
 from BIMFabrikHH_core.core.ogc_extractor import strip_closing_duplicate_xy
-from BIMFabrikHH_core.data_models.streets import nutzung_split_label
+from BIMFabrikHH_core.data_models.streets import (
+    PARCELS_LABEL,
+    PARCEL_NUTZARTEN,
+    load_guide_records_from_oaf,
+    nutzung_split_label,
+)
 from BIMFabrikHH_core.data_models.terrain_mesh import TerrainMesh
 
 logger = get_logger("terrain_processing")
@@ -37,6 +42,9 @@ DEFAULT_GUIDE_EDGE_SPACING_M: float = 5.0
 NUTZART_ORDER: Tuple[str, ...] = (
     "Strassenverkehr|Fahrbahn",
     "Strassenverkehr|Begleitfläche Straßenverkehr",
+    "Strassenverkehr|Busbahnhof",
+    "Strassenverkehr|Fußgängerzone",
+    "Strassenverkehr|Parkplatz",
     "Strassenverkehr",
     "Weg",
     "Bahnverkehr",
@@ -62,7 +70,11 @@ WATER_EMPTY_INTERIOR: FrozenSet[str] = frozenset(
         "Schiffsverkehr",
     }
 )
-WATER_PLANAR: FrozenSet[str] = frozenset({"Stehendes Gewaesser", "Hafenbecken", "Meer"})
+# One horizontal plane per ring. Opposite Ufer often differ by metres (quay
+# vs path); along-ring smoothing kept that and tilted the water surface.
+WATER_PLANAR: FrozenSet[str] = WATER_EMPTY_INTERIOR
+WATER_FLOWING: FrozenSet[str] = frozenset()
+DEFAULT_FLOWING_WATER_WINDOW_M: float = 30.0
 _WGS84 = "EPSG:4326"
 _UTM32 = "EPSG:25832"
 
@@ -613,18 +625,36 @@ def _points_in_ring(px: np.ndarray, py: np.ndarray, ring_xy: np.ndarray) -> np.n
 
 
 def _points_near_ring(px: np.ndarray, py: np.ndarray, ring_xy: np.ndarray, tol: float) -> np.ndarray:
-    """True when each point lies within ``tol`` metres of a ring edge."""
-    if len(px) == 0:
+    """True when each point lies within ``tol`` metres of a ring edge.
+
+    A point within ``tol`` of any edge must lie in the ring AABB expanded by
+    ``tol``. Reject the rest first so the ``(n_pts × n_edges)`` distance
+    matrix is only built for candidates (same snap set as the full broadcast).
+    """
+    n = len(px)
+    if n == 0:
         return np.zeros(0, dtype=bool)
+    pad = float(tol) + 1e-9
+    cand = (
+        (px >= float(ring_xy[:, 0].min()) - pad)
+        & (px <= float(ring_xy[:, 0].max()) + pad)
+        & (py >= float(ring_xy[:, 1].min()) - pad)
+        & (py <= float(ring_xy[:, 1].max()) + pad)
+    )
+    if not np.any(cand):
+        return np.zeros(n, dtype=bool)
     x1, y1 = ring_xy[:, 0], ring_xy[:, 1]
     x2, y2 = np.roll(x1, -1), np.roll(y1, -1)
     dx, dy = x2 - x1, y2 - y1
     length2 = dx * dx + dy * dy
     length2 = np.where(length2 == 0.0, 1.0, length2)
-    t = ((px[:, None] - x1) * dx + (py[:, None] - y1) * dy) / length2
+    cpx, cpy = px[cand], py[cand]
+    t = ((cpx[:, None] - x1) * dx + (cpy[:, None] - y1) * dy) / length2
     t = np.clip(t, 0.0, 1.0)
-    dist2 = (px[:, None] - (x1 + t * dx)) ** 2 + (py[:, None] - (y1 + t * dy)) ** 2
-    return np.any(dist2 <= tol * tol, axis=1)
+    dist2 = (cpx[:, None] - (x1 + t * dx)) ** 2 + (cpy[:, None] - (y1 + t * dy)) ** 2
+    out = np.zeros(n, dtype=bool)
+    out[cand] = np.any(dist2 <= tol * tol, axis=1)
+    return out
 
 
 def _points_in_or_on_ring(
@@ -679,7 +709,7 @@ def flatten_planar_water_z(
     *,
     planar_nutzarten: FrozenSet[str] = WATER_PLANAR,
 ) -> None:
-    """Set standing-water / harbour / sea rings to one Z (median shoreline)."""
+    """Set each water ring to one Z (median shoreline), including canals."""
     for ring, ring_z in zip(rings, rings_z):
         if ring.nutzart not in planar_nutzarten:
             continue
@@ -697,9 +727,172 @@ def flatten_planar_water_z(
         )
 
 
+def _along_ring_median_z(xy: np.ndarray, z: np.ndarray, window_m: float) -> np.ndarray:
+    """Replace each Z with the median of vertices within ``window_m`` along the ring."""
+    n = len(xy)
+    out = np.asarray(z, dtype=float).copy()
+    if n == 0 or window_m <= 0.0:
+        return out
+    dx = np.diff(xy[:, 0], append=xy[0, 0])
+    dy = np.diff(xy[:, 1], append=xy[0, 1])
+    seg = np.hypot(dx, dy)
+    perimeter = float(seg.sum())
+    if perimeter <= 0.0:
+        return out
+    valid = ~np.isnan(out)
+    if not np.any(valid):
+        return out
+    if window_m >= 0.5 * perimeter:
+        out[:] = float(np.median(out[valid]))
+        return out
+    cum = np.empty(n, dtype=float)
+    cum[0] = 0.0
+    if n > 1:
+        cum[1:] = np.cumsum(seg[:-1])
+    cum3 = np.concatenate([cum, cum + perimeter, cum + 2.0 * perimeter])
+    z3 = np.concatenate([out, out, out])
+    for i in range(n):
+        center = cum[i] + perimeter
+        lo = int(np.searchsorted(cum3, center - window_m, side="left"))
+        hi = int(np.searchsorted(cum3, center + window_m, side="right"))
+        window = z3[lo:hi]
+        window = window[~np.isnan(window)]
+        if window.size:
+            out[i] = float(np.median(window))
+    return out
+
+
+def smooth_flowing_water_z(
+    rings: Sequence[GuideRing],
+    rings_z: Sequence[np.ndarray],
+    *,
+    window_m: float = DEFAULT_FLOWING_WATER_WINDOW_M,
+    flowing_nutzarten: FrozenSet[str] = WATER_FLOWING,
+) -> None:
+    """Smooth Fließgewässer shoreline Z with an along-ring median.
+
+    Each vertex takes the median of neighbours within ``window_m`` of
+    shoreline length (wraps around the ring). The long slope stays;
+    short DGM spikes do not. Standing water is left to
+    :func:`flatten_planar_water_z`. Writes into ``rings_z`` before CDT
+    so the water mesh and constraint vertices share the same Z. No
+    all-TIN bank snap.
+    """
+    for ring, ring_z in zip(rings, rings_z):
+        if ring.nutzart not in flowing_nutzarten or len(ring.xy) < 3:
+            continue
+        z = np.asarray(ring_z, dtype=float)
+        if z.size != len(ring.xy):
+            continue
+        smoothed = _along_ring_median_z(np.asarray(ring.xy, dtype=float), z, window_m)
+        ring_z[:] = smoothed
+        logger.info(
+            "Flowing water %s: %d vertices, along-ring median window=%.1f m",
+            ring.nutzart,
+            len(ring_z),
+            window_m,
+        )
+
+
+def snap_vertices_to_planar_water_z(
+    vertices: List[List[float]],
+    rings: Sequence[GuideRing],
+    rings_z: Sequence[np.ndarray],
+    *,
+    tol: float = 0.05,
+    planar_nutzarten: FrozenSet[str] = WATER_PLANAR,
+) -> List[List[float]]:
+    """Set TIN vertices on a standing-water ring to that ring's median Z.
+
+    Fließgewässer are not snapped here (along-ring median is already in
+    ``rings_z`` before CDT). Land then meets still water with no vertical
+    gap. ``tol`` is metres in XY.
+    """
+    if not vertices or not rings:
+        return vertices
+    arr = np.asarray(vertices, dtype=float)
+    snapped = 0
+    for ring, ring_z in zip(rings, rings_z):
+        if ring.nutzart not in planar_nutzarten or len(ring.xy) < 3:
+            continue
+        valid = np.asarray(ring_z, dtype=float)
+        valid = valid[~np.isnan(valid)]
+        if valid.size == 0:
+            continue
+        plane_z = float(np.median(valid))
+        on_bank = _points_near_ring(arr[:, 0], arr[:, 1], ring.xy, tol)
+        if not np.any(on_bank):
+            continue
+        snapped += int(np.sum(on_bank))
+        arr[on_bank, 2] = plane_z
+    if snapped:
+        logger.info("Snapped %d bank vertex(es) to planar water median Z", snapped)
+    return arr.tolist()
+
+
 def _ring_signed_area_xy(xy: np.ndarray) -> float:
     x, y = xy[:, 0], xy[:, 1]
     return float(0.5 * np.sum(x * np.roll(y, -1) - np.roll(x, -1) * y))
+
+
+def _dedupe_ring_xy(xy: np.ndarray, z: np.ndarray, *, decimals: int = 3) -> Tuple[np.ndarray, np.ndarray]:
+    """Drop consecutive-duplicate XY after snapping so Delaunay can run."""
+    keys = np.round(xy, decimals)
+    keep: List[int] = []
+    seen: set[Tuple[float, float]] = set()
+    for i, (x, y) in enumerate(keys):
+        key = (float(x), float(y))
+        if key in seen:
+            continue
+        seen.add(key)
+        keep.append(i)
+    if len(keep) == len(xy):
+        return xy, z
+    idx = np.asarray(keep, dtype=int)
+    return xy[idx], z[idx]
+
+
+def _triangulate_polygon_xy(xy: np.ndarray) -> Tuple[np.ndarray, List[List[int]]]:
+    """Fill a simple ring to the Ufer (constrained PSLG, not convex Delaunay).
+
+    Unconstrained Delaunay + ``centroid inside`` drops triangles whose
+    chord spans a concave bay (Alster Ufer). Shewchuk ``p`` keeps the
+    Bruchkante and fills the Fläche. Returns ``(vertices, faces)``;
+    Triangle may add Steiner points.
+    """
+    if len(xy) < 3:
+        return np.asarray(xy, dtype=float), []
+    pts = np.asarray(xy, dtype=float)
+    n = len(pts)
+    segments = np.column_stack(
+        (np.arange(n, dtype=np.int32), np.roll(np.arange(n, dtype=np.int32), -1))
+    )
+    try:
+        import triangle as tr
+
+        result = tr.triangulate({"vertices": pts, "segments": segments}, "p")
+        out_xy = np.asarray(result["vertices"], dtype=float)
+        faces_arr = np.asarray(result["triangles"], dtype=int)
+        if faces_arr.size == 0:
+            return out_xy, []
+        if faces_arr.min() >= 1 and faces_arr.max() == len(out_xy):
+            faces_arr = faces_arr - 1
+        return out_xy, [[int(a), int(b), int(c)] for a, b, c in faces_arr]
+    except Exception as exc:
+        logger.warning("Water ring CDT failed (%s); falling back to in-polygon Delaunay", exc)
+    try:
+        tri = Delaunay(pts)
+    except Exception as exc:
+        logger.warning("Water ring Delaunay failed (%s); skipping ring", exc)
+        return pts, []
+    faces: List[List[int]] = []
+    for simplex in np.asarray(tri.simplices, dtype=int):
+        corner = pts[simplex]
+        cx = float(corner[:, 0].mean())
+        cy = float(corner[:, 1].mean())
+        if bool(_points_in_ring(np.array([cx]), np.array([cy]), pts)[0]):
+            faces.append([int(simplex[0]), int(simplex[1]), int(simplex[2])])
+    return pts, faces
 
 
 def build_water_polygon_meshes(
@@ -710,11 +903,11 @@ def build_water_polygon_meshes(
 ) -> Dict[str, TerrainMesh]:
     """Triangulated water surfaces with no interior DGM points.
 
-    Each water ring becomes a triangle fan over its own boundary vertices
-    only, so the interior stays empty (no terrain samples) while both the
-    IFC and LandXML export see identical triangles. Rings of the same
-    ``nutzart`` are grouped into one mesh. Vertices keep shoreline Z (or the
-    planar median already written into ``rings_z``).
+    Each water ring is filled with a constrained triangulation so the
+    surface reaches the Ufer (concave bays stay inside the Fläche).
+    Rings of the same ``nutzart`` are grouped into one mesh. Vertices
+    keep shoreline Z (planar median or Fließgewässer along-ring
+    median already written into ``rings_z``).
     """
     grouped: Dict[str, List[Tuple[np.ndarray, np.ndarray]]] = {}
     for ring, ring_z in zip(rings, rings_z):
@@ -735,15 +928,24 @@ def build_water_polygon_meshes(
         vertices: List[List[float]] = []
         faces: List[List[int]] = []
         for xy, z in items:
+            xy, z = _dedupe_ring_xy(np.asarray(xy, dtype=float), np.asarray(z, dtype=float))
+            if len(xy) < 3:
+                continue
             if _ring_signed_area_xy(xy) < 0:
                 xy = xy[::-1]
                 z = z[::-1]
+            out_xy, local = _triangulate_polygon_xy(xy)
+            if not local:
+                continue
+            if len(out_xy) == len(xy) and np.allclose(out_xy, xy):
+                z_out = z
+            else:
+                d2 = (out_xy[:, None, 0] - xy[None, :, 0]) ** 2 + (out_xy[:, None, 1] - xy[None, :, 1]) ** 2
+                z_out = z[np.argmin(d2, axis=1)]
             start = len(vertices)
-            for (x, y), zi in zip(xy, z):
+            for (x, y), zi in zip(out_xy, z_out):
                 vertices.append([float(x) - ox, float(y) - oy, float(zi)])
-            # Fan-triangulate the ring boundary (no interior points added).
-            for k in range(1, len(xy) - 1):
-                faces.append([start, start + k, start + k + 1])
+            faces.extend([[start + a, start + b, start + c] for a, b, c in local])
         if vertices and faces:
             vertices, faces = drop_sliver_faces(vertices, faces)
         if vertices and faces:
@@ -767,6 +969,64 @@ def _submesh(mesh: TerrainMesh, face_indices: Sequence[int]) -> TerrainMesh:
     vertices = [mesh.vertices[i] for i in used]
     remapped = [[remap[a], remap[b], remap[c]] for a, b, c in faces]
     return TerrainMesh(vertices=vertices, faces=remapped, nullpunkt=mesh.nullpunkt)
+
+
+def subtract_rings_from_mesh(mesh: TerrainMesh, rings: Sequence[GuideRing]) -> TerrainMesh:
+    """Drop faces whose centroid lies in any of ``rings``.
+
+    Used to cut water Flächen out of land / leftover DGM. Bank triangles
+    whose centroid stays on land are kept.
+    """
+    if mesh.is_empty() or not rings:
+        return mesh
+    verts = np.asarray(mesh.vertices, dtype=float)
+    faces = np.asarray(mesh.faces, dtype=int)
+    if faces.ndim != 2 or faces.shape[1] < 3:
+        return mesh
+    cx = verts[faces, 0].mean(axis=1)
+    cy = verts[faces, 1].mean(axis=1)
+    inside = np.zeros(len(faces), dtype=bool)
+    for ring in rings:
+        if len(ring.xy) < 3:
+            continue
+        xmin, ymin = ring.xy.min(axis=0)
+        xmax, ymax = ring.xy.max(axis=0)
+        cand = (~inside) & (cx >= xmin) & (cx <= xmax) & (cy >= ymin) & (cy <= ymax)
+        if not np.any(cand):
+            continue
+        idx = np.flatnonzero(cand)
+        hit = _points_in_ring(cx[idx], cy[idx], ring.xy)
+        inside[idx[hit]] = True
+    keep = np.flatnonzero(~inside)
+    dropped = int(inside.sum())
+    if dropped:
+        logger.info("Cut %d face(s) under water Flächen from mesh", dropped)
+    if len(keep) == 0:
+        return TerrainMesh(vertices=[], faces=[], nullpunkt=mesh.nullpunkt)
+    if dropped == 0:
+        return mesh
+    return _submesh(mesh, keep.tolist())
+
+
+def cut_water_from_parts(
+    parts: Dict[str, TerrainMesh],
+    rings: Sequence[GuideRing],
+) -> Dict[str, TerrainMesh]:
+    """Remove water interiors from every non-water part; water keys unchanged."""
+    water_rings = [r for r in rings if r.nutzart in WATER_EMPTY_INTERIOR]
+    if not water_rings:
+        return parts
+    out: Dict[str, TerrainMesh] = {}
+    for key, part in parts.items():
+        if key in WATER_EMPTY_INTERIOR:
+            out[key] = part
+            continue
+        cut = subtract_rings_from_mesh(part, water_rings)
+        if not cut.is_empty():
+            out[key] = cut
+        else:
+            logger.info("Part %s is empty after cutting water Flächen", key)
+    return out
 
 
 def split_mesh_by_nutzart(
@@ -837,8 +1097,134 @@ def split_mesh_by_nutzart(
         part = _submesh(mesh, idxs.tolist())
         if not part.is_empty():
             parts[key] = part
-            logger.info("Trennen %s: %d faces, %d vertices", key, len(part.faces), len(part.vertices))
+            logger.info("Split %s: %d faces, %d vertices", key, len(part.faces), len(part.vertices))
     return parts or {"DGM": mesh}
+
+
+def combine_terrain_meshes(meshes: Sequence[TerrainMesh]) -> TerrainMesh:
+    """Concatenate meshes and remap face indices. Empty inputs are skipped."""
+    vertices: List[List[float]] = []
+    faces: List[List[int]] = []
+    nullpunkt = None
+    offset = 0
+    for mesh in meshes:
+        if mesh.is_empty():
+            continue
+        if nullpunkt is None:
+            nullpunkt = mesh.nullpunkt
+        vertices.extend(mesh.vertices)
+        faces.extend([[a + offset, b + offset, c + offset] for a, b, c in mesh.faces])
+        offset += len(mesh.vertices)
+    return TerrainMesh(vertices=vertices, faces=faces, nullpunkt=nullpunkt)
+
+
+def _is_parcel_split_key(key: str) -> bool:
+    base = key.split("|", 1)[0]
+    return key in PARCEL_NUTZARTEN or base in PARCEL_NUTZARTEN
+
+
+def merge_parcel_meshes(parts: Dict[str, TerrainMesh]) -> Dict[str, TerrainMesh]:
+    """Fold Siedlung and Unland into one ``Parcels`` mesh.
+
+    Leftover DGM stays its own object. Merging it back in would refill the
+    gaps between getrennte Flächen and stitch them together. Bruchkanten
+    stay in the TIN; this only joins IFC / LandXML parts. Traffic,
+    Grünfläche, and water keys are left unchanged.
+    """
+    merged: List[TerrainMesh] = []
+    out: Dict[str, TerrainMesh] = {}
+    for key, part in parts.items():
+        if _is_parcel_split_key(key):
+            if not part.is_empty():
+                merged.append(part)
+        else:
+            out[key] = part
+    combined = combine_terrain_meshes(merged)
+    if not combined.is_empty():
+        out[PARCELS_LABEL] = combined
+    return out
+
+
+def resolve_guide_records(
+    guide_records: Optional[Sequence[Any]],
+    bbox_wgs84: Optional[Tuple[float, float, float, float]],
+    *,
+    guide_from_oaf: bool,
+    write_geojson: bool = False,
+    output_dir: Optional[Union[str, Path]] = None,
+) -> Optional[Sequence[Any]]:
+    """Return the guide records to use, fetching from the Hamburg OAF if asked.
+
+    Writer-neutral: both :class:`TerrainGenericApp` and :class:`TerrainRustApp`
+    call this. When ``guide_records`` is already provided (or ``guide_from_oaf``
+    is ``False``) it is returned unchanged. ``guide_from_oaf=True`` with no
+    records pulls ALKIS ``Nutzung`` for ``bbox_wgs84``; ``write_geojson`` then
+    persists the response next to ``output_dir``.
+    """
+    if guide_from_oaf and guide_records is None:
+        if bbox_wgs84 is None:
+            logger.warning("guide_from_oaf=True needs RequestParams.bbox")
+            return guide_records
+        out_dir = Path(output_dir) if output_dir is not None else None
+        if write_geojson and out_dir is None:
+            logger.warning("write_geojson=True needs output_path to know where to save")
+        return load_guide_records_from_oaf(
+            bbox_wgs84,
+            write_geojson=bool(write_geojson and out_dir is not None),
+            output_dir=out_dir,
+        )
+    if write_geojson:
+        logger.warning("write_geojson=True is ignored unless guide_from_oaf fetches Nutzung")
+    return guide_records
+
+
+def build_landuse_parts(
+    mesh: TerrainMesh,
+    guide_records: Optional[Sequence[Any]],
+    *,
+    bbox_utm: Optional[Tuple[float, float, float, float]] = None,
+    water_meshes: Optional[Dict[str, TerrainMesh]] = None,
+    spacing: float = DEFAULT_GUIDE_EDGE_SPACING_M,
+    split_by_landuse: bool = False,
+    merge_parcels: bool = True,
+) -> List[Tuple[str, TerrainMesh]]:
+    """Split a TIN into ordered, labeled land-use parts (writer-neutral).
+
+    Shared by :class:`TerrainGenericApp` and :class:`TerrainRustApp` so the
+    geometry is identical regardless of the IFC writer. Returns an ordered
+    ``[(label, mesh), ...]`` list; **psets are the caller's job**. The list is
+    empty when there is nothing to split (no ``guide_records`` or neither
+    ``split_by_landuse`` nor ``merge_parcels``), in which case the caller
+    writes a single DGM mesh.
+
+    ``merge_parcels`` folds Siedlung / Unland into one ``Parcels`` part;
+    ``split_by_landuse`` keeps one part per Nutzung type and wins over it.
+    Water triangles from ``water_meshes`` are re-inserted, then water rings are
+    cut out of every other part.
+    """
+    if not guide_records or not (split_by_landuse or merge_parcels):
+        if split_by_landuse and not guide_records:
+            logger.warning("split_by_landuse=True needs guide_records; writing a single DGM")
+        return []
+
+    rings = collect_guide_rings(guide_records, spacing=spacing, bbox_utm=bbox_utm)
+    split = split_mesh_by_nutzart(mesh, rings)
+    split = cut_water_from_parts(split, rings)
+    for key, water_mesh in (water_meshes or {}).items():
+        if not water_mesh.is_empty():
+            split[key] = water_mesh
+            logger.info(
+                "Water triangles %s: %d face(s), %d vertices",
+                key,
+                len(water_mesh.faces),
+                len(water_mesh.vertices),
+            )
+    if not split_by_landuse:
+        split = merge_parcel_meshes(split)
+
+    ordered = [key for key in (PARCELS_LABEL, "DGM", *NUTZART_ORDER) if key in split]
+    ordered.extend(sorted(key for key in split if key not in ordered))
+    return [(key, split[key]) for key in ordered]
 
 
 # ---------------------------------------------------------------------------
@@ -920,9 +1306,11 @@ def extract_mesh_adaptive(
         guide_records: Optional ALKIS ``Nutzung`` records. When given,
             densified ring edges become Bruchkanten in a constrained
             Delaunay TIN. Water rings drop interior DGM points; standing
-            water / harbour / sea use one shoreline-median Z. When
+            water / harbour / sea / Fließgewässer use one shoreline-median
+            Z per ring and land vertices on those rings are snapped to
+            that plane. When
             ``water_meshes`` is a dict, each water type is stored there
-            as one n-gon per ring (no triangle fan). ``None`` / empty
+            as a triangulated ring (no interior points). ``None`` / empty
             keeps the original unconstrained mesh.
         guide_edge_spacing_m: Spacing of vertices along each Bruchkante
             (DGM Z is sampled on those points). Extra samples *around*
@@ -1069,6 +1457,7 @@ def extract_mesh_adaptive(
                 x_coords, y_coords, z_values, water_rings
             )
         flatten_planar_water_z(guide_rings, guide_rings_z)
+        smooth_flowing_water_z(guide_rings, guide_rings_z)
         if water_meshes is not None:
             shift = (bbox_utm[0], bbox_utm[1]) if (move_to_origin and bbox_utm is not None) else None
             water_meshes.update(build_water_polygon_meshes(guide_rings, guide_rings_z, origin_shift=shift))
@@ -1096,6 +1485,8 @@ def extract_mesh_adaptive(
     vertices, faces = drop_sliver_faces(vertices, faces)
     if not vertices or not faces:
         return TerrainMesh(vertices=[], faces=[], nullpunkt=None)
+    if guide_rings:
+        vertices = snap_vertices_to_planar_water_z(vertices, guide_rings, guide_rings_z)
 
     arr = np.array(vertices)
     arr[:, 0] = np.round(arr[:, 0], 6)
@@ -1120,11 +1511,19 @@ __all__ = [
     "DEFAULT_GUIDE_EDGE_SPACING_M",
     "GuideRing",
     "NUTZART_ORDER",
+    "build_landuse_parts",
+    "resolve_guide_records",
+    "combine_terrain_meshes",
+    "merge_parcel_meshes",
     "WATER_EMPTY_INTERIOR",
+    "WATER_FLOWING",
     "WATER_PLANAR",
+    "DEFAULT_FLOWING_WATER_WINDOW_M",
     "drop_sliver_faces",
     "drop_points_inside_rings",
     "flatten_planar_water_z",
+    "smooth_flowing_water_z",
+    "snap_vertices_to_planar_water_z",
     "build_water_polygon_meshes",
     "adaptive_sampling",
     "analyze_terrain_features",
@@ -1132,6 +1531,8 @@ __all__ = [
     "collect_guide_xy",
     "generate_constrained_mesh",
     "split_mesh_by_nutzart",
+    "subtract_rings_from_mesh",
+    "cut_water_from_parts",
     "create_boundary_points",
     "download_to_memory",
     "extract_mesh_adaptive",

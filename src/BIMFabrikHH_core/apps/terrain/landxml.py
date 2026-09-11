@@ -1,7 +1,7 @@
 """LandXML 1.2 TIN export for terrain meshes.
 
 Pure, IFC-agnostic writer: turns :class:`TerrainMesh` parts into a LandXML
-``<Surface>`` per part (DGM plus each ALKIS Nutzung type), mirroring the IFC
+``<Surface>`` per part (Parcels / DGM plus each remaining Nutzung type), mirroring the IFC
 objects produced by :class:`TerrainGenericApp`. Uses only the standard
 library (``xml.etree.ElementTree``) so it adds no dependency.
 
@@ -18,7 +18,7 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import List, Sequence, Tuple
+from typing import List, Optional, Sequence, Tuple
 from xml.etree import ElementTree as ET
 
 from BIMFabrikHH_core.config.logging_config import get_logger
@@ -138,4 +138,30 @@ def terrain_mesh_to_landxml(
     return dest
 
 
-__all__ = ["terrain_mesh_to_landxml"]
+def export_terrain_landxml(
+    result: Optional[Path],
+    surfaces: Sequence[Tuple[str, TerrainMesh]],
+    *,
+    landxml_path: Optional[str | Path] = None,
+    epsg: int = 25832,
+) -> Optional[Path]:
+    """Write a LandXML sidecar for a just-built IFC (shared by both apps).
+
+    ``result`` is the IFC path returned by the writer (``None`` if the build
+    failed → skipped with a warning). ``surfaces`` are the same ``(label,
+    mesh)`` parts written to the IFC. ``landxml_path`` overrides the
+    destination; otherwise it is ``result`` with a ``.xml`` suffix. Never
+    raises — LandXML failure is logged and the IFC result is kept.
+    """
+    if result is None:
+        logger.warning("Skipping LandXML export because IFC build failed")
+        return None
+    xml_dest = Path(landxml_path) if landxml_path is not None else Path(result).with_suffix(".xml")
+    try:
+        return terrain_mesh_to_landxml(surfaces, xml_dest, epsg=epsg)
+    except Exception as e:  # keep IFC result even if LandXML fails
+        logger.error("LandXML export failed: %s", e)
+        return None
+
+
+__all__ = ["terrain_mesh_to_landxml", "export_terrain_landxml"]

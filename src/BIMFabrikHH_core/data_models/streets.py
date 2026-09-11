@@ -68,6 +68,19 @@ GUIDE_NUTZARTEN: FrozenSet[str] = frozenset(
 )
 WEITERE_NUTZARTEN: FrozenSet[str] = frozenset(GUIDE_NUTZARTEN - DEFAULT_NUTZARTEN)
 
+# Siedlung + Unland. Leftover DGM stays separate so gap triangles
+# do not stitch getrennte Flächen back together.
+PARCEL_NUTZARTEN: FrozenSet[str] = frozenset(
+    {
+        "Wohnbauflaeche",
+        "Industrie Und Gewerbeflaeche",
+        "Flaeche Gemischter Nutzung",
+        "Flaeche Besonderer Funktionaler Praegung",
+        "Unland Vegetationslose Flaeche",
+    }
+)
+PARCELS_LABEL: str = "Parcels"
+
 
 def nutzung_split_label(nutzart: str, bez: str = "") -> str:
     """IFC / TIN split key: ``nutzart``, or ``nutzart|bez`` for street subtypes."""
@@ -179,6 +192,29 @@ def pset_for_nutzung_group(records: Sequence[StreetRecord], *, label: str) -> "P
         oid=oid_text,
         aktualit="; ".join(dates),
         bemerkung=f"ALKIS Tatsaechliche Nutzung, {len(matching)} Flaeche(n)",
+    )
+
+
+def pset_for_parcel_group(records: Sequence[StreetRecord]) -> "Pset_Objektinformation_Strasse":
+    """One ``Pset_Objektinformation`` for all Siedlung / Unland Flächen."""
+    from BIMFabrikHH_core.data_models.pydantic_psets_streets import (
+        Pset_Objektinformation_Strasse,
+    )
+
+    matching = [r for r in records if r.nutzart in PARCEL_NUTZARTEN]
+    nutzarten = sorted({r.nutzart for r in matching if r.nutzart})
+    names = sorted({r.name for r in matching if r.name})
+    oids = [r.oid for r in matching if r.oid]
+    oid_text = "; ".join(oids) if 0 < len(oids) <= 8 else f"{len(oids)} Features"
+    return Pset_Objektinformation_Strasse(
+        idebene1="Siedlung",
+        idebene2=PARCELS_LABEL,
+        idebene3=PARCELS_LABEL,
+        nutzart="; ".join(nutzarten),
+        bez="",
+        name="; ".join(names)[:240],
+        oid=oid_text,
+        bemerkung=f"ALKIS parcel Flächen, {len(matching)} Flaeche(n)",
     )
 
 
@@ -327,6 +363,8 @@ __all__ = [
     "DEFAULT_NUTZARTEN",
     "GUIDE_NUTZARTEN",
     "NUTZUNG_OAF_ITEMS",
+    "PARCELS_LABEL",
+    "PARCEL_NUTZARTEN",
     "WEITERE_NUTZARTEN",
     "GeometryCrs",
     "StreetRecord",
@@ -337,6 +375,7 @@ __all__ = [
     "nutzung_idebene1",
     "nutzung_split_label",
     "pset_for_nutzung_group",
+    "pset_for_parcel_group",
     "records_from_geojson_feature_collection",
     "write_nutzung_geojson",
 ]

@@ -8,11 +8,10 @@ from pathlib import Path
 
 from BIMFabrikHH_core.apps.terrain.generic import TerrainGenericApp
 from BIMFabrikHH_core.config.logging_config import get_logger, setup_logging
-from BIMFabrikHH_core.data_models.params_bbox import BoundingBoxParams
 from BIMFabrikHH_core.data_models.params_tree import Component, Container, RequestParams
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from local_dgm import dgm_tile_paths
+from local_dgm import EXAMPLE_BBOX, dgm_tile_paths
 
 logger = get_logger()
 
@@ -21,7 +20,7 @@ _HERE = Path(__file__).resolve().parent
 
 def _request(container_id: str, description: str) -> RequestParams:
     return RequestParams(
-        bbox=BoundingBoxParams(min_x=9.9769, min_y=53.5478, max_x=10.0031, max_y=53.5564),
+        bbox=EXAMPLE_BBOX,
         containers=[
             Container(
                 containerTitle="DGM_Container",
@@ -33,7 +32,7 @@ def _request(container_id: str, description: str) -> RequestParams:
 
 
 def _run(label: str, output_name: str, *, guide_from_oaf: bool) -> tuple[float, Path]:
-    tif_files = dgm_tile_paths()
+    tif_files = dgm_tile_paths(EXAMPLE_BBOX)
     output_path = _HERE / output_name
     t0 = time.perf_counter()
     result = TerrainGenericApp.from_geotiffs(
