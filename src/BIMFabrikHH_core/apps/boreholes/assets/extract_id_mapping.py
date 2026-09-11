@@ -23,9 +23,8 @@ from __future__ import annotations
 
 import argparse
 import json
-import re
-import sys
 import logging
+import re
 from pathlib import Path
 from typing import Iterable
 
@@ -138,9 +137,7 @@ def parse_file(
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description=(
-            "Create a JSON mapping from 'BDHH_' + ogr:DGK5 + " + "ogr:ARCHIVKURZBEZEICHNUNG to ogr:ID_STAMMDATEN."
-        )
+        description=("Create a JSON mapping from 'BDHH_' + ogr:DGK5 + ogr:ARCHIVKURZBEZEICHNUNG to ogr:ID_STAMMDATEN.")
     )
     parser.add_argument(
         "inputs",

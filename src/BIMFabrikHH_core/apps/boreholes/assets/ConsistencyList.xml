@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- version 2.0 - date: 2024-06-25 - designed for BoreholeML 3.1.0 -->
+<gmx:ML_CodeListDictionary xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:gco="http://www.isotc211.org/2005/gco" xmlns:gml="http://www.opengis.net/gml/3.2" xmlns:gmd="http://www.isotc211.org/2005/gmd" xmlns:gmx="http://www.isotc211.org/2005/gmx" xmlns:bmlcl="https://schemas.bgr.de/boreholeml/codelists/v2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.isotc211.org/2005/gmx http://schemas.opengis.net/iso/19139/20070417/gmx/gmx.xsd https://schemas.bgr.de/boreholeml/codelists/v2 https://schemas.bgr.de/boreholeml/codelists/v2/codelistItem_BMLCL.xsd" gml:id="ConsistencyList">
+	<gml:description>Zustandsform bindiger Lockergesteine</gml:description>
+	<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/ConsistencyList.xml">ConsistencyList</gml:identifier>
+	<gml:name>Konsistenz</gml:name>
+	<gml:remarks>version 2.0 - date: 2024-06-25 - designed for BoreholeML 3.1.0</gml:remarks>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_16_0001_0001">
+			<gml:description>keine Konsistenz</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/ConsistencyList.xml">flu</gml:identifier>
+			<gml:name>flüssig</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/ConsistencyList.xml" gml:id="_16_0001_0001_en">
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/ConsistencyList.xml">flu</gml:identifier>
+					<gml:name>liquid</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>1</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/155e1953-32ba-4b67-8905-f6b858194ec7</bmlcl:geolKA>
+			<bmlcl:modificationDate>2017-08-14</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_16_0002_0002">
+			<gml:description>breiig ist ein Boden, der beim Pressen in der Faust zwischen den Fingern hindurchquillt</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/ConsistencyList.xml">bre</gml:identifier>
+			<gml:name>breiig</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/ConsistencyList.xml" gml:id="_16_0002_0002_en">
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/ConsistencyList.xml">bre</gml:identifier>
+					<gml:name>pulpy</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>2</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/62f27a12-0551-4490-a74d-91fd31141be7</bmlcl:geolKA>
+			<bmlcl:modificationDate>2017-08-14</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_16_0003_0003">
+			<gml:description>weich ist ein Boden, der sich leicht kneten lässt.</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/ConsistencyList.xml">wh</gml:identifier>
+			<gml:name>weich</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/ConsistencyList.xml" gml:id="_16_0003_0003_en">
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/ConsistencyList.xml">wh</gml:identifier>
+					<gml:name>soft</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>3</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/39eaa2f5-d050-4b41-8acd-5b3409dc257e</bmlcl:geolKA>
+			<bmlcl:modificationDate>2017-08-14</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_16_0004_0004">
+			<gml:description>steif ist ein Boden, der sich schwer kneten, aber in der Hand zu drei Millimeter dicken Walzen ausrollen lässt, ohne zu reissen oder zu zerbröckeln.</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/ConsistencyList.xml">stf</gml:identifier>
+			<gml:name>steif</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/ConsistencyList.xml" gml:id="_16_0004_0004_en">
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/ConsistencyList.xml">stf</gml:identifier>
+					<gml:name>stiff</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>4</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/a51b0b84-e0c6-410f-b98e-3b3675c44e24</bmlcl:geolKA>
+			<bmlcl:modificationDate>2017-08-14</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_16_0005_0005">
+			<gml:description>halbfest ist ein Boden, der beim Versuch, ihn zu drei Millimeter dicken Walzen auszurollen,zwar bröckelt und reisst, aber doch noch feucht genug ist, um ihn erneut zu einem Klumpen formen zu können.</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/ConsistencyList.xml">hfe</gml:identifier>
+			<gml:name>halbfest</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/ConsistencyList.xml" gml:id="_16_0005_0005_en">
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/ConsistencyList.xml">hfe</gml:identifier>
+					<gml:name>semi-solid</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>5</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/afe951a6-e294-481b-8f7f-3cb559e281ca</bmlcl:geolKA>
+			<bmlcl:modificationDate>2017-08-14</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_16_0006_0006">
+			<gml:description>fest (hart) ist ein Boden, der ausgetrocknet ist und dann meist hell aussieht. Er lässt sich nicht mehr kneten, sondern nur zerbrechen. Ein nochmaliges Zusammenballen der Einzelteile ist nicht mehr möglich.</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/ConsistencyList.xml">fe</gml:identifier>
+			<gml:name>fest</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/ConsistencyList.xml" gml:id="_16_0006_0006_en">
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/ConsistencyList.xml">fe</gml:identifier>
+					<gml:name>solid</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>6</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/7a8f881d-cd2b-44b5-beb0-5ae5cda33187</bmlcl:geolKA>
+			<bmlcl:modificationDate>2017-08-14</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_16_0007_0007">
+			<gml:description>nicht angegeben/unbekannt</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/ConsistencyList.xml">un</gml:identifier>
+			<gml:name>unbekannt</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/ConsistencyList.xml" gml:id="_16_0007_0007_en">
+					<gml:description>no data/unknown</gml:description>
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/ConsistencyList.xml">un</gml:identifier>
+					<gml:name>unknown</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>7</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/1c00e4c7-a073-4c46-8647-517bb6d38a35</bmlcl:geolKA>
+			<bmlcl:modificationDate>2024-02-29</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:alternativeExpression>
+		<gmx:ClAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/ConsistencyList.xml" gml:id="ConsistencyList_en">
+			<gml:description>consistency of incohesive unconsolidated sediments</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/ConsistencyList.xml">ConsistencyList</gml:identifier>
+			<gml:name>consistency</gml:name>
+			<gmx:locale xlink:href="EN.xml"/>
+		</gmx:ClAlternativeExpression>
+	</gmx:alternativeExpression>
+</gmx:ML_CodeListDictionary>

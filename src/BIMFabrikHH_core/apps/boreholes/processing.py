@@ -7,7 +7,7 @@ the parsed XML, raw bytes or a saved file to
 
 Soil and colour codes are resolved with the DIN 4023 / DIN EN ISO 14688-1
 tables in this app's ``assets`` folder (``soil_type_mapping.json`` and
-``color_code_mapping.json``).
+``din_color_mapping.json``).
 """
 
 from __future__ import annotations
@@ -42,8 +42,15 @@ UNDEFINED = "undefiniert"
 
 ASSETS_DIR = Path(__file__).resolve().parent / "assets"
 _SOIL_TYPES_FILE = "soil_type_mapping.json"
-_COLORS_FILE = "color_code_mapping.json"
+_DIN_COLORS_FILE = "din_color_mapping.json"
 _ARCHIVE_ID_FILE = "archive_id_mapping.json"
+_CHRONOSTRATIGRAPHY_FILE = "chronostratigraphy_mapping.json"
+_GENESIS_FILE = "genesis_mapping.json"
+_GEOGENESIS_FILE = "geogenesis_mapping.json"
+_ROCK_COLORS_FILE = "rock_color_mapping.json"
+_CARBONATE_CONTENT_FILE = "carbonate_content_mapping.json"
+_CONSISTENCY_FILE = "consistency_mapping.json"
+
 
 # Borehole viewer of the Hamburg geodienste portal. ``sid`` identifies the
 # area and is constant for the tested extent (carried over from the intern
@@ -70,21 +77,57 @@ _STRATIGRAPHY_NAMES: Dict[str, str] = {
 
 
 @lru_cache(maxsize=1)
+def load_archive_id_mapping() -> Dict[str, Any]:
+    """Load the id table; empty dict when the file is missing."""
+    return _load_config_json(_ARCHIVE_ID_FILE)
+
+
+@lru_cache(maxsize=1)
+def load_carbonate_mapping() -> Dict[str, Any]:
+    """Load the carbonate content table; empty dict when the file is missing."""
+    return _load_config_json(_CARBONATE_CONTENT_FILE)
+
+
+@lru_cache(maxsize=1)
+def load_consistency_mapping() -> Dict[str, Any]:
+    """Load the consistency table; empty dict when the file is missing."""
+    return _load_config_json(_CONSISTENCY_FILE)
+
+
+@lru_cache(maxsize=1)
+def load_genesis_mapping() -> Dict[str, Any]:
+    """Load the genesis table; empty dict when the file is missing."""
+    return _load_config_json(_GENESIS_FILE)
+
+
+@lru_cache(maxsize=1)
+def load_geogenesis_mapping() -> Dict[str, Any]:
+    """Load the geogenesis table; empty dict when the file is missing."""
+    return _load_config_json(_GEOGENESIS_FILE)
+
+
+@lru_cache(maxsize=1)
 def load_soil_type_mapping() -> Dict[str, Any]:
     """Load the DIN soil symbol table; empty dict when the file is missing."""
     return _load_config_json(_SOIL_TYPES_FILE)
 
 
 @lru_cache(maxsize=1)
-def load_color_code_mapping() -> Dict[str, Any]:
+def load_din_color_mapping() -> Dict[str, Any]:
     """Load the DIN colour table; empty dict when the file is missing."""
-    return _load_config_json(_COLORS_FILE)
+    return _load_config_json(_DIN_COLORS_FILE)
 
 
 @lru_cache(maxsize=1)
-def load_archive_id_mapping() -> Dict[str, Any]:
-    """Load the id table; empty dict when the file is missing."""
-    return _load_config_json(_ARCHIVE_ID_FILE)
+def load_rock_color_mapping() -> Dict[str, Any]:
+    """Load the rock colour table; empty dict when the file is missing."""
+    return _load_config_json(_ROCK_COLORS_FILE)
+
+
+@lru_cache(maxsize=1)
+def load_chronostratigraphy_mapping() -> Dict[str, Any]:
+    """Load the chronostratigraphy table; empty dict when the file is missing."""
+    return _load_config_json(_CHRONOSTRATIGRAPHY_FILE)
 
 
 def _load_config_json(filename: str) -> Dict[str, Any]:
@@ -234,15 +277,70 @@ def map_nebengemengteil(value: Any, soil_type_mapping: Optional[Dict[str, Any]] 
     return ", ".join(map_soil_symbol(part, mapping) for part in parts)
 
 
-def map_color_code(value: Any, color_code_mapping: Optional[Dict[str, Any]] = None) -> str:
-    """Map a DIN colour code to ``"code (German name)"``, e.g. ``gr (grau)``."""
-    text = _clean(value)
-    if not text or text.lower() == UNDEFINED:
+def map_carbonate(value: Any, carbonate_mapping: Optional[Dict[str, Any]] = None) -> str:
+    """Map a carbonate code to ``"code (German name)"``, e.g. ``c3 (karbonathaltig)``."""
+    code = _clean(value)
+    if not code or code.lower() == UNDEFINED:
         return UNDEFINED
 
-    mapping = color_code_mapping if color_code_mapping is not None else load_color_code_mapping()
-    german_name = mapping.get("color_code_to_german_name", {}).get(text, "")
-    return f"{text} ({german_name})" if german_name else text
+    mapping = carbonate_mapping if carbonate_mapping is not None else load_carbonate_mapping()
+    german_name = mapping.get(code, "")
+    return f"{code} ({german_name})" if german_name else code
+
+
+def map_consistency(value: Any, consistency_mapping: Optional[Dict[str, Any]] = None) -> str:
+    """Map a consistency code to ``"code (German name)"``, e.g. ``c3 (karbonathaltig)``."""
+    code = _clean(value)
+    if not code or code.lower() == UNDEFINED:
+        return UNDEFINED
+
+    mapping = consistency_mapping if consistency_mapping is not None else load_consistency_mapping()
+    german_name = mapping.get(code, "")
+    return f"{code} ({german_name})" if german_name else code
+
+
+def map_genesis(value: Any, genesis_mapping: Optional[Dict[str, Any]] = None) -> str:
+    """Map a genesis code to ``"code (German name)"``, e.g. ``c3 (karbonathaltig)``."""
+    code = _clean(value)
+    if not code or code.lower() == UNDEFINED:
+        return UNDEFINED
+
+    mapping = genesis_mapping if genesis_mapping is not None else load_genesis_mapping()
+    german_name = mapping.get(code, "")
+    return f"{code} ({german_name})" if german_name else code
+
+
+def map_geogenesis(value: Any, geogenesis_mapping: Optional[Dict[str, Any]] = None) -> str:
+    """Map a geogenesis code to ``"code (German name)"``, e.g. ``c3 (karbonathaltig)``."""
+    code = _clean(value)
+    if not code or code.lower() == UNDEFINED:
+        return UNDEFINED
+
+    mapping = geogenesis_mapping if geogenesis_mapping is not None else load_geogenesis_mapping()
+    german_name = mapping.get(code, "")
+    return f"{code} ({german_name})" if german_name else code
+
+
+def map_rock_color(value: Any, rock_color_mapping: Optional[Dict[str, Any]] = None) -> str:
+    """Map a DIN colour code to ``"code (German name)"``, e.g. ``h8 (grau)``."""
+    code = _clean(value)
+    if not code or code.lower() == UNDEFINED:
+        return UNDEFINED
+
+    mapping = rock_color_mapping if rock_color_mapping is not None else load_din_color_mapping()
+    german_name = mapping.get(code, "")
+    return f"{code} ({german_name})" if german_name else code
+
+
+def map_din_color(value: Any, din_color_mapping: Optional[Dict[str, Any]] = None) -> str:
+    """Map a DIN colour code to ``"code (German name)"``, e.g. ``gr (grau)``."""
+    code = _clean(value)
+    if not code or code.lower() == UNDEFINED:
+        return UNDEFINED
+
+    mapping = din_color_mapping if din_color_mapping is not None else load_din_color_mapping()
+    german_name = mapping.get("color_code_to_german_name", {}).get(code, "")
+    return f"{code} ({german_name})" if german_name else code
 
 
 def map_stratigraphy(value: Any) -> str:
@@ -252,6 +350,17 @@ def map_stratigraphy(value: Any) -> str:
         return UNDEFINED
     german_name = _STRATIGRAPHY_NAMES.get(text.lower(), "")
     return f"{text} ({german_name})" if german_name else text
+
+
+def map_chronostratigraphy(value: Any, chronostratigraphy_mapping: Optional[Dict[str, Any]] = None) -> str:
+    """Map a chronostratigraphic code to ``"code (German name)"``."""
+    code = _clean(value)
+    if not code or code.lower() == UNDEFINED:
+        return UNDEFINED
+
+    mapping = chronostratigraphy_mapping if chronostratigraphy_mapping is not None else load_chronostratigraphy_mapping()
+    german_name = mapping.get(code, "")
+    return f"{code} ({german_name})" if german_name else code
 
 
 def visual_color_for_hauptgemengteil(
@@ -265,13 +374,13 @@ def visual_color_for_hauptgemengteil(
 
     Args:
         value: Main soil code such as ``mS``.
-        color_code_mapping: Table from :func:`load_color_code_mapping`.
+        color_code_mapping: Table from :func:`load_din_color_mapping`.
 
     Returns:
         ``((r, g, b), german_name)`` with RGB in 0-255; the table default when
         the code is unknown.
     """
-    mapping = color_code_mapping if color_code_mapping is not None else load_color_code_mapping()
+    mapping = color_code_mapping if color_code_mapping is not None else load_din_color_mapping()
     block = mapping.get("hauptgemengteil_visual_colors", {})
     default_entry = block.get("default", {})
     default = (_rgb_tuple(default_entry.get("rgb")), str(default_entry.get("name", "weiß")))
@@ -511,7 +620,13 @@ def _layer_from_interval(
     index: int,
     ansatzhoehe_nn: float,
     soil_types: Dict[str, Any],
-    colors: Dict[str, Any],
+    visual_colors: Dict[str, Any],
+    rock_colors: Dict[str, Any],
+    chronostratigraphies: Dict[str, Any],
+    carbonate_contents: Dict[str, Any],
+    genesis_dict: Dict[str, Any],
+    geogenesis_dict: Dict[str, Any],
+    consistencies: Dict[str, Any],
 ) -> Optional[BoreholeLayer]:
     """Build one :class:`BoreholeLayer`; ``None`` when depths are unusable."""
     from_depth = _float_or_none(_text(interval, f"{{{BML_NS}}}from"))
@@ -533,9 +648,10 @@ def _layer_from_interval(
         )
         return None
 
-    hauptgemengteil, nebengemengteil, color = _lithology_components(interval)
-    genese = _text(interval, f"{{{BML_NS}}}geoGenesis") or _text(interval, f"{{{BML_NS}}}genesis")
-    visual_rgb, din_color_name = visual_color_for_hauptgemengteil(hauptgemengteil, colors)
+    hauptgemengteil, nebengemengteil, rock_color = _lithology_components(interval)
+    genese = _text(interval, f"{{{BML_NS}}}genesis")
+    geogenese = _text(interval, f"{{{BML_NS}}}geoGenesis")
+    visual_rgb, din_color_name = visual_color_for_hauptgemengteil(hauptgemengteil, visual_colors)
 
     layer = BoreholeLayer(
         layer_id=f"{borehole_id}_{index}",
@@ -552,13 +668,23 @@ def _layer_from_interval(
             f"{{{BML_NS}}}stratigraphy/{{{BML_NS}}}Stratigraphy/{{{BML_NS}}}chronoStratigraphy",
         ),
         genese=genese,
-        farbe=color,
+        geogenese=geogenese,
+        farbe=rock_color,
         kalkgehalt=_text(interval, f"{{{BML_NS}}}carbonateContent"),
         konsistenz=_text(interval, f"{{{BML_NS}}}consistency"),
         visual_rgb=visual_rgb,
         din_color_name=din_color_name,
     )
-    layer.psets = _layer_psets(layer, soil_types=soil_types, colors=colors)
+    layer.psets = _layer_psets(
+        layer,
+        soil_types=soil_types,
+        rock_colors=rock_colors,
+        chronostratigraphies=chronostratigraphies,
+        carbonate_contents=carbonate_contents,
+        genesis_dict=genesis_dict,
+        geogenesis_dict=geogenesis_dict,
+        consistencies=consistencies,
+    )
     return layer
 
 
@@ -566,19 +692,25 @@ def _layer_psets(
     layer: BoreholeLayer,
     *,
     soil_types: Dict[str, Any],
-    colors: Dict[str, Any],
+    rock_colors: Dict[str, Any],
+    chronostratigraphies: Dict[str, Any],
+    carbonate_contents: Dict[str, Any],
+    genesis_dict: Dict[str, Any],
+    geogenesis_dict: Dict[str, Any],
+    consistencies: Dict[str, Any],
 ) -> Dict[str, BaseModel]:
     """Build the layer-level pset templates with DIN texts resolved."""
     aufschlussbereich = Pset_Aufschlussbereich(
         bodenart=map_hauptgemengteil(layer.hauptgemengteil, soil_types),
         bodenart_ergaenzung=map_nebengemengteil(layer.nebengemengteil, soil_types),
-        farbe=map_color_code(layer.farbe, colors),
-        kalkgehalt=layer.kalkgehalt or UNDEFINED,
-        stratigraphie=map_stratigraphy(layer.stratigraphie),
+        farbe=map_rock_color(layer.farbe, rock_colors),
+        kalkgehalt=map_carbonate(layer.kalkgehalt, carbonate_contents),
+        stratigraphie=map_chronostratigraphy(layer.stratigraphie, chronostratigraphies),
     )
     schicht = Pset_Schicht(
-        genese=layer.genese or UNDEFINED,
-        bodenkonsistenz=layer.konsistenz or UNDEFINED,
+        genese=map_genesis(layer.genese, genesis_dict),
+        geogenese=map_geogenesis(layer.geogenese, geogenesis_dict),
+        bodenkonsistenz=map_consistency(layer.konsistenz, consistencies),
         geologische_bezeichnung=layer.rock_name_text or UNDEFINED,
     )
     objektinformation = Pset_Objektinformation_Borehole()
@@ -593,8 +725,14 @@ def _record_from_borehole(
     borehole: etree._Element,
     *,
     soil_types: Dict[str, Any],
-    colors: Dict[str, Any],
+    visual_colors: Dict[str, Any],
+    rock_colors: Dict[str, Any],
     map_archive_ids: Dict[str, Any],
+    chronostratigraphies: Dict[str, Any],
+    carbonate_contents: Dict[str, Any],
+    genesis_dict: Dict[str, Any],
+    geogenesis_dict: Dict[str, Any],
+    consistencies: Dict[str, Any],
 ) -> Optional[BoreholeRecord]:
     """Build one :class:`BoreholeRecord`; ``None`` when unusable."""
     borehole_id = _text(borehole, f"{{{BML_NS}}}id") or _clean(borehole.get(f"{{{GML_NS}}}id"))
@@ -636,7 +774,13 @@ def _record_from_borehole(
             index=index,
             ansatzhoehe_nn=ansatzhoehe_nn,
             soil_types=soil_types,
-            colors=colors,
+            visual_colors=visual_colors,
+            rock_colors=rock_colors,
+            chronostratigraphies=chronostratigraphies,
+            carbonate_contents=carbonate_contents,
+            genesis_dict=genesis_dict,
+            geogenesis_dict=geogenesis_dict,
+            consistencies=consistencies,
         )
         if layer is not None:
             layers.append(layer)
@@ -682,12 +826,29 @@ def records_from_boreholeml(
     """
     root = _as_root(source)
     soil_types = load_soil_type_mapping()
-    colors = load_color_code_mapping()
+    visual_colors = load_din_color_mapping()
+    rock_colors = load_rock_color_mapping()
     archive_ids = load_archive_id_mapping()
+    chronostratigraphies = load_chronostratigraphy_mapping()
+    carbonate_contents = load_carbonate_mapping()
+    genesis_dict = load_genesis_mapping()
+    geogenesis_dict = load_geogenesis_mapping()
+    consistencies = load_consistency_mapping()
 
     records: List[BoreholeRecord] = []
     for borehole in _iter_borehole_elements(root):
-        record = _record_from_borehole(borehole, soil_types=soil_types, colors=colors, map_archive_ids=archive_ids)
+        record = _record_from_borehole(
+            borehole,
+            soil_types=soil_types,
+            visual_colors=visual_colors,
+            rock_colors=rock_colors,
+            map_archive_ids=archive_ids,
+            chronostratigraphies=chronostratigraphies,
+            carbonate_contents=carbonate_contents,
+            genesis_dict=genesis_dict,
+            geogenesis_dict=geogenesis_dict,
+            consistencies=consistencies,
+        )
         if record is not None:
             records.append(record)
 
@@ -709,9 +870,11 @@ __all__ = [
     "BOREHOLE_PORTAL_URL",
     "build_borehole_hyperlink",
     "load_borehole_records",
-    "load_color_code_mapping",
+    "load_din_color_mapping",
+    "load_rock_color_mapping",
     "load_soil_type_mapping",
-    "map_color_code",
+    "map_din_color",
+    "map_rock_color",
     "map_hauptgemengteil",
     "map_nebengemengteil",
     "map_soil_symbol",

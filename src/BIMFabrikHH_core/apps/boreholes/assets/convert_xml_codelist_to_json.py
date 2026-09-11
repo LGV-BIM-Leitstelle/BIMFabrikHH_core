@@ -10,9 +10,10 @@ Example:
 """
 
 import argparse
-from pathlib import Path
-import logging
 import json
+import logging
+from pathlib import Path
+
 from lxml import etree
 
 logger = logging.getLogger(__name__)
@@ -31,7 +32,7 @@ def get_xml_file_path(input: str) -> Path:
 
     if path.is_file():
         return path.resolve()
-    else: 
+    else:
         raise OSError
 
 
@@ -94,21 +95,18 @@ def extract_codelist_entry_pairs(
         identifier = definition.find("gml:identifier", NAMESPACE)
         name = definition.find("gml:name", NAMESPACE)
 
-        if (identifier is not None
-            and identifier.text
-            and name is not None
-            and name.text):
-                key = identifier.text.strip()
-                value = name.text.strip()
+        if identifier is not None and identifier.text and name is not None and name.text:
+            key = identifier.text.strip()
+            value = name.text.strip()
 
-                if key not in mapping:
-                    mapping[key] = value
-                elif warn_on_conflict and mapping[key] != value:
-                    logger.warning(
-                        f"Conflicting value for id={key!r} "
-                        f"in {filepath}: first={mapping[key]!r}, later={value!r}. "
-                        "Keeping the first occurrence."
-                        )
+            if key not in mapping:
+                mapping[key] = value
+            elif warn_on_conflict and mapping[key] != value:
+                logger.warning(
+                    f"Conflicting value for id={key!r} "
+                    f"in {filepath}: first={mapping[key]!r}, later={value!r}. "
+                    "Keeping the first occurrence."
+                )
 
     # Sorting the dictionary by keys, ignoring case.
     sorted_dict = dict(sorted(mapping.items(), key=lambda x: x[0].lower()))
@@ -118,9 +116,7 @@ def extract_codelist_entry_pairs(
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description=(
-            "Create a JSON mapping based on a BoreholeML codelist, mapping gml:identifier to gml:name."
-        )
+        description=("Create a JSON mapping based on a BoreholeML codelist, mapping gml:identifier to gml:name.")
     )
     parser.add_argument(
         "input",
@@ -143,7 +139,7 @@ def main() -> None:
     xml_file = get_xml_file_path(args.input)
 
     if not xml_file:
-            parser.error("No XML file found.")
+        parser.error("No XML file found.")
 
     codelist_id = extract_codelist_identifier(xml_file)
     codelist_name = extract_codelist_name(xml_file)

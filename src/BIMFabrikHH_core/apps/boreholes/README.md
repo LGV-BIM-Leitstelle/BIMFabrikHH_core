@@ -53,12 +53,12 @@ Meterkoordinaten übernommen (Konvention von `BIMFabrikHH_core`).
 
 ## Aufbau
 
-| Datei                            | Inhalt                                                       |
-|----------------------------------|--------------------------------------------------------------|
-| `processing.py`                  | BoreholeML-Parser, DIN-Mappings, Hyperlink-Aufbau            |
-| `generic/app.py`                 | `BoreholesGenericApp.build_ifc()` — Zylinder und IFC-Ausgabe |
-| `assets/soil_type_mapping.json`  | Bodenarten nach DIN EN ISO 14688-1                           |
-| `assets/color_code_mapping.json` | Farbcodes und DIN-4023-Darstellungsfarben                    |
+| Datei                                | Inhalt                                                       |
+|--------------------------------------|--------------------------------------------------------------|
+| `processing.py`                      | BoreholeML-Parser, DIN-Mappings, Hyperlink-Aufbau            |
+| `generic/app.py`                     | `BoreholesGenericApp.build_ifc()` — Zylinder und IFC-Ausgabe |
+| `assets/soil_type_mapping.json`      | Bodenarten nach DIN EN ISO 14688-1                           |
+| `assets/din_color_mapping.json`      | Farbcodes und DIN-4023-Darstellungsfarben                    |
 
 Zugehörig außerhalb dieses Ordners:
 

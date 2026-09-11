@@ -1,0 +1,19 @@
+{
+  "c+": "karbonathaltig",
+  "c++": "stark karbonathaltig",
+  "c0": "karbonatfrei",
+  "c1": "sehr karbonatarm",
+  "c2": "karbonatarm",
+  "c3": "karbonathaltig",
+  "c4": "karbonatreich",
+  "c5": "sehr karbonatreich",
+  "c6": "extrem karbonatreich",
+  "c7": "Karbonat",
+  "d1": "dolomitarm",
+  "d2": "dolomithaltig",
+  "d3": "dolomitreich",
+  "k1": "kalkarm",
+  "k2": "kalkhaltig",
+  "k3": "kalkreich",
+  "nb": "keine Angabe/nicht bestimmt"
+}

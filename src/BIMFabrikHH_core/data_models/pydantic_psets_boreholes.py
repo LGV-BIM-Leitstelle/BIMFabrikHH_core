@@ -144,6 +144,11 @@ class Pset_Schicht(PropertySetTemplate):
         serialization_alias="_Genese",
         default="undefiniert",
     )
+    geogenese: str = Field(
+        validation_alias=AliasChoices("geogenese", "_Geogenese"),
+        serialization_alias="_Geogenese",
+        default="undefiniert",
+    )
 
 
 __all__ = [

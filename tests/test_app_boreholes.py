@@ -19,7 +19,7 @@ from BIMFabrikHH_core.apps.boreholes import (
     BoreholesGenericApp,
     build_borehole_hyperlink,
     collect_borehole_psets,
-    map_color_code,
+    map_din_color,
     map_hauptgemengteil,
     map_nebengemengteil,
     map_soil_symbol,
@@ -173,12 +173,12 @@ def test_map_nebengemengteil_returns_undefined_for_blank() -> None:
 
 
 def test_map_color_code_appends_german_name() -> None:
-    assert map_color_code("gr") == "gr (grau)"
+    assert map_din_color("gr") == "gr (grau)"
 
 
 def test_map_color_code_passes_through_unknown_code() -> None:
     # BoreholeML uses its own RockColorList, so codes like h8 are not in the DIN table.
-    assert map_color_code("h8") == "h8"
+    assert map_din_color("h8") == "h8"
 
 
 def test_map_stratigraphy_appends_german_name() -> None:
