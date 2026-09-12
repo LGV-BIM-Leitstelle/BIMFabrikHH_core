@@ -66,7 +66,7 @@ def main() -> None:
 
     df = pd.DataFrame(sample_data)
 
-    tif_path = str(PathConfig.ASSETS / "dgm1_32_558_9270_1_hh_2022.tif")
+    tif_path = str(PathConfig.ASSETS / "dgm1_hh_2022-04-30" / "dgm1_32_558_9270_1_hh_2022.tif")
     try:
         df = extract_elevation_df_from_geotiff(df, tif_path, schema.easting, schema.northing, schema.elevation)
     except Exception as e:

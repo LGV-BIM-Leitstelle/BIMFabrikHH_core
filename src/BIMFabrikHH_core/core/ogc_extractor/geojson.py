@@ -49,16 +49,33 @@ def feature_identifier(feature: Dict[str, Any], *, fallback: str) -> Union[str, 
 
 def parse_feature_polygon_exterior_ring(feature: Dict[str, Any]) -> Optional[List[Tuple[float, float]]]:
     """Exterior ring of the first polygon on the feature, or ``None`` if not applicable."""
+    rings = parse_feature_polygon_exterior_rings(feature)
+    return rings[0] if rings else None
+
+
+def parse_feature_polygon_exterior_rings(feature: Dict[str, Any]) -> List[List[Tuple[float, float]]]:
+    """Exterior rings of every ``Polygon`` / ``MultiPolygon`` part (holes ignored)."""
     geom = feature.get("geometry")
-    if not isinstance(geom, dict) or geom.get("type") != "Polygon":
-        return None
+    if not isinstance(geom, dict):
+        return []
+    geom_type = geom.get("type")
     coords = geom.get("coordinates")
-    if not coords or not isinstance(coords[0], list):
-        return None
-    ring = positions_to_xy_ring(coords[0])
-    if len(ring) < _MIN_POLYGON_EXTERIOR_POSITIONS:
-        return None
-    return ring
+    polygons: List[Any] = []
+    if geom_type == "Polygon":
+        polygons = [coords] if isinstance(coords, list) else []
+    elif geom_type == "MultiPolygon":
+        polygons = coords if isinstance(coords, list) else []
+    else:
+        return []
+
+    rings: List[List[Tuple[float, float]]] = []
+    for poly in polygons:
+        if not poly or not isinstance(poly, list) or not isinstance(poly[0], list):
+            continue
+        ring = positions_to_xy_ring(poly[0])
+        if len(ring) >= _MIN_POLYGON_EXTERIOR_POSITIONS:
+            rings.append(ring)
+    return rings
 
 
 def parse_feature_linestring_path(feature: Dict[str, Any]) -> Optional[List[Tuple[float, float]]]:
@@ -101,5 +118,6 @@ __all__ = [
     "parse_feature_linestring_path",
     "parse_feature_multilinestring_paths",
     "parse_feature_polygon_exterior_ring",
+    "parse_feature_polygon_exterior_rings",
     "positions_to_xy_ring",
 ]

@@ -117,7 +117,7 @@ def main() -> None:
     path_basic = here / "perf_basic_dgm.ifc"
     path_generic = here / "perf_generic_dgm.ifc"
 
-    tif_files = [str(PathConfig.ASSETS / "dgm1_32_558_9270_1_hh_2022.tif")]
+    tif_files = [str(PathConfig.ASSETS / "dgm1_hh_2022-04-30" / "dgm1_32_558_9270_1_hh_2022.tif")]
 
     logger.info(f"Benchmark: DGM basic vs generic (IFC in {here})")
     logger.info(

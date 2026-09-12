@@ -1,30 +1,30 @@
-"""Generic terrain example.
+"""Generic terrain example (no Bruchkanten).
 
-Creates a DGM from a single GeoTIFF using :class:`TerrainGenericApp`
-(``ifcfactory`` / ``BIMFactoryElement`` pipeline). The mesh itself is
-still produced by the shared adaptive-sampling pipeline — only the IFC
-writing strategy differs from the basic app.
-
-Runs without a WGS84 ``bbox`` so the full raster is used.
+DGM1 tiles from ``examples/assets/dgm1_hh_2022-04-30`` for bbox
+``9.9769,53.5478–9.991435,53.55622`` (Innenstadt / Alster, ~0.90 km²). Same tiles and
+crop as the guided example, without constrained street edges.
 """
 
+import sys
 import time
 from pathlib import Path
 
 from BIMFabrikHH_core.apps.terrain.generic import TerrainGenericApp
 from BIMFabrikHH_core.config.logging_config import get_logger, setup_logging
-from BIMFabrikHH_core.config.paths import PathConfig
 from BIMFabrikHH_core.data_models.params_tree import Component, Container, RequestParams
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from local_dgm import EXAMPLE_BBOX, dgm_tile_paths
 
 logger = get_logger()
 
 
 def main() -> None:
-    """Process a terrain GeoTIFF to create a generic DGM IFC."""
+    """Process terrain GeoTIFFs to create a generic DGM IFC."""
     start = time.perf_counter()
 
     terrain_folder = Path(__file__).parent
-    tif_files = [str(PathConfig.ASSETS / "dgm1_32_558_9270_1_hh_2022.tif")]
+    tif_files = dgm_tile_paths(EXAMPLE_BBOX)
     output_file = terrain_folder / "example_dgm_generic.ifc"
 
     container = Container(
@@ -32,7 +32,10 @@ def main() -> None:
         containerId="dgm_generic",
         components={"description": Component(title="Description", value="Digital Ground Model (generic / ifcfactory)")},
     )
-    request_body = RequestParams(bbox=None, containers=[container])
+    request_body = RequestParams(
+        bbox=EXAMPLE_BBOX,
+        containers=[container],
+    )
 
     result = TerrainGenericApp.from_geotiffs(
         tif_files=tif_files,
@@ -44,7 +47,7 @@ def main() -> None:
     )
 
     end = time.perf_counter()
-    logger.info(f"Total process time: {end - start:.2f} seconds")
+    logger.info("TIMING unguided DGM: %.3f s  → %s", end - start, output_file.name)
 
     if result:
         logger.info(

@@ -5,8 +5,8 @@ Same UTM crop for all three apps. Needs ``BIMFABRIKHH_DGM_TIF_DIR`` and
 is tried as ``C:\\…`` first, then as WSL ``/mnt``.
 
 ```bash
-python examples/compare_km_generic_vs_rust.py
-python examples/compare_km_generic_vs_rust.py --km 1
+python examples/benchmark/compare_km_generic_vs_rust.py
+python examples/benchmark/compare_km_generic_vs_rust.py --km 1
 ```
 """
 
@@ -32,7 +32,7 @@ from BIMFabrikHH_core.data_models import TreeRecord
 
 logger = get_logger()
 
-_ROOT = Path(__file__).resolve().parents[1]
+_ROOT = Path(__file__).resolve().parents[2]
 _ORIGIN = (565000.0, 5933000.0)
 _SIZES = {1: 1000.0, 2: 2000.0}
 _LOD1 = {
