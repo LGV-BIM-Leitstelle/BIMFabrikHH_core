@@ -206,6 +206,7 @@ class IfcModelBuilder:
 
         try:
             self.logger.info(f"Saving IFC file to {file_path}")
+            self.model.header.file_name.name = file_path.name
             self.model.write(str(file_path))
             return file_path
         except Exception as e:
@@ -224,6 +225,7 @@ class IfcModelBuilder:
         """
         try:
             self.logger.info(f"Saving IFC file to {file_path}")
+            self.model.header.file_name.name = file_path.name
             self.model.write(str(file_path))
             return file_path
         except Exception as e:
