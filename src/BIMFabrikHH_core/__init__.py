@@ -39,6 +39,7 @@ from BIMFabrikHH_core.core.utils.math_operations import MathTool
 from .apps.city.basic.app import CityBasicApp
 from .apps.city.generic.app import CityGenericApp
 from .apps.city.generic_rust import CityRustApp
+from .apps.flurstuecke.generic.app import FlurstueckeGenericApp
 from .apps.terrain.basic.app import TerrainBasicApp
 from .apps.terrain.generic.app import TerrainGenericApp
 from .apps.terrain.generic_rust import TerrainRustApp
@@ -49,6 +50,14 @@ from .apps.trees.generic_rust import TreesRustApp
 from .apps.wasserschutzgebiete.generic.app import WasserschutzgebieteGenericApp
 
 # Data model imports
+from .data_models.flurstuecke import (
+    FlurstueckRecord,
+    collect_flurstueck_psets,
+    load_flurstuecke_records,
+)
+from .data_models.flurstuecke import (
+    records_from_geojson_feature_collection as flurstuecke_records_from_geojson_feature_collection,
+)
 from .data_models.params_bbox import BoundingBoxParams
 from .data_models.params_tree import Component, Container, RequestParams
 from .data_models.streets import (
@@ -88,6 +97,7 @@ __all__ = [
     "TreesRustApp",
     "WasserschutzgebieteGenericApp",
     "StreetsGenericApp",
+    "FlurstueckeGenericApp",
     # Data models
     "BoundingBoxParams",
     "RequestParams",
@@ -106,6 +116,10 @@ __all__ = [
     "collect_street_psets",
     "load_streets_records",
     "streets_records_from_geojson_feature_collection",
+    "FlurstueckRecord",
+    "collect_flurstueck_psets",
+    "load_flurstuecke_records",
+    "flurstuecke_records_from_geojson_feature_collection",
     # Configuration
     "PathConfig",
 ]
