@@ -1,15 +1,13 @@
 from unittest.mock import MagicMock, patch
 
 import numpy as np
-import pandas as pd
 import pytest
 
 # Import the functions to test
 from BIMFabrikHH_core.core.georeferencing.crs_transform import bbox_wgs84_to_epsg25832
 from BIMFabrikHH_core.core.georeferencing.extract_elevation import (
-    extract_elevation_df_from_geotiff,
-    extract_elevation_point_from_geotiff,
-    fill_nodata_from_nearest,
+    invalid_z,
+    sample_elevations_for_points,
 )
 
 
@@ -80,122 +78,65 @@ class TestCrsTransform:
             bbox_wgs84_to_epsg25832(bbox)
 
 
-class TestExtractElevation:
-    """Test cases for elevation extraction functions."""
+class TestSampleElevationsForPoints:
+    def test_empty_points_returns_empty(self) -> None:
+        out = sample_elevations_for_points(np.empty((0, 2)), ["a.tif"])
+        assert out.shape == (0,)
 
-    @patch("BIMFabrikHH_core.core.georeferencing.extract_elevation.sample_gen")
-    @patch("BIMFabrikHH_core.core.georeferencing.extract_elevation.rasterio")
-    @patch("BIMFabrikHH_core.core.georeferencing.extract_elevation.Path")
-    def test_extract_elevation_df_from_geotiff_valid_input(self, mock_path, mock_rasterio, mock_sample_gen):
-        """Test elevation extraction from DataFrame with valid input."""
-        mock_path.return_value.exists.return_value = True
-        df = pd.DataFrame({"easting": [1000, 2000, 3000], "northing": [5000, 6000, 7000]})
+    def test_first_valid_tile_wins(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        class _Src:
+            def __init__(self, z: float) -> None:
+                self.bounds = MagicMock(left=0, right=10, bottom=0, top=10)
+                self.nodata = None
+                self._z = z
 
-        mock_dataset = MagicMock()
-        mock_dataset.nodata = -9999
-        mock_rasterio.open.return_value.__enter__.return_value = mock_dataset
-        mock_sample_gen.return_value = [[100.5], [101.2], [102.0]]
+            def sample(self, coords):
+                return [[self._z] for _ in coords]
 
-        result = extract_elevation_df_from_geotiff(df, "test_dem.tif", "easting", "northing")
+            def __enter__(self):
+                return self
 
-        assert isinstance(result, pd.DataFrame)
-        assert "Elevation" in result.columns
-        assert len(result) == 3
-        assert result["Elevation"].tolist() == [100.5, 101.2, 102.0]
+            def __exit__(self, *args):
+                return False
 
-    @patch("BIMFabrikHH_core.core.georeferencing.extract_elevation.Path")
-    def test_extract_elevation_df_from_geotiff_file_not_found(self, mock_path):
-        """Test elevation extraction with non-existent file."""
-        mock_path.return_value.exists.return_value = False
-        df = pd.DataFrame({"easting": [1000], "northing": [5000]})
+        files = iter([_Src(12.5), _Src(99.0)])
 
-        with pytest.raises(FileNotFoundError, match="GeoTIFF file not found: nonexistent.tif"):
-            extract_elevation_df_from_geotiff(df, "nonexistent.tif", "easting", "northing")
+        def _open(_path):
+            return next(files)
 
-    @patch("BIMFabrikHH_core.core.georeferencing.extract_elevation.rasterio")
-    @patch("BIMFabrikHH_core.core.georeferencing.extract_elevation.Path")
-    def test_extract_elevation_point_from_geotiff_single_point(self, mock_path, mock_rasterio):
-        """Test elevation extraction for single point."""
-        mock_path.return_value.exists.return_value = True
-        mock_dataset = MagicMock()
-        mock_dataset.read.return_value = np.array([[150.75]])
-        mock_dataset.index.return_value = (0, 0)
-        mock_dataset.height = 1
-        mock_dataset.width = 1
-        mock_dataset.nodata = -9999
-        mock_rasterio.open.return_value.__enter__.return_value = mock_dataset
+        monkeypatch.setattr(
+            "BIMFabrikHH_core.core.georeferencing.extract_elevation.open_geotiff",
+            _open,
+        )
+        points = np.array([[1.0, 2.0], [3.0, 4.0]])
+        out = sample_elevations_for_points(points, ["a.tif", "b.tif"])
+        assert out.tolist() == [12.5, 12.5]
 
-        result = extract_elevation_point_from_geotiff(1500, 5500, "test_dem.tif")
+    def test_uncovered_points_use_default(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        class _Src:
+            bounds = MagicMock(left=0, right=1, bottom=0, top=1)
+            nodata = None
 
-        assert isinstance(result, float)
-        assert result == 150.75
+            def sample(self, coords):
+                return [[5.0] for _ in coords]
 
-    @patch("BIMFabrikHH_core.core.georeferencing.extract_elevation.rasterio")
-    @patch("BIMFabrikHH_core.core.georeferencing.extract_elevation.Path")
-    def test_extract_elevation_point_from_geotiff_multiple_points(self, mock_path, mock_rasterio):
-        """Test elevation extraction for multiple points."""
-        mock_path.return_value.exists.return_value = True
-        mock_dataset = MagicMock()
-        mock_dataset.sample.return_value = [[100.0], [200.0], [300.0]]
-        mock_dataset.nodata = -9999
-        mock_rasterio.open.return_value.__enter__.return_value = mock_dataset
+            def __enter__(self):
+                return self
 
-        eastings = [1000.0, 2000.0, 3000.0]
-        northings = [5000.0, 6000.0, 7000.0]
+            def __exit__(self, *args):
+                return False
 
-        result = extract_elevation_point_from_geotiff(eastings, northings, "test_dem.tif")
-
-        assert isinstance(result, list)
-        assert result == [100.0, 200.0, 300.0]
-
-    @patch("BIMFabrikHH_core.core.georeferencing.extract_elevation.rasterio")
-    @patch("BIMFabrikHH_core.core.georeferencing.extract_elevation.Path")
-    def test_extract_elevation_point_from_geotiff_out_of_bounds(self, mock_path, mock_rasterio):
-        """Test elevation extraction for out-of-bounds coordinates."""
-        mock_path.return_value.exists.return_value = True
-        mock_dataset = MagicMock()
-        mock_dataset.index.return_value = (999, 999)  # Out of bounds
-        mock_dataset.height = 100
-        mock_dataset.width = 100
-        mock_rasterio.open.return_value.__enter__.return_value = mock_dataset
-
-        result = extract_elevation_point_from_geotiff(999999, 999999, "test_dem.tif")
-
-        assert result == 0.0
-
-    @patch("BIMFabrikHH_core.core.georeferencing.extract_elevation.rasterio")
-    @patch("BIMFabrikHH_core.core.georeferencing.extract_elevation.Path")
-    def test_extract_elevation_point_from_geotiff_nodata_value(self, mock_path, mock_rasterio):
-        """Test elevation extraction with nodata values."""
-        mock_path.return_value.exists.return_value = True
-        mock_dataset = MagicMock()
-        mock_dataset.read.return_value = np.array([[-9999]])  # Nodata value
-        mock_dataset.index.return_value = (0, 0)
-        mock_dataset.height = 1
-        mock_dataset.width = 1
-        mock_dataset.nodata = -9999
-        mock_rasterio.open.return_value.__enter__.return_value = mock_dataset
-
-        result = extract_elevation_point_from_geotiff(1000, 5000, "test_dem.tif")
-
-        assert result == 0.0
+        monkeypatch.setattr(
+            "BIMFabrikHH_core.core.georeferencing.extract_elevation.open_geotiff",
+            lambda _path: _Src(),
+        )
+        points = np.array([[100.0, 200.0]])
+        out = sample_elevations_for_points(points, ["a.tif"], default_elevation=-1.0)
+        assert out.tolist() == [-1.0]
 
 
-class TestFillNodataFromNearest:
-    def test_fills_from_nearest_valid_xy(self) -> None:
-        xs = np.array([0.0, 10.0, 100.0])
-        ys = np.array([0.0, 0.0, 0.0])
-        zs = np.array([1.5, -3.4e38, 9.0])
-        out, filled = fill_nodata_from_nearest(xs, ys, zs)
-        assert filled == 1
-        assert out[0] == 1.5
-        assert out[1] == 1.5
-        assert out[2] == 9.0
-
-    def test_all_nodata_becomes_zero(self) -> None:
-        xs = np.array([0.0, 5.0])
-        ys = np.array([0.0, 0.0])
-        zs = np.array([-9999.0, -9999.0])
-        out, filled = fill_nodata_from_nearest(xs, ys, zs, nodata=-9999.0)
-        assert filled == 0
-        assert out.tolist() == [0.0, 0.0]
+class TestInvalidZ:
+    def test_zero_fill_nodata_and_gdal_sentinel_are_invalid(self) -> None:
+        zs = np.array([5.0, 0.0, -3.4e38, np.nan, 1.2])
+        mask = invalid_z(zs, nodata=-3.4e38)
+        assert mask.tolist() == [False, True, True, True, False]

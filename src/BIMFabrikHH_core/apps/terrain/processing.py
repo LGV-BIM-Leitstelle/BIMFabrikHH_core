@@ -16,16 +16,19 @@ from __future__ import annotations
 
 import time
 from dataclasses import dataclass
-from io import BytesIO
 from pathlib import Path
 from typing import Any, Dict, FrozenSet, Iterable, List, Optional, Sequence, Tuple, Union
 
 import numpy as np
-import rasterio
-from rasterio.io import MemoryFile
 from scipy.spatial import Delaunay
 
 from BIMFabrikHH_core.config.logging_config import get_logger
+from BIMFabrikHH_core.core.georeferencing.extract_elevation import (
+    invalid_z,
+    is_url,
+    open_geotiff,
+    sample_elevations_from_raster,
+)
 from BIMFabrikHH_core.core.georeferencing.coordinate_transformer import CoordinateTransformer
 from BIMFabrikHH_core.core.ogc_extractor import strip_closing_duplicate_xy
 from BIMFabrikHH_core.data_models.streets import (
@@ -90,56 +93,10 @@ class GuideRing:
 
 
 # ---------------------------------------------------------------------------
-# URL / raster I/O helpers
-# ---------------------------------------------------------------------------
-
-
-def is_url(path: Union[str, Path]) -> bool:
-    """Return ``True`` if ``path`` is an HTTP(S) URL."""
-    return str(path).startswith(("http://", "https://"))
-
-
-def download_to_memory(url: str, timeout: int = 120) -> Optional[BytesIO]:
-    """Download a file from ``url`` into memory.
-
-    Returns a :class:`BytesIO` buffer on success, ``None`` on failure.
-    Requires ``requests``; it's imported lazily so callers that never
-    touch URLs don't pay the import cost.
-    """
-    import requests
-
-    try:
-        logger.info(f"Downloading from: {url}")
-        response = requests.get(url, timeout=timeout)
-        response.raise_for_status()
-        buffer = BytesIO(response.content)
-        logger.info(f"Downloaded {len(response.content) / 1024 / 1024:.2f} MB to memory")
-        return buffer
-    except Exception as e:
-        logger.error(f"Failed to download: {e}")
-        return None
-
-
-# ---------------------------------------------------------------------------
 # Terrain-feature analysis + adaptive sampling
 # ---------------------------------------------------------------------------
 
-
-# GDAL float32 nodata and the 0.0 fill used in some Hamburg DGM1 holes.
-_NODATA_SENTINEL = -1e20
-_ZERO_FILL = 0.0
 _MIN_FACE_AREA_XY = 1e-3
-
-
-def _invalid_z(values: np.ndarray, nodata: Optional[float] = None) -> np.ndarray:
-    """True where ``values`` are missing, GDAL nodata, or the 0.0 DGM fill."""
-    v = np.asarray(values, dtype=float)
-    invalid = ~np.isfinite(v)
-    invalid |= v <= _NODATA_SENTINEL
-    if nodata is not None and np.isfinite(float(nodata)):
-        invalid |= np.isclose(v, float(nodata))
-    invalid |= v == _ZERO_FILL
-    return invalid
 
 
 def analyze_terrain_features(elevation_data: np.ndarray) -> np.ndarray:
@@ -194,7 +151,7 @@ def adaptive_sampling(
         ``(x_coords, y_coords, z_values)`` arrays in the raster CRS.
     """
     elevation = np.asarray(elevation_data, dtype=float)
-    valid = ~_invalid_z(elevation, nodata)
+    valid = ~invalid_z(elevation, nodata)
     if not np.any(valid):
         return np.array([]), np.array([]), np.array([])
 
@@ -400,18 +357,6 @@ def collect_guide_xy(
         return np.empty(0, dtype=float), np.empty(0, dtype=float)
     stacked = np.vstack([r.xy for r in rings])
     return stacked[:, 0], stacked[:, 1]
-
-
-def sample_elevations_from_raster(src, x_coords: np.ndarray, y_coords: np.ndarray) -> np.ndarray:
-    """Sample elevation values directly from an open rasterio dataset.
-
-    Points outside the raster, GDAL nodata, and the ``0.0`` DGM fill return ``NaN``.
-    """
-    coords = list(zip(x_coords, y_coords))
-    samples = list(src.sample(coords))
-    values = np.array([s[0] if len(s) > 0 else np.nan for s in samples], dtype=float)
-    values[_invalid_z(values, getattr(src, "nodata", None))] = np.nan
-    return values
 
 
 def drop_sliver_faces(
@@ -1232,40 +1177,6 @@ def build_landuse_parts(
 # ---------------------------------------------------------------------------
 
 
-def _open_geotiff(path: Union[str, Path]):
-    """Open a GeoTIFF from a local path or URL.
-
-    Returns a context manager yielding an open rasterio dataset.
-    URL fetches are buffered entirely in memory via ``MemoryFile``.
-    """
-    if is_url(path):
-        buffer = download_to_memory(str(path))
-        if buffer is None:
-            raise RuntimeError(f"Failed to download GeoTIFF: {path}")
-        memfile = MemoryFile(buffer)
-        return _MemoryFileContext(memfile)
-    return rasterio.open(str(path))
-
-
-class _MemoryFileContext:
-    """Adapter that opens a rasterio ``MemoryFile`` as a dataset."""
-
-    def __init__(self, memfile: MemoryFile) -> None:
-        self._memfile = memfile
-        self._src = None
-
-    def __enter__(self):
-        self._src = self._memfile.__enter__().open()
-        return self._src
-
-    def __exit__(self, exc_type, exc, tb):
-        try:
-            if self._src is not None:
-                self._src.close()
-        finally:
-            return self._memfile.__exit__(exc_type, exc, tb)
-
-
 def extract_mesh_adaptive(
     tif_files: Iterable[Union[str, Path]],
     *,
@@ -1363,7 +1274,7 @@ def extract_mesh_adaptive(
         logger.info(f"Processing {path}...")
 
         try:
-            with _open_geotiff(path) as src:
+            with open_geotiff(path) as src:
                 elevation_data = src.read(1)
                 if elevation_data.size == 0:
                     logger.warning(f"Empty elevation data in file: {path}")
@@ -1443,7 +1354,7 @@ def extract_mesh_adaptive(
     x_coords = np.concatenate(all_x)
     y_coords = np.concatenate(all_y)
     z_values = np.concatenate(all_z)
-    keep_z = ~_invalid_z(z_values)
+    keep_z = ~invalid_z(z_values)
     if not np.all(keep_z):
         logger.info("Dropped %d interior points with nodata/fill Z", int((~keep_z).sum()))
         x_coords, y_coords, z_values = x_coords[keep_z], y_coords[keep_z], z_values[keep_z]
@@ -1534,7 +1445,6 @@ __all__ = [
     "subtract_rings_from_mesh",
     "cut_water_from_parts",
     "create_boundary_points",
-    "download_to_memory",
     "extract_mesh_adaptive",
     "filter_and_add_boundary",
     "generate_delaunay_mesh",

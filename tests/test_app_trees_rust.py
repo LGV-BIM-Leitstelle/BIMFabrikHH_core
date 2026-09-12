@@ -6,7 +6,8 @@ from pathlib import Path
 
 import pytest
 
-from BIMFabrikHH_core.apps.trees.generic_rust.app import TreesRustApp, _tree_dict
+from BIMFabrikHH_core.apps.trees import build_tree_psets, full_tree_height
+from BIMFabrikHH_core.apps.trees.generic_rust.app import TreesRustApp, _attributes, _tree_dict
 from BIMFabrikHH_core.data_models import TreeRecord
 
 pytest.importorskip("bimfabrikhh_core_rs")
@@ -37,6 +38,36 @@ def test_tree_dict_uses_shared_dimensions() -> None:
     assert d["crown_radius"] == pytest.approx(2.5)
     assert d["is_stump"] is False
     assert d["attributes"]["stammdurchmesser"] == "0.6"
+
+
+def test_attributes_publish_the_pset_gesamthoehe_not_the_trunk() -> None:
+    """``_Baumhoehe`` must be the Gesamthöhe, not ``record.baumhoehe``."""
+    stammhoehe, kronendurchmesser = 8.85, 9.56
+    gesamthoehe, remark = full_tree_height(stammhoehe, kronendurchmesser)
+    record = _record(
+        baumhoehe=stammhoehe,
+        kronendurchmesser=kronendurchmesser,
+        psets=build_tree_psets(
+            baumnummer="001",
+            gattung="Eiche",
+            art="Quercus robur",
+            pflanzjahr=1990,
+            kronendurchmesser_m=kronendurchmesser,
+            stammdurchmesser_m=0.6,
+            baumhoehe_m=gesamthoehe,
+            baumhoehe_bemerkung=remark,
+            aufnahmedatum="2026-09-12",
+        ),
+    )
+    attrs = _attributes(record)
+    assert gesamthoehe == pytest.approx(18.41)
+    assert attrs["baumhoehe"] == "18.41"
+
+
+def test_attributes_fall_back_to_the_record_without_psets() -> None:
+    attrs = _attributes(_record(baumhoehe=4.0, psets={}))
+    assert attrs["baumhoehe"] == "4.0"
+    assert attrs["name"] == "Baum_001"
 
 
 def test_trees_rust_app_writes_ifc(tmp_path: Path) -> None:

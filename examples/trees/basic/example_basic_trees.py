@@ -5,9 +5,9 @@ Example: basic trees IFC (``TreesBasicApp`` pipeline)
 Flow:
 
 1. Hand-authored sample tree attributes → ``pd.DataFrame``.
-2. Optional DGM elevation enrichment from a local GeoTIFF.
-3. ``dataframe_to_records(df)`` → ``list[TreeRecord]`` (with
+2. ``dataframe_to_records(df)`` → ``list[TreeRecord]`` (with
    Pydantic psets attached).
+3. Optional DGM drape from local GeoTIFF tiles (``drape_records_on_dgm``).
 4. ``TreesBasicApp.build_ifc(records, ...)`` builds the IFC model
    (mesh trunk + icosphere crown via ``ifcopenshell.api``) and a
    basepoint quad at the WGS84 bbox min corner (converted to EPSG:25832).
@@ -18,13 +18,10 @@ from __future__ import annotations
 import pandas as pd
 
 from BIMFabrikHH_core import BoundingBoxParams, TreesBasicApp
-from BIMFabrikHH_core.apps.trees import DEFAULT_OAF_SCHEMA, dataframe_to_records
+from BIMFabrikHH_core.apps.trees import DEFAULT_OAF_SCHEMA, dataframe_to_records, drape_records_on_dgm
 from BIMFabrikHH_core.config import get_logger, setup_logging
 from BIMFabrikHH_core.config.paths import PathConfig
 from BIMFabrikHH_core.core.georeferencing.crs_transform import bbox_wgs84_to_epsg25832
-from BIMFabrikHH_core.core.georeferencing.extract_elevation import (
-    extract_elevation_df_from_geotiff,
-)
 
 logger = get_logger()
 
@@ -66,12 +63,6 @@ def main() -> None:
 
     df = pd.DataFrame(sample_data)
 
-    tif_path = str(PathConfig.ASSETS / "dgm1_hh_2022-04-30" / "dgm1_32_558_9270_1_hh_2022.tif")
-    try:
-        df = extract_elevation_df_from_geotiff(df, tif_path, schema.easting, schema.northing, schema.elevation)
-    except Exception as e:
-        logger.warning(f"DGM elevation extraction skipped: {e}")
-
     records = dataframe_to_records(
         df,
         aufnahmedatum="undefiniert",
@@ -79,6 +70,8 @@ def main() -> None:
         source_name="example_basic_trees",
         name_prefix="Demo_",
     )
+    tif_path = PathConfig.ASSETS / "dgm1_hh_2022-04-30" / "dgm1_32_558_9270_1_hh_2022.tif"
+    records = drape_records_on_dgm(records, [tif_path])
 
     bp_x, bp_y, *_ = bbox_wgs84_to_epsg25832((bbox_wgs84.min_x, bbox_wgs84.min_y, bbox_wgs84.max_x, bbox_wgs84.max_y))
 

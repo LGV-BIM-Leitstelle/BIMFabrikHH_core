@@ -26,7 +26,7 @@ from typing import Iterable, List, Optional, Sequence, Tuple, Union
 import numpy as np
 from scipy.spatial import Delaunay
 
-from BIMFabrikHH_core.apps.terrain.processing import _open_geotiff, sample_elevations_from_raster
+from BIMFabrikHH_core.core.georeferencing import sample_elevations_for_points
 from BIMFabrikHH_core.config.logging_config import get_logger
 from BIMFabrikHH_core.core.georeferencing.coordinate_transformer import CoordinateTransformer
 from BIMFabrikHH_core.core.ogc_extractor import strip_closing_duplicate_xy
@@ -77,72 +77,6 @@ def rings_to_epsg25832(
         xe, yn = transformer.transform_xy_batch(xs, ys)
         out.append(np.column_stack((xe, yn)))
     return out
-
-
-# ---------------------------------------------------------------------------
-# Elevation sampling (drape)
-# ---------------------------------------------------------------------------
-
-
-def sample_elevations_for_points(
-    points_xy: np.ndarray,
-    tif_files: Iterable[Union[str, Path]],
-    *,
-    folder_path: Optional[Union[str, Path]] = None,
-    default_elevation: float = 0.0,
-) -> np.ndarray:
-    """Sample ground elevation for ``points_xy`` (``(N, 2)`` EPSG:25832) from DGM tiles.
-
-    Points are sampled from every tile; the first tile that yields a valid
-    (non-NaN, non-nodata) value wins. Points not covered by any tile fall back
-    to ``default_elevation``.
-    """
-    n = len(points_xy)
-    if n == 0:
-        return np.empty(0, dtype=float)
-
-    from BIMFabrikHH_core.apps.terrain.processing import is_url
-
-    elevations = np.full(n, np.nan, dtype=float)
-    x = points_xy[:, 0]
-    y = points_xy[:, 1]
-
-    for file in tif_files:
-        if not np.any(np.isnan(elevations)):
-            break
-        if folder_path is not None:
-            path: Union[str, Path] = f"{folder_path}/{file}" if is_url(folder_path) else Path(folder_path) / file
-        else:
-            path = file
-        try:
-            with _open_geotiff(path) as src:
-                bounds = src.bounds
-                todo = np.isnan(elevations)
-                in_raster = (
-                    todo
-                    & (x >= bounds.left)
-                    & (x <= bounds.right)
-                    & (y >= bounds.bottom)
-                    & (y <= bounds.top)
-                )
-                if not np.any(in_raster):
-                    continue
-                sampled = sample_elevations_from_raster(src, x[in_raster], y[in_raster])
-                nodata = src.nodata
-                if nodata is not None:
-                    sampled = np.where(sampled == nodata, np.nan, sampled)
-                idx = np.where(in_raster)[0]
-                valid = ~np.isnan(sampled)
-                elevations[idx[valid]] = sampled[valid]
-                logger.info("Sampled %d/%d street vertices from %s", int(np.sum(valid)), n, path)
-        except Exception as exc:  # pragma: no cover - defensive
-            logger.error("Error sampling elevations from %s: %s", path, exc)
-            continue
-
-    missing = int(np.sum(np.isnan(elevations)))
-    if missing:
-        logger.warning("%d/%d street vertices had no DGM coverage; set to %.3f", missing, n, default_elevation)
-    return np.where(np.isnan(elevations), default_elevation, elevations)
 
 
 # ---------------------------------------------------------------------------
@@ -297,5 +231,4 @@ __all__ = [
     "densify_ring",
     "drape_streets",
     "rings_to_epsg25832",
-    "sample_elevations_for_points",
 ]

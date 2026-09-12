@@ -50,10 +50,10 @@ class RequestParams(BaseModel):
     )
     containers: Optional[List[Container]] = None
     use_dgm_elevation: bool = Field(
-        default=False,
+        default=True,
         description=(
             "When true, download DGM GeoTIFF tiles and assign ground elevation to each tree. "
-            "Tree model generation only; defaults to false (elevation 0)."
+            "Tree model generation only; defaults to true. Set false to keep elevation 0."
         ),
     )
 
