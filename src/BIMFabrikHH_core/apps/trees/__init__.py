@@ -41,19 +41,26 @@ from .column_schema import BAUMKATASTER_SCHEMA, DEFAULT_OAF_SCHEMA, TreeColumnSc
 from .generic.app import TreesGenericApp
 from .generic_rust import TreesRustApp
 from .processing import (
+    DEFAULT_TREE_LOG,
+    DEFAULT_TREE_LOI,
     TreeDimensions,
     build_tree_psets,
     calculate_tree_height,
+    full_tree_height,
     collect_pydantic_psets,
     dataframe_to_records,
+    drape_records_on_dgm,
     resolve_tree_dimensions,
     tree_crown_detail_from_containers,
+    tree_log_from_containers,
     validate_tree_records,
 )
 
 __all__ = [
     "BAUMKATASTER_SCHEMA",
     "DEFAULT_OAF_SCHEMA",
+    "DEFAULT_TREE_LOG",
+    "DEFAULT_TREE_LOI",
     "TreeColumnSchema",
     "TreeDimensions",
     "TreeRecord",
@@ -62,9 +69,12 @@ __all__ = [
     "TreesRustApp",
     "build_tree_psets",
     "calculate_tree_height",
+    "full_tree_height",
     "collect_pydantic_psets",
     "dataframe_to_records",
+    "drape_records_on_dgm",
     "resolve_tree_dimensions",
     "tree_crown_detail_from_containers",
+    "tree_log_from_containers",
     "validate_tree_records",
 ]

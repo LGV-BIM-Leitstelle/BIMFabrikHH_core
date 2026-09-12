@@ -16,11 +16,16 @@ from __future__ import annotations
 import logging
 import time
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, Union
 
 from ifcfactory import BIMFactoryElement
 
-from BIMFabrikHH_core.apps.trees.processing import MIN_TRUNK_RADIUS_M, collect_pydantic_psets, resolve_tree_dimensions
+from BIMFabrikHH_core.apps.trees.processing import (
+    MIN_TRUNK_RADIUS_M,
+    collect_pydantic_psets,
+    drape_records_on_dgm,
+    resolve_tree_dimensions,
+)
 from BIMFabrikHH_core.core.geometry import place_basepoint
 from BIMFabrikHH_core.core.geometry.tree_objects_generic import RgbTuple, create_tree_element
 from BIMFabrikHH_core.core.model_creator import init_ifc_project, validate_ifc
@@ -52,6 +57,9 @@ class TreesGenericApp:
         basepoint_size: float = 1.0,
         basepoint_psets: Optional[Dict[str, Any]] = None,
         bbox_wgs84: Optional[Tuple[float, float, float, float]] = None,
+        tif_files: Optional[Iterable[Union[str, Path]]] = None,
+        dgm_folder: Optional[Union[str, Path]] = None,
+        default_elevation: float = 0.0,
         validate: bool = False,
         on_progress: Optional[Callable[[], None]] = None,
         phase_timings: Optional[Dict[str, float]] = None,
@@ -77,6 +85,11 @@ class TreesGenericApp:
                 :func:`place_basepoint`.
             bbox_wgs84: Optional ``(min_lon, min_lat, max_lon, max_lat)`` used
                 only when ``basepoint_origin`` is ``None``.
+            tif_files: Optional DGM GeoTIFF names or paths. When set, each
+                tree's Z is sampled from those tiles (no terrain IFC needed).
+            dgm_folder: Optional directory or URL prefix joined with
+                ``tif_files`` (same contract as streets drape).
+            default_elevation: Z used when a tree XY misses every tile.
             validate: When ``True``, run ``ifcopenshell.validate --rules`` on
                 the written file.
             on_progress: Called after each tree is built (progress reporting).
@@ -87,6 +100,17 @@ class TreesGenericApp:
         Returns:
             Absolute path of the saved IFC file.
         """
+        if tif_files is not None:
+            _t_drape = time.perf_counter()
+            records = drape_records_on_dgm(
+                records,
+                tif_files,
+                folder_path=dgm_folder,
+                default_elevation=default_elevation,
+            )
+            if phase_timings is not None:
+                phase_timings["drape_s"] = time.perf_counter() - _t_drape
+
         _t0 = time.perf_counter()
         model_builder = init_ifc_project(
             project_name="Trees_Generic_Project",

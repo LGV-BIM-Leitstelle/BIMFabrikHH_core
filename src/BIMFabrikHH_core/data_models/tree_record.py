@@ -27,6 +27,13 @@ class TreeRecord(BaseModel):
     stammdurchmesser: float = 0.6
     detail: int = 1
     segments: int = 8
-    baumhoehe: Optional[float] = None
+    baumhoehe: Optional[float] = Field(
+        default=None,
+        description=(
+            "Trunk height (Stammhöhe) in metres. The crown is added on top, so "
+            "the treetop sits one kronendurchmesser higher; use "
+            "``full_tree_height`` for the value published as ``_Baumhoehe``."
+        ),
+    )
     is_stump: bool = False
     psets: Dict[str, BaseModel] = Field(default_factory=dict)

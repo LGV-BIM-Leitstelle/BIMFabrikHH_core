@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 from .config import ogc_extractor_settings
 
@@ -33,17 +33,20 @@ def extract_project_info(containers: List[Any]) -> Tuple[str, str, str]:
     return project_name, site_name, building_name
 
 
-def extract_level_of_geometry(containers: List[Any]) -> int:
+def extract_level_of_geometry(containers: List[Any], default: Optional[int] = None) -> int:
     """
     Extract the level of geometry from containers.
 
     Args:
         containers: List of container objects with geometry info.
+        default: Value to return when no container carries a level. Lets a
+            caller tell "absent" apart from an explicit LoD 1, which the
+            configured fallback cannot express.
 
     Returns:
         int: level_of_geom (default_data 1 if not found)
     """
-    level_of_geom = ogc_extractor_settings.DEFAULT_LEVEL_OF_GEOMETRY
+    level_of_geom = ogc_extractor_settings.DEFAULT_LEVEL_OF_GEOMETRY if default is None else default
 
     for container in containers or []:
         if container.containerId == ogc_extractor_settings.LEVEL_OF_GEOMETRY_CONTAINER_ID:

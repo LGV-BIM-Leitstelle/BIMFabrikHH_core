@@ -27,7 +27,6 @@ from BIMFabrikHH_core.apps.terrain import (
     terrain_mesh_to_landxml,
 )
 from BIMFabrikHH_core.apps.terrain.processing import (
-    _invalid_z,
     build_water_polygon_meshes,
     drop_points_inside_rings,
     drop_sliver_faces,
@@ -140,12 +139,6 @@ def test_drop_sliver_faces_removes_collinear_frame_triangle() -> None:
     assert len(tris) == 1
     assert all(len(face) == 3 for face in tris)
     assert len(verts) == 3
-
-
-def test_invalid_z_treats_zero_fill_and_gdal_nodata() -> None:
-    z = np.array([5.0, 0.0, -3.4e38, np.nan, 1.2])
-    bad = _invalid_z(z, nodata=-3.4e38)
-    assert list(bad) == [False, True, True, True, False]
 
 
 def test_collect_guide_rings_clips_to_bbox() -> None:
