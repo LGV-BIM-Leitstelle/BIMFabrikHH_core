@@ -107,7 +107,7 @@ class FlurstueckeGenericApp:
         coordinate_operation: Optional[CoordinateOperation] = None,
         color: Optional[RgbTuple] = None,
         cad_layer: str = _DEFAULT_LAYER,
-        transparency: float = 0.0,
+        transparency: float = 0.5,
         extrusion_depth_m: float = _DEFAULT_EXTRUSION_DEPTH_M,
         include_property_sets: bool = True,
         pset_hyperlink: Optional[Pset_Hyperlink] = None,
