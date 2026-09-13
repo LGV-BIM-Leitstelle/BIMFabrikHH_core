@@ -1,0 +1,22 @@
+{
+  "c": "Chroma (Intensität)",
+  "c1": "rötlich",
+  "c2": "gelblich",
+  "c3": "bräunlich",
+  "c4": "grünlich",
+  "c5": "bläulich",
+  "c6": "gräulich",
+  "h": "Hue (Farbton)",
+  "h1": "violett",
+  "h2": "rot",
+  "h3": "gelb",
+  "h4": "braun",
+  "h5": "grün",
+  "h6": "blau",
+  "h7": "weiss",
+  "h8": "grau",
+  "h9": "schwarz",
+  "v": "Value (Helligkeit)",
+  "v1": "hell",
+  "v2": "dunkel"
+}

@@ -36,6 +36,7 @@ from BIMFabrikHH_core.core.model_creator import IfcModelBuilder, IfcModelMethods
 from BIMFabrikHH_core.core.utils.math_operations import MathTool
 
 # Application imports
+from .apps.boreholes.generic.app import BoreholesGenericApp
 from .apps.city.basic.app import CityBasicApp
 from .apps.city.generic.app import CityGenericApp
 from .apps.city.generic_rust import CityRustApp
@@ -50,6 +51,11 @@ from .apps.trees.generic_rust import TreesRustApp
 from .apps.wasserschutzgebiete.generic.app import WasserschutzgebieteGenericApp
 
 # Data model imports
+from .data_models.boreholes import (
+    BoreholeLayer,
+    BoreholeRecord,
+    collect_borehole_psets,
+)
 from .data_models.flurstuecke import (
     FlurstueckRecord,
     collect_flurstueck_psets,
@@ -86,6 +92,7 @@ __all__ = [
     "IfcModelMethods",
     "MathTool",
     # Applications
+    "BoreholesGenericApp",
     "CityBasicApp",
     "CityGenericApp",
     "CityRustApp",
@@ -99,7 +106,10 @@ __all__ = [
     "StreetsGenericApp",
     "FlurstueckeGenericApp",
     # Data models
+    "BoreholeLayer",
+    "BoreholeRecord",
     "BoundingBoxParams",
+    "collect_borehole_psets",
     "RequestParams",
     "Container",
     "Component",

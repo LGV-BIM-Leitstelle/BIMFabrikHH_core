@@ -1,0 +1,336 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- version 2.0 - date: 2024-06-25 - designed for BoreholeML 3.1.0 -->
+<gmx:ML_CodeListDictionary xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:gco="http://www.isotc211.org/2005/gco" xmlns:gml="http://www.opengis.net/gml/3.2" xmlns:gmd="http://www.isotc211.org/2005/gmd" xmlns:gmx="http://www.isotc211.org/2005/gmx" xmlns:bmlcl="https://schemas.bgr.de/boreholeml/codelists/v2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.isotc211.org/2005/gmx http://schemas.opengis.net/iso/19139/20070417/gmx/gmx.xsd https://schemas.bgr.de/boreholeml/codelists/v2 https://schemas.bgr.de/boreholeml/codelists/v2/codelistItem_BMLCL.xsd" gml:id="CarbonateContentList">
+	<gml:description>Stärke und Art des Karbonatgehalts</gml:description>
+	<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/CarbonateContentList.xml">CarbonateContentList</gml:identifier>
+	<gml:name>Karbonatgehalt</gml:name>
+	<gml:remarks>version 2.0 - date: 2024-06-25 - designed for BoreholeML 3.1.0</gml:remarks>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_14_0001_0001">
+			<gml:description>kein Aufbrausen</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/CarbonateContentList.xml">c0</gml:identifier>
+			<gml:name>karbonatfrei</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/CarbonateContentList.xml" gml:id="_14_0001_0001_en">
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/CarbonateContentList.xml">c0</gml:identifier>
+					<gml:name>free of carbonate</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>1</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/0cb5b7c0-9377-4262-8bbb-02d51b71ecd0</bmlcl:geolKA>
+			<bmlcl:modificationDate>2017-08-14</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_14_0002_0002">
+			<gml:description>schwaches bis deutliches, aber nicht anhaltenden Aufbrausen</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/CarbonateContentList.xml">c+</gml:identifier>
+			<gml:name>karbonathaltig</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/CarbonateContentList.xml" gml:id="_14_0002_0002_en">
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/CarbonateContentList.xml">c+</gml:identifier>
+					<gml:name>containing carbonate</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>2</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/90911b13-4f1b-414c-a7a5-b0d7a23746ef</bmlcl:geolKA>
+			<bmlcl:modificationDate>2017-08-14</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_14_0003_0003">
+			<gml:description>sehr schwache Reaktion, nicht sichtbar, nur hörbar (&lt;0,5%)</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/CarbonateContentList.xml">c1</gml:identifier>
+			<gml:name>sehr karbonatarm</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/CarbonateContentList.xml" gml:id="_14_0003_0003_en">
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/CarbonateContentList.xml">c1</gml:identifier>
+					<gml:name>very low in carbonate</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>3</bmlcl:keyID>
+			<bmlcl:parentID>2</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>2</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/54a5d14b-bdca-4566-8871-97aee91eaab5</bmlcl:geolKA>
+			<bmlcl:modificationDate>2017-08-14</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_14_0004_0004">
+			<gml:description>schwache Reaktion, kaum sichtbar (0,5 bis &lt; 2%)</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/CarbonateContentList.xml">c2</gml:identifier>
+			<gml:name>karbonatarm</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/CarbonateContentList.xml" gml:id="_14_0004_0004_en">
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/CarbonateContentList.xml">c2</gml:identifier>
+					<gml:name>low in carbonate</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>4</bmlcl:keyID>
+			<bmlcl:parentID>2</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>2</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/571ba98e-297a-4827-a079-b597532226fe</bmlcl:geolKA>
+			<bmlcl:modificationDate>2017-08-14</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_14_0005_0005">
+			<gml:description>nicht anhaltendes Aufbrausen (2 bis &lt; 10%)</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/CarbonateContentList.xml">c3</gml:identifier>
+			<gml:name>karbonathaltig</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/CarbonateContentList.xml" gml:id="_14_0005_0005_en">
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/CarbonateContentList.xml">c3</gml:identifier>
+					<gml:name>containing carbonate</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>5</bmlcl:keyID>
+			<bmlcl:parentID>2</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>2</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/69f09f83-5a99-4341-a028-a9ae75b4b395</bmlcl:geolKA>
+			<bmlcl:modificationDate>2017-08-14</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_14_0006_0009">
+			<gml:description>starkes, langandauerndes Aufbrausen</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/CarbonateContentList.xml">c++</gml:identifier>
+			<gml:name>stark karbonathaltig</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/CarbonateContentList.xml" gml:id="_14_0006_0009_en">
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/CarbonateContentList.xml">c++</gml:identifier>
+					<gml:name>containing significant amounts of carbonate</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>9</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/13bcd5ee-8c47-49f5-ad8e-ac100d0fe533</bmlcl:geolKA>
+			<bmlcl:modificationDate>2017-08-14</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_14_0007_0010">
+			<gml:description>starkes, anhaltendes Schäumen je nach zugegebener HCl-Menge; bei Carbonatgehalten &gt; 10% mit der HCl-Probe im Allgemeinen keine weitere Unterteilung möglich.</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/CarbonateContentList.xml">c4</gml:identifier>
+			<gml:name>karbonatreich</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/CarbonateContentList.xml" gml:id="_14_0007_0010_en">
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/CarbonateContentList.xml">c4</gml:identifier>
+					<gml:name>high in carbonate</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>10</bmlcl:keyID>
+			<bmlcl:parentID>9</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>2</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/c8af6949-8b24-4580-9e8e-f34a33a58982</bmlcl:geolKA>
+			<bmlcl:modificationDate>2017-08-14</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_14_0008_0011">
+			<gml:description>starkes, anhaltendes Schäumen je nach zugegebener HCl-Menge; bei Carbonatgehalten &gt; 10% mit der HCl-Probe im Allgemeinen keine weitere Unterteilung möglich.</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/CarbonateContentList.xml">c5</gml:identifier>
+			<gml:name>sehr karbonatreich</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/CarbonateContentList.xml" gml:id="_14_0008_0011_en">
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/CarbonateContentList.xml">c5</gml:identifier>
+					<gml:name>very high in carbonate</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>11</bmlcl:keyID>
+			<bmlcl:parentID>9</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>2</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/7daad734-7fed-4a28-b3e4-9df25cb7f4ff</bmlcl:geolKA>
+			<bmlcl:modificationDate>2017-08-14</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_14_0009_0012">
+			<gml:description>starkes, anhaltendes Schäumen je nach zugegebener HCl-Menge; bei Carbonatgehalten &gt; 10% mit der HCl-Probe im Allgemeinen keine weitere Unterteilung möglich.</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/CarbonateContentList.xml">c6</gml:identifier>
+			<gml:name>extrem karbonatreich</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/CarbonateContentList.xml" gml:id="_14_0009_0012_en">
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/CarbonateContentList.xml">c6</gml:identifier>
+					<gml:name>extremely high in carbonate</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>12</bmlcl:keyID>
+			<bmlcl:parentID>9</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>2</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/71731027-7baf-4b7d-891e-3ffc5c92e1d9</bmlcl:geolKA>
+			<bmlcl:modificationDate>2017-08-14</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_14_0010_0013">
+			<gml:description>starkes, anhaltendes Schäumen je nach zugegebener HCl-Menge; bei Carbonatgehalten &gt; 10% mit der HCl-Probe im Allgemeinen keine weitere Unterteilung möglich.</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/CarbonateContentList.xml">c7</gml:identifier>
+			<gml:name>Karbonat</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/CarbonateContentList.xml" gml:id="_14_0010_0013_en">
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/CarbonateContentList.xml">c7</gml:identifier>
+					<gml:name>carbonate</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>13</bmlcl:keyID>
+			<bmlcl:parentID>9</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>2</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/be6ddd12-01e4-4244-89d2-3a49fa09f1e2</bmlcl:geolKA>
+			<bmlcl:modificationDate>2017-08-14</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_14_0011_0014">
+			<gml:description>bei Pflichtfeldern ist eine Angabe notwendig, ob ein Wert vorliegt</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/CarbonateContentList.xml">nb</gml:identifier>
+			<gml:name>keine Angabe/nicht bestimmt</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/CarbonateContentList.xml" gml:id="_14_0011_0014_en">
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/CarbonateContentList.xml">nb</gml:identifier>
+					<gml:name>n/a</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>14</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/5c7b26f8-81d4-4002-a62f-2a4b827cbc48</bmlcl:geolKA>
+			<bmlcl:modificationDate>2017-08-14</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_14_0012_0015">
+			<gml:description>Verzögerte, sehr schwache Reaktion mit HCl (nach Anritzen)</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/CarbonateContentList.xml">d1</gml:identifier>
+			<gml:name>dolomitarm</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/CarbonateContentList.xml" gml:id="_14_0012_0015_en">
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/CarbonateContentList.xml">d1</gml:identifier>
+					<gml:name>low in dolomite</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>15</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/573110e7-f752-48ea-860a-e5a86a0e7dac</bmlcl:geolKA>
+			<bmlcl:modificationDate>2017-08-14</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_14_0013_0016">
+			<gml:description>Verzögerte, schwache Reaktion mit HCl (nach Anritzen)</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/CarbonateContentList.xml">d2</gml:identifier>
+			<gml:name>dolomithaltig</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/CarbonateContentList.xml" gml:id="_14_0013_0016_en">
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/CarbonateContentList.xml">d2</gml:identifier>
+					<gml:name>containing dolomite</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>16</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/b32e26cf-6e01-4bfa-b936-9f49cf937162</bmlcl:geolKA>
+			<bmlcl:modificationDate>2017-08-14</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_14_0014_0017">
+			<gml:description>Verzögerte Reaktion mit HCl (nach Anritzen)</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/CarbonateContentList.xml">d3</gml:identifier>
+			<gml:name>dolomitreich</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/CarbonateContentList.xml" gml:id="_14_0014_0017_en">
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/CarbonateContentList.xml">d3</gml:identifier>
+					<gml:name>high in dolomite</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>17</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/f997de51-efaf-4051-aeea-0755fd82e1b6</bmlcl:geolKA>
+			<bmlcl:modificationDate>2017-08-14</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_14_0015_0018">
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/CarbonateContentList.xml">k1</gml:identifier>
+			<gml:name>kalkarm</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/CarbonateContentList.xml" gml:id="_14_0015_0018_en">
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/CarbonateContentList.xml">k1</gml:identifier>
+					<gml:name>low in calcium carbonate</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>18</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/a4873399-4cd9-4c89-9534-5f177a05ccd6</bmlcl:geolKA>
+			<bmlcl:modificationDate>2017-08-14</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_14_0016_0019">
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/CarbonateContentList.xml">k2</gml:identifier>
+			<gml:name>kalkhaltig</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/CarbonateContentList.xml" gml:id="_14_0016_0019_en">
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/CarbonateContentList.xml">k2</gml:identifier>
+					<gml:name>containing calcium carbonate</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>19</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/9c298d42-7d51-47b1-be04-0054d512d720</bmlcl:geolKA>
+			<bmlcl:modificationDate>2017-08-14</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_14_0017_0020">
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/CarbonateContentList.xml">k3</gml:identifier>
+			<gml:name>kalkreich</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/CarbonateContentList.xml" gml:id="_14_0017_0020_en">
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/CarbonateContentList.xml">k3</gml:identifier>
+					<gml:name>high in calcium carbonate</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>20</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/c31d58ab-67db-465e-940f-fde4e01744a8</bmlcl:geolKA>
+			<bmlcl:modificationDate>2017-08-14</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:alternativeExpression>
+		<gmx:ClAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/CarbonateContentList.xml" gml:id="CarbonateContentList_en">
+			<gml:description>amount and type of carbonate content</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/CarbonateContentList.xml">CarbonateContentList</gml:identifier>
+			<gml:name>carbonate content</gml:name>
+			<gmx:locale xlink:href="EN.xml"/>
+		</gmx:ClAlternativeExpression>
+	</gmx:alternativeExpression>
+</gmx:ML_CodeListDictionary>
