@@ -7,7 +7,7 @@ an importance-sampled point cloud with boundary stitching).
 Runs without a WGS84 ``bbox`` so the full raster is used. If you want to
 crop, pass a ``BoundingBoxParams`` whose WGS84 extent actually overlaps
 the raster (the example tile
-``dgm1_32_558_9270_1_hh_2022.tif`` covers UTM
+``dgm1_hh_2022-04-30/dgm1_32_558_9270_1_hh_2022.tif`` covers UTM
 ``(558000, 5927000) -> (559000, 5928000)`` in EPSG:25832).
 """
 
@@ -27,7 +27,7 @@ def main() -> None:
     start = time.perf_counter()
 
     terrain_folder = Path(__file__).parent
-    tif_files = [str(PathConfig.ASSETS / "dgm1_32_558_9270_1_hh_2022.tif")]
+    tif_files = [str(PathConfig.ASSETS / "dgm1_hh_2022-04-30" / "dgm1_32_558_9270_1_hh_2022.tif")]
     output_file = terrain_folder / "example_dgm.ifc"
 
     container = Container(

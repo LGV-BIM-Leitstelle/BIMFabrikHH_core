@@ -1,5 +1,6 @@
 import subprocess
 import sys
+import time
 from pathlib import Path
 from typing import List, Literal, Optional, Tuple, Union
 
@@ -14,6 +15,9 @@ from BIMFabrikHH_core.data_models.pydantic_georeferencing import CoordinateOpera
 
 # Provide direct alias to make patching in unit tests easier
 create_entity = root.create_entity
+
+_IFC_AUTHOR = "BIM-Leitstelle, LGV Hamburg"
+_IFC_APPLICATION = "BIMFabrikHH"
 
 
 class IfcModelMethods:
@@ -34,8 +38,46 @@ class IfcModelMethods:
             ifcopenshell.file: The created IFC model.
         """
         model = ifcopenshell.file(schema=ifc_schema)
-        model.header.file_description.description = ("ViewDefinition [Ifc4ReferenceView]",)
+        IfcModelMethods._stamp_file_identity(model)
         return model
+
+    @staticmethod
+    def _package_version() -> str:
+        try:
+            from importlib.metadata import version
+
+            return version("bimfabrikhh-core")
+        except Exception:
+            return "0.2.1"
+
+    @staticmethod
+    def _stamp_file_identity(model: ifcopenshell.file) -> None:
+        """Match Rust ``bimfabrikhh_core_rs`` author / application metadata."""
+        app_version = IfcModelMethods._package_version()
+        file_name = model.header.file_name
+        file_name.author = (_IFC_AUTHOR,)
+        file_name.organization = (_IFC_AUTHOR,)
+        file_name.preprocessor_version = f"bimfabrikhh_core {app_version}"
+        file_name.originating_system = _IFC_APPLICATION
+        model.header.file_description.description = ("ViewDefinition [Ifc4ReferenceView]",)
+
+        person = model.create_entity("IfcPerson", FamilyName=_IFC_AUTHOR)
+        organisation = model.create_entity("IfcOrganization", Name=_IFC_AUTHOR)
+        user = model.create_entity("IfcPersonAndOrganization", ThePerson=person, TheOrganization=organisation)
+        application = model.create_entity(
+            "IfcApplication",
+            ApplicationDeveloper=organisation,
+            Version=app_version,
+            ApplicationFullName=_IFC_APPLICATION,
+            ApplicationIdentifier=_IFC_APPLICATION,
+        )
+        model.create_entity(
+            "IfcOwnerHistory",
+            OwningUser=user,
+            OwningApplication=application,
+            ChangeAction="NOTDEFINED",
+            CreationDate=int(time.time()),
+        )
 
     @staticmethod
     def create_project_entity(model: ifcopenshell.file, project_name: str) -> ifcopenshell.entity_instance:

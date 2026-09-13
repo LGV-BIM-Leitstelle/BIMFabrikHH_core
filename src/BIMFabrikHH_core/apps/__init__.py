@@ -35,15 +35,18 @@ from .boreholes.generic.app import BoreholesGenericApp
 # City model applications
 from .city.basic.app import CityBasicApp
 from .city.generic.app import CityGenericApp
+from .city.generic_rust import CityRustApp
 from .city.parser import CityGMLParser
 
 # Terrain applications
 from .terrain.basic.app import TerrainBasicApp
 from .terrain.generic.app import TerrainGenericApp
+from .terrain.generic_rust import TerrainRustApp
 
 # Tree applications
 from .trees.basic.app import TreesBasicApp
 from .trees.generic.app import TreesGenericApp
+from .trees.generic_rust import TreesRustApp
 
 __all__ = [
     # Basepoint applications
@@ -53,11 +56,14 @@ __all__ = [
     # City model applications
     "CityBasicApp",
     "CityGenericApp",
+    "CityRustApp",
     "CityGMLParser",
     # Terrain applications
     "TerrainBasicApp",
     "TerrainGenericApp",
+    "TerrainRustApp",
     # Tree applications
     "TreesBasicApp",
     "TreesGenericApp",
+    "TreesRustApp",
 ]

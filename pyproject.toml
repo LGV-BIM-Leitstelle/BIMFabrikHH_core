@@ -34,7 +34,9 @@ python = ">=3.11,<3.12"
 rasterio = ">=1.4.3"
 scipy = ">=1.16.0,<2.0.0"
 ifcfactory = "^0.3.0"
+bimfabrikhh-core-rs = ">=0.1.1"
 requests = "^2.34.2"
+triangle = "^20250106"
 
 [tool.poetry.group.dev.dependencies]
 black = "*"
@@ -66,7 +68,9 @@ addopts = [
     "--strict-markers",
     "--strict-config",
     "--verbose",
-    "--tb=short"
+    "--tb=short",
+    "-m",
+    "not slow",
 ]
 markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",

@@ -20,6 +20,8 @@ Stages covered here:
    data-agnostic.
 6. :func:`tree_crown_detail_from_containers` — OGC containers → crown
    ``detail`` (uses :func:`~BIMFabrikHH_core.core.ogc_extractor.extract_level_of_geometry`).
+7. :func:`drape_records_on_dgm` — set each record's Z from DGM GeoTIFF tiles
+   (no terrain IFC / mesh required).
 
 Pydantic handles type / required-field validation on :class:`TreeRecord`
 itself, so this module only layers on the domain knowledge (circumference
@@ -31,12 +33,15 @@ from __future__ import annotations
 import logging
 import math
 from dataclasses import dataclass
-from typing import Any, Dict, Iterable, List, Optional
+from pathlib import Path
+from typing import Any, Dict, Iterable, List, Optional, Union
 
+import numpy as np
 import pandas as pd
 from ifcfactory import ureg
 from pydantic import BaseModel
 
+from BIMFabrikHH_core.core.georeferencing import sample_elevations_for_points
 from BIMFabrikHH_core.core.ogc_extractor.ogc_values_extractor import extract_level_of_geometry
 from BIMFabrikHH_core.data_models.pydantic_psets_tree import Pset_Bauwerk_Tree, Pset_Objektinformation_Tree
 from BIMFabrikHH_core.data_models.tree_record import TreeRecord
@@ -54,6 +59,11 @@ DEFAULT_STAMMUMFANG_CM: float = 100.0
 DEFAULT_DETAIL: int = 1
 DEFAULT_SEGMENTS: int = 8
 _MAX_TREE_CROWN_DETAIL: int = 4
+
+# ``_LoG`` / ``_LoI`` are owned by Pset_Objektinformation_Tree; mirrored here so
+# the helper signatures below cannot drift away from the model.
+DEFAULT_TREE_LOG: int = Pset_Objektinformation_Tree.model_fields["log"].default
+DEFAULT_TREE_LOI: int = Pset_Objektinformation_Tree.model_fields["loi"].default
 
 # Trunk-height fallback constants (used when ``baumhoehe`` is not set).
 _MIN_TRUNK_HEIGHT_M: float = 3.5
@@ -93,6 +103,11 @@ def resolve_tree_dimensions(
       (with the crown radius added so the crown sits above the trunk);
       otherwise it falls back to ``1.35 × crown_diameter`` for crowns
       at least 3 m across and to a minimum of 3.5 m for smaller crowns.
+
+    ``record.baumhoehe`` is therefore the **Stammhöhe**, not the whole tree.
+    The crown sphere is centred on the trunk top, so the treetop ends up one
+    full ``kronendurchmesser`` higher — see :func:`full_tree_height`, which is
+    what belongs in the ``_Baumhoehe`` property.
 
     Args:
         record: The tree record.
@@ -139,6 +154,25 @@ def tree_crown_detail_from_containers(containers: Any) -> int:
     """
     lod = extract_level_of_geometry(containers or [])
     return max(1, min(_MAX_TREE_CROWN_DETAIL, int(lod)))
+
+
+def tree_log_from_containers(containers: Any) -> int:
+    """``_LoG`` (100-scale) from the OGC request's ``level_of_geom``.
+
+    The request speaks LoD ``1`` … ``4`` while the property set publishes
+    ``100`` … ``400``, so the requested level is scaled by 100. A request
+    without a level container yields :data:`DEFAULT_TREE_LOG` rather than 100,
+    which is why the extractor is given an explicit ``default``.
+
+    Args:
+        containers: Same shape as API request ``containers`` (optional list).
+
+    Returns:
+        Integer in ``100`` … ``400`` suitable for :func:`build_tree_psets`
+        and :func:`dataframe_to_records` ``log=``.
+    """
+    lod = extract_level_of_geometry(containers or [], default=DEFAULT_TREE_LOG // 100)
+    return max(100, min(_MAX_TREE_CROWN_DETAIL * 100, int(lod) * 100))
 
 
 def collect_pydantic_psets(
@@ -199,7 +233,7 @@ def calculate_tree_height(
         if final > measured:
             return (
                 final,
-                f"Gemessene Baumhoehe ({measured}m) auf Mindesthöhe " f"{MIN_TREE_HEIGHT_M:.2f}m angepasst",
+                f"Gemessene Baumhoehe ({measured:.2f}m) auf Mindesthöhe " f"{MIN_TREE_HEIGHT_M:.2f}m angepasst",
             )
         return final, "Gemessene Baumhoehe"
 
@@ -208,13 +242,50 @@ def calculate_tree_height(
     if final > calculated:
         return (
             final,
-            f"{CROWN_TO_HEIGHT_RATIO} × {kronendurchmesser}m Kronendurchmesser "
+            f"{CROWN_TO_HEIGHT_RATIO} × {float(kronendurchmesser):.2f}m Kronendurchmesser "
             f"= {calculated:.2f}m, auf Mindesthöhe {MIN_TREE_HEIGHT_M:.2f}m angepasst",
         )
     return (
         final,
-        f"{CROWN_TO_HEIGHT_RATIO} × {kronendurchmesser}m Kronendurchmesser " f"= {calculated:.2f}m",
+        f"{CROWN_TO_HEIGHT_RATIO} × {float(kronendurchmesser):.2f}m Kronendurchmesser " f"= {calculated:.2f}m",
     )
+
+
+def full_tree_height(
+    stammhoehe_m: float,
+    kronendurchmesser_m: float,
+) -> tuple[float, str]:
+    """Gesamthöhe + remark for ``_Baumhoehe``, from the trunk height.
+
+    :func:`resolve_tree_dimensions` raises the trunk to
+    ``stammhoehe_m + crown_radius`` and centres the crown sphere on that top,
+    so the highest point of the tree sits one full ``kronendurchmesser`` above
+    ``stammhoehe_m``. Publishing that sum keeps the property set in step with
+    the geometry instead of reporting the bare trunk.
+
+    Both inputs are rounded to centimetres before they are added, so the
+    published value and the sum spelled out in the remark always agree.
+
+    Not for stumps: ``is_stump`` records are written without a crown, so their
+    trunk height already is the full height.
+
+    Args:
+        stammhoehe_m: Trunk height in metres, as returned by
+            :func:`calculate_tree_height` and stored on ``TreeRecord.baumhoehe``.
+        kronendurchmesser_m: Crown diameter in metres.
+
+    Returns:
+        ``(gesamthoehe_m, remark)`` ready for :func:`build_tree_psets`, with
+        ``gesamthoehe_m`` rounded to two decimals.
+    """
+    stammhoehe = round(float(stammhoehe_m), 2)
+    kronendurchmesser = round(float(kronendurchmesser_m), 2)
+    gesamthoehe_m = round(stammhoehe + kronendurchmesser, 2)
+    remark = (
+        f"Gesamthöhe = {stammhoehe:.2f}m Stammhöhe "
+        f"+ {kronendurchmesser:.2f}m Kronendurchmesser = {gesamthoehe_m:.2f}m"
+    )
+    return gesamthoehe_m, remark
 
 
 def build_tree_psets(
@@ -233,6 +304,8 @@ def build_tree_psets(
     bemerkung: str = "undefiniert",
     status_vegetation: str = "undefiniert",
     strasse: str = "undefiniert",
+    log: int = DEFAULT_TREE_LOG,
+    loi: int = DEFAULT_TREE_LOI,
 ) -> Dict[str, BaseModel]:
     """Build the Pydantic pset templates for a single tree.
 
@@ -259,6 +332,8 @@ def build_tree_psets(
         bemerkung: Free-text remark / source label (e.g. the data source name).
         status_vegetation: Status flag (e.g. ``"Bestand"``).
         strasse: Street name for ``Pset_Bauwerk._Strassenname``.
+        log: Level of Geometry written to ``_LoG``.
+        loi: Level of Information written to ``_LoI``.
 
     Returns:
         ``{pset_name: pydantic_model}`` suitable for ``TreeRecord.psets``.
@@ -279,6 +354,8 @@ def build_tree_psets(
         bezirk=bezirk,
         bemerkung=bemerkung,
         status_vegetation=status_vegetation,
+        log=int(log),
+        loi=int(loi),
     )
     bauwerk = Pset_Bauwerk_Tree(strassenname=strasse)
     return {m.pset_name: m for m in (objekt, bauwerk)}
@@ -311,6 +388,8 @@ def dataframe_to_records(
     default_kronendurchmesser_m: float = DEFAULT_KRONENDURCHMESSER_M,
     default_stammumfang_cm: float = DEFAULT_STAMMUMFANG_CM,
     status_vegetation: str = "undefiniert",
+    log: int = DEFAULT_TREE_LOG,
+    loi: int = DEFAULT_TREE_LOI,
 ) -> List[TreeRecord]:
     """Materialize a list of :class:`TreeRecord` from a tree DataFrame.
 
@@ -328,7 +407,7 @@ def dataframe_to_records(
             :data:`DEFAULT_OAF_SCHEMA` (Hamburg OGC API / surveying). Pass
             :data:`BAUMKATASTER_SCHEMA` for Strassenbaumkataster data, or
             build a custom one with ``dataclasses.replace``.
-        source_name: Free-text label written to ``_Bemerkung``
+        source_name: Free-text label for the summary log line
             (e.g. ``"Strassenbaumkataster_HH"``).
         name_prefix: Prepended to the generated IFC name (``TreeRecord.name``).
         name_index_start: First index for name generation.
@@ -378,7 +457,8 @@ def dataframe_to_records(
             except (TypeError, ValueError):
                 baumhoehe_in = None
 
-        height_m, height_remark = calculate_tree_height(kronendurchmesser_m, baumhoehe_in)
+        height_m, _height_remark = calculate_tree_height(kronendurchmesser_m, baumhoehe_in)
+        gesamthoehe_m, gesamthoehe_remark = full_tree_height(height_m, kronendurchmesser_m)
 
         pflanzjahr_val = row_dict.get(schema.pflanzjahr_primary)
         if pflanzjahr_val is None or (isinstance(pflanzjahr_val, float) and pd.isna(pflanzjahr_val)):
@@ -402,12 +482,13 @@ def dataframe_to_records(
             pflanzjahr=pflanzjahr,
             kronendurchmesser_m=kronendurchmesser_m,
             stammdurchmesser_m=stammdurchmesser_m,
-            baumhoehe_m=height_m,
-            baumhoehe_bemerkung=height_remark,
+            baumhoehe_m=gesamthoehe_m,
+            baumhoehe_bemerkung=gesamthoehe_remark,
             aufnahmedatum=aufnahmedatum,
             stadtteil=_str(schema.stadtteil),
             bezirk=_str(schema.bezirk),
-            bemerkung=source_name,
+            log=log,
+            loi=loi,
             status_vegetation=status_vegetation,
             strasse=_str(schema.strasse),
         )
@@ -427,6 +508,38 @@ def dataframe_to_records(
 
     logger.info("Built %d TreeRecord(s) from DataFrame (source=%s)", len(records), source_name)
     return records
+
+
+def drape_records_on_dgm(
+    records: List[TreeRecord],
+    tif_files: Iterable[Union[str, Path]],
+    *,
+    folder_path: Optional[Union[str, Path]] = None,
+    default_elevation: float = 0.0,
+) -> List[TreeRecord]:
+    """Set each record's Z from DGM GeoTIFF tiles (EPSG:25832 XY unchanged).
+
+    Samples every tile via :func:`sample_elevations_for_points`. Existing Z is
+    overwritten so a leftover ``0`` cannot stick. Without tiles there is
+    nothing to sample from and the records are returned unchanged.
+    """
+    tile_list = list(tif_files)
+    if not records or not tile_list:
+        return list(records)
+
+    points_xy = np.array([(rec.position[0], rec.position[1]) for rec in records], dtype=float)
+    elevations = sample_elevations_for_points(
+        points_xy,
+        tile_list,
+        folder_path=folder_path,
+        default_elevation=default_elevation,
+    )
+    draped: List[TreeRecord] = []
+    for rec, z in zip(records, elevations):
+        x, y, _ = rec.position
+        draped.append(rec.model_copy(update={"position": (float(x), float(y), float(z))}))
+    logger.info("Draped %d TreeRecord(s) onto DGM GeoTIFF(s)", len(draped))
+    return draped
 
 
 def validate_tree_records(
@@ -517,6 +630,8 @@ __all__ = [
     "DEFAULT_OAF_SCHEMA",
     "DEFAULT_SEGMENTS",
     "DEFAULT_STAMMUMFANG_CM",
+    "DEFAULT_TREE_LOG",
+    "DEFAULT_TREE_LOI",
     "MIN_STAMMDURCHMESSER_M",
     "MIN_TREE_HEIGHT_M",
     "MIN_TRUNK_RADIUS_M",
@@ -526,6 +641,10 @@ __all__ = [
     "calculate_tree_height",
     "collect_pydantic_psets",
     "dataframe_to_records",
+    "drape_records_on_dgm",
+    "full_tree_height",
     "resolve_tree_dimensions",
+    "tree_crown_detail_from_containers",
+    "tree_log_from_containers",
     "validate_tree_records",
 ]

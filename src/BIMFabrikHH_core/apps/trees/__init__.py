@@ -24,9 +24,11 @@ Tree modeling applications for BIMFabrikHH.
 
 Two record-builder apps share the same ``TreeRecord`` input contract:
 
-- :class:`TreesBasicApp` — mesh trunk + icosphere crown via
-  ``ifcopenshell.api``.
+- :class:`TreesBasicApp` — **deprecated**; use :class:`TreesGenericApp`
+  or :class:`TreesRustApp`.
+  Mesh trunk + icosphere crown via ``ifcopenshell.api``.
 - :class:`TreesGenericApp` — ``ifcfactory.BIMFactoryElement`` pipeline.
+- :class:`TreesRustApp` — ``bimfabrikhh_core_rs.trees_to_ifc`` (same ``TreeRecord`` list).
 
 Data-processing helpers live in :mod:`BIMFabrikHH_core.apps.trees.processing`
 (DataFrame → list[TreeRecord] with psets; height rules; validation).
@@ -37,30 +39,42 @@ from BIMFabrikHH_core.data_models import TreeRecord
 from .basic.app import TreesBasicApp
 from .column_schema import BAUMKATASTER_SCHEMA, DEFAULT_OAF_SCHEMA, TreeColumnSchema
 from .generic.app import TreesGenericApp
+from .generic_rust import TreesRustApp
 from .processing import (
+    DEFAULT_TREE_LOG,
+    DEFAULT_TREE_LOI,
     TreeDimensions,
     build_tree_psets,
     calculate_tree_height,
+    full_tree_height,
     collect_pydantic_psets,
     dataframe_to_records,
+    drape_records_on_dgm,
     resolve_tree_dimensions,
     tree_crown_detail_from_containers,
+    tree_log_from_containers,
     validate_tree_records,
 )
 
 __all__ = [
     "BAUMKATASTER_SCHEMA",
     "DEFAULT_OAF_SCHEMA",
+    "DEFAULT_TREE_LOG",
+    "DEFAULT_TREE_LOI",
     "TreeColumnSchema",
     "TreeDimensions",
     "TreeRecord",
     "TreesBasicApp",
     "TreesGenericApp",
+    "TreesRustApp",
     "build_tree_psets",
     "calculate_tree_height",
+    "full_tree_height",
     "collect_pydantic_psets",
     "dataframe_to_records",
+    "drape_records_on_dgm",
     "resolve_tree_dimensions",
     "tree_crown_detail_from_containers",
+    "tree_log_from_containers",
     "validate_tree_records",
 ]

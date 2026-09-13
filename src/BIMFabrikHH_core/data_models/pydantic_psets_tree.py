@@ -87,12 +87,12 @@ class Pset_Objektinformation_Tree(PropertySetTemplate):
     log: int = Field(
         validation_alias=AliasChoices("log", "_LoG"),
         serialization_alias="_LoG",
-        default=100,
+        default=200,
     )
     loi: int = Field(
         validation_alias=AliasChoices("loi", "_LoI"),
         serialization_alias="_LoI",
-        default=100,
+        default=300,
     )
     # mehrstaemmig: bool = Field(
     #     validation_alias=AliasChoices("mehrstaemmig", "_Mehrstaemmig"),
