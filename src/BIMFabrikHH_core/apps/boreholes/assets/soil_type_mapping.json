@@ -26,7 +26,8 @@
     "mu": "mittelschluffig",
     "fu": "feinschluffig",
     "t": "tonig",
-    "o": "organisch"
+    "o": "organisch",
+    "x": "steinig"
   },
   "explicit_codes": {
     "gG": "Grobkies",

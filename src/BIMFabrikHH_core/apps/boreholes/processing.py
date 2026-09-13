@@ -250,6 +250,11 @@ def map_hauptgemengteil(value: Any, soil_type_mapping: Optional[Dict[str, Any]] 
     if not text:
         return UNDEFINED
 
+    if "(" in text:
+        text, _ = _split_rock_code(text)
+        if not text:
+            return UNDEFINED
+
     mapping = soil_type_mapping if soil_type_mapping is not None else load_soil_type_mapping()
     symbol = re.sub(r"\s+", "", text).strip(".,;")
     explicit_codes = mapping.get("explicit_codes", {})
@@ -269,6 +274,11 @@ def map_nebengemengteil(value: Any, soil_type_mapping: Optional[Dict[str, Any]] 
     text = _clean(value)
     if not text:
         return UNDEFINED
+
+    if "(" in text:
+        _, text = _split_rock_code(text)
+        if not text:
+            return UNDEFINED
 
     mapping = soil_type_mapping if soil_type_mapping is not None else load_soil_type_mapping()
     parts = [part.strip() for part in re.split(r"[,;/|]", text) if part.strip()]
@@ -359,7 +369,12 @@ def map_chronostratigraphy(value: Any, chronostratigraphy_mapping: Optional[Dict
         return UNDEFINED
 
     mapping = chronostratigraphy_mapping if chronostratigraphy_mapping is not None else load_chronostratigraphy_mapping()
-    german_name = mapping.get(code, "")
+    german_name = (
+        mapping.get(code)
+        or mapping.get(code.upper())
+        or mapping.get(code.lower())
+        or _STRATIGRAPHY_NAMES.get(code.lower(), "")
+    )
     return f"{code} ({german_name})" if german_name else code
 
 
@@ -568,14 +583,52 @@ def _split_rock_code(rock_code: str) -> Tuple[str, str]:
     if not text:
         return ("", "")
 
-    bracket = re.match(r"^([^(]+)\((.*)\)\s*$", text)
-    if bracket:
-        return (bracket.group(1).strip(), bracket.group(2).strip())
-
-    parts = [part.strip() for part in text.split(",") if part.strip()]
-    if not parts:
+    tokens = _top_level_comma_parts(text)
+    if not tokens:
         return ("", "")
-    return (parts[0], ", ".join(parts[1:]))
+
+    if any("(" in token for token in tokens):
+        mains: List[str] = []
+        sides: List[str] = []
+        for token in tokens:
+            bracket = re.match(r"^([^(]+)\((.*)\)\s*$", token)
+            if bracket:
+                main = bracket.group(1).strip()
+                if main:
+                    mains.append(main)
+                inner = bracket.group(2).strip()
+                if inner:
+                    sides.extend(part.strip() for part in inner.split(",") if part.strip())
+            else:
+                mains.append(token)
+        return (", ".join(mains), ", ".join(sides))
+
+    return (tokens[0], ", ".join(tokens[1:]))
+
+
+def _top_level_comma_parts(text: str) -> List[str]:
+    """Split on commas that are not inside ``(...)``."""
+    parts: List[str] = []
+    buf: List[str] = []
+    depth = 0
+    for char in text:
+        if char == "(":
+            depth += 1
+            buf.append(char)
+        elif char == ")":
+            depth = max(0, depth - 1)
+            buf.append(char)
+        elif char == "," and depth == 0:
+            part = "".join(buf).strip()
+            if part:
+                parts.append(part)
+            buf = []
+        else:
+            buf.append(char)
+    part = "".join(buf).strip()
+    if part:
+        parts.append(part)
+    return parts
 
 
 def _lithology_components(interval: etree._Element) -> Tuple[str, str, str]:

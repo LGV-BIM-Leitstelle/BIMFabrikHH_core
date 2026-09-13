@@ -164,7 +164,7 @@ def test_map_nebengemengteil_maps_each_component() -> None:
 
 
 def test_map_soil_multiple_main_components() -> None:
-    assert map_hauptgemengteil("mS(fs), S") == "mS (Mittelsand), (Sand)"
+    assert map_hauptgemengteil("mS(fs), S") == "mS (Mittelsand), S (Sand)"
     assert map_nebengemengteil("mS(fs), S") == "fs (feinsandig)"
 
 
@@ -229,6 +229,7 @@ def test_visual_color_is_case_insensitive() -> None:
     [
         ("F(s4, hz4, ht2)", ("F", "s4, hz4, ht2")),
         ("ffS(x)", ("ffS", "x")),
+        ("mS(fs), S", ("mS, S", "fs")),
         ("mS, yy", ("mS", "yy")),
         ("H", ("H", "")),
         ("", ("", "")),
@@ -401,7 +402,8 @@ def test_parsed_record_carries_expected_psets() -> None:
 
     schicht = layer.psets["Pset_Schicht"]
     assert isinstance(schicht, Pset_Schicht)
-    assert schicht.genese == "yf"
+    assert schicht.genese == UNDEFINED
+    assert schicht.geogenese == "yf (Auffüllung)"
     assert schicht.geologische_bezeichnung == "Mittelsand, Bauschutt"
     assert schicht.bodenkonsistenz == UNDEFINED
 
@@ -488,6 +490,7 @@ def test_build_ifc_returns_none_when_records_have_no_layers() -> None:
     request_params = RequestParams(bbox=BoundingBoxParams(min_x=9.98, min_y=53.54, max_x=10.00, max_y=53.56))
     record = BoreholeRecord(
         borehole_id="BDHH_TEST1",
+        archive_id="",
         easting=565084.16,
         northing=5934034.654,
         ansatzhoehe_nn=14.3,
