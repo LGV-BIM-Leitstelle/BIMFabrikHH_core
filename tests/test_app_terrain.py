@@ -21,6 +21,8 @@ from BIMFabrikHH_core.apps.terrain import (
     TerrainMesh,
     collect_guide_rings,
     cut_water_from_parts,
+    filter_bruchkante_segments,
+    generate_constrained_mesh,
     generate_delaunay_mesh,
     merge_parcel_meshes,
     split_mesh_by_nutzart,
@@ -130,6 +132,71 @@ def test_generate_delaunay_mesh_returns_expected_shapes() -> None:
         assert len(face) == 3
         for idx in face:
             assert 0 <= idx < len(vertices)
+
+
+def test_filter_bruchkante_segments_dedupes_and_drops_crop_frame() -> None:
+    """Undirected dups and umring-rectangle edges are not sent to Triangle."""
+    points = [[0.0, 0.0], [10.0, 0.0], [10.0, 10.0], [5.0, 5.0]]
+    bbox = (0.0, 0.0, 10.0, 10.0)
+    segments = [
+        [0, 1],
+        [1, 0],
+        [0, 1],
+        [3, 1],
+        [1, 2],
+    ]
+    kept, n_duplicate, n_frame = filter_bruchkante_segments(
+        points, segments, bbox_utm=bbox, eps=1e-3
+    )
+    assert n_duplicate == 2
+    assert n_frame == 2
+    assert kept == [[1, 3]]
+
+
+def test_fill_mesh_holes_adds_missing_triangle() -> None:
+    """Unconstrained Delaunay fills vertices the CDT left unused."""
+    from BIMFabrikHH_core.apps.terrain.processing import _fill_mesh_holes
+
+    vertices = [
+        [0.0, 0.0, 1.0],
+        [1.0, 0.0, 1.0],
+        [0.5, 0.8, 1.0],
+        [4.0, 4.0, 1.0],
+    ]
+    faces = [[0, 1, 2]]
+    out_v, out_f = _fill_mesh_holes(vertices, faces)
+    assert out_v == vertices
+    assert len(out_f) > 1
+    used = {i for face in out_f for i in face}
+    assert used == {0, 1, 2, 3}
+    assert any(tuple(sorted(face)) == (0, 1, 2) for face in out_f)
+
+
+def test_generate_constrained_mesh_uses_pslg_not_conforming(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Typ 2 must call Triangle with ``p`` (PSLG), not conforming ``pc``."""
+    flags: list[str] = []
+
+    def fake_triangulate(data, opts):
+        flags.append(opts)
+        verts = np.asarray(data["vertices"], dtype=float)
+        return {"vertices": verts, "triangles": np.array([[0, 1, 2]], dtype=int)}
+
+    import types
+    import sys
+
+    fake_mod = types.ModuleType("triangle")
+    fake_mod.triangulate = fake_triangulate
+    monkeypatch.setitem(sys.modules, "triangle", fake_mod)
+
+    x = np.array([0.0, 1.0, 0.0, 0.5])
+    y = np.array([0.0, 0.0, 1.0, 0.5])
+    z = np.array([1.0, 1.0, 1.0, 1.0])
+    ring_xy = np.array([[0.0, 0.0], [1.0, 0.0], [0.0, 1.0]])
+    ring_z = np.array([1.0, 1.0, 1.0])
+    vertices, faces = generate_constrained_mesh(x, y, z, [ring_xy], [ring_z])
+    assert flags == ["p"]
+    assert vertices
+    assert faces
 
 
 def test_drop_sliver_faces_removes_collinear_frame_triangle() -> None:
