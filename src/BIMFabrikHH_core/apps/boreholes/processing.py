@@ -773,7 +773,7 @@ def _layer_psets(
         bodenart_ergaenzung=map_nebengemengteil(layer.nebengemengteil, soil_types),
         farbe=map_rock_color(layer.farbe, rock_colors),
         kalkgehalt=map_carbonate(layer.kalkgehalt, carbonate_contents),
-        stratigraphie=map_chronostratigraphy(layer.stratigraphie, chronostratigraphies),
+        stratigrafie=map_chronostratigraphy(layer.stratigraphie, chronostratigraphies),
     )
     schicht = Pset_Schicht(
         genese=map_genesis(layer.genese, genesis_dict),

@@ -75,9 +75,9 @@ class Pset_Aufschlussbereich(PropertySetTemplate):
         serialization_alias="_Kalkgehalt",
         default="undefiniert",
     )
-    stratigraphie: str = Field(
-        validation_alias=AliasChoices("stratigraphie", "_Stratigraphie", "stratigrafie", "_Stratigrafie"),
-        serialization_alias="_Stratigraphie",
+    stratigrafie: str = Field(
+        validation_alias=AliasChoices("stratigrafie", "_Stratigrafie", "stratigraphie", "_Stratigraphie"),
+        serialization_alias="_Stratigrafie",
         default="undefiniert",
     )
 

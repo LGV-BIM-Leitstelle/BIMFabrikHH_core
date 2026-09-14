@@ -403,7 +403,7 @@ def test_parsed_record_carries_expected_psets() -> None:
     assert bereich.bodenart == "mS (Mittelsand)"
     assert bereich.bohrvorgang == "UN (unbekanntes Bohrverfahren)"
     assert bereich.kalkgehalt == "c3 (karbonathaltig)"
-    assert bereich.stratigraphie.startswith("qh (")
+    assert bereich.stratigrafie.startswith("qh (")
 
     schicht = layer.psets["Pset_Schicht"]
     assert isinstance(schicht, Pset_Schicht)
