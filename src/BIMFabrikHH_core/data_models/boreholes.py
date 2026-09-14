@@ -70,7 +70,7 @@ class BoreholeRecord(BaseModel):
     ansatzhoehe_nn: float = Field(description="Ground level at the Ansatzpunkt in m NHN")
     endteufe: Optional[float] = Field(default=None, description="``bml:totalLength`` in m")
     bohrdatum: str = Field(default="", description="``bml:drillingDate`` (ISO date)")
-    bohrvorgang: str = Field(default="", description="``bml:drillingMethod`` code")
+    bohrvorgang: str = Field(default="", description="``bml:drillingMethod`` code (drilling method)")
     projekt: str = Field(default="", description="``bml:project``")
 
     layers: List[BoreholeLayer] = Field(default_factory=list)

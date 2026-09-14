@@ -262,7 +262,7 @@ def test_records_from_boreholeml_reads_head_data() -> None:
     assert record.ansatzhoehe_nn == pytest.approx(14.3)
     assert record.endteufe == pytest.approx(5.5)
     assert record.bohrdatum == "1936-06-26"
-    assert record.bohrvorgang == "UN"
+    assert record.bohrvorgang == "UN (unbekanntes Bohrverfahren)"
     assert record.projekt == "Hbg.-Wexstr."
 
 
@@ -401,7 +401,7 @@ def test_parsed_record_carries_expected_psets() -> None:
     bereich = layer.psets["Pset_Aufschlussbereich"]
     assert isinstance(bereich, Pset_Aufschlussbereich)
     assert bereich.bodenart == "mS (Mittelsand)"
-    assert bereich.bohrvorgang == "UN"
+    assert bereich.bohrvorgang == "UN (unbekanntes Bohrverfahren)"
     assert bereich.kalkgehalt == "c3 (karbonathaltig)"
     assert bereich.stratigraphie.startswith("qh (")
 

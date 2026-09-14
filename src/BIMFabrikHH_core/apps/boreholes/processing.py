@@ -44,6 +44,7 @@ ASSETS_DIR = Path(__file__).resolve().parent / "assets"
 _SOIL_TYPES_FILE = "soil_type_mapping.json"
 _DIN_COLORS_FILE = "din_color_mapping.json"
 _ARCHIVE_ID_FILE = "archive_id_mapping.json"
+_DRILLING_METHOD_FILE = "drilling_method_mapping.json"
 _CHRONOSTRATIGRAPHY_FILE = "chronostratigraphy_mapping.json"
 _GENESIS_FILE = "genesis_mapping.json"
 _GEOGENESIS_FILE = "geogenesis_mapping.json"
@@ -80,6 +81,12 @@ _STRATIGRAPHY_NAMES: Dict[str, str] = {
 def load_archive_id_mapping() -> Dict[str, Any]:
     """Load the id table; empty dict when the file is missing."""
     return _load_config_json(_ARCHIVE_ID_FILE)
+
+
+@lru_cache(maxsize=1)
+def load_drilling_methods() -> Dict[str, Any]:
+    """Load the drilling method table; empty dict when the file is missing."""
+    return _load_config_json(_DRILLING_METHOD_FILE)
 
 
 @lru_cache(maxsize=1)
@@ -172,6 +179,17 @@ def map_archive_id(borehole_id: str, archive_id_mapping: Optional[Dict[str, Any]
     mapping = archive_id_mapping if archive_id_mapping is not None else load_archive_id_mapping()
 
     return mapping.get(text, "")
+
+
+def map_drilling_method(value: Any, drilling_method_mapping: Optional[Dict[str, Any]] = None) -> str:
+    """Map a drilling method code to ``"code (German name)"``, e.g. ``UN (unbekanntes Bohrverfahren)``."""
+    code = _clean(value)
+    if not code or code.lower() == UNDEFINED:
+        return UNDEFINED
+
+    mapping = drilling_method_mapping if drilling_method_mapping is not None else load_drilling_methods()
+    german_name = mapping.get(code, "")
+    return f"{code} ({german_name})" if german_name else code
 
 
 def map_soil_symbol(symbol_value: Any, soil_type_mapping: Optional[Dict[str, Any]] = None) -> str:
@@ -783,6 +801,7 @@ def _record_from_borehole(
     genesis_dict: Dict[str, Any],
     geogenesis_dict: Dict[str, Any],
     consistencies: Dict[str, Any],
+    drilling_methods: Dict[str, Any],
 ) -> Optional[BoreholeRecord]:
     """Build one :class:`BoreholeRecord`; ``None`` when unusable."""
     borehole_id = _text(borehole, f"{{{BML_NS}}}id") or _clean(borehole.get(f"{{{GML_NS}}}id"))
@@ -801,6 +820,9 @@ def _record_from_borehole(
     full_name = _text(borehole, f"{{{BML_NS}}}fullName/{{{GMD_NS}}}LocalisedCharacterString")
     short_name = _text(borehole, f"{{{BML_NS}}}shortName/{{{GMD_NS}}}LocalisedCharacterString")
 
+    bohrvorgang_code = _text(borehole, f"{{{BML_NS}}}drillingMethod")
+    bohrvorgang_text = map_drilling_method(bohrvorgang_code, drilling_methods)
+
     record = BoreholeRecord(
         borehole_id=borehole_id,
         archive_id=archive_id,
@@ -810,7 +832,7 @@ def _record_from_borehole(
         ansatzhoehe_nn=ansatzhoehe_nn,
         endteufe=_float_or_none(_text(borehole, f"{{{BML_NS}}}totalLength")),
         bohrdatum=_text(borehole, f"{{{BML_NS}}}drillingDate"),
-        bohrvorgang=_text(borehole, f"{{{BML_NS}}}drillingMethod"),
+        bohrvorgang=bohrvorgang_text,
         projekt=_text(borehole, f"{{{BML_NS}}}project"),
     )
 
@@ -884,6 +906,7 @@ def records_from_boreholeml(
     genesis_dict = load_genesis_mapping()
     geogenesis_dict = load_geogenesis_mapping()
     consistencies = load_consistency_mapping()
+    drilling_methods = load_drilling_methods()
 
     records: List[BoreholeRecord] = []
     for borehole in _iter_borehole_elements(root):
@@ -898,6 +921,7 @@ def records_from_boreholeml(
             genesis_dict=genesis_dict,
             geogenesis_dict=geogenesis_dict,
             consistencies=consistencies,
+            drilling_methods=drilling_methods,
         )
         if record is not None:
             records.append(record)
