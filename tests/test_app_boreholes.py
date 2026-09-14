@@ -155,24 +155,29 @@ def test_map_soil_symbol_maps_combinatoric_notation() -> None:
     assert map_soil_symbol("uS") == "uS (schluffiger Sand)"
 
 
-def test_map_hauptgemengteil_splits_comma_list() -> None:
+def test_map_soil_symbol_hauptgemengteil_splits_comma_list() -> None:
     assert map_hauptgemengteil("mS, fS") == "mS (Mittelsand), fS (Feinsand)"
 
 
-def test_map_nebengemengteil_maps_each_component() -> None:
+def test_map_soil_symbol_nebengemengteil_maps_each_component() -> None:
     assert map_nebengemengteil("g, s") == "g (kiesig), s (sandig)"
 
 
-def test_map_soil_multiple_main_components() -> None:
+def test_map_soil_symbol_multiple_main_components() -> None:
     assert map_hauptgemengteil("mS(fs), S") == "mS (Mittelsand), S (Sand)"
     assert map_nebengemengteil("mS(fs), S") == "fs (feinsandig)"
 
 
-def test_map_soil_with_hyphen() -> None:
+def test_map_soil_symbol_with_hyphen() -> None:
     assert map_hauptgemengteil("gG-fG") == "gG-fG (Grobkies-Feinkies)"
 
 
-def test_map_soil_multiple_side_components() -> None:
+def test_map_soil_symbol_brackets_around_main_component() -> None:
+    assert map_hauptgemengteil("(gG-fG)(x)") == "gG-fG (Grobkies-Feinkies)"
+    assert map_nebengemengteil("(gG-fG)(x)") == "x (steinig)"
+
+
+def test_map_soil_symbol_multiple_side_components() -> None:
     assert map_hauptgemengteil("fG(gs, ms, x)") == "fG (Feinkies)"
     assert map_nebengemengteil("fG(gs, ms, x)") == "gs (grobsandig), ms (mittelsandig), x (steinig)"
 

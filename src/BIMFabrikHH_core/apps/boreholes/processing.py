@@ -591,7 +591,7 @@ def _split_rock_code(rock_code: str) -> Tuple[str, str]:
         mains: List[str] = []
         sides: List[str] = []
         for token in tokens:
-            bracket = re.match(r"^([^(]+)\((.*)\)\s*$", token)
+            bracket = re.match(r"^\(?([^()]+)\)?\((.*)\)\s*$", token)
             if bracket:
                 main = bracket.group(1).strip()
                 if main:
@@ -657,10 +657,10 @@ def _lithology_components(interval: etree._Element) -> Tuple[str, str, str]:
         return (haupt, neben, color)
 
     entries.sort(key=lambda item: item[0], reverse=True)
-    codes = [name for _, name in entries]
-    if not codes:
+    rock_codes = [name for _, name in entries]
+    if not rock_codes:
         return ("", "", color)
-    return (codes[0], ", ".join(codes[1:]), color)
+    return (rock_codes[0], ", ".join(rock_codes[1:]), color)
 
 
 def _layer_from_interval(
