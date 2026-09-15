@@ -4,9 +4,7 @@
 
 from __future__ import annotations
 
-import json
 import logging
-import re
 from functools import lru_cache
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
@@ -49,21 +47,21 @@ BoreholeMLSource = Union[
 ]
 
 class BoreholeMLParser:
-    def __init__(self,
-                 mappings: BoreholeMappings | None = None
+    def __init__(
+            self,
+            mappings: BoreholeMappings | None = None
     ) -> None:
         self._mappings = (
             mappings if mappings is not None
             else BoreholeMappings.load_default()
         )
 
-    # load_borehole_records
+
     def from_file(self, path: Union[str, Path]) -> List[BoreholeRecord]:
         """Load and parse a saved ``BoreholeML`` XML response from disk."""
         return self.parse(Path(path))
 
 
-    # records_from_boreholeml
     def parse(self,
         source: BoreholeMLSource,
     ) -> List[BoreholeRecord]:
@@ -81,8 +79,8 @@ class BoreholeMLParser:
         root = _as_root(source)
 
         records: List[BoreholeRecord] = []
-        for borehole in self._iter_borehole_elements(root):
-            record = self._record_from_borehole(borehole)
+        for borehole in self._iter_boreholes(root):
+            record = self._parse_borehole(borehole)
             if record is not None:
                 records.append(record)
 
@@ -95,9 +93,8 @@ class BoreholeMLParser:
         return records
 
 
-
     @staticmethod
-    def _iter_borehole_elements( root: etree._Element) -> List[etree._Element]:
+    def _iter_boreholes( root: etree._Element) -> List[etree._Element]:
         """Collect ``bml:Borehole`` elements from a FeatureCollection or single feature."""
         if etree.QName(root).localname == "Borehole":
             return [root]
@@ -106,8 +103,8 @@ class BoreholeMLParser:
             logger.warning("No bml:Borehole features found (root: %s)", etree.QName(root).localname)
         return found
 
-
-    def _record_from_borehole(self, 
+            
+    def _parse_borehole(self, 
         borehole: etree._Element
     ) -> Optional[BoreholeRecord]:
         """Build one :class:`BoreholeRecord`; ``None`` when unusable."""
@@ -118,7 +115,7 @@ class BoreholeMLParser:
 
         archive_id = self._mappings.map_archive_id(borehole_id)
 
-        position = self._borehole_position(borehole)
+        position = self._parse_borehole_position(borehole)
         if position is None:
             logger.warning("Borehole %s: no usable bml:location; skipped", borehole_id)
             return None
@@ -143,24 +140,13 @@ class BoreholeMLParser:
             projekt=_text(borehole, f"{{{BML_NS}}}project"),
         )
 
-        series = self._latest_interval_series(borehole)
-        intervals = series.findall(f"{{{BML_NS}}}layer/{{{BML_NS}}}Interval") if series is not None else []
-        layers: List[BoreholeLayer] = []
-        for index, interval in enumerate(intervals, start=1):
-            layer = self._layer_from_interval(
-                interval,
-                borehole_id=borehole_id,
-                index=index,
-                ansatzhoehe_nn=ansatzhoehe_nn
-            )
-            if layer is not None:
-                layers.append(layer)
+        interval_series = self._find_latest_interval_series(borehole)
+        record.layers = self._parse_layers(interval_series, borehole_id, ansatzhoehe_nn)
 
-        if not layers:
+        if not record.layers:
             logger.warning("Borehole %s: no usable layers; skipped", borehole_id)
             return None
-
-        record.layers = sorted(layers, key=lambda item: item.upper_height, reverse=True)
+        
         record.psets = {
             Pset_Aufschluss.pset_name: Pset_Aufschluss(
                 aufschlussart="Bohrung",
@@ -181,8 +167,27 @@ class BoreholeMLParser:
         return record
 
 
+    def _parse_layers(self, series: etree._Element, borehole_id: str, ansatzhoehe_nn: float) -> List[BoreholeLayer]:
+        intervals = series.findall(f"{{{BML_NS}}}layer/{{{BML_NS}}}Interval") if series is not None else []
+        layers: List[BoreholeLayer] = []
+        for index, interval in enumerate(intervals, start=1):
+            layer = self._parse_single_layer(
+                interval,
+                borehole_id=borehole_id,
+                index=index,
+                ansatzhoehe_nn=ansatzhoehe_nn
+            )
+            if layer is not None:
+                layers.append(layer)
+
+        if not layers:
+            return None
+
+        return sorted(layers, key=lambda item: item.upper_height, reverse=True)
+
+
     @staticmethod
-    def _borehole_position(borehole: etree._Element) -> Optional[Tuple[float, float, float]]:
+    def _parse_borehole_position(borehole: etree._Element) -> Optional[Tuple[float, float, float]]:
         """Read ``bml:location`` as ``(easting, northing, height)`` in EPSG:25832/NHN.
 
         The service default CRS is ``EPSG:5555``, the *compound* CRS ETRS89 /
@@ -240,7 +245,7 @@ class BoreholeMLParser:
 
 
     @staticmethod
-    def _latest_interval_series(borehole: etree._Element) -> Optional[etree._Element]:
+    def _find_latest_interval_series(borehole: etree._Element) -> Optional[etree._Element]:
         """Pick the ``IntervalSeries`` with the highest ``version`` (latest reading)."""
         series = borehole.findall(f"{{{BML_NS}}}intervalSeries/{{{BML_NS}}}IntervalSeries")
         if not series:
@@ -260,7 +265,7 @@ class BoreholeMLParser:
         return latest
 
 
-    def _layer_from_interval(self,
+    def _parse_single_layer(self,
         interval: etree._Element,
         *,
         borehole_id: str,
@@ -287,7 +292,7 @@ class BoreholeMLParser:
             )
             return None
 
-        hauptgemengteil, nebengemengteil, rock_color = self._lithology_components(interval)
+        hauptgemengteil, nebengemengteil, rock_color = self._parse_lithology_components(interval)
         genese = _text(interval, f"{{{BML_NS}}}genesis")
         geogenese = _text(interval, f"{{{BML_NS}}}geoGenesis")
         visual_rgb, din_color_name = self._mappings.visual_color_for_hauptgemengteil(hauptgemengteil)
@@ -314,11 +319,11 @@ class BoreholeMLParser:
             visual_rgb=visual_rgb,
             din_color_name=din_color_name,
         )
-        layer.psets = self._layer_psets(layer)
+        layer.psets = self._build_layer_psets(layer)
         return layer
 
 
-    def _lithology_components(self, interval: etree._Element) -> Tuple[str, str, str]:
+    def _parse_lithology_components(self, interval: etree._Element) -> Tuple[str, str, str]:
         """Resolve the soil components and colour of one ``bml:Interval``.
 
         ``bml:rockCode`` is preferred because the dominant component often has no
@@ -350,7 +355,7 @@ class BoreholeMLParser:
         return (rock_codes[0], ", ".join(rock_codes[1:]), color)
 
 
-    def _layer_psets(self, layer: BoreholeLayer) -> Dict[str, BaseModel]:
+    def _build_layer_psets(self, layer: BoreholeLayer) -> Dict[str, BaseModel]:
         """Build the layer-level pset templates with DIN texts resolved."""
         aufschlussbereich = Pset_Aufschlussbereich(
             bodenart=self._mappings.map_hauptgemengteil(layer.hauptgemengteil),

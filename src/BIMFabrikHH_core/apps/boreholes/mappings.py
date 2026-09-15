@@ -183,7 +183,7 @@ class BoreholeMappings:
 
 
     def map_stratigraphy(self, value: Any) -> str:
-        """Map a chronostratigraphic code to ``"code (German name)"``."""
+        """Map a stratigraphic code to ``"code (German name)"``."""
         text = _clean(value)
         if not text or text.lower() == UNDEFINED:
             return UNDEFINED
