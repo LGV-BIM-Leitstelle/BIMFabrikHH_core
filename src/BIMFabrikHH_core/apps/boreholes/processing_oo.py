@@ -16,7 +16,7 @@ from lxml import etree
 from pydantic import BaseModel
 
 from BIMFabrikHH_core.data_models.boreholes import BoreholeLayer, BoreholeRecord
-from BIMFabrikHH_core.apps.boreholes.helper import UNDEFINED, _adjective_to_attributive, _clean, _text, _float_or_none
+from BIMFabrikHH_core.apps.boreholes.helper import UNDEFINED, _clean, _text, _float_or_none, _as_root, _split_rock_code
 
 from BIMFabrikHH_core.data_models.pydantic_psets_BIMHH import Pset_Hyperlink
 from BIMFabrikHH_core.data_models.pydantic_psets_boreholes import (
@@ -33,39 +33,12 @@ GML_NS = "http://www.opengis.net/gml/3.2"
 WFS_NS = "http://www.opengis.net/wfs/2.0"
 GMD_NS = "http://www.isotc211.org/2005/gmd"
 
-UNDEFINED = "undefiniert"
-
-ASSETS_DIR = Path(__file__).resolve().parent / "assets"
-_SOIL_TYPES_FILE = "soil_type_mapping.json"
-_DIN_COLORS_FILE = "din_color_mapping.json"
-_ARCHIVE_ID_FILE = "archive_id_mapping.json"
-_DRILLING_METHOD_FILE = "drilling_method_mapping.json"
-_CHRONOSTRATIGRAPHY_FILE = "chronostratigraphy_mapping.json"
-_GENESIS_FILE = "genesis_mapping.json"
-_GEOGENESIS_FILE = "geogenesis_mapping.json"
-_ROCK_COLORS_FILE = "rock_color_mapping.json"
-_CARBONATE_CONTENT_FILE = "carbonate_content_mapping.json"
-_CONSISTENCY_FILE = "consistency_mapping.json"
-
 
 # Borehole viewer of the Hamburg geodienste portal. ``sid`` identifies the
 # area and is constant for the tested extent (carried over from the intern
 # app, which has the same open TODO for an area → sid mapping).
 BOREHOLE_PORTAL_URL = "https://geodienste.hamburg.de/app/render"
 BOREHOLE_PORTAL_SID = "0x960470caL0x71973d4cL"
-
-# Chronostratigraphic codes seen in the Hamburg BoreholeML service.
-_STRATIGRAPHY_NAMES: Dict[str, str] = {
-    "qh": "Quartär holozän",
-    "qp": "Quartär pleistozän",
-    "q": "Quartär",
-    "y": "undifferenziert",
-    "t": "Tertiär",
-    "k": "Kreide",
-    "j": "Jura",
-    "tr": "Trias",
-}
-
 
 BoreholeMLSource = Union[
     etree._Element,
@@ -105,18 +78,7 @@ class BoreholeMLParser:
             One record per usable borehole, layers ordered top-down. Features
             without id, location or layers are logged and skipped.
         """
-        root = self._as_root(source)
-        
-        # soil_types = load_soil_type_mapping()
-        # visual_colors = load_din_color_mapping()
-        # rock_colors = load_rock_color_mapping()
-        # archive_ids = load_archive_id_mapping()
-        # chronostratigraphies = load_chronostratigraphy_mapping()
-        # carbonate_contents = load_carbonate_mapping()
-        # genesis_dict = load_genesis_mapping()
-        # geogenesis_dict = load_geogenesis_mapping()
-        # consistencies = load_consistency_mapping()
-        # drilling_methods = load_drilling_methods()
+        root = _as_root(source)
 
         records: List[BoreholeRecord] = []
         for borehole in self._iter_borehole_elements(root):
@@ -154,7 +116,7 @@ class BoreholeMLParser:
             logger.warning("Skipping bml:Borehole without id")
             return None
 
-        archive_id = self._mappings.archive_ids()
+        archive_id = self._mappings.map_archive_id(borehole_id)
 
         position = self._borehole_position(borehole)
         if position is None:
@@ -175,7 +137,7 @@ class BoreholeMLParser:
             easting=easting,
             northing=northing,
             ansatzhoehe_nn=ansatzhoehe_nn,
-            endteufe=self._float_or_none(_text(borehole, f"{{{BML_NS}}}totalLength")),
+            endteufe=_float_or_none(_text(borehole, f"{{{BML_NS}}}totalLength")),
             bohrdatum=_text(borehole, f"{{{BML_NS}}}drillingDate"),
             bohrvorgang=bohrvorgang_text,
             projekt=_text(borehole, f"{{{BML_NS}}}project"),
@@ -189,15 +151,7 @@ class BoreholeMLParser:
                 interval,
                 borehole_id=borehole_id,
                 index=index,
-                ansatzhoehe_nn=ansatzhoehe_nn,
-                soil_types=soil_types,
-                visual_colors=visual_colors,
-                rock_colors=rock_colors,
-                chronostratigraphies=chronostratigraphies,
-                carbonate_contents=carbonate_contents,
-                genesis_dict=genesis_dict,
-                geogenesis_dict=geogenesis_dict,
-                consistencies=consistencies,
+                ansatzhoehe_nn=ansatzhoehe_nn
             )
             if layer is not None:
                 layers.append(layer)
@@ -217,7 +171,7 @@ class BoreholeMLParser:
             ),
             Pset_Hyperlink.pset_name: self.build_borehole_hyperlink(
                 record.archive_id,
-                record.aufschlussbezeichnung,
+                record.aufschlussbezeichnung
             ),
         }
         for layer in record.layers:
@@ -225,6 +179,85 @@ class BoreholeMLParser:
             if isinstance(bereich, Pset_Aufschlussbereich):
                 bereich.bohrvorgang = record.bohrvorgang or UNDEFINED
         return record
+
+
+    @staticmethod
+    def _borehole_position(borehole: etree._Element) -> Optional[Tuple[float, float, float]]:
+        """Read ``bml:location`` as ``(easting, northing, height)`` in EPSG:25832/NHN.
+
+        The service default CRS is ``EPSG:5555``, the *compound* CRS ETRS89 /
+        UTM 32N + DHHN height. Its horizontal part is exactly EPSG:25832, so
+        easting and northing are already the map metres the IFC georeferencing
+        context expects, and no transformation is needed.
+
+        ``EPSG:25832`` and ``EPSG:4326`` are advertised as ``OtherCRS``, but both
+        are two-dimensional: requesting them makes the service emit a 2D
+        ``gml:pos`` and drop the Ansatzhöhe that the layer stacking depends on.
+        ``EPSG:5555`` is therefore the only CRS that yields position and height in
+        one request. Height still falls back to ``bml:origin`` when absent.
+        """
+        pos = _text(borehole, f"{{{BML_NS}}}location/{{{GML_NS}}}Point/{{{GML_NS}}}pos")
+        parts = [p for p in pos.split() if p]
+        if len(parts) < 2:
+            return None
+        easting = _float_or_none(parts[0])
+        northing = _float_or_none(parts[1])
+        if easting is None or northing is None:
+            return None
+
+        height = _float_or_none(parts[2]) if len(parts) > 2 else None
+        if height is None:
+            height = _float_or_none(_text(borehole, f"{{{BML_NS}}}origin/{{{BML_NS}}}Origin/{{{BML_NS}}}elevation"))
+        return (easting, northing, height if height is not None else 0.0)
+
+
+    @staticmethod
+    def build_borehole_hyperlink(archive_id: int | str, aufschlussbezeichnung: str = "") -> Pset_Hyperlink:
+        """Build the geodienste borehole-viewer link, as in the intern app.
+
+        The URL is the fixed ``{BOREHOLE_PORTAL_URL}?sid={BOREHOLE_PORTAL_SID}``
+        part plus the borehole archive id.
+
+        Note:
+            The portal expects the numeric Archivnummer (e.g. ``BDHH_6434B1``)
+            assigned by Geologisches Landesamt Hamburg, not the textual ``bml:id``
+            (e.g. ``BDHH_6434B1``), which the portal rejects.
+        Args:
+            portal_id: Explicit ``id`` query value.
+            aufschlussbezeichnung: Designation for the remark text.
+            
+
+        Returns:
+            ``Pset_Hyperlink`` with the URL and a German remark.
+        """
+        link_id = str(archive_id)
+        url = f"{BOREHOLE_PORTAL_URL}?sid={BOREHOLE_PORTAL_SID}&id={link_id}"
+        if aufschlussbezeichnung:
+            bemerkung = f"Link zur Bohrung {aufschlussbezeichnung} (ID: {link_id})"
+        else:
+            bemerkung = f"Link zur Bohrung (ID: {link_id})"
+        return Pset_Hyperlink(hyperlink_001=url, hyperlink_001_bemerkung=bemerkung)
+
+
+    @staticmethod
+    def _latest_interval_series(borehole: etree._Element) -> Optional[etree._Element]:
+        """Pick the ``IntervalSeries`` with the highest ``version`` (latest reading)."""
+        series = borehole.findall(f"{{{BML_NS}}}intervalSeries/{{{BML_NS}}}IntervalSeries")
+        if not series:
+            return None
+        if len(series) == 1:
+            return series[0]
+
+        def version_of(node: etree._Element) -> float:
+            return _float_or_none(_text(node, f"{{{BML_NS}}}version")) or 0.0
+
+        latest = max(series, key=version_of)
+        logger.debug(
+            "Borehole has %d interval series; using version %s",
+            len(series),
+            _text(latest, f"{{{BML_NS}}}version"),
+        )
+        return latest
 
 
     def _layer_from_interval(self,
@@ -235,8 +268,8 @@ class BoreholeMLParser:
         ansatzhoehe_nn: float,
     ) -> Optional[BoreholeLayer]:
         """Build one :class:`BoreholeLayer`; ``None`` when depths are unusable."""
-        from_depth = self._float_or_none(_text(interval, f"{{{BML_NS}}}from"))
-        to_depth = self._float_or_none(_text(interval, f"{{{BML_NS}}}to"))
+        from_depth = _float_or_none(_text(interval, f"{{{BML_NS}}}from"))
+        to_depth = _float_or_none(_text(interval, f"{{{BML_NS}}}to"))
         if from_depth is None or to_depth is None:
             logger.warning("Borehole %s layer %d: missing from/to depth; skipped", borehole_id, index)
             return None
@@ -254,10 +287,10 @@ class BoreholeMLParser:
             )
             return None
 
-        hauptgemengteil, nebengemengteil, rock_color = _lithology_components(interval)
+        hauptgemengteil, nebengemengteil, rock_color = self._lithology_components(interval)
         genese = _text(interval, f"{{{BML_NS}}}genesis")
         geogenese = _text(interval, f"{{{BML_NS}}}geoGenesis")
-        visual_rgb, din_color_name = visual_color_for_hauptgemengteil(hauptgemengteil, visual_colors)
+        visual_rgb, din_color_name = self._mappings.visual_color_for_hauptgemengteil(hauptgemengteil)
 
         layer = BoreholeLayer(
             layer_id=f"{borehole_id}_{index}",
@@ -283,6 +316,38 @@ class BoreholeMLParser:
         )
         layer.psets = self._layer_psets(layer)
         return layer
+
+
+    def _lithology_components(self, interval: etree._Element) -> Tuple[str, str, str]:
+        """Resolve the soil components and colour of one ``bml:Interval``.
+
+        ``bml:rockCode`` is preferred because the dominant component often has no
+        ``RockNameList`` entry and therefore an empty ``rockName`` (e.g. ``F`` for
+        Mudde at 64 %), which would otherwise promote a minor component. The
+        ``bml:lithology`` blocks are the fallback, sorted by ``percentage``.
+
+        Returns:
+            ``(hauptgemengteil, nebengemengteil, farbe)``.
+        """
+        color = ""
+        entries: List[Tuple[float, str]] = []
+        for lithology in interval.findall(f"{{{BML_NS}}}lithology/{{{BML_NS}}}Lithology"):
+            if not color:
+                color = _text(lithology, f"{{{BML_NS}}}rockColor")
+            rock_name = _text(lithology, f"{{{BML_NS}}}rockName")
+            if rock_name:
+                percentage = _float_or_none(_text(lithology, f"{{{BML_NS}}}percentage")) or 0.0
+                entries.append((percentage, rock_name))
+
+        haupt, neben = _split_rock_code(_text(interval, f"{{{BML_NS}}}rockCode"))
+        if haupt:
+            return (haupt, neben, color)
+
+        entries.sort(key=lambda item: item[0], reverse=True)
+        rock_codes = [name for _, name in entries]
+        if not rock_codes:
+            return ("", "", color)
+        return (rock_codes[0], ", ".join(rock_codes[1:]), color)
 
 
     def _layer_psets(self, layer: BoreholeLayer) -> Dict[str, BaseModel]:

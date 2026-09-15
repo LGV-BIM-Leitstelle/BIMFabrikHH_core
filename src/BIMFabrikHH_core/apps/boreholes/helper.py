@@ -43,6 +43,31 @@ def _text(element: Optional[etree._Element], path: str) -> str:
     return _clean(element.findtext(path))
 
 
+def _top_level_comma_parts(text: str) -> List[str]:
+    """Split on commas that are not inside ``(...)``."""
+    parts: List[str] = []
+    buf: List[str] = []
+    depth = 0
+    for char in text:
+        if char == "(":
+            depth += 1
+            buf.append(char)
+        elif char == ")":
+            depth = max(0, depth - 1)
+            buf.append(char)
+        elif char == "," and depth == 0:
+            part = "".join(buf).strip()
+            if part:
+                parts.append(part)
+            buf = []
+        else:
+            buf.append(char)
+    part = "".join(buf).strip()
+    if part:
+        parts.append(part)
+    return parts
+
+
 def _float_or_none(value: Any) -> Optional[float]:
     text = _clean(value)
     if not text:
@@ -66,3 +91,42 @@ def _as_root(source: Union[etree._Element, etree._ElementTree, bytes, str, Path]
     if isinstance(source, str):
         return etree.fromstring(source.encode("utf-8"))
     raise TypeError(f"Unsupported BoreholeML source type: {type(source).__name__}")
+
+
+def _split_rock_code(rock_code: str) -> Tuple[str, str]:
+    """Split a DIN ``rockCode`` into main and secondary components.
+
+    Two notations occur in the Hamburg service: ``F(s4, hz4, ht2)`` puts the
+    secondary components in brackets, ``mS, yy`` lists co-equal components.
+
+    Args:
+        rock_code: Raw ``bml:rockCode`` value.
+
+    Returns:
+        ``(hauptgemengteil, nebengemengteil)``; both may be empty.
+    """
+    text = _clean(rock_code)
+    if not text:
+        return ("", "")
+
+    tokens = _top_level_comma_parts(text)
+    if not tokens:
+        return ("", "")
+
+    if any("(" in token for token in tokens):
+        mains: List[str] = []
+        sides: List[str] = []
+        for token in tokens:
+            bracket = re.match(r"^\(?([^()]+)\)?\((.*)\)\s*$", token)
+            if bracket:
+                main = bracket.group(1).strip()
+                if main:
+                    mains.append(main)
+                inner = bracket.group(2).strip()
+                if inner:
+                    sides.extend(part.strip() for part in inner.split(",") if part.strip())
+            else:
+                mains.append(token)
+        return (", ".join(mains), ", ".join(sides))
+
+    return (tokens[0], ", ".join(tokens[1:]))

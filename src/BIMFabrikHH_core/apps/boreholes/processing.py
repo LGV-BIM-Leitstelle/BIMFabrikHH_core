@@ -439,9 +439,7 @@ def visual_color_for_hauptgemengteil(
 
 def build_borehole_hyperlink(
     archive_id: int | str,
-    aufschlussbezeichnung: str = "",
-    *,
-    portal_id: Optional[str] = None,
+    aufschlussbezeichnung: str = ""
 ) -> Pset_Hyperlink:
     """Build the geodienste borehole-viewer link, as in the intern app.
 

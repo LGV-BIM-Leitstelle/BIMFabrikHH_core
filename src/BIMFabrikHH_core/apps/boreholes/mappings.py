@@ -10,9 +10,9 @@ import logging
 from functools import lru_cache
 from pathlib import Path
 import re
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Tuple, List
 
-from BIMFabrikHH_core.apps.boreholes.helper import UNDEFINED, _adjective_to_attributive, _clean
+from BIMFabrikHH_core.apps.boreholes.helper import UNDEFINED, _adjective_to_attributive, _clean, _split_rock_code, _extract_meaning
 
 logger = logging.getLogger(__name__)
 
@@ -205,3 +205,168 @@ class BoreholeMappings:
             or _STRATIGRAPHY_NAMES.get(code.lower(), "")
         )
         return f"{code} ({german_name})" if german_name else code
+
+
+    def map_hauptgemengteil(self, value: Any) -> str:
+        """Map the main soil component, keeping compound explicit codes intact."""
+        text = _clean(value)
+        if not text:
+            return UNDEFINED
+
+        if "(" in text:
+            text, _ = _split_rock_code(text)
+            if not text:
+                return UNDEFINED
+
+        mapping = self.soil_types
+        symbol = re.sub(r"\s+", "", text).strip(".,;")
+        explicit_codes = mapping.get("explicit_codes", {})
+        if any(c in explicit_codes for c in (symbol, symbol.capitalize(), symbol.upper(), symbol.lower())):
+            return self.map_soil_symbol(text)
+
+        if re.search(r"[,;/|]", text):
+            parts = [part.strip() for part in re.split(r"[,;/|]", text) if part.strip()]
+            if len(parts) > 1:
+                return ", ".join(self.map_soil_symbol(part) for part in parts)
+
+        return self.map_soil_symbol(text)
+
+
+    def map_nebengemengteil(self, value: Any) -> str:
+        """Map one or several secondary soil components."""
+        text = _clean(value)
+        if not text:
+            return UNDEFINED
+
+        if "(" in text:
+            _, text = _split_rock_code(text)
+            if not text:
+                return UNDEFINED
+
+        parts = [part.strip() for part in re.split(r"[,;/|]", text) if part.strip()]
+        if not parts:
+            return UNDEFINED
+        return ", ".join(self.map_soil_symbol(part) for part in parts)
+
+
+    def map_soil_symbol(self, symbol_value: Any) -> str:
+        """Map a DIN EN ISO 14688-1 soil symbol to ``"code (German meaning)"``.
+
+        Explicit codes win (``mS`` → ``Mittelsand``), then compound notation
+        (``fS-mS``), then primary/secondary tables, then the combinatoric forms
+        ``uS`` (schluffiger Sand) and ``gS`` (grobsand).
+
+        Args:
+            symbol_value: Raw soil code from BoreholeML ``rockName``.
+            soil_type_mapping: Table from :func:`load_soil_type_mapping`.
+
+        Returns:
+            ``"code (meaning)"``, the bare code when unknown, or ``"undefiniert"``.
+        """
+        text = _clean(symbol_value)
+        if not text:
+            return UNDEFINED
+
+        mapping = self.soil_types
+        symbol = re.sub(r"\s+", "", text).strip(".,;")
+        explicit_codes = mapping.get("explicit_codes", {})
+        primary_types = mapping.get("primary_types", {})
+        secondary_components = mapping.get("secondary_components", {})
+
+        for candidate in (symbol, symbol.capitalize(), symbol.upper(), symbol.lower()):
+            if candidate in explicit_codes:
+                return f"{symbol} ({explicit_codes[candidate]})"
+
+        compound_parts = re.split(r"([\-=/:])", symbol)
+        if len(compound_parts) > 1:
+            meaning_parts: List[str] = []
+            has_any_mapped_part = False
+            for part in compound_parts:
+                if part in {"-", "=", "/", ":"}:
+                    meaning_parts.append(part)
+                    continue
+                if not part:
+                    continue
+                part_meaning = _extract_meaning(self.map_soil_symbol(part))
+                if part_meaning is None:
+                    meaning_parts.append(part)
+                else:
+                    has_any_mapped_part = True
+                    meaning_parts.append(part_meaning)
+            if has_any_mapped_part:
+                return f"{symbol} ({''.join(meaning_parts)})"
+
+        if symbol in primary_types:
+            return f"{symbol} ({primary_types[symbol]})"
+        if symbol in secondary_components:
+            return f"{symbol} ({secondary_components[symbol]})"
+
+        combined = re.fullmatch(r"([a-z]{1,2})([A-Z])", symbol)
+        if combined:
+            secondary_code, primary_code = combined.groups()
+            if secondary_code in secondary_components and primary_code in primary_types:
+                secondary_name = _adjective_to_attributive(secondary_components[secondary_code])
+                return f"{symbol} ({secondary_name} {primary_types[primary_code]})"
+
+        prefixed = re.fullmatch(r"([gmf])([GSUT])", symbol)
+        if prefixed:
+            prefix, base_symbol = prefixed.groups()
+            base_name = primary_types.get(base_symbol)
+            prefix_name = mapping.get("grain_size_prefixes", {}).get(prefix)
+            if base_name and prefix_name:
+                return f"{symbol} ({prefix_name}{base_name.lower()})"
+
+        return symbol
+
+
+    def visual_color_for_hauptgemengteil(self, value: Any) -> Tuple[Tuple[int, int, int], str]:
+        """Resolve the DIN 4023 display colour from the main soil component.
+
+        The IFC colour intentionally comes from ``hauptgemengteil``, not from the
+        ``farbe`` code, which stays metadata only.
+
+        Args:
+            value: Main soil code such as ``mS``.
+            color_code_mapping: Table from :func:`load_din_color_mapping`.
+
+        Returns:
+            ``((r, g, b), german_name)`` with RGB in 0-255; the table default when
+            the code is unknown.
+        """
+        mapping = self.visual_colors
+        block = mapping.get("hauptgemengteil_visual_colors", {})
+        default_entry = block.get("default", {})
+        default = (self._rgb_tuple(default_entry.get("rgb")), str(default_entry.get("name", "weiß")))
+
+        by_code = block.get("by_hauptgemengteil", {})
+        text = _clean(value)
+        if not text or not by_code:
+            return default
+
+        key = re.sub(r"\s+", "", text)
+        for candidate in (key, text):
+            entry = by_code.get(candidate)
+            if entry:
+                return (self._rgb_tuple(entry.get("rgb")), str(entry.get("name", default[1])))
+
+        key_lower = key.lower()
+        for code, entry in by_code.items():
+            if code.lower() == key_lower:
+                return (self._rgb_tuple(entry.get("rgb")), str(entry.get("name", default[1])))
+
+        return default
+
+
+    @staticmethod
+    def _rgb_tuple(raw: Any) -> Tuple[int, int, int]:
+        """Coerce a JSON ``[r, g, b]`` entry into a 0-255 int triple."""
+        if isinstance(raw, (list, tuple)) and len(raw) == 3:
+            try:
+                values = [float(v) for v in raw]
+            except (TypeError, ValueError):
+                return (254, 254, 254)
+            if all(v <= 1.0 for v in values):
+                values = [v * 255.0 for v in values]
+            return tuple(max(0, min(255, int(round(v)))) for v in values)  # type: ignore[return-value]
+        return (254, 254, 254)
+
