@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "bimfabrikhh-core"
-version = "0.2.1"
+version = "0.3.0"
 description = "Hamburg BIM Factory - Automated conversion of geospatial data to IFC format"
 authors = ["Ahmed Salem <ahmed.salem@gv.hamburg.de>"]
 readme = "README.md"
