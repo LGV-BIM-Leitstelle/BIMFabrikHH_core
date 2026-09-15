@@ -49,7 +49,6 @@ def main() -> None:
 
     parser = BoreholeMLParser()
     records = parser.from_file(fixture)
-    # records = load_borehole_records(fixture)
 
     if not records:
         logger.error("No borehole records parsed from fixture", extra={"debug_category": "error"})

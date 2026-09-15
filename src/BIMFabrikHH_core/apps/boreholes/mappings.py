@@ -88,6 +88,20 @@ class BoreholeMappings:
         
         return data if isinstance(data, dict) else {}
 
+    @staticmethod
+    def _map_code(
+        value: Any,
+        mapping: Mapping[str, str],
+    ) -> str:
+        code = _clean(value)
+
+        if not code or code.lower() == UNDEFINED:
+            return UNDEFINED
+
+        meaning = mapping.get(code)
+
+        return f"{code} ({meaning})" if meaning else code
+
 
     def map_archive_id(self, borehole_id: str) -> str:
         """Map a BoreholeML ID to ``"archive_id"`` ("Archivnummer") assigned by Geologisches Landesamt Hamburg.
@@ -107,68 +121,32 @@ class BoreholeMappings:
 
     def map_drilling_method(self, value: Any) -> str:
         """Map a drilling method code to ``"code (German name)"``, e.g. ``UN (unbekanntes Bohrverfahren)``."""
-        code = _clean(value)
-        if not code or code.lower() == UNDEFINED:
-            return UNDEFINED
-
-        mapping = self.drilling_methods
-        german_name = mapping.get(code, "")
-        return f"{code} ({german_name})" if german_name else code
+        return self._map_code(value, self.drilling_methods)
 
 
     def map_carbonate(self, value: Any) -> str:
         """Map a carbonate code to ``"code (German name)"``, e.g. ``c3 (karbonathaltig)``."""
-        code = _clean(value)
-        if not code or code.lower() == UNDEFINED:
-            return UNDEFINED
-
-        mapping = self.carbonate_contents
-        german_name = mapping.get(code, "")
-        return f"{code} ({german_name})" if german_name else code
+        return self._map_code(value, self.carbonate_contents)
 
 
     def map_consistency(self, value: Any) -> str:
-        """Map a consistency code to ``"code (German name)"``, e.g. ``c3 (karbonathaltig)``."""
-        code = _clean(value)
-        if not code or code.lower() == UNDEFINED:
-            return UNDEFINED
-
-        mapping = self.consistencies
-        german_name = mapping.get(code, "")
-        return f"{code} ({german_name})" if german_name else code
+        """Map a consistency code to ``"code (German name)"``, e.g. ``hfe (halbfest)``."""
+        return self._map_code(value, self.consistencies)
 
 
     def map_genesis(self, value: Any) -> str:
-        """Map a genesis code to ``"code (German name)"``, e.g. ``c3 (karbonathaltig)``."""
-        code = _clean(value)
-        if not code or code.lower() == UNDEFINED:
-            return UNDEFINED
-
-        mapping = self.genesis
-        german_name = mapping.get(code, "")
-        return f"{code} ({german_name})" if german_name else code
+        """Map a genesis code to ``"code (German name)"``, e.g. ``fl (fluviatil)``."""
+        return self._map_code(value, self.genesis)
 
 
     def map_geogenesis(self, value: Any) -> str:
-        """Map a geogenesis code to ``"code (German name)"``, e.g. ``c3 (karbonathaltig)``."""
-        code = _clean(value)
-        if not code or code.lower() == UNDEFINED:
-            return UNDEFINED
-
-        mapping = self.geogenesis
-        german_name = mapping.get(code, "")
-        return f"{code} ({german_name})" if german_name else code
+        """Map a geogenesis code to ``"code (German name)"``, e.g. ``yf (Auffüllung)``."""
+        return self._map_code(value, self.geogenesis)
 
 
     def map_rock_color(self, value: Any) -> str:
         """Map a DIN colour code to ``"code (German name)"``, e.g. ``h8 (grau)``."""
-        code = _clean(value)
-        if not code or code.lower() == UNDEFINED:
-            return UNDEFINED
-
-        mapping = self.rock_colors
-        german_name = mapping.get(code, "")
-        return f"{code} ({german_name})" if german_name else code
+        return self._map_code(value, self.rock_colors)
 
 
     def map_din_color(self, value: Any) -> str:
@@ -182,17 +160,8 @@ class BoreholeMappings:
         return f"{code} ({german_name})" if german_name else code
 
 
-    def map_stratigraphy(self, value: Any) -> str:
-        """Map a stratigraphic code to ``"code (German name)"``."""
-        text = _clean(value)
-        if not text or text.lower() == UNDEFINED:
-            return UNDEFINED
-        german_name = _STRATIGRAPHY_NAMES.get(text.lower(), "")
-        return f"{text} ({german_name})" if german_name else text
-
-
     def map_chronostratigraphy(self, value: Any) -> str:
-        """Map a chronostratigraphic code to ``"code (German name)"``."""
+        """Map a stratigraphic code to ``"code (German name)"``."""
         code = _clean(value)
         if not code or code.lower() == UNDEFINED:
             return UNDEFINED
