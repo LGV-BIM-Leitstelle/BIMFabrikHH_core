@@ -448,6 +448,158 @@ def generate_delaunay_mesh(
         return [], []
 
 
+def _point_on_crop_frame(
+    x: float,
+    y: float,
+    bbox_utm: Tuple[float, float, float, float],
+    eps: float,
+) -> bool:
+    """True when ``(x, y)`` lies on the umring rectangle (clip artefact)."""
+    min_x, min_y, max_x, max_y = bbox_utm
+    return (
+        abs(x - min_x) <= eps
+        or abs(x - max_x) <= eps
+        or abs(y - min_y) <= eps
+        or abs(y - max_y) <= eps
+    )
+
+
+def filter_bruchkante_segments(
+    points_xy: Sequence[Sequence[float]],
+    segments: Sequence[Sequence[int]],
+    *,
+    bbox_utm: Optional[Tuple[float, float, float, float]] = None,
+    eps: float = 1e-3,
+) -> Tuple[List[List[int]], int, int]:
+    """Drop duplicate and crop-frame Bruchkante segments.
+
+    Frame edges (both endpoints on the umring rectangle) come from clipping
+    ALKIS rings to the bbox. They are not cadastral Bruchkanten, and sending
+    them to Triangle ``p`` can hang. Clipped rings are then open; hole
+    triangles are filled afterwards by :func:`_fill_mesh_holes`. Segments
+    are treated as undirected, so ``[a, b]`` and ``[b, a]`` count as one.
+
+    Returns ``(kept, n_duplicate, n_frame)``.
+    """
+    seen: set[Tuple[int, int]] = set()
+    kept: List[List[int]] = []
+    n_duplicate = 0
+    n_frame = 0
+    for raw in segments:
+        a, b = int(raw[0]), int(raw[1])
+        if a == b:
+            continue
+        key = (a, b) if a < b else (b, a)
+        if key in seen:
+            n_duplicate += 1
+            continue
+        seen.add(key)
+        if bbox_utm is not None:
+            ax, ay = points_xy[a]
+            bx, by = points_xy[b]
+            if _point_on_crop_frame(float(ax), float(ay), bbox_utm, eps) and _point_on_crop_frame(
+                float(bx), float(by), bbox_utm, eps
+            ):
+                n_frame += 1
+                continue
+        kept.append([key[0], key[1]])
+    return kept, n_duplicate, n_frame
+
+
+def _point_in_any_triangle(
+    a: np.ndarray,
+    b: np.ndarray,
+    c: np.ndarray,
+    p: np.ndarray,
+    idxs: Sequence[int],
+    *,
+    eps: float = 1e-9,
+) -> bool:
+    """True when ``p`` lies in any triangle ``idxs`` (XY barycentric)."""
+    if not idxs:
+        return False
+    aa = a[idxs]
+    bb = b[idxs]
+    cc = c[idxs]
+    v0x = cc[:, 0] - aa[:, 0]
+    v0y = cc[:, 1] - aa[:, 1]
+    v1x = bb[:, 0] - aa[:, 0]
+    v1y = bb[:, 1] - aa[:, 1]
+    v2x = p[0] - aa[:, 0]
+    v2y = p[1] - aa[:, 1]
+    den = v0x * v1y - v1x * v0y
+    ok = np.abs(den) > 1e-18
+    den = np.where(ok, den, 1.0)
+    u = (v2x * v1y - v1x * v2y) / den
+    v = (v0x * v2y - v2x * v0y) / den
+    return bool(np.any(ok & (u >= -eps) & (v >= -eps) & (u + v <= 1.0 + eps)))
+
+
+def _points_in_triangles(tri_xy: np.ndarray, faces: np.ndarray, pts: np.ndarray) -> np.ndarray:
+    """True when each point lies in at least one triangle (XY)."""
+    n = len(pts)
+    if n == 0 or len(faces) == 0:
+        return np.zeros(n, dtype=bool)
+    a = tri_xy[faces[:, 0]]
+    b = tri_xy[faces[:, 1]]
+    c = tri_xy[faces[:, 2]]
+    minx = np.minimum(np.minimum(a[:, 0], b[:, 0]), c[:, 0])
+    maxx = np.maximum(np.maximum(a[:, 0], b[:, 0]), c[:, 0])
+    miny = np.minimum(np.minimum(a[:, 1], b[:, 1]), c[:, 1])
+    maxy = np.maximum(np.maximum(a[:, 1], b[:, 1]), c[:, 1])
+    span = float(np.median(np.maximum(maxx - minx, maxy - miny)))
+    cell = max(span, 1.0)
+    buckets: Dict[Tuple[int, int], List[int]] = {}
+    for i in range(len(faces)):
+        i0 = int(np.floor(minx[i] / cell))
+        i1 = int(np.floor(maxx[i] / cell))
+        j0 = int(np.floor(miny[i] / cell))
+        j1 = int(np.floor(maxy[i] / cell))
+        for gi in range(i0, i1 + 1):
+            for gj in range(j0, j1 + 1):
+                buckets.setdefault((gi, gj), []).append(i)
+    hit = np.zeros(n, dtype=bool)
+    for k, p in enumerate(pts):
+        gi = int(np.floor(p[0] / cell))
+        gj = int(np.floor(p[1] / cell))
+        hit[k] = _point_in_any_triangle(a, b, c, p, buckets.get((gi, gj), ()))
+    return hit
+
+
+def _fill_mesh_holes(
+    vertices: List[List[float]],
+    faces: List[List[int]],
+) -> Tuple[List[List[float]], List[List[int]]]:
+    """Fill CDT gaps with unconstrained Delaunay faces.
+
+    Triangle ``p`` only triangulates closed PSLG cycles. After crop-frame
+    segments are dropped, leftover DGM and clipped Flächen are empty.
+    Faces whose centroid already lies in the CDT are skipped so
+    Bruchkanten stay as CDT edges.
+    """
+    if len(vertices) < 3 or not faces:
+        return vertices, faces
+    verts = np.asarray(vertices, dtype=float)
+    cdt = np.asarray(faces, dtype=int)
+    try:
+        delaunay = Delaunay(verts[:, :2])
+    except Exception as exc:
+        logger.warning("Hole-fill Delaunay failed (%s); leaving CDT as-is", exc)
+        return vertices, faces
+    del_faces = np.asarray(delaunay.simplices, dtype=int)
+    centroids = verts[del_faces].mean(axis=1)
+    covered = _points_in_triangles(verts[:, :2], cdt, centroids[:, :2])
+    extra = del_faces[~covered]
+    if len(extra) == 0:
+        return vertices, faces
+    cdt_keys = {tuple(sorted(int(i) for i in face)) for face in cdt}
+    new = [face.tolist() for face in extra if tuple(sorted(int(i) for i in face)) not in cdt_keys]
+    if not new:
+        return vertices, faces
+    logger.info("Filled %d hole face(s) from unconstrained Delaunay", len(new))
+    return vertices, faces + new
+
+
 def generate_constrained_mesh(
     x_coords: np.ndarray,
     y_coords: np.ndarray,
@@ -456,12 +608,16 @@ def generate_constrained_mesh(
     rings_z: Sequence[np.ndarray],
     *,
     snap_decimals: int = 3,
+    bbox_utm: Optional[Tuple[float, float, float, float]] = None,
 ) -> Tuple[List[List[float]], List[List[int]]]:
-    """Constrained Delaunay TIN with ALKIS rings as Bruchkanten.
+    """Constrained TIN with ALKIS rings as Bruchkanten.
 
     Terrain points and breakline vertices are snapped in XY, then Shewchuk
     Triangle honours consecutive ring edges whose both endpoints have a
-    valid DGM height. Requires the ``triangle`` package.
+    valid DGM height (``p`` PSLG, not conforming ``pc``). Duplicate and
+    crop-frame segments are dropped so Triangle stays fast; holes are
+    then filled from unconstrained Delaunay. Requires the ``triangle``
+    package.
     """
     try:
         import triangle as tr
@@ -511,6 +667,18 @@ def generate_constrained_mesh(
         logger.error("Not enough points for constrained triangulation")
         return [], []
 
+    frame_eps = 10.0 ** (-snap_decimals)
+    segments, n_duplicate, n_frame = filter_bruchkante_segments(
+        points_xy, segments, bbox_utm=bbox_utm, eps=frame_eps
+    )
+    if n_duplicate or n_frame:
+        logger.info(
+            "Dropped %d duplicate and %d crop-frame Bruchkante segment(s); %d kept",
+            n_duplicate,
+            n_frame,
+            len(segments),
+        )
+
     if not segments:
         logger.warning("No valid Bruchkante segments; falling back to unconstrained Delaunay")
         return generate_delaunay_mesh(
@@ -522,7 +690,7 @@ def generate_constrained_mesh(
     try:
         result = tr.triangulate(
             {"vertices": np.asarray(points_xy, dtype=float), "segments": np.asarray(segments, dtype=np.int32)},
-            "pc",
+            "p",
         )
         tri_xy = np.asarray(result["vertices"], dtype=float)
         faces_arr = np.asarray(result["triangles"], dtype=int)
@@ -541,6 +709,7 @@ def generate_constrained_mesh(
             vertices.append([float(x), float(y), float(z if z is not None else 0.0)])
         valid = (faces_arr >= 0) & (faces_arr < len(vertices))
         faces = faces_arr[valid.all(axis=1)].tolist() if faces_arr.size else []
+        vertices, faces = _fill_mesh_holes(vertices, faces)
         logger.info(
             "CDT mesh: %d vertices, %d faces, %d Bruchkante segments",
             len(vertices),
@@ -1385,7 +1554,12 @@ def extract_mesh_adaptive(
     t_tri = time.perf_counter()
     if guide_rings:
         vertices, faces = generate_constrained_mesh(
-            x_coords, y_coords, z_values, [r.xy for r in guide_rings], guide_rings_z
+            x_coords,
+            y_coords,
+            z_values,
+            [r.xy for r in guide_rings],
+            guide_rings_z,
+            bbox_utm=bbox_utm,
         )
         logger.info("Triangulation (CDT) took %.3f s", time.perf_counter() - t_tri)
     else:
@@ -1440,6 +1614,7 @@ __all__ = [
     "analyze_terrain_features",
     "collect_guide_rings",
     "collect_guide_xy",
+    "filter_bruchkante_segments",
     "generate_constrained_mesh",
     "split_mesh_by_nutzart",
     "subtract_rings_from_mesh",
