@@ -12,22 +12,21 @@ from __future__ import annotations
 import pytest
 from pydantic import BaseModel
 
-from BIMFabrikHH_core.apps.boreholes import (
+
+from BIMFabrikHH_core.apps.boreholes.mappings import BoreholeMappings
+from BIMFabrikHH_core.apps.boreholes.processing import (
     BOREHOLE_PORTAL_SID,
     BOREHOLE_PORTAL_URL,
-    BoreholeRecord,
-    BoreholesGenericApp,
-    build_borehole_hyperlink,
-    collect_borehole_psets,
-    map_din_color,
-    map_hauptgemengteil,
-    map_nebengemengteil,
-    map_soil_symbol,
-    map_stratigraphy,
-    records_from_boreholeml,
-    visual_color_for_hauptgemengteil,
+    BoreholeMLProcessor,
 )
-from BIMFabrikHH_core.apps.boreholes.processing import UNDEFINED, _split_rock_code
+from BIMFabrikHH_core.apps.boreholes.helper import UNDEFINED, _split_rock_code
+
+from BIMFabrikHH_core.apps.boreholes import BoreholesGenericApp
+from BIMFabrikHH_core.data_models.boreholes import (
+    BoreholeRecord,
+    collect_borehole_psets,
+)
+
 from BIMFabrikHH_core.data_models.params_bbox import BoundingBoxParams
 from BIMFabrikHH_core.data_models.params_tree import RequestParams
 from BIMFabrikHH_core.data_models.pydantic_psets_BIMHH import Pset_Hyperlink
@@ -41,6 +40,16 @@ from BIMFabrikHH_core.data_models.pydantic_psets_boreholes import (
 BML = "http://www.infogeo.de/boreholeml/3.0"
 GML = "http://www.opengis.net/gml/3.2"
 GMD = "http://www.isotc211.org/2005/gmd"
+
+
+@pytest.fixture
+def mappings() -> BoreholeMappings:
+    return BoreholeMappings.load_default()
+
+
+@pytest.fixture
+def processor(mappings: BoreholeMappings) -> BoreholeMLProcessor:
+    return BoreholeMLProcessor(mappings=mappings)
 
 
 def _borehole_xml(
@@ -123,7 +132,7 @@ def _lithology(rock_name: str = "", percentage: str = "", rock_color: str = "") 
 
 
 # ---------------------------------------------------------------------------
-# map_soil_symbol / map_hauptgemengteil / map_nebengemengteil
+# BoreholeMappings
 # ---------------------------------------------------------------------------
 
 
@@ -138,90 +147,149 @@ def _lithology(rock_name: str = "", percentage: str = "", rock_color: str = "") 
         ("H", "H (Torf / Humus)"),
     ],
 )
-def test_map_soil_symbol_resolves_din_codes(code: str, expected: str) -> None:
-    assert map_soil_symbol(code) == expected
+def test_map_soil_symbol_resolves_din_codes(
+    mappings: BoreholeMappings,
+    code: str,
+    expected: str,
+) -> None:
+    assert mappings.map_soil_symbol(code) == expected
 
 
-def test_map_soil_symbol_returns_undefined_for_blank() -> None:
-    assert map_soil_symbol("") == UNDEFINED
-    assert map_soil_symbol(None) == UNDEFINED
+def test_map_soil_symbol_returns_undefined_for_blank(
+    mappings: BoreholeMappings,
+) -> None:
+    assert mappings.map_soil_symbol("") == UNDEFINED
+    assert mappings.map_soil_symbol(None) == UNDEFINED
 
 
-def test_map_soil_symbol_passes_through_unknown_code() -> None:
-    assert map_soil_symbol("zzz") == "zzz"
+def test_map_soil_symbol_passes_through_unknown_code(
+    mappings: BoreholeMappings,
+) -> None:
+    assert mappings.map_soil_symbol("zzz") == "zzz"
 
 
-def test_map_soil_symbol_maps_combinatoric_notation() -> None:
-    assert map_soil_symbol("uS") == "uS (schluffiger Sand)"
+def test_map_soil_symbol_maps_combinatoric_notation(
+    mappings: BoreholeMappings,
+) -> None:
+    assert mappings.map_soil_symbol("uS") == "uS (schluffiger Sand)"
 
 
-def test_map_soil_symbol_hauptgemengteil_splits_comma_list() -> None:
-    assert map_hauptgemengteil("mS, fS") == "mS (Mittelsand), fS (Feinsand)"
+def test_map_soil_symbol_hauptgemengteil_splits_comma_list(
+    mappings: BoreholeMappings,
+) -> None:
+    assert mappings.map_hauptgemengteil(
+        "mS, fS"
+    ) == "mS (Mittelsand), fS (Feinsand)"
 
 
-def test_map_soil_symbol_nebengemengteil_maps_each_component() -> None:
-    assert map_nebengemengteil("g, s") == "g (kiesig), s (sandig)"
+def test_map_soil_symbol_nebengemengteil_maps_each_component(
+    mappings: BoreholeMappings,
+) -> None:
+    assert mappings.map_nebengemengteil(
+        "g, s"
+    ) == "g (kiesig), s (sandig)"
 
 
-def test_map_soil_symbol_multiple_main_components() -> None:
-    assert map_hauptgemengteil("mS(fs), S") == "mS (Mittelsand), S (Sand)"
-    assert map_nebengemengteil("mS(fs), S") == "fs (feinsandig)"
+def test_map_soil_symbol_multiple_main_components(
+    mappings: BoreholeMappings,
+) -> None:
+    assert mappings.map_hauptgemengteil(
+        "mS(fs), S"
+    ) == "mS (Mittelsand), S (Sand)"
+
+    assert mappings.map_nebengemengteil(
+        "mS(fs), S"
+    ) == "fs (feinsandig)"
 
 
-def test_map_soil_symbol_with_hyphen() -> None:
-    assert map_hauptgemengteil("gG-fG") == "gG-fG (Grobkies-Feinkies)"
+def test_map_soil_symbol_with_hyphen(
+    mappings: BoreholeMappings,
+) -> None:
+    assert mappings.map_hauptgemengteil(
+        "gG-fG"
+    ) == "gG-fG (Grobkies-Feinkies)"
 
 
-def test_map_soil_symbol_brackets_around_main_component() -> None:
-    assert map_hauptgemengteil("(gG-fG)(x)") == "gG-fG (Grobkies-Feinkies)"
-    assert map_nebengemengteil("(gG-fG)(x)") == "x (steinig)"
+def test_map_soil_symbol_brackets_around_main_component(
+    mappings: BoreholeMappings,
+) -> None:
+    assert mappings.map_hauptgemengteil(
+        "(gG-fG)(x)"
+    ) == "gG-fG (Grobkies-Feinkies)"
+
+    assert mappings.map_nebengemengteil(
+        "(gG-fG)(x)"
+    ) == "x (steinig)"
 
 
-def test_map_soil_symbol_multiple_side_components() -> None:
-    assert map_hauptgemengteil("fG(gs, ms, x)") == "fG (Feinkies)"
-    assert map_nebengemengteil("fG(gs, ms, x)") == "gs (grobsandig), ms (mittelsandig), x (steinig)"
+def test_map_soil_symbol_multiple_side_components(
+    mappings: BoreholeMappings,
+) -> None:
+    assert mappings.map_hauptgemengteil(
+        "fG(gs, ms, x)"
+    ) == "fG (Feinkies)"
+
+    assert mappings.map_nebengemengteil(
+        "fG(gs, ms, x)"
+    ) == "gs (grobsandig), ms (mittelsandig), x (steinig)"
 
 
-def test_map_nebengemengteil_returns_undefined_for_blank() -> None:
-    assert map_nebengemengteil("") == UNDEFINED
+def test_map_nebengemengteil_returns_undefined_for_blank(
+    mappings: BoreholeMappings,
+) -> None:
+    assert mappings.map_nebengemengteil("") == UNDEFINED
 
 
-# ---------------------------------------------------------------------------
-# map_color_code / map_stratigraphy / visual_color_for_hauptgemengteil
-# ---------------------------------------------------------------------------
+def test_map_din_color_appends_german_name(
+    mappings: BoreholeMappings,
+) -> None:
+    assert mappings.map_din_color("gr") == "gr (grau)"
 
 
-def test_map_color_code_appends_german_name() -> None:
-    assert map_din_color("gr") == "gr (grau)"
+def test_map_din_color_passes_through_unknown_code(
+    mappings: BoreholeMappings,
+) -> None:
+    assert mappings.map_din_color("h8") == "h8"
 
 
-def test_map_color_code_passes_through_unknown_code() -> None:
-    # BoreholeML uses its own RockColorList, so codes like h8 are not in the DIN table.
-    assert map_din_color("h8") == "h8"
+def test_map_stratigraphy_appends_german_name(
+    mappings: BoreholeMappings,
+) -> None:
+    assert mappings.map_chronostratigraphy(
+        "qh"
+    ) == "qh (Quartär holozän)"
 
 
-def test_map_stratigraphy_appends_german_name() -> None:
-    assert map_stratigraphy("qh") == "qh (Quartär holozän)"
+def test_map_stratigraphy_returns_undefined_for_blank(
+    mappings: BoreholeMappings,
+) -> None:
+    assert mappings.map_chronostratigraphy("") == UNDEFINED
 
 
-def test_map_stratigraphy_returns_undefined_for_blank() -> None:
-    assert map_stratigraphy("") == UNDEFINED
+def test_visual_color_uses_soil_code_not_farbe(
+    mappings: BoreholeMappings,
+) -> None:
+    rgb, name = mappings.visual_color_for_hauptgemengteil("mS")
 
-
-def test_visual_color_uses_soil_code_not_farbe() -> None:
-    rgb, name = visual_color_for_hauptgemengteil("mS")
     assert name == "orange"
     assert rgb == (198, 84, 47)
 
 
-def test_visual_color_falls_back_to_table_default() -> None:
-    rgb, name = visual_color_for_hauptgemengteil("unknown-code")
+def test_visual_color_falls_back_to_table_default(
+    mappings: BoreholeMappings,
+) -> None:
+    rgb, name = mappings.visual_color_for_hauptgemengteil("unknown-code")
+
     assert name == "weiß"
     assert rgb == (254, 254, 254)
 
 
-def test_visual_color_is_case_insensitive() -> None:
-    assert visual_color_for_hauptgemengteil("ffs") == visual_color_for_hauptgemengteil("ffS")
+def test_visual_color_is_case_insensitive(
+    mappings: BoreholeMappings,
+) -> None:
+    assert mappings.visual_color_for_hauptgemengteil(
+        "ffs"
+    ) == mappings.visual_color_for_hauptgemengteil("ffS")
 
 
 # ---------------------------------------------------------------------------
@@ -245,13 +313,14 @@ def test_split_rock_code_handles_both_notations(rock_code: str, expected: tuple)
 
 
 # ---------------------------------------------------------------------------
-# records_from_boreholeml
+# BoreholeMLProcessor.parse
 # ---------------------------------------------------------------------------
 
 
-def test_records_from_boreholeml_reads_head_data() -> None:
+def test_processor_parse_reads_head_data(processor: BoreholeMLProcessor) -> None:
     xml = _borehole_xml(intervals=_interval(from_depth="0.0", to_depth="2.5", rock_code="mS, yy"))
-    records = records_from_boreholeml(xml)
+
+    records = processor.parse(xml)
 
     assert len(records) == 1
     record = records[0]
@@ -266,12 +335,12 @@ def test_records_from_boreholeml_reads_head_data() -> None:
     assert record.projekt == "Hbg.-Wexstr."
 
 
-def test_records_from_boreholeml_converts_depth_to_nhn() -> None:
+def test_processor_parse_converts_depth_to_nhn(processor: BoreholeMLProcessor) -> None:
     xml = _borehole_xml(
         intervals=_interval(from_depth="0.0", to_depth="2.5", rock_code="mS")
         + _interval(from_depth="2.5", to_depth="5.5", rock_code="T")
     )
-    layers = records_from_boreholeml(xml)[0].layers
+    layers = processor.parse(xml)[0].layers
 
     assert [layer.from_depth for layer in layers] == [0.0, 2.5]
     # Ansatzpunkt 14.3 m NHN, depths measured downwards from there.
@@ -282,16 +351,16 @@ def test_records_from_boreholeml_converts_depth_to_nhn() -> None:
     assert layers[1].thickness == pytest.approx(3.0)
 
 
-def test_records_from_boreholeml_orders_layers_top_down() -> None:
+def test_processor_parse_orders_layers_top_down(processor: BoreholeMLProcessor) -> None:
     xml = _borehole_xml(
         intervals=_interval(from_depth="2.5", to_depth="5.5", rock_code="T")
         + _interval(from_depth="0.0", to_depth="2.5", rock_code="mS")
     )
-    layers = records_from_boreholeml(xml)[0].layers
+    layers = processor.parse(xml)[0].layers
     assert [layer.upper_height for layer in layers] == sorted((layer.upper_height for layer in layers), reverse=True)
 
 
-def test_records_from_boreholeml_prefers_rock_code_over_lithology() -> None:
+def test_processor_parse_prefers_rock_code_over_lithology(processor: BoreholeMLProcessor) -> None:
     """The dominant component often has an empty ``rockName`` (F = Mudde at 64 %)."""
     xml = _borehole_xml(
         intervals=_interval(
@@ -302,13 +371,13 @@ def test_records_from_boreholeml_prefers_rock_code_over_lithology() -> None:
             lithologies=_lithology(rock_name="", percentage="63.64") + _lithology(rock_name="S", percentage="36.36"),
         )
     )
-    layer = records_from_boreholeml(xml)[0].layers[0]
+    layer = processor.parse(xml)[0].layers[0]
     assert layer.hauptgemengteil == "F"
     assert layer.nebengemengteil == "s4, hz4, ht2"
     assert layer.rock_name_text == "Mudde (stark sandig)"
 
 
-def test_records_from_boreholeml_falls_back_to_lithology_by_percentage() -> None:
+def test_processor_parse_falls_back_to_lithology_by_percentage(processor: BoreholeMLProcessor) -> None:
     xml = _borehole_xml(
         intervals=_interval(
             from_depth="0.0",
@@ -316,12 +385,12 @@ def test_records_from_boreholeml_falls_back_to_lithology_by_percentage() -> None
             lithologies=_lithology(rock_name="S", percentage="30.0") + _lithology(rock_name="mS", percentage="70.0"),
         )
     )
-    layer = records_from_boreholeml(xml)[0].layers[0]
+    layer = processor.parse(xml)[0].layers[0]
     assert layer.hauptgemengteil == "mS"
     assert layer.nebengemengteil == "S"
 
 
-def test_records_from_boreholeml_takes_first_non_empty_rock_color() -> None:
+def test_processor_parse_takes_first_non_empty_rock_color(processor: BoreholeMLProcessor) -> None:
     xml = _borehole_xml(
         intervals=_interval(
             from_depth="0.0",
@@ -330,44 +399,44 @@ def test_records_from_boreholeml_takes_first_non_empty_rock_color() -> None:
             lithologies=_lithology(rock_name="fS", percentage="72.73", rock_color="h8"),
         )
     )
-    assert records_from_boreholeml(xml)[0].layers[0].farbe == "h8"
+    assert processor.parse(xml)[0].layers[0].farbe == "h8"
 
 
-def test_records_from_boreholeml_skips_zero_thickness_layers() -> None:
+def test_processor_parse_skips_zero_thickness_layers(processor: BoreholeMLProcessor) -> None:
     xml = _borehole_xml(
         intervals=_interval(from_depth="1.0", to_depth="1.0", rock_code="mS")
         + _interval(from_depth="0.0", to_depth="1.0", rock_code="T")
     )
-    layers = records_from_boreholeml(xml)[0].layers
+    layers = processor.parse(xml)[0].layers
     assert len(layers) == 1
     assert layers[0].hauptgemengteil == "T"
 
 
-def test_records_from_boreholeml_skips_borehole_without_layers() -> None:
-    assert records_from_boreholeml(_borehole_xml(intervals="")) == []
+def test_processor_parse_skips_borehole_without_layers(processor: BoreholeMLProcessor) -> None:
+    assert processor.parse(_borehole_xml(intervals="")) == []
 
 
-def test_records_from_boreholeml_skips_borehole_without_position() -> None:
+def test_processor_parse_skips_borehole_without_position(processor: BoreholeMLProcessor) -> None:
     xml = _borehole_xml(
         pos="565084.160",
         intervals=_interval(from_depth="0.0", to_depth="1.0", rock_code="mS"),
     )
-    assert records_from_boreholeml(xml) == []
+    assert processor.parse(xml) == []
 
 
-def test_records_from_boreholeml_uses_two_dimensional_position() -> None:
+def test_processor_parse_uses_two_dimensional_position(processor: BoreholeMLProcessor) -> None:
     xml = _borehole_xml(
         pos="565084.160 5934034.654",
         intervals=_interval(from_depth="0.0", to_depth="1.0", rock_code="mS"),
     )
-    record = records_from_boreholeml(xml)[0]
+    record = processor.parse(xml)[0]
     assert record.ansatzhoehe_nn == pytest.approx(0.0)
     assert record.layers[0].lower_height == pytest.approx(-1.0)
 
 
-def test_records_from_boreholeml_rejects_unsupported_source() -> None:
+def test_processor_parse_rejects_unsupported_source(processor: BoreholeMLProcessor) -> None:
     with pytest.raises(TypeError):
-        records_from_boreholeml(42)  # type: ignore[arg-type]
+        processor.parse(42)  # type: ignore[arg-type]
 
 
 # ---------------------------------------------------------------------------
@@ -375,7 +444,7 @@ def test_records_from_boreholeml_rejects_unsupported_source() -> None:
 # ---------------------------------------------------------------------------
 
 
-def test_parsed_record_carries_expected_psets() -> None:
+def test_parsed_record_carries_expected_psets(processor: BoreholeMLProcessor) -> None:
     xml = _borehole_xml(
         intervals=_interval(
             from_depth="0.0",
@@ -386,7 +455,7 @@ def test_parsed_record_carries_expected_psets() -> None:
             geo_genesis="yf",
         )
     )
-    record = records_from_boreholeml(xml)[0]
+    record = processor.parse(xml)[0]
     layer = record.layers[0]
 
     assert set(record.psets) == {"Pset_Aufschluss", "Pset_Hyperlink"}
@@ -415,9 +484,9 @@ def test_parsed_record_carries_expected_psets() -> None:
     assert isinstance(layer.psets["Pset_Objektinformation"], Pset_Objektinformation_Borehole)
 
 
-def test_collect_borehole_psets_merges_both_levels() -> None:
+def test_collect_borehole_psets_merges_both_levels(processor: BoreholeMLProcessor) -> None:
     xml = _borehole_xml(intervals=_interval(from_depth="0.0", to_depth="2.5", rock_code="mS"))
-    record = records_from_boreholeml(xml)[0]
+    record = processor.parse(xml)[0]
     psets = collect_borehole_psets(record, record.layers[0])
 
     assert len(psets) == 5
@@ -432,52 +501,56 @@ def test_collect_borehole_psets_merges_both_levels() -> None:
     }
 
 
-def test_collect_borehole_psets_can_be_disabled() -> None:
+def test_collect_borehole_psets_can_be_disabled(processor: BoreholeMLProcessor) -> None:
     xml = _borehole_xml(intervals=_interval(from_depth="0.0", to_depth="2.5", rock_code="mS"))
-    record = records_from_boreholeml(xml)[0]
+    record = processor.parse(xml)[0]
     assert collect_borehole_psets(record, record.layers[0], include_property_sets=False) == []
 
 
-def test_collect_borehole_psets_skips_non_pydantic_values() -> None:
+def test_collect_borehole_psets_skips_non_pydantic_values(processor: BoreholeMLProcessor) -> None:
     xml = _borehole_xml(intervals=_interval(from_depth="0.0", to_depth="2.5", rock_code="mS"))
-    record = records_from_boreholeml(xml)[0]
+    record = processor.parse(xml)[0]
     record.psets = {"broken": "not-a-model"}  # type: ignore[dict-item]
     psets = collect_borehole_psets(record, record.layers[0])
     assert len(psets) == 3
 
 
+def test_serialized_pset_uses_bimhh_aliases() -> None:
+    dumped = Pset_Aufschlussbereich(bodenart="mS (Mittelsand)").model_dump(by_alias=True)
+    assert dumped["_Bodenart"] == "mS (Mittelsand)"
+
+
+# ---------------------------------------------------------------------------
+# BoreholeMLProcessor._build_borehole_hyperlink
+# ---------------------------------------------------------------------------
+
 
 def test_build_borehole_hyperlink_accepts_numeric_portal_id() -> None:
     """The portal expects the numeric Archivnummer, which can be passed as a string or integer."""
-    pset = build_borehole_hyperlink(50300, "B.IX/182")
+    pset = BoreholeMLProcessor._build_borehole_hyperlink(50300, "B.IX/182")
     assert pset.hyperlink_001 == f"{BOREHOLE_PORTAL_URL}?sid={BOREHOLE_PORTAL_SID}&id=50300"
     assert pset.hyperlink_001_bemerkung == "Link zur Bohrung B.IX/182 (ID: 50300)"
 
 
 def test_build_borehole_hyperlink_accepts_string_portal_id() -> None:
     """The portal expects the numeric Archivnummer, which can be passed as a string or integer."""
-    pset = build_borehole_hyperlink("50300", "B.IX/182")
+    pset = BoreholeMLProcessor._build_borehole_hyperlink("50300", "B.IX/182")
     assert pset.hyperlink_001 == f"{BOREHOLE_PORTAL_URL}?sid={BOREHOLE_PORTAL_SID}&id=50300"
     assert pset.hyperlink_001_bemerkung == "Link zur Bohrung B.IX/182 (ID: 50300)"
 
 
 def test_build_borehole_hyperlink_without_designation() -> None:
-    pset = build_borehole_hyperlink("50300")
+    pset = BoreholeMLProcessor._build_borehole_hyperlink("50300")
     assert pset.hyperlink_001_bemerkung == "Link zur Bohrung (ID: 50300)"
 
 
-def test_parsed_record_carries_portal_hyperlink() -> None:
+def test_parsed_record_carries_portal_hyperlink(processor: BoreholeMLProcessor) -> None:
     xml = _borehole_xml(intervals=_interval(from_depth="0.0", to_depth="2.5", rock_code="mS"))
-    record = records_from_boreholeml(xml)[0]
+    record = processor.parse(xml)[0]
     hyperlink = record.psets["Pset_Hyperlink"]
     assert isinstance(hyperlink, Pset_Hyperlink)
     assert hyperlink.hyperlink_001.endswith("&id=")
     assert BOREHOLE_PORTAL_SID in hyperlink.hyperlink_001
-
-
-def test_serialized_pset_uses_bimhh_aliases() -> None:
-    dumped = Pset_Aufschlussbereich(bodenart="mS (Mittelsand)").model_dump(by_alias=True)
-    assert dumped["_Bodenart"] == "mS (Mittelsand)"
 
 
 # ---------------------------------------------------------------------------
