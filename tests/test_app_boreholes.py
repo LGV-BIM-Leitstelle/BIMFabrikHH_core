@@ -14,7 +14,7 @@ from pydantic import BaseModel
 
 
 from BIMFabrikHH_core.apps.boreholes.mappings import BoreholeMappings
-from BIMFabrikHH_core.apps.boreholes.processing_oo import (
+from BIMFabrikHH_core.apps.boreholes.processing import (
     BOREHOLE_PORTAL_SID,
     BOREHOLE_PORTAL_URL,
     BoreholeMLProcessor,

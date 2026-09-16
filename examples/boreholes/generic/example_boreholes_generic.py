@@ -20,11 +20,9 @@ import sys
 from pathlib import Path
 
 from BIMFabrikHH_core import BoundingBoxParams, Component, Container, RequestParams
-from BIMFabrikHH_core.apps.boreholes.generic import (
-    BoreholesGenericApp,
-    load_borehole_records,
+from BIMFabrikHH_core.apps.boreholes import (
+    BoreholesGenericApp, BoreholeMLProcessor
 )
-from BIMFabrikHH_core.apps.boreholes import BoreholeMLProcessor
 from BIMFabrikHH_core.config import get_logger, setup_logging
 
 logger = get_logger()
@@ -47,8 +45,8 @@ def main() -> None:
         )
         sys.exit(1)
 
-    parser = BoreholeMLProcessor()
-    records = parser.from_file(fixture)
+    processor = BoreholeMLProcessor()
+    records = processor.from_file(fixture)
 
     if not records:
         logger.error("No borehole records parsed from fixture", extra={"debug_category": "error"})
