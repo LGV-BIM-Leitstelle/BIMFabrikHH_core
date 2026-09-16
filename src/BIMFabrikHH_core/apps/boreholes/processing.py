@@ -143,6 +143,8 @@ class BoreholeMLProcessor:
             return None
         easting, northing, ansatzhoehe_nn = position
 
+        groundwater = self._parse_groundwater(borehole)
+
         full_name = _text(borehole, f"{{{BML_NS}}}fullName/{{{GMD_NS}}}LocalisedCharacterString")
         short_name = _text(borehole, f"{{{BML_NS}}}shortName/{{{GMD_NS}}}LocalisedCharacterString")
 
@@ -236,6 +238,16 @@ class BoreholeMLProcessor:
         if height is None:
             height = _float_or_none(_text(borehole, f"{{{BML_NS}}}origin/{{{BML_NS}}}Origin/{{{BML_NS}}}elevation"))
         return (easting, northing, height if height is not None else 0.0)
+
+
+    def _parse_groundwater(borehole: etree._Element) -> tuple[float, float, float] | None:
+        """
+        Read the groundwater information (``bml:entryDepth``, ``bml:balancedLevel``, ``bml:endLevel``).
+        """
+        entry_depth = _float_or_none(_text(borehole, f"{{{BML_NS}}}groundwater/{{{BML_NS}}}Groundwater/{{{GML_NS}}}entryDepth"))
+        balanced_level = _float_or_none(_text(borehole, f"{{{BML_NS}}}groundwater/{{{BML_NS}}}Groundwater/{{{GML_NS}}}balancedLevel"))
+        end_level = _float_or_none(_text(borehole, f"{{{BML_NS}}}groundwater/{{{BML_NS}}}Groundwater/{{{GML_NS}}}endLevel"))
+        return (entry_depth, balanced_level, end_level)
 
 
     @staticmethod
