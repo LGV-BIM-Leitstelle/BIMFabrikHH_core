@@ -240,6 +240,7 @@ class BoreholeMLProcessor:
         return (easting, northing, height if height is not None else 0.0)
 
 
+    @staticmethod
     def _parse_groundwater(borehole: etree._Element) -> tuple[float, float, float] | None:
         """
         Read the groundwater information (``bml:entryDepth``, ``bml:balancedLevel``, ``bml:endLevel``).
