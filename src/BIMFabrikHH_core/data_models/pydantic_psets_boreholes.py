@@ -130,8 +130,13 @@ class Pset_Schicht(PropertySetTemplate):
         default="undefiniert",
     )
     bodenkonsistenz: str = Field(
-        validation_alias=AliasChoices("bodenkonsistenz", "_Bodenkonsistenz", "konsistenz"),
+        validation_alias=AliasChoices("bodenkonsistenz", "_Bodenkonsistenz", "konsistenz", "consistency"),
         serialization_alias="_Bodenkonsistenz",
+        default="undefiniert",
+    )
+    lagerungsdichte: str = Field(
+        validation_alias=AliasChoices("lagerungsdichte", "_Lagerungsdichte", "compactness"),
+        serialization_alias="_Lagerungsdichte",
         default="undefiniert",
     )
     geologische_bezeichnung: str = Field(
@@ -140,15 +145,16 @@ class Pset_Schicht(PropertySetTemplate):
         default="undefiniert",
     )
     genese: str = Field(
-        validation_alias=AliasChoices("genese", "_Genese"),
+        validation_alias=AliasChoices("genese", "_Genese", "genesis"),
         serialization_alias="_Genese",
         default="undefiniert",
     )
     geogenese: str = Field(
-        validation_alias=AliasChoices("geogenese", "_Geogenese"),
+        validation_alias=AliasChoices("geogenese", "_Geogenese", "geogenesis"),
         serialization_alias="_Geogenese",
         default="undefiniert",
     )
+
 
 
 __all__ = [

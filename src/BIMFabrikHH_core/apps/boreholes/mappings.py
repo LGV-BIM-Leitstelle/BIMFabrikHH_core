@@ -27,6 +27,8 @@ _GEOGENESIS_FILE = "geogenesis_mapping.json"
 _ROCK_COLORS_FILE = "rock_color_mapping.json"
 _CARBONATE_CONTENT_FILE = "carbonate_content_mapping.json"
 _CONSISTENCY_FILE = "consistency_mapping.json"
+_COMPACTNESS_FILE = "compactness_mapping.json"
+
 
 # Chronostratigraphic codes seen in the Hamburg BoreholeML service.
 _STRATIGRAPHY_NAMES: dict[str, str] = {
@@ -55,6 +57,7 @@ class BoreholeMappings:
     genesis: Mapping
     geogenesis: Mapping
     consistencies: Mapping
+    compactness: Mapping
 
     @classmethod
     @lru_cache(maxsize=1)
@@ -70,6 +73,7 @@ class BoreholeMappings:
             genesis=cls._load_json(_GENESIS_FILE),
             geogenesis=cls._load_json(_GEOGENESIS_FILE),
             consistencies=cls._load_json(_CONSISTENCY_FILE),
+            compactness=cls._load_json(_COMPACTNESS_FILE),
         )
 
 
@@ -127,6 +131,11 @@ class BoreholeMappings:
         """Map a consistency code to ``"code (German name)"``, e.g. ``hfe (halbfest)``."""
         return self._map_code(value, self.consistencies)
 
+
+    def map_compactness(self, value: Any) -> str:
+        """Map a compactness code to ``"code (German name)"``, e.g. ``ld3 (mitteldicht gelagert)``."""
+        return self._map_code(value, self.consistencies)
+    
 
     def map_genesis(self, value: Any) -> str:
         """Map a genesis code to ``"code (German name)"``, e.g. ``fl (fluviatil)``."""
