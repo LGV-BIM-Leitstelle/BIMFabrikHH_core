@@ -1,11 +1,12 @@
+"""
+Internal helpers to be used for borehole processing.
+"""
+
 from __future__ import annotations
 
-import json
 import logging
 import re
-from functools import lru_cache
-from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any
 
 from lxml import etree
 
@@ -23,7 +24,7 @@ def _adjective_to_attributive(adjective: str) -> str:
     return adjective
 
 
-def _extract_meaning(mapped_symbol: str) -> Optional[str]:
+def _extract_meaning(mapped_symbol: str) -> str | None:
     """Pull ``Meaning`` out of a ``Code (Meaning)`` string."""
     match = re.fullmatch(r".+\s\((.+)\)", mapped_symbol)
     return match.group(1) if match else None
@@ -36,17 +37,17 @@ def _clean(value: Any) -> str:
     return str(value).strip()
 
 
-def _text(element: Optional[etree._Element], path: str) -> str:
+def _text(element: etree._Element | None, path: str) -> str:
     """Trimmed text of the first ``path`` match below ``element``."""
     if element is None:
         return ""
     return _clean(element.findtext(path))
 
 
-def _top_level_comma_parts(text: str) -> List[str]:
+def _top_level_comma_parts(text: str) -> list[str]:
     """Split on commas that are not inside ``(...)``."""
-    parts: List[str] = []
-    buf: List[str] = []
+    parts: list[str] = []
+    buf: list[str] = []
     depth = 0
     for char in text:
         if char == "(":
@@ -68,7 +69,7 @@ def _top_level_comma_parts(text: str) -> List[str]:
     return parts
 
 
-def _float_or_none(value: Any) -> Optional[float]:
+def _float_or_none(value: Any) -> float | None:
     text = _clean(value)
     if not text:
         return None
@@ -78,22 +79,7 @@ def _float_or_none(value: Any) -> Optional[float]:
         return None
 
 
-def _as_root(source: Union[etree._Element, etree._ElementTree, bytes, str, Path]) -> etree._Element:
-    """Normalize the accepted input types to a single XML root element."""
-    if isinstance(source, etree._ElementTree):
-        return source.getroot()
-    if isinstance(source, etree._Element):
-        return source
-    if isinstance(source, Path):
-        return etree.parse(str(source)).getroot()
-    if isinstance(source, bytes):
-        return etree.fromstring(source)
-    if isinstance(source, str):
-        return etree.fromstring(source.encode("utf-8"))
-    raise TypeError(f"Unsupported BoreholeML source type: {type(source).__name__}")
-
-
-def _split_rock_code(rock_code: str) -> Tuple[str, str]:
+def _split_rock_code(rock_code: str) -> tuple[str, str]:
     """Split a DIN ``rockCode`` into main and secondary components.
 
     Two notations occur in the Hamburg service: ``F(s4, hz4, ht2)`` puts the
@@ -114,8 +100,8 @@ def _split_rock_code(rock_code: str) -> Tuple[str, str]:
         return ("", "")
 
     if any("(" in token for token in tokens):
-        mains: List[str] = []
-        sides: List[str] = []
+        mains: list[str] = []
+        sides: list[str] = []
         for token in tokens:
             bracket = re.match(r"^\(?([^()]+)\)?\((.*)\)\s*$", token)
             if bracket:

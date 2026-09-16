@@ -24,7 +24,7 @@ from BIMFabrikHH_core.apps.boreholes.generic import (
     BoreholesGenericApp,
     load_borehole_records,
 )
-from BIMFabrikHH_core.apps.boreholes.processing_oo import BoreholeMLParser
+from BIMFabrikHH_core.apps.boreholes import BoreholeMLProcessor
 from BIMFabrikHH_core.config import get_logger, setup_logging
 
 logger = get_logger()
@@ -47,7 +47,7 @@ def main() -> None:
         )
         sys.exit(1)
 
-    parser = BoreholeMLParser()
+    parser = BoreholeMLProcessor()
     records = parser.from_file(fixture)
 
     if not records:

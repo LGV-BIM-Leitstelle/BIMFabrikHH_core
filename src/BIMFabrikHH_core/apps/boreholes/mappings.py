@@ -10,7 +10,7 @@ import logging
 from functools import lru_cache
 from pathlib import Path
 import re
-from typing import Any, Dict, Optional, Tuple, List
+from typing import Any
 
 from BIMFabrikHH_core.apps.boreholes.helper import UNDEFINED, _adjective_to_attributive, _clean, _split_rock_code, _extract_meaning
 
@@ -29,7 +29,7 @@ _CARBONATE_CONTENT_FILE = "carbonate_content_mapping.json"
 _CONSISTENCY_FILE = "consistency_mapping.json"
 
 # Chronostratigraphic codes seen in the Hamburg BoreholeML service.
-_STRATIGRAPHY_NAMES: Dict[str, str] = {
+_STRATIGRAPHY_NAMES: dict[str, str] = {
     "qh": "Quartär holozän",
     "qp": "Quartär pleistozän",
     "q": "Quartär",
@@ -74,7 +74,7 @@ class BoreholeMappings:
 
 
     @staticmethod
-    def _load_json(filename: str) -> Dict[str, Any]:
+    def _load_json(filename: str) -> dict[str, Any]:
         path = ASSETS_DIR / filename
         try:
             with path.open(encoding="utf-8") as handle:
@@ -87,6 +87,7 @@ class BoreholeMappings:
             return {}
         
         return data if isinstance(data, dict) else {}
+
 
     @staticmethod
     def _map_code(
@@ -105,13 +106,6 @@ class BoreholeMappings:
 
     def map_archive_id(self, borehole_id: str) -> str:
         """Map a BoreholeML ID to ``"archive_id"`` ("Archivnummer") assigned by Geologisches Landesamt Hamburg.
-
-        Args:
-            id: BoreholeML ID.
-            archive_id_mapping: Table from :func:`extract_id_mapping`.
-
-        Returns:
-            ``"archive_id"``.
         """
         text = _clean(borehole_id)
         mapping = self.archive_ids
@@ -248,7 +242,7 @@ class BoreholeMappings:
 
         compound_parts = re.split(r"([\-=/:])", symbol)
         if len(compound_parts) > 1:
-            meaning_parts: List[str] = []
+            meaning_parts: list[str] = []
             has_any_mapped_part = False
             for part in compound_parts:
                 if part in {"-", "=", "/", ":"}:
@@ -288,7 +282,7 @@ class BoreholeMappings:
         return symbol
 
 
-    def visual_color_for_hauptgemengteil(self, value: Any) -> Tuple[Tuple[int, int, int], str]:
+    def visual_color_for_hauptgemengteil(self, value: Any) -> tuple[tuple[int, int, int], str]:
         """Resolve the DIN 4023 display colour from the main soil component.
 
         The IFC colour intentionally comes from ``hauptgemengteil``, not from the
@@ -327,7 +321,7 @@ class BoreholeMappings:
 
 
     @staticmethod
-    def _rgb_tuple(raw: Any) -> Tuple[int, int, int]:
+    def _rgb_tuple(raw: Any) -> tuple[int, int, int]:
         """Coerce a JSON ``[r, g, b]`` entry into a 0-255 int triple."""
         if isinstance(raw, (list, tuple)) and len(raw) == 3:
             try:
@@ -339,3 +333,8 @@ class BoreholeMappings:
             return tuple(max(0, min(255, int(round(v)))) for v in values)  # type: ignore[return-value]
         return (254, 254, 254)
 
+
+
+__all__ = [
+    "BoreholeMappings"
+]
