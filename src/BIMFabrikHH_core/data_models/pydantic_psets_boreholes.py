@@ -12,6 +12,8 @@ from typing import ClassVar, Optional
 from ifcfactory import PropertySetTemplate
 from pydantic import AliasChoices, Field
 
+from BIMFabrikHH_core.apps.boreholes.helper import UNDEFINED
+
 
 class Pset_Aufschluss(PropertySetTemplate):
     """Borehole-level data (identical for every layer of one borehole)."""
@@ -21,17 +23,17 @@ class Pset_Aufschluss(PropertySetTemplate):
     aufschlussart: str = Field(
         validation_alias=AliasChoices("aufschlussart", "_Aufschlussart"),
         serialization_alias="_Aufschlussart",
-        default="undefiniert",
+        default=UNDEFINED,
     )
     aufschlussdatum: str = Field(
         validation_alias=AliasChoices("aufschlussdatum", "_Aufschlussdatum", "bohrdatum"),
         serialization_alias="_Aufschlussdatum",
-        default="undefiniert",
+        default=UNDEFINED,
     )
     aufschlussnummer: str = Field(
         validation_alias=AliasChoices("aufschlussnummer", "_Aufschlussnummer", "aufschlussbezeichnung"),
         serialization_alias="_Aufschlussnummer",
-        default="undefiniert",
+        default=UNDEFINED,
     )
     hoehenansatzpunkt: Optional[float] = Field(
         validation_alias=AliasChoices("hoehenansatzpunkt", "_HoeheAnsatzpunkt", "ansatzhoehe_nn"),
@@ -53,32 +55,32 @@ class Pset_Aufschlussbereich(PropertySetTemplate):
     bodenart: str = Field(
         validation_alias=AliasChoices("bodenart", "_Bodenart", "hauptgemengteil"),
         serialization_alias="_Bodenart",
-        default="undefiniert",
+        default=UNDEFINED,
     )
     bodenart_ergaenzung: str = Field(
         validation_alias=AliasChoices("bodenart_ergaenzung", "_BodenartErgaenzung", "nebengemengteil"),
         serialization_alias="_BodenartErgaenzung",
-        default="undefiniert",
+        default=UNDEFINED,
     )
     bohrvorgang: str = Field(
         validation_alias=AliasChoices("bohrvorgang", "_Bohrvorgang"),
         serialization_alias="_Bohrvorgang",
-        default="undefiniert",
+        default=UNDEFINED,
     )
     farbe: str = Field(
         validation_alias=AliasChoices("farbe", "_Farbe"),
         serialization_alias="_Farbe",
-        default="undefiniert",
+        default=UNDEFINED,
     )
     kalkgehalt: str = Field(
         validation_alias=AliasChoices("kalkgehalt", "_Kalkgehalt"),
         serialization_alias="_Kalkgehalt",
-        default="undefiniert",
+        default=UNDEFINED,
     )
     stratigrafie: str = Field(
         validation_alias=AliasChoices("stratigrafie", "_Stratigrafie", "stratigraphie", "_Stratigraphie"),
         serialization_alias="_Stratigrafie",
-        default="undefiniert",
+        default=UNDEFINED,
     )
 
 
@@ -127,32 +129,63 @@ class Pset_Schicht(PropertySetTemplate):
     bodengruppe: str = Field(
         validation_alias=AliasChoices("bodengruppe", "_Bodengruppe"),
         serialization_alias="_Bodengruppe",
-        default="undefiniert",
+        default=UNDEFINED,
     )
     bodenkonsistenz: str = Field(
         validation_alias=AliasChoices("bodenkonsistenz", "_Bodenkonsistenz", "konsistenz", "consistency"),
         serialization_alias="_Bodenkonsistenz",
-        default="undefiniert",
-    )
-    lagerungsdichte: str = Field(
-        validation_alias=AliasChoices("lagerungsdichte", "_Lagerungsdichte", "compactness"),
-        serialization_alias="_Lagerungsdichte",
-        default="undefiniert",
+        default=UNDEFINED,
     )
     geologische_bezeichnung: str = Field(
         validation_alias=AliasChoices("geologische_bezeichnung", "_GeologischeBezeichnung"),
         serialization_alias="_GeologischeBezeichnung",
-        default="undefiniert",
+        default=UNDEFINED,
+    )
+
+    durchlaessigkeitsbeiwert: float | None = Field(
+        validation_alias=AliasChoices("durchlaessigkeitsbeiwert", "_Durchlaessigkeitsbeiwert"),
+        serialization_alias="_Durchlaessigkeitsbeiwert",
+        default=None,
+    )
+    laga_klassifizierung: str | None = Field(
+        validation_alias=AliasChoices("laga_klassifizierung", "_LAGAKlassifizierung"),
+        serialization_alias="_LAGAKlassifizierung",
+        default=None,
+    )    
+    laga_status: str | None = Field(
+        validation_alias=AliasChoices("laga_status", "_LAGAStatus"),
+        serialization_alias="_LAGAStatus",
+        default=None,
+    )
+    lagerungsdichte: str | None = Field(
+        validation_alias=AliasChoices("lagerungsdichte", "_Lagerungsdichte", "compactness"),
+        serialization_alias="_Lagerungsdichte",
+        default=None,
+    )
+    rammbarkeit: str | None = Field(
+        validation_alias=AliasChoices("rammbarkeit", "_Rammbarkeit"),
+        serialization_alias="_Rammbarkeit",
+        default=None,
+    )
+    schichtnummer: str | None  = Field(
+        validation_alias=AliasChoices("schichtnummer", "_Schichtnummer"),
+        serialization_alias="_Schichtnummer",
+        default=None,
+    )
+    verklebungspotential: str | None  = Field(
+        validation_alias=AliasChoices("verklebungspotential", "_Verklebungspotential"),
+        serialization_alias="_Verklebungspotential",
+        default=None,
     )
     genese: str = Field(
         validation_alias=AliasChoices("genese", "_Genese", "genesis"),
         serialization_alias="_Genese",
-        default="undefiniert",
+        default=UNDEFINED,
     )
     geogenese: str = Field(
         validation_alias=AliasChoices("geogenese", "_Geogenese", "geogenesis"),
         serialization_alias="_Geogenese",
-        default="undefiniert",
+        default=UNDEFINED,
     )
 
 
