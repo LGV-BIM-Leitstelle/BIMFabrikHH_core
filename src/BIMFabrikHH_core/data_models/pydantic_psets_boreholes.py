@@ -141,42 +141,6 @@ class Pset_Schicht(PropertySetTemplate):
         serialization_alias="_GeologischeBezeichnung",
         default=UNDEFINED,
     )
-
-    durchlaessigkeitsbeiwert: float | None = Field(
-        validation_alias=AliasChoices("durchlaessigkeitsbeiwert", "_Durchlaessigkeitsbeiwert"),
-        serialization_alias="_Durchlaessigkeitsbeiwert",
-        default=None,
-    )
-    laga_klassifizierung: str | None = Field(
-        validation_alias=AliasChoices("laga_klassifizierung", "_LAGAKlassifizierung"),
-        serialization_alias="_LAGAKlassifizierung",
-        default=None,
-    )    
-    laga_status: str | None = Field(
-        validation_alias=AliasChoices("laga_status", "_LAGAStatus"),
-        serialization_alias="_LAGAStatus",
-        default=None,
-    )
-    lagerungsdichte: str | None = Field(
-        validation_alias=AliasChoices("lagerungsdichte", "_Lagerungsdichte", "compactness"),
-        serialization_alias="_Lagerungsdichte",
-        default=None,
-    )
-    rammbarkeit: str | None = Field(
-        validation_alias=AliasChoices("rammbarkeit", "_Rammbarkeit"),
-        serialization_alias="_Rammbarkeit",
-        default=None,
-    )
-    schichtnummer: str | None  = Field(
-        validation_alias=AliasChoices("schichtnummer", "_Schichtnummer"),
-        serialization_alias="_Schichtnummer",
-        default=None,
-    )
-    verklebungspotential: str | None  = Field(
-        validation_alias=AliasChoices("verklebungspotential", "_Verklebungspotential"),
-        serialization_alias="_Verklebungspotential",
-        default=None,
-    )
     genese: str = Field(
         validation_alias=AliasChoices("genese", "_Genese", "genesis"),
         serialization_alias="_Genese",

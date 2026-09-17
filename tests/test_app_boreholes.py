@@ -480,7 +480,6 @@ def test_parsed_record_carries_expected_psets(processor: BoreholeMLProcessor) ->
     assert schicht.geogenese == "yf (Auffüllung)"
     assert schicht.geologische_bezeichnung == "Mittelsand, Bauschutt"
     assert schicht.bodenkonsistenz == UNDEFINED
-    assert schicht.lagerungsdichte == UNDEFINED
 
     assert isinstance(layer.psets["Pset_Objektinformation"], Pset_Objektinformation_Borehole)
 

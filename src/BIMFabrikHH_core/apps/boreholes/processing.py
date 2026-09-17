@@ -352,7 +352,6 @@ class BoreholeMLProcessor:
             farbe=rock_color,
             kalkgehalt=_text(interval, f"{{{BML_NS}}}carbonateContent"),
             konsistenz=_text(interval, f"{{{BML_NS}}}consistency"),
-            lagerungsdichte=_text(interval, f"{{{BML_NS}}}compactness"),
             visual_rgb=visual_rgb,
             din_color_name=din_color_name,
         )
@@ -405,7 +404,6 @@ class BoreholeMLProcessor:
             genese=self._mappings.map_genesis(layer.genese),
             geogenese=self._mappings.map_geogenesis(layer.geogenese),
             bodenkonsistenz=self._mappings.map_consistency(layer.konsistenz),
-            lagerungsdichte=self._mappings.map_compactness(layer.lagerungsdichte),
             geologische_bezeichnung=layer.rock_name_text or UNDEFINED,
         )
         objektinformation = Pset_Objektinformation_Borehole()

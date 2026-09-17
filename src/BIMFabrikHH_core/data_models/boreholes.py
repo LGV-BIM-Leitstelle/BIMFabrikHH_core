@@ -47,7 +47,6 @@ class BoreholeLayer(BaseModel):
     farbe: str = Field(default="", description="``rockColor`` code")
     kalkgehalt: str = Field(default="", description="``carbonateContent`` code")
     konsistenz: str = Field(default="", description="``consistency`` code")
-    lagerungsdichte: str = Field(default="", description="``compactness`` code")
 
     visual_rgb: tuple[int, int, int] = Field(
         default=(254, 254, 254),
