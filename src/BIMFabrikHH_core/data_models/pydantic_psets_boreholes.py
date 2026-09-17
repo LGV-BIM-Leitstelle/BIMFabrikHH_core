@@ -15,7 +15,7 @@ from pydantic import AliasChoices, Field
 from BIMFabrikHH_core.apps.boreholes.helper import UNDEFINED
 
 
-class Pset_Aufschluss(PropertySetTemplate):
+class Pset_Aufschluss_Borehole(PropertySetTemplate):
     """Borehole-level data (identical for every layer of one borehole)."""
 
     pset_name: ClassVar[str] = "Pset_Aufschluss"
@@ -47,7 +47,7 @@ class Pset_Aufschluss(PropertySetTemplate):
     )
 
 
-class Pset_Aufschlussbereich(PropertySetTemplate):
+class Pset_Aufschlussbereich_Borehole(PropertySetTemplate):
     """Layer-level soil description (Bodenart, Farbe, Stratigraphie)."""
 
     pset_name: ClassVar[str] = "Pset_Aufschlussbereich"
@@ -121,7 +121,7 @@ class Pset_Objektinformation_Borehole(PropertySetTemplate):
     )
 
 
-class Pset_Schicht(PropertySetTemplate):
+class Pset_Schicht_Borehole(PropertySetTemplate):
     """Layer-level geotechnical classification."""
 
     pset_name: ClassVar[str] = "Pset_Schicht"
@@ -155,8 +155,8 @@ class Pset_Schicht(PropertySetTemplate):
 
 
 __all__ = [
-    "Pset_Aufschluss",
-    "Pset_Aufschlussbereich",
+    "Pset_Aufschluss_Borehole",
+    "Pset_Aufschlussbereich_Borehole",
     "Pset_Objektinformation_Borehole",
-    "Pset_Schicht",
+    "Pset_Schicht_Borehole",
 ]

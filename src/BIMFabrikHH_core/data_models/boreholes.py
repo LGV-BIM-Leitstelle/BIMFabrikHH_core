@@ -72,10 +72,16 @@ class BoreholeRecord(BaseModel):
     bohrdatum: str = Field(default="", description="``bml:drillingDate`` (ISO date)")
     bohrvorgang: str = Field(default="", description="``bml:drillingMethod`` code (drilling method)")
     projekt: str = Field(default="", description="``bml:project``")
-    groundwater: Optional[float] = Field(description="Groundwater entry depth ``bml:groundwater/bml:Groundwater/gml:entryDepth``")
+    groundwater: Optional[BoreholeWater] = Field(description="Groundwater entry depth ``bml:groundwater/bml:Groundwater/gml:entryDepth``")
     # Distance from the starting point of the borehole to the point of first contact with groundwater 
     # TODO: calc. absolute depth instead of relative?
     layers: List[BoreholeLayer] = Field(default_factory=list)
+    psets: Dict[str, BaseModel] = Field(default_factory=dict)
+
+
+class BoreholeWater(BaseModel):
+    "The groundwater information for one ``bml:Borehole`` feature"
+    entry_depth: Optional[float] = Field(default=None, description="``bml:entryDepth`` in m (Distance from the starting point of the borehole to the point of first contact with groundwater. D)")
     psets: Dict[str, BaseModel] = Field(default_factory=dict)
 
 
@@ -124,7 +130,7 @@ def collect_groundwater_psets(
         return []
 
     out: List[BaseModel] = []
-    for source, scope in ((record.psets, record.borehole_id),):
+    for source, scope in ((record.psets, record.borehole_id), (record.groundwater.psets, record.borehole_id + " groundwater")):
         for pset_name, value in source.items():
             if isinstance(value, BaseModel):
                 out.append(value)

@@ -24,7 +24,7 @@ import time
 from pathlib import Path
 from typing import Callable, Dict, List, Optional, Tuple, Union
 
-from ifcfactory import BIMFactoryElement, Cylinder, Circle, Material, Style, Transform, Extrusion
+from ifcfactory import BIMFactoryElement, Cylinder, Circle, Material, Rect, Style, Transform, Extrusion
 from pydantic import BaseModel
 
 from BIMFabrikHH_core.config.logging_config import get_logger
@@ -140,38 +140,18 @@ def _circle_element_from_water(
     if record.groundwater is None:
         return None
 
-    groundwater: float =  record.ansatzhoehe_nn - record.groundwater
+    groundwater: float =  record.ansatzhoehe_nn - record.groundwater.entry_depth
     water_color = (0.05, 0.53, 0.8)
     transparency = 0.8
     material = Material(name="WATER01", category="water", rgb=water_color, transparency=transparency)
     cad_layer = _cad_layer_name("water")
 
-    # circle = Circle(radius=circle_radius)
-    # extruded = Extrusion(basis=circle, depth=groundwater)
-    # styled = Style(
-    #     item=extruded,
-    #     rgb=water_color,
-    #     transparency=transparency,
-    # )
-    # placed = Transform(
-    #     item=styled,
-    #     translation=(record.easting, record.northing),
-    # )
-
-    # return BIMFactoryElement(
-    #     type="IfcBuildingElementProxy",
-    #     material=material,
-    #     name=_element_name_groundwater(record),
-    #     qsets=False,
-    #     children=[placed],
-    #     # psets=element_psets,
-    # )
-
+    circle = Rect(width=circle_radius, height=circle_radius)
+    extruded = Extrusion(basis=circle, depth=0.01)
     styled = Style(
-        item=Cylinder(radius=circle_radius, height=0.01),
+        item=extruded,
         rgb=water_color,
         transparency=transparency,
-        cad_layer=cad_layer,
     )
     placed = Transform(
         item=styled,

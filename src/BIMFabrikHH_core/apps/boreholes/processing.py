@@ -18,17 +18,23 @@ from pathlib import Path
 from lxml import etree
 from pydantic import BaseModel
 
-from BIMFabrikHH_core.data_models.boreholes import BoreholeLayer, BoreholeRecord
+from BIMFabrikHH_core.data_models.boreholes import BoreholeLayer, BoreholeRecord, BoreholeWater
 from .mappings import BoreholeMappings
 from .helper import UNDEFINED, _clean, _text, _float_or_none, _split_rock_code
 
 from BIMFabrikHH_core.data_models.pydantic_psets_BIMHH import Pset_Hyperlink
 from BIMFabrikHH_core.data_models.pydantic_psets_boreholes import (
-    Pset_Aufschluss,
-    Pset_Aufschlussbereich,
     Pset_Objektinformation_Borehole,
-    Pset_Schicht,
+    Pset_Aufschluss_Borehole,
+    Pset_Aufschlussbereich_Borehole,
+    Pset_Schicht_Borehole,
 )
+from BIMFabrikHH_core.data_models.pydantic_psets_groundwater import (
+    Pset_Objektinformation_Water,
+    Pset_Schicht_Water,
+    Pset_Wasser_Water
+)
+
 
 logger = logging.getLogger(__name__)
 
@@ -143,7 +149,7 @@ class BoreholeMLProcessor:
             return None
         easting, northing, ansatzhoehe_nn = position
 
-        groundwater_entry_depth, _, _ = self._parse_groundwater(borehole)
+        water = self._parse_groundwater(borehole, borehole_id)
 
         full_name = _text(borehole, f"{{{BML_NS}}}fullName/{{{GMD_NS}}}LocalisedCharacterString")
         short_name = _text(borehole, f"{{{BML_NS}}}shortName/{{{GMD_NS}}}LocalisedCharacterString")
@@ -162,7 +168,7 @@ class BoreholeMLProcessor:
             bohrdatum=_text(borehole, f"{{{BML_NS}}}drillingDate"),
             bohrvorgang=bohrvorgang_text,
             projekt=_text(borehole, f"{{{BML_NS}}}project"),
-            groundwater=groundwater_entry_depth,
+            groundwater=water,
         )
 
         interval_series = self._find_latest_interval_series(borehole)
@@ -173,7 +179,7 @@ class BoreholeMLProcessor:
             return None
         
         record.psets = {
-            Pset_Aufschluss.pset_name: Pset_Aufschluss(
+            Pset_Aufschluss_Borehole.pset_name: Pset_Aufschluss_Borehole(
                 aufschlussart="Bohrung",
                 aufschlussdatum=record.bohrdatum or UNDEFINED,
                 aufschlussnummer=record.aufschlussbezeichnung,
@@ -186,8 +192,8 @@ class BoreholeMLProcessor:
             ),
         }
         for layer in record.layers:
-            bereich = layer.psets.get(Pset_Aufschlussbereich.pset_name)
-            if isinstance(bereich, Pset_Aufschlussbereich):
+            bereich = layer.psets.get(Pset_Aufschlussbereich_Borehole.pset_name)
+            if isinstance(bereich, Pset_Aufschlussbereich_Borehole):
                 bereich.bohrvorgang = record.bohrvorgang or UNDEFINED
         return record
 
@@ -241,15 +247,7 @@ class BoreholeMLProcessor:
         return (easting, northing, height if height is not None else 0.0)
 
 
-    @staticmethod
-    def _parse_groundwater(borehole: etree._Element) -> tuple[float | None, float | None, float | None] :
-        """
-        Read the groundwater information (``bml:entryDepth``, ``bml:balancedLevel``, ``bml:endLevel``).
-        """
-        entry_depth = _float_or_none(_text(borehole, f"{{{BML_NS}}}groundwater/{{{BML_NS}}}Groundwater/{{{BML_NS}}}entryDepth"))
-        balanced_level = _float_or_none(_text(borehole, f"{{{BML_NS}}}groundwater/{{{BML_NS}}}Groundwater/{{{BML_NS}}}balancedLevel"))
-        end_level = _float_or_none(_text(borehole, f"{{{BML_NS}}}groundwater/{{{BML_NS}}}Groundwater/{{{BML_NS}}}endLevel"))
-        return (entry_depth, balanced_level, end_level)
+
 
 
     @staticmethod
@@ -391,16 +389,33 @@ class BoreholeMLProcessor:
         return (rock_codes[0], ", ".join(rock_codes[1:]), color)
 
 
+    def _parse_groundwater(self, borehole: etree._Element, borehole_id: str) -> BoreholeWater | None:
+        """
+        Read the groundwater information (``bml:entryDepth``, ``bml:balancedLevel``, ``bml:endLevel``) and build one :class:`BoreholeWater`; ``None`` when unusable.
+        """
+        entry_depth = _float_or_none(_text(borehole, f"{{{BML_NS}}}groundwater/{{{BML_NS}}}Groundwater/{{{BML_NS}}}entryDepth"))
+        if entry_depth is None:
+            logger.warning("Borehole %s: missing groundwater entry depth; skipped", borehole_id)
+            return None
+    
+        balanced_level = _float_or_none(_text(borehole, f"{{{BML_NS}}}groundwater/{{{BML_NS}}}Groundwater/{{{BML_NS}}}balancedLevel"))
+        end_level = _float_or_none(_text(borehole, f"{{{BML_NS}}}groundwater/{{{BML_NS}}}Groundwater/{{{BML_NS}}}endLevel"))
+
+        water = BoreholeWater(entry_depth=entry_depth)
+        water.psets = self._build_water_psets(water)
+        return water
+
+
     def _build_layer_psets(self, layer: BoreholeLayer) -> dict[str, BaseModel]:
-        """Build the layer-level pset templates with DIN texts resolved."""
-        aufschlussbereich = Pset_Aufschlussbereich(
+        """Build the layer-level pset templates with codes resolved."""
+        aufschlussbereich = Pset_Aufschlussbereich_Borehole(
             bodenart=self._mappings.map_hauptgemengteil(layer.hauptgemengteil),
             bodenart_ergaenzung=self._mappings.map_nebengemengteil(layer.nebengemengteil),
             farbe=self._mappings.map_rock_color(layer.farbe),
             kalkgehalt=self._mappings.map_carbonate(layer.kalkgehalt),
             stratigrafie=self._mappings.map_chronostratigraphy(layer.stratigraphie),
         )
-        schicht = Pset_Schicht(
+        schicht = Pset_Schicht_Borehole(
             genese=self._mappings.map_genesis(layer.genese),
             geogenese=self._mappings.map_geogenesis(layer.geogenese),
             bodenkonsistenz=self._mappings.map_consistency(layer.konsistenz),
@@ -409,11 +424,23 @@ class BoreholeMLProcessor:
         objektinformation = Pset_Objektinformation_Borehole()
 
         return {
-            Pset_Aufschlussbereich.pset_name: aufschlussbereich,
-            Pset_Schicht.pset_name: schicht,
-            Pset_Objektinformation_Borehole.pset_name: objektinformation,
+            Pset_Aufschlussbereich_Borehole.pset_name: aufschlussbereich,
+            Pset_Schicht_Borehole.pset_name: schicht,
+            Pset_Objektinformation_Water.pset_name: objektinformation,
         }
 
+
+    def _build_water_psets(self, water: BoreholeWater) -> dict[str, BaseModel]:
+        """Build the groundwater pset templates."""
+        wasser = Pset_Wasser_Water(wasserstandhoehe=water.entry_depth)
+        schicht = Pset_Schicht_Water(schichtnummer=UNDEFINED)
+        objektinformation = Pset_Objektinformation_Water()
+
+        return {
+            Pset_Wasser_Water.pset_name: wasser,
+            Pset_Schicht_Water.pset_name: schicht,
+            Pset_Objektinformation_Water.pset_name: objektinformation,
+        }    
 
 
 __all__ = [
