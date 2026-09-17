@@ -143,7 +143,7 @@ class BoreholeMLProcessor:
             return None
         easting, northing, ansatzhoehe_nn = position
 
-        groundwater = self._parse_groundwater(borehole)
+        groundwater_entry_depth, _, _ = self._parse_groundwater(borehole)
 
         full_name = _text(borehole, f"{{{BML_NS}}}fullName/{{{GMD_NS}}}LocalisedCharacterString")
         short_name = _text(borehole, f"{{{BML_NS}}}shortName/{{{GMD_NS}}}LocalisedCharacterString")
@@ -162,6 +162,7 @@ class BoreholeMLProcessor:
             bohrdatum=_text(borehole, f"{{{BML_NS}}}drillingDate"),
             bohrvorgang=bohrvorgang_text,
             projekt=_text(borehole, f"{{{BML_NS}}}project"),
+            groundwater=groundwater_entry_depth,
         )
 
         interval_series = self._find_latest_interval_series(borehole)
@@ -241,13 +242,13 @@ class BoreholeMLProcessor:
 
 
     @staticmethod
-    def _parse_groundwater(borehole: etree._Element) -> tuple[float, float, float] | None:
+    def _parse_groundwater(borehole: etree._Element) -> tuple[float | None, float | None, float | None] :
         """
         Read the groundwater information (``bml:entryDepth``, ``bml:balancedLevel``, ``bml:endLevel``).
         """
-        entry_depth = _float_or_none(_text(borehole, f"{{{BML_NS}}}groundwater/{{{BML_NS}}}Groundwater/{{{GML_NS}}}entryDepth"))
-        balanced_level = _float_or_none(_text(borehole, f"{{{BML_NS}}}groundwater/{{{BML_NS}}}Groundwater/{{{GML_NS}}}balancedLevel"))
-        end_level = _float_or_none(_text(borehole, f"{{{BML_NS}}}groundwater/{{{BML_NS}}}Groundwater/{{{GML_NS}}}endLevel"))
+        entry_depth = _float_or_none(_text(borehole, f"{{{BML_NS}}}groundwater/{{{BML_NS}}}Groundwater/{{{BML_NS}}}entryDepth"))
+        balanced_level = _float_or_none(_text(borehole, f"{{{BML_NS}}}groundwater/{{{BML_NS}}}Groundwater/{{{BML_NS}}}balancedLevel"))
+        end_level = _float_or_none(_text(borehole, f"{{{BML_NS}}}groundwater/{{{BML_NS}}}Groundwater/{{{BML_NS}}}endLevel"))
         return (entry_depth, balanced_level, end_level)
 
 

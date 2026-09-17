@@ -73,7 +73,9 @@ class BoreholeRecord(BaseModel):
     bohrdatum: str = Field(default="", description="``bml:drillingDate`` (ISO date)")
     bohrvorgang: str = Field(default="", description="``bml:drillingMethod`` code (drilling method)")
     projekt: str = Field(default="", description="``bml:project``")
-
+    groundwater: Optional[float] = Field(description="Groundwater entry depth ``bml:groundwater/bml:Groundwater/gml:entryDepth``")
+    # Distance from the starting point of the borehole to the point of first contact with groundwater 
+    # TODO: calc. absolute depth instead of relative?
     layers: List[BoreholeLayer] = Field(default_factory=list)
     psets: Dict[str, BaseModel] = Field(default_factory=dict)
 
@@ -99,6 +101,31 @@ def collect_borehole_psets(
 
     out: List[BaseModel] = []
     for source, scope in ((record.psets, record.borehole_id), (layer.psets, layer.layer_id)):
+        for pset_name, value in source.items():
+            if isinstance(value, BaseModel):
+                out.append(value)
+            else:
+                logger.warning(
+                    "Borehole %s: pset '%s' is not a pydantic BaseModel (got %s); skipped.",
+                    scope,
+                    pset_name,
+                    type(value).__name__,
+                )
+    return out
+
+
+def collect_groundwater_psets(
+    record: BoreholeRecord,
+    *,
+    include_property_sets: bool = True,
+) -> List[BaseModel]:
+    """
+    """
+    if not include_property_sets:
+        return []
+
+    out: List[BaseModel] = []
+    for source, scope in ((record.psets, record.borehole_id),):
         for pset_name, value in source.items():
             if isinstance(value, BaseModel):
                 out.append(value)

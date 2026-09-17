@@ -24,7 +24,7 @@ import time
 from pathlib import Path
 from typing import Callable, Dict, List, Optional, Tuple, Union
 
-from ifcfactory import BIMFactoryElement, Cylinder, Material, Style, Transform
+from ifcfactory import BIMFactoryElement, Cylinder, Circle, Material, Style, Transform, Extrusion
 from pydantic import BaseModel
 
 from BIMFabrikHH_core.config.logging_config import get_logger
@@ -35,6 +35,7 @@ from BIMFabrikHH_core.data_models.boreholes import (
     BoreholeLayer,
     BoreholeRecord,
     collect_borehole_psets,
+    collect_groundwater_psets
 )
 from BIMFabrikHH_core.data_models.params_tree import RequestParams
 from BIMFabrikHH_core.data_models.pydantic_georeferencing import (
@@ -48,8 +49,11 @@ logger = get_logger("boreholes_generic_app")
 RgbTuple = Union[Tuple[float, float, float], Tuple[int, int, int]]
 
 _DEFAULT_LAYER_PREFIX: str = "_Bodenaufschluesse"
+_DEFAULT_WATER_PREFIX: str = "_Grundwasser"
 _DEFAULT_OUTPUT_NAME: str = "output_boreholes_generic.ifc"
 _DEFAULT_CYLINDER_RADIUS_M: float = 0.5
+_DEFAULT_WATER_CIRCLE_RADIUS: float = _DEFAULT_CYLINDER_RADIUS_M * 4
+_DEFAULT_EXTRUSION_DEPTH_M: float = 30.0
 _DEFAULT_BASEPOINT_SIZE: float = 8.0
 
 PhaseTimings = dict
@@ -71,6 +75,11 @@ def _material_name(farbe: str, din_color_name: str) -> str:
 def _element_name(record: BoreholeRecord, layer: BoreholeLayer) -> str:
     """``<Aufschlussbezeichnung>_<Bohrung>_<Nr>``; ``layer_id`` already carries the borehole id."""
     return f"{record.aufschlussbezeichnung}_{layer.layer_id}".replace(" ", "_")[:120]
+
+
+def _element_name_groundwater(record: BoreholeRecord) -> str:
+    """``<Aufschlussbezeichnung>_<Bohrung>_Grundwasser``"""
+    return f"{record.aufschlussbezeichnung}_{record.borehole_id}_Grundwasser".replace(" ", "_")[:120]
 
 
 def _cylinder_element_from_layer(
@@ -117,6 +126,67 @@ def _cylinder_element_from_layer(
         type="IfcBuildingElementProxy",
         material=material,
         name=_element_name(record, layer),
+        qsets=False,
+        children=[placed],
+        psets=element_psets,
+    )
+
+
+def _circle_element_from_water(
+        *,
+        record: BoreholeRecord,
+        circle_radius: float,
+        ) -> BIMFactoryElement | None:
+    if record.groundwater is None:
+        return None
+
+    groundwater: float =  record.ansatzhoehe_nn - record.groundwater
+    water_color = (0.05, 0.53, 0.8)
+    transparency = 0.8
+    material = Material(name="WATER01", category="water", rgb=water_color, transparency=transparency)
+    cad_layer = _cad_layer_name("water")
+
+    # circle = Circle(radius=circle_radius)
+    # extruded = Extrusion(basis=circle, depth=groundwater)
+    # styled = Style(
+    #     item=extruded,
+    #     rgb=water_color,
+    #     transparency=transparency,
+    # )
+    # placed = Transform(
+    #     item=styled,
+    #     translation=(record.easting, record.northing),
+    # )
+
+    # return BIMFactoryElement(
+    #     type="IfcBuildingElementProxy",
+    #     material=material,
+    #     name=_element_name_groundwater(record),
+    #     qsets=False,
+    #     children=[placed],
+    #     # psets=element_psets,
+    # )
+
+    styled = Style(
+        item=Cylinder(radius=circle_radius, height=0.01),
+        rgb=water_color,
+        transparency=transparency,
+        cad_layer=cad_layer,
+    )
+    placed = Transform(
+        item=styled,
+        translation=(record.easting, record.northing, groundwater),
+    )
+
+    element_psets: List[BaseModel] = collect_groundwater_psets(
+        record,
+        include_property_sets=True,
+    )
+
+    return BIMFactoryElement(
+        type="IfcBuildingElementProxy",
+        material=material,
+        name=_element_name_groundwater(record),
         qsets=False,
         children=[placed],
         psets=element_psets,
@@ -207,6 +277,9 @@ class BoreholesGenericApp:
                     )
                     if on_progress:
                         on_progress()
+                water_circle = _circle_element_from_water(record=record, circle_radius=_DEFAULT_WATER_CIRCLE_RADIUS)
+                if water_circle:
+                    elements.append(water_circle)
 
             if phase_timings is not None:
                 phase_timings["prepare_elements_s"] = time.perf_counter() - _t0
