@@ -24,8 +24,8 @@ from BIMFabrikHH_core.data_models.params_bbox import BoundingBoxParams
 from BIMFabrikHH_core.data_models.params_tree import RequestParams
 from BIMFabrikHH_core.data_models.pydantic_psets_BIMHH import Pset_Hyperlink
 from BIMFabrikHH_core.data_models.pydantic_psets_boreholes import (
-    Pset_Aufschluss, Pset_Aufschlussbereich, Pset_Objektinformation_Borehole,
-    Pset_Schicht)
+    Pset_Aufschluss_Borehole, Pset_Aufschlussbereich_Borehole, Pset_Objektinformation_Borehole,
+    Pset_Schicht_Borehole)
 
 BML = "http://www.infogeo.de/boreholeml/3.0"
 GML = "http://www.opengis.net/gml/3.2"
@@ -430,20 +430,20 @@ def test_parsed_record_carries_expected_psets(processor: BoreholeMLProcessor) ->
     assert set(layer.psets) == {"Pset_Aufschlussbereich", "Pset_Schicht", "Pset_Objektinformation"}
 
     aufschluss = record.psets["Pset_Aufschluss"]
-    assert isinstance(aufschluss, Pset_Aufschluss)
+    assert isinstance(aufschluss, Pset_Aufschluss_Borehole)
     assert aufschluss.aufschlussart == "Bohrung"
     assert aufschluss.aufschlussnummer == "B.45"
     assert aufschluss.hoehenansatzpunkt == pytest.approx(14.3)
 
     bereich = layer.psets["Pset_Aufschlussbereich"]
-    assert isinstance(bereich, Pset_Aufschlussbereich)
+    assert isinstance(bereich, Pset_Aufschlussbereich_Borehole)
     assert bereich.bodenart == "mS (Mittelsand)"
     assert bereich.bohrvorgang == "UN (unbekanntes Bohrverfahren)"
     assert bereich.kalkgehalt == "c3 (karbonathaltig)"
     assert bereich.stratigrafie.startswith("qh (")
 
     schicht = layer.psets["Pset_Schicht"]
-    assert isinstance(schicht, Pset_Schicht)
+    assert isinstance(schicht, Pset_Schicht_Borehole)
     assert schicht.genese == UNDEFINED
     assert schicht.geogenese == "yf (Auffüllung)"
     assert schicht.geologische_bezeichnung == "Mittelsand, Bauschutt"
@@ -459,12 +459,12 @@ def test_collect_borehole_psets_merges_both_levels(processor: BoreholeMLProcesso
 
     assert len(psets) == 5
     assert all(isinstance(pset, BaseModel) for pset in psets)
-    assert isinstance(psets[0], Pset_Aufschluss)
+    assert isinstance(psets[0], Pset_Aufschluss_Borehole)
     assert {type(pset) for pset in psets} == {
-        Pset_Aufschluss,
+        Pset_Aufschluss_Borehole,
         Pset_Hyperlink,
-        Pset_Aufschlussbereich,
-        Pset_Schicht,
+        Pset_Aufschlussbereich_Borehole,
+        Pset_Schicht_Borehole,
         Pset_Objektinformation_Borehole,
     }
 
@@ -484,7 +484,7 @@ def test_collect_borehole_psets_skips_non_pydantic_values(processor: BoreholeMLP
 
 
 def test_serialized_pset_uses_bimhh_aliases() -> None:
-    dumped = Pset_Aufschlussbereich(bodenart="mS (Mittelsand)").model_dump(by_alias=True)
+    dumped = Pset_Aufschlussbereich_Borehole(bodenart="mS (Mittelsand)").model_dump(by_alias=True)
     assert dumped["_Bodenart"] == "mS (Mittelsand)"
 
 
@@ -540,5 +540,6 @@ def test_build_ifc_returns_none_when_records_have_no_layers() -> None:
         easting=565084.16,
         northing=5934034.654,
         ansatzhoehe_nn=14.3,
+        groundwater=None,
     )
     assert BoreholesGenericApp.build_ifc([record], request_params=request_params) is None
