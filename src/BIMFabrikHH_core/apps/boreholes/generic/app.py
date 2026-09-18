@@ -24,8 +24,9 @@ import time
 from pathlib import Path
 from typing import Callable, Dict, List, Optional, Tuple, Union
 
-from ifcfactory import BIMFactoryElement, Cylinder, Circle, Material, Rect, Style, Transform, Extrusion
+from ifcfactory import BIMFactoryElement, Cylinder, Circle, Material, MeshRepresentation, Rect, Style, Transform, Extrusion
 from pydantic import BaseModel
+from numpy import array
 
 from BIMFabrikHH_core.config.logging_config import get_logger
 from BIMFabrikHH_core.core.geometry import place_basepoint
@@ -52,8 +53,7 @@ _DEFAULT_LAYER_PREFIX: str = "_Bodenaufschluesse"
 _DEFAULT_WATER_PREFIX: str = "_Grundwasser"
 _DEFAULT_OUTPUT_NAME: str = "output_boreholes_generic.ifc"
 _DEFAULT_CYLINDER_RADIUS_M: float = 0.5
-_DEFAULT_WATER_CIRCLE_RADIUS: float = _DEFAULT_CYLINDER_RADIUS_M * 4
-_DEFAULT_EXTRUSION_DEPTH_M: float = 30.0
+_DEFAULT_WATER_SQUARE_LENGTH: float = 3.0
 _DEFAULT_BASEPOINT_SIZE: float = 8.0
 
 PhaseTimings = dict
@@ -132,24 +132,35 @@ def _cylinder_element_from_layer(
     )
 
 
-def _circle_element_from_water(
+def _square_element_from_water(
         *,
         record: BoreholeRecord,
-        circle_radius: float,
+        length: float,
+        water_color: RgbTuple = (0.05, 0.53, 0.8),
+        transparency: float = 0.8
         ) -> BIMFactoryElement | None:
     if record.groundwater is None:
         return None
 
     groundwater: float =  record.ansatzhoehe_nn - record.groundwater.entry_depth
-    water_color = (0.05, 0.53, 0.8)
-    transparency = 0.8
     material = Material(name="WATER01", category="water", rgb=water_color, transparency=transparency)
-    cad_layer = _cad_layer_name("water")
 
-    circle = Rect(width=circle_radius, height=circle_radius)
-    extruded = Extrusion(basis=circle, depth=0.01)
+    h = 0.5 * length
+    vertices = [
+        (-h, -h, 0),
+        (-h, +h, 0),
+        (+h, +h, 0),
+        (+h, -h, 0)
+    ]
+
+    faces = [
+        [0, 1, 2, 3]
+    ]
+
+    custom_mesh = MeshRepresentation(vertices=vertices, faces=faces)
+    
     styled = Style(
-        item=extruded,
+        item=custom_mesh,
         rgb=water_color,
         transparency=transparency,
     )
@@ -240,10 +251,11 @@ class BoreholesGenericApp:
 
             _t0 = time.perf_counter()
             materials: Dict[str, Material] = {}
-            elements: List[BIMFactoryElement] = []
+            layer_elements: List[BIMFactoryElement] = []
+            water_elements: List[BIMFactoryElement] = []
             for record in records:
                 for layer in record.layers:
-                    elements.append(
+                    layer_elements.append(
                         _cylinder_element_from_layer(
                             record=record,
                             layer=layer,
@@ -257,20 +269,21 @@ class BoreholesGenericApp:
                     )
                     if on_progress:
                         on_progress()
-                water_circle = _circle_element_from_water(record=record, circle_radius=_DEFAULT_WATER_CIRCLE_RADIUS)
-                if water_circle:
-                    elements.append(water_circle)
+                water_square = _square_element_from_water(record=record, length=_DEFAULT_WATER_SQUARE_LENGTH)
+                if water_square:
+                    water_elements.append(water_square)
 
             if phase_timings is not None:
                 phase_timings["prepare_elements_s"] = time.perf_counter() - _t0
 
-            if not elements:
+            if not layer_elements:
                 logger.error("No layers found on the given borehole records.")
                 return None
 
             logger.info(
-                "Building %d layer cylinder(s) from %d borehole(s), %d material(s)",
-                len(elements),
+                "Building %d layer cylinder(s) and %d groundwater square(s) from %d borehole(s), %d material(s) detected",
+                len(layer_elements),
+                len(water_elements),
                 len(records),
                 len(materials),
             )
@@ -279,7 +292,7 @@ class BoreholesGenericApp:
             BIMFactoryElement.build_in(
                 model,
                 inst=model_builder.site,
-                items=elements,
+                items=layer_elements+water_elements,
                 on_progress=None,
             )
             if phase_timings is not None:
