@@ -401,7 +401,7 @@ class BoreholeMLProcessor:
         balanced_level = _float_or_none(_text(borehole, f"{{{BML_NS}}}groundwater/{{{BML_NS}}}Groundwater/{{{BML_NS}}}balancedLevel"))
         end_level = _float_or_none(_text(borehole, f"{{{BML_NS}}}groundwater/{{{BML_NS}}}Groundwater/{{{BML_NS}}}endLevel"))
 
-        water = BoreholeWater(entry_depth=entry_depth)
+        water = BoreholeWater(entry_depth=entry_depth, balanced_level=balanced_level, end_level=end_level)
         water.psets = self._build_water_psets(water)
         return water
 

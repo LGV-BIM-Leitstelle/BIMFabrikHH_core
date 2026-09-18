@@ -72,16 +72,16 @@ class BoreholeRecord(BaseModel):
     bohrdatum: str = Field(default="", description="``bml:drillingDate`` (ISO date)")
     bohrvorgang: str = Field(default="", description="``bml:drillingMethod`` code (drilling method)")
     projekt: str = Field(default="", description="``bml:project``")
-    groundwater: Optional[BoreholeWater] = Field(description="Groundwater entry depth ``bml:groundwater/bml:Groundwater/gml:entryDepth``")
-    # Distance from the starting point of the borehole to the point of first contact with groundwater 
-    # TODO: calc. absolute depth instead of relative?
+    groundwater: Optional[BoreholeWater] = Field(description="Groundwater information")
     layers: List[BoreholeLayer] = Field(default_factory=list)
     psets: Dict[str, BaseModel] = Field(default_factory=dict)
 
 
 class BoreholeWater(BaseModel):
     "The groundwater information for one ``bml:Borehole`` feature"
-    entry_depth: Optional[float] = Field(default=None, description="``bml:entryDepth`` in m (Distance from the starting point of the borehole to the point of first contact with groundwater. D)")
+    entry_depth: Optional[float] = Field(default=None, description="``bml:entryDepth`` in m (Distance from the starting point of the borehole to the point of first contact with groundwater.)")
+    balanced_level: Optional[float] = Field(default=None, description="``bml:balancedLevel`` in m (Balanced groundwater level in the borehole after the first contact with groundwater.)")
+    end_level: Optional[float] = Field(default=None, description="``bml:endLevel`` in m (Groundwater level in the borehole after finishing the drilling process.)")
     psets: Dict[str, BaseModel] = Field(default_factory=dict)
 
 
