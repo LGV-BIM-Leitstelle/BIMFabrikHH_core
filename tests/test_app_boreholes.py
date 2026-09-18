@@ -12,30 +12,20 @@ from __future__ import annotations
 import pytest
 from pydantic import BaseModel
 
-
-from BIMFabrikHH_core.apps.boreholes.mappings import BoreholeMappings
-from BIMFabrikHH_core.apps.boreholes.processing import (
-    BOREHOLE_PORTAL_SID,
-    BOREHOLE_PORTAL_URL,
-    BoreholeMLProcessor,
-)
-from BIMFabrikHH_core.apps.boreholes.helper import UNDEFINED, _split_rock_code
-
 from BIMFabrikHH_core.apps.boreholes import BoreholesGenericApp
-from BIMFabrikHH_core.data_models.boreholes import (
-    BoreholeRecord,
-    collect_borehole_psets,
-)
-
+from BIMFabrikHH_core.apps.boreholes.helper import UNDEFINED, _split_rock_code
+from BIMFabrikHH_core.apps.boreholes.mappings import BoreholeMappings
+from BIMFabrikHH_core.apps.boreholes.processing import (BOREHOLE_PORTAL_SID,
+                                                        BOREHOLE_PORTAL_URL,
+                                                        BoreholeMLProcessor)
+from BIMFabrikHH_core.data_models.boreholes import (BoreholeRecord,
+                                                    collect_borehole_psets)
 from BIMFabrikHH_core.data_models.params_bbox import BoundingBoxParams
 from BIMFabrikHH_core.data_models.params_tree import RequestParams
 from BIMFabrikHH_core.data_models.pydantic_psets_BIMHH import Pset_Hyperlink
 from BIMFabrikHH_core.data_models.pydantic_psets_boreholes import (
-    Pset_Aufschluss,
-    Pset_Aufschlussbereich,
-    Pset_Objektinformation_Borehole,
-    Pset_Schicht,
-)
+    Pset_Aufschluss, Pset_Aufschlussbereich, Pset_Objektinformation_Borehole,
+    Pset_Schicht)
 
 BML = "http://www.infogeo.de/boreholeml/3.0"
 GML = "http://www.opengis.net/gml/3.2"
@@ -177,61 +167,43 @@ def test_map_soil_symbol_maps_combinatoric_notation(
 def test_map_soil_symbol_hauptgemengteil_splits_comma_list(
     mappings: BoreholeMappings,
 ) -> None:
-    assert mappings.map_hauptgemengteil(
-        "mS, fS"
-    ) == "mS (Mittelsand), fS (Feinsand)"
+    assert mappings.map_hauptgemengteil("mS, fS") == "mS (Mittelsand), fS (Feinsand)"
 
 
 def test_map_soil_symbol_nebengemengteil_maps_each_component(
     mappings: BoreholeMappings,
 ) -> None:
-    assert mappings.map_nebengemengteil(
-        "g, s"
-    ) == "g (kiesig), s (sandig)"
+    assert mappings.map_nebengemengteil("g, s") == "g (kiesig), s (sandig)"
 
 
 def test_map_soil_symbol_multiple_main_components(
     mappings: BoreholeMappings,
 ) -> None:
-    assert mappings.map_hauptgemengteil(
-        "mS(fs), S"
-    ) == "mS (Mittelsand), S (Sand)"
+    assert mappings.map_hauptgemengteil("mS(fs), S") == "mS (Mittelsand), S (Sand)"
 
-    assert mappings.map_nebengemengteil(
-        "mS(fs), S"
-    ) == "fs (feinsandig)"
+    assert mappings.map_nebengemengteil("mS(fs), S") == "fs (feinsandig)"
 
 
 def test_map_soil_symbol_with_hyphen(
     mappings: BoreholeMappings,
 ) -> None:
-    assert mappings.map_hauptgemengteil(
-        "gG-fG"
-    ) == "gG-fG (Grobkies-Feinkies)"
+    assert mappings.map_hauptgemengteil("gG-fG") == "gG-fG (Grobkies-Feinkies)"
 
 
 def test_map_soil_symbol_brackets_around_main_component(
     mappings: BoreholeMappings,
 ) -> None:
-    assert mappings.map_hauptgemengteil(
-        "(gG-fG)(x)"
-    ) == "gG-fG (Grobkies-Feinkies)"
+    assert mappings.map_hauptgemengteil("(gG-fG)(x)") == "gG-fG (Grobkies-Feinkies)"
 
-    assert mappings.map_nebengemengteil(
-        "(gG-fG)(x)"
-    ) == "x (steinig)"
+    assert mappings.map_nebengemengteil("(gG-fG)(x)") == "x (steinig)"
 
 
 def test_map_soil_symbol_multiple_side_components(
     mappings: BoreholeMappings,
 ) -> None:
-    assert mappings.map_hauptgemengteil(
-        "fG(gs, ms, x)"
-    ) == "fG (Feinkies)"
+    assert mappings.map_hauptgemengteil("fG(gs, ms, x)") == "fG (Feinkies)"
 
-    assert mappings.map_nebengemengteil(
-        "fG(gs, ms, x)"
-    ) == "gs (grobsandig), ms (mittelsandig), x (steinig)"
+    assert mappings.map_nebengemengteil("fG(gs, ms, x)") == "gs (grobsandig), ms (mittelsandig), x (steinig)"
 
 
 def test_map_nebengemengteil_returns_undefined_for_blank(
@@ -255,9 +227,7 @@ def test_map_din_color_passes_through_unknown_code(
 def test_map_stratigraphy_appends_german_name(
     mappings: BoreholeMappings,
 ) -> None:
-    assert mappings.map_chronostratigraphy(
-        "qh"
-    ) == "qh (Quartär holozän)"
+    assert mappings.map_chronostratigraphy("qh") == "qh (Quartär holozän)"
 
 
 def test_map_stratigraphy_returns_undefined_for_blank(
@@ -287,9 +257,7 @@ def test_visual_color_falls_back_to_table_default(
 def test_visual_color_is_case_insensitive(
     mappings: BoreholeMappings,
 ) -> None:
-    assert mappings.visual_color_for_hauptgemengteil(
-        "ffs"
-    ) == mappings.visual_color_for_hauptgemengteil("ffS")
+    assert mappings.visual_color_for_hauptgemengteil("ffs") == mappings.visual_color_for_hauptgemengteil("ffS")
 
 
 # ---------------------------------------------------------------------------

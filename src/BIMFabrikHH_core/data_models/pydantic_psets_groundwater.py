@@ -1,9 +1,8 @@
-"""Property set templates for Wasser (water) IFC elements.
-"""
+"""Property set templates for Grundwasser (groundwater) IFC elements."""
 
 from __future__ import annotations
 
-from typing import ClassVar, Optional
+from typing import ClassVar
 
 from ifcfactory import PropertySetTemplate
 from pydantic import AliasChoices, Field
@@ -11,8 +10,8 @@ from pydantic import AliasChoices, Field
 from BIMFabrikHH_core.apps.boreholes.helper import UNDEFINED
 
 
-class Pset_Objektinformation_Water(PropertySetTemplate):
-    """``Pset_Objektinformation`` variant for Wasser elements."""
+class Pset_Objektinformation_Groundwater(PropertySetTemplate):
+    """``Pset_Objektinformation`` variant for Grundwasser elements."""
 
     pset_name: ClassVar[str] = "Pset_Objektinformation"
 
@@ -48,7 +47,7 @@ class Pset_Objektinformation_Water(PropertySetTemplate):
     )
 
 
-class Pset_Schicht_Water(PropertySetTemplate):
+class Pset_Schicht_Groundwater(PropertySetTemplate):
     """Layer-level geotechnical classification."""
 
     pset_name: ClassVar[str] = "Pset_Schicht"
@@ -60,7 +59,7 @@ class Pset_Schicht_Water(PropertySetTemplate):
     )
 
 
-class Pset_Wasser_Water(PropertySetTemplate):
+class Pset_Wasser_Groundwater(PropertySetTemplate):
     """Groundwater depth."""
 
     pset_name: ClassVar[str] = "Pset_Wasser"
@@ -72,9 +71,8 @@ class Pset_Wasser_Water(PropertySetTemplate):
     )
 
 
-
 __all__ = [
-    "Pset_Objektinformation_Water",
-    "Pset_Schicht_Water",
-    "Pset_Wasser_Water",
+    "Pset_Objektinformation_Groundwater",
+    "Pset_Schicht_Groundwater",
+    "Pset_Wasser_Groundwater",
 ]

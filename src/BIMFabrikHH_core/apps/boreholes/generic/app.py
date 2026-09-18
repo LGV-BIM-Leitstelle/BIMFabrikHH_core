@@ -4,7 +4,8 @@ Generic Boreholes App
 
 One stacked ``ifcfactory`` ``Cylinder`` per soil layer of a
 :class:`BoreholeRecord`, wrapped in ``Transform`` → ``Style`` → ``Cylinder``
-like the intern Baugrundaufschluss model.
+like the intern Baugrundaufschluss model, and one optional square
+(``ifcfactory`` ``MeshRepresentation``) at the groundwater entry depth.
 
 Each cylinder sits at its lower layer boundary (``lower_height``) with the
 layer thickness as height, so the layers of a borehole stack from the
@@ -24,25 +25,22 @@ import time
 from pathlib import Path
 from typing import Callable, Dict, List, Optional, Tuple, Union
 
-from ifcfactory import BIMFactoryElement, Cylinder, Circle, Material, MeshRepresentation, Rect, Style, Transform, Extrusion
-from pydantic import BaseModel
+from ifcfactory import (BIMFactoryElement, Circle, Cylinder, Extrusion,
+                        Material, MeshRepresentation, Rect, Style, Transform)
 from numpy import array
+from pydantic import BaseModel
 
 from BIMFabrikHH_core.config.logging_config import get_logger
 from BIMFabrikHH_core.core.geometry import place_basepoint
 from BIMFabrikHH_core.core.model_creator import init_ifc_project
 from BIMFabrikHH_core.core.ogc_extractor import extract_psets_basepoint
-from BIMFabrikHH_core.data_models.boreholes import (
-    BoreholeLayer,
-    BoreholeRecord,
-    collect_borehole_psets,
-    collect_groundwater_psets
-)
+from BIMFabrikHH_core.data_models.boreholes import (BoreholeLayer,
+                                                    BoreholeRecord,
+                                                    collect_borehole_psets,
+                                                    collect_groundwater_psets)
 from BIMFabrikHH_core.data_models.params_tree import RequestParams
 from BIMFabrikHH_core.data_models.pydantic_georeferencing import (
-    CoordinateOperation,
-    CoordinateSystem,
-)
+    CoordinateOperation, CoordinateSystem)
 from BIMFabrikHH_core.data_models.pydantic_psets_BIMHH import Pset_Hyperlink
 
 logger = get_logger("boreholes_generic_app")
@@ -133,16 +131,12 @@ def _cylinder_element_from_layer(
 
 
 def _square_element_from_water(
-        *,
-        record: BoreholeRecord,
-        length: float,
-        water_color: RgbTuple = (0.05, 0.53, 0.8),
-        transparency: float = 0.8
-        ) -> BIMFactoryElement | None:
+    *, record: BoreholeRecord, length: float, water_color: RgbTuple = (0.05, 0.53, 0.8), transparency: float = 0.8
+) -> BIMFactoryElement | None:
     if record.groundwater is None:
         return None
 
-    groundwater: float =  record.ansatzhoehe_nn - record.groundwater.entry_depth
+    groundwater: float = record.ansatzhoehe_nn - record.groundwater.entry_depth
     material = Material(name="WATER01", category="water", rgb=water_color, transparency=transparency)
 
     h = 0.5 * length
@@ -153,12 +147,10 @@ def _square_element_from_water(
         (+h, -h, 0)
     ]
 
-    faces = [
-        [0, 1, 2, 3]
-    ]
+    faces = [[0, 1, 2, 3]]
 
     custom_mesh = MeshRepresentation(vertices=vertices, faces=faces)
-    
+
     styled = Style(
         item=custom_mesh,
         rgb=water_color,
@@ -292,7 +284,7 @@ class BoreholesGenericApp:
             BIMFactoryElement.build_in(
                 model,
                 inst=model_builder.site,
-                items=layer_elements+water_elements,
+                items=layer_elements + water_elements,
                 on_progress=None,
             )
             if phase_timings is not None:

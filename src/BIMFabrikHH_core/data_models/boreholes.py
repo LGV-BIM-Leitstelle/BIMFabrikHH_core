@@ -3,8 +3,8 @@
 Parsed from Hamburg WFS ``BoreholeML 3.0`` ``GetFeature`` responses
 (``bml:Borehole``) by
 :mod:`BIMFabrikHH_core.apps.boreholes.processing`. One
-:class:`BoreholeRecord` holds the borehole head data plus its ordered
-:class:`BoreholeLayer` list, because the layer cylinders are stacked per
+:class:`BoreholeRecord` holds the borehole head data, one :class:`BoreholeWater` element
+plus its ordered :class:`BoreholeLayer` list, because the layer cylinders are stacked per
 borehole.
 
 Coordinates are **EPSG:25832** ``(easting, northing)`` in metres and heights
@@ -24,6 +24,26 @@ from typing import Dict, List, Optional
 from pydantic import BaseModel, ConfigDict, Field
 
 logger = logging.getLogger(__name__)
+
+
+class BoreholeRecord(BaseModel):
+    """One ``bml:Borehole`` feature with its ordered layers."""
+
+    model_config = ConfigDict(arbitrary_types_allowed=True, extra="ignore")
+
+    borehole_id: str = Field(description="``bml:id``, e.g. ``BDHH_6428D107``")
+    archive_id: str = Field(description="``Archivnummer``, e.g. ``44372``")
+    aufschlussbezeichnung: str = Field(default="", description="``bml:fullName`` (fallback ``shortName``)")
+    easting: float = Field(description="EPSG:25832 easting in m")
+    northing: float = Field(description="EPSG:25832 northing in m")
+    ansatzhoehe_nn: float = Field(description="Ground level at the Ansatzpunkt in m NHN")
+    endteufe: Optional[float] = Field(default=None, description="``bml:totalLength`` in m")
+    bohrdatum: str = Field(default="", description="``bml:drillingDate`` (ISO date)")
+    bohrvorgang: str = Field(default="", description="``bml:drillingMethod`` code (drilling method)")
+    projekt: str = Field(default="", description="``bml:project``")
+    groundwater: Optional[BoreholeWater] = Field(description="Groundwater information")
+    layers: List[BoreholeLayer] = Field(default_factory=list)
+    psets: Dict[str, BaseModel] = Field(default_factory=dict)
 
 
 class BoreholeLayer(BaseModel):
@@ -57,31 +77,21 @@ class BoreholeLayer(BaseModel):
     psets: Dict[str, BaseModel] = Field(default_factory=dict)
 
 
-class BoreholeRecord(BaseModel):
-    """One ``bml:Borehole`` feature with its ordered layers."""
-
-    model_config = ConfigDict(arbitrary_types_allowed=True, extra="ignore")
-
-    borehole_id: str = Field(description="``bml:id``, e.g. ``BDHH_6428D107``")
-    archive_id: str = Field(description="``Archivnummer``, e.g. ``44372``")
-    aufschlussbezeichnung: str = Field(default="", description="``bml:fullName`` (fallback ``shortName``)")
-    easting: float = Field(description="EPSG:25832 easting in m")
-    northing: float = Field(description="EPSG:25832 northing in m")
-    ansatzhoehe_nn: float = Field(description="Ground level at the Ansatzpunkt in m NHN")
-    endteufe: Optional[float] = Field(default=None, description="``bml:totalLength`` in m")
-    bohrdatum: str = Field(default="", description="``bml:drillingDate`` (ISO date)")
-    bohrvorgang: str = Field(default="", description="``bml:drillingMethod`` code (drilling method)")
-    projekt: str = Field(default="", description="``bml:project``")
-    groundwater: Optional[BoreholeWater] = Field(description="Groundwater information")
-    layers: List[BoreholeLayer] = Field(default_factory=list)
-    psets: Dict[str, BaseModel] = Field(default_factory=dict)
-
-
 class BoreholeWater(BaseModel):
     "The groundwater information for one ``bml:Borehole`` feature"
-    entry_depth: Optional[float] = Field(default=None, description="``bml:entryDepth`` in m (Distance from the starting point of the borehole to the point of first contact with groundwater.)")
-    balanced_level: Optional[float] = Field(default=None, description="``bml:balancedLevel`` in m (Balanced groundwater level in the borehole after the first contact with groundwater.)")
-    end_level: Optional[float] = Field(default=None, description="``bml:endLevel`` in m (Groundwater level in the borehole after finishing the drilling process.)")
+
+    entry_depth: Optional[float] = Field(
+        default=None,
+        description="``bml:entryDepth`` in m (Distance from the starting point of the borehole to the point of first contact with groundwater.)",
+    )
+    balanced_level: Optional[float] = Field(
+        default=None,
+        description="``bml:balancedLevel`` in m (Balanced groundwater level in the borehole after the first contact with groundwater.)",
+    )
+    end_level: Optional[float] = Field(
+        default=None,
+        description="``bml:endLevel`` in m (Groundwater level in the borehole after finishing the drilling process.)",
+    )
     psets: Dict[str, BaseModel] = Field(default_factory=dict)
 
 
@@ -124,13 +134,15 @@ def collect_groundwater_psets(
     *,
     include_property_sets: bool = True,
 ) -> List[BaseModel]:
-    """
-    """
+    """ """
     if not include_property_sets:
         return []
 
     out: List[BaseModel] = []
-    for source, scope in ((record.psets, record.borehole_id), (record.groundwater.psets, record.borehole_id + " groundwater")):
+    for source, scope in (
+        (record.psets, record.borehole_id),
+        (record.groundwater.psets, record.borehole_id + " groundwater"),
+    ):
         for pset_name, value in source.items():
             if isinstance(value, BaseModel):
                 out.append(value)

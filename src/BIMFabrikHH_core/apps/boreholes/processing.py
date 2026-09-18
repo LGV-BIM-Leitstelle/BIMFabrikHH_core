@@ -1,13 +1,11 @@
-"""Borehole data pipeline: WFS ``BoreholeML 3.0`` XML → :class:`BoreholeRecord`.
+"""Processing utilities for WFS ``BoreholeML 3.0`` XML borehole data.
 
-Pure processing only — no HTTP and no IFC. The caller fetches the WFS
-response (the API does this in ``DataFetcher.fetch_borehole_data``) and hands
-the parsed XML, raw bytes or a saved file to
-:func:`parse` / :func:`from_file`.
+This module contains the logic for parsing and transforming borehole data
+from external representations into the application's domain models.
 
-Soil, colour and other codes are resolved with the tables in this app's 
-``assets`` folder (``soil_type_mapping.json`` and
-``din_color_mapping.json``).
+It coordinates the extraction, normalization and conversion of borehole
+information while keeping the processing logic independent from data
+retrieval and IFC generation.
 """
 
 from __future__ import annotations
@@ -18,23 +16,18 @@ from pathlib import Path
 from lxml import etree
 from pydantic import BaseModel
 
-from BIMFabrikHH_core.data_models.boreholes import BoreholeLayer, BoreholeRecord, BoreholeWater
-from .mappings import BoreholeMappings
-from .helper import UNDEFINED, _clean, _text, _float_or_none, _split_rock_code
-
+from BIMFabrikHH_core.data_models.boreholes import (BoreholeLayer,
+                                                    BoreholeRecord,
+                                                    BoreholeWater)
 from BIMFabrikHH_core.data_models.pydantic_psets_BIMHH import Pset_Hyperlink
 from BIMFabrikHH_core.data_models.pydantic_psets_boreholes import (
-    Pset_Objektinformation_Borehole,
-    Pset_Aufschluss_Borehole,
-    Pset_Aufschlussbereich_Borehole,
-    Pset_Schicht_Borehole,
-)
+    Pset_Aufschluss_Borehole, Pset_Aufschlussbereich_Borehole,
+    Pset_Objektinformation_Borehole, Pset_Schicht_Borehole)
 from BIMFabrikHH_core.data_models.pydantic_psets_groundwater import (
-    Pset_Objektinformation_Water,
-    Pset_Schicht_Water,
-    Pset_Wasser_Water
-)
+    Pset_Objektinformation_Groundwater, Pset_Schicht_Groundwater, Pset_Wasser_Groundwater)
 
+from .helper import UNDEFINED, _clean, _float_or_none, _split_rock_code, _text
+from .mappings import BoreholeMappings
 
 logger = logging.getLogger(__name__)
 
@@ -50,31 +43,19 @@ GMD_NS = "http://www.isotc211.org/2005/gmd"
 BOREHOLE_PORTAL_URL = "https://geodienste.hamburg.de/app/render"
 BOREHOLE_PORTAL_SID = "0x960470caL0x71973d4cL"
 
-XMLSource = (
-    etree._Element
-    | etree._ElementTree
-    | bytes
-    | str
-    | Path
-)
+XMLSource = etree._Element | etree._ElementTree | bytes | str | Path
+
 
 class BoreholeMLProcessor:
-    def __init__(
-            self,
-            mappings: BoreholeMappings | None = None
-    ) -> None:
-        self._mappings = (
-            mappings if mappings is not None
-            else BoreholeMappings.load_default()
-        )
-
+    def __init__(self, mappings: BoreholeMappings | None = None) -> None:
+        self._mappings = mappings if mappings is not None else BoreholeMappings.load_default()
 
     def from_file(self, path: str | Path) -> list[BoreholeRecord]:
         """Load and parse a saved ``BoreholeML`` XML response from disk."""
         return self.parse(Path(path))
 
-
-    def parse(self,
+    def parse(
+        self,
         source: XMLSource,
     ) -> list[BoreholeRecord]:
         """Parse a WFS ``BoreholeML 3.0`` response into borehole records.
@@ -104,7 +85,6 @@ class BoreholeMLProcessor:
 
         return records
 
-
     @staticmethod
     def _as_root(source: XMLSource) -> etree._Element:
         """Normalize the accepted input types to a single XML root element."""
@@ -120,9 +100,8 @@ class BoreholeMLProcessor:
             return etree.fromstring(source.encode("utf-8"))
         raise TypeError(f"Unsupported BoreholeML source type: {type(source).__name__}")
 
-
     @staticmethod
-    def _collect_boreholes( root: etree._Element) -> list[etree._Element]:
+    def _collect_boreholes(root: etree._Element) -> list[etree._Element]:
         """Collect ``bml:Borehole`` elements from a FeatureCollection or single feature."""
         if etree.QName(root).localname == "Borehole":
             return [root]
@@ -131,10 +110,7 @@ class BoreholeMLProcessor:
             logger.warning("No bml:Borehole features found (root: %s)", etree.QName(root).localname)
         return found
 
-            
-    def _parse_borehole(self, 
-        borehole: etree._Element
-    ) -> BoreholeRecord | None:
+    def _parse_borehole(self, borehole: etree._Element) -> BoreholeRecord | None:
         """Build one :class:`BoreholeRecord`; ``None`` when unusable."""
         borehole_id = _text(borehole, f"{{{BML_NS}}}id") or _clean(borehole.get(f"{{{GML_NS}}}id"))
         if not borehole_id:
@@ -177,7 +153,7 @@ class BoreholeMLProcessor:
         if not record.layers:
             logger.warning("Borehole %s: no usable layers; skipped", borehole_id)
             return None
-        
+
         record.psets = {
             Pset_Aufschluss_Borehole.pset_name: Pset_Aufschluss_Borehole(
                 aufschlussart="Bohrung",
@@ -186,10 +162,7 @@ class BoreholeMLProcessor:
                 hoehenansatzpunkt=record.ansatzhoehe_nn,
                 laenge_baugrundaufschluss=record.endteufe,
             ),
-            Pset_Hyperlink.pset_name: self._build_borehole_hyperlink(
-                record.archive_id,
-                record.aufschlussbezeichnung
-            ),
+            Pset_Hyperlink.pset_name: self._build_borehole_hyperlink(record.archive_id, record.aufschlussbezeichnung),
         }
         for layer in record.layers:
             bereich = layer.psets.get(Pset_Aufschlussbereich_Borehole.pset_name)
@@ -197,16 +170,12 @@ class BoreholeMLProcessor:
                 bereich.bohrvorgang = record.bohrvorgang or UNDEFINED
         return record
 
-
     def _parse_layers(self, series: etree._Element, borehole_id: str, ansatzhoehe_nn: float) -> list[BoreholeLayer]:
         intervals = series.findall(f"{{{BML_NS}}}layer/{{{BML_NS}}}Interval") if series is not None else []
         layers: list[BoreholeLayer] = []
         for index, interval in enumerate(intervals, start=1):
             layer = self._parse_single_layer(
-                interval,
-                borehole_id=borehole_id,
-                index=index,
-                ansatzhoehe_nn=ansatzhoehe_nn
+                interval, borehole_id=borehole_id, index=index, ansatzhoehe_nn=ansatzhoehe_nn
             )
             if layer is not None:
                 layers.append(layer)
@@ -215,7 +184,6 @@ class BoreholeMLProcessor:
             return None
 
         return sorted(layers, key=lambda item: item.upper_height, reverse=True)
-
 
     @staticmethod
     def _parse_borehole_position(borehole: etree._Element) -> tuple[float, float, float] | None:
@@ -246,10 +214,6 @@ class BoreholeMLProcessor:
             height = _float_or_none(_text(borehole, f"{{{BML_NS}}}origin/{{{BML_NS}}}Origin/{{{BML_NS}}}elevation"))
         return (easting, northing, height if height is not None else 0.0)
 
-
-
-
-
     @staticmethod
     def _build_borehole_hyperlink(archive_id: int | str, aufschlussbezeichnung: str = "") -> Pset_Hyperlink:
         """Build the geodienste borehole-viewer link, as in the intern app.
@@ -264,7 +228,7 @@ class BoreholeMLProcessor:
         Args:
             archive_id: Explicit ``id`` query value.
             aufschlussbezeichnung: Designation for the remark text.
-            
+
 
         Returns:
             ``Pset_Hyperlink`` with the URL and a German remark.
@@ -276,7 +240,6 @@ class BoreholeMLProcessor:
         else:
             bemerkung = f"Link zur Bohrung (ID: {link_id})"
         return Pset_Hyperlink(hyperlink_001=url, hyperlink_001_bemerkung=bemerkung)
-
 
     @staticmethod
     def _find_latest_interval_series(borehole: etree._Element) -> etree._Element | None:
@@ -298,8 +261,8 @@ class BoreholeMLProcessor:
         )
         return latest
 
-
-    def _parse_single_layer(self,
+    def _parse_single_layer(
+        self,
         interval: etree._Element,
         *,
         borehole_id: str,
@@ -356,7 +319,6 @@ class BoreholeMLProcessor:
         layer.psets = self._build_layer_psets(layer)
         return layer
 
-
     def _parse_lithology_components(self, interval: etree._Element) -> tuple[str, str, str]:
         """Resolve the soil components and colour of one ``bml:Interval``.
 
@@ -388,23 +350,27 @@ class BoreholeMLProcessor:
             return ("", "", color)
         return (rock_codes[0], ", ".join(rock_codes[1:]), color)
 
-
     def _parse_groundwater(self, borehole: etree._Element, borehole_id: str) -> BoreholeWater | None:
         """
         Read the groundwater information (``bml:entryDepth``, ``bml:balancedLevel``, ``bml:endLevel``) and build one :class:`BoreholeWater`; ``None`` when unusable.
         """
-        entry_depth = _float_or_none(_text(borehole, f"{{{BML_NS}}}groundwater/{{{BML_NS}}}Groundwater/{{{BML_NS}}}entryDepth"))
+        entry_depth = _float_or_none(
+            _text(borehole, f"{{{BML_NS}}}groundwater/{{{BML_NS}}}Groundwater/{{{BML_NS}}}entryDepth")
+        )
         if entry_depth is None:
             logger.warning("Borehole %s: missing groundwater entry depth; skipped", borehole_id)
             return None
-    
-        balanced_level = _float_or_none(_text(borehole, f"{{{BML_NS}}}groundwater/{{{BML_NS}}}Groundwater/{{{BML_NS}}}balancedLevel"))
-        end_level = _float_or_none(_text(borehole, f"{{{BML_NS}}}groundwater/{{{BML_NS}}}Groundwater/{{{BML_NS}}}endLevel"))
+
+        balanced_level = _float_or_none(
+            _text(borehole, f"{{{BML_NS}}}groundwater/{{{BML_NS}}}Groundwater/{{{BML_NS}}}balancedLevel")
+        )
+        end_level = _float_or_none(
+            _text(borehole, f"{{{BML_NS}}}groundwater/{{{BML_NS}}}Groundwater/{{{BML_NS}}}endLevel")
+        )
 
         water = BoreholeWater(entry_depth=entry_depth, balanced_level=balanced_level, end_level=end_level)
         water.psets = self._build_water_psets(water)
         return water
-
 
     def _build_layer_psets(self, layer: BoreholeLayer) -> dict[str, BaseModel]:
         """Build the layer-level pset templates with codes resolved."""
@@ -426,23 +392,20 @@ class BoreholeMLProcessor:
         return {
             Pset_Aufschlussbereich_Borehole.pset_name: aufschlussbereich,
             Pset_Schicht_Borehole.pset_name: schicht,
-            Pset_Objektinformation_Water.pset_name: objektinformation,
+            Pset_Objektinformation_Borehole.pset_name: objektinformation,
         }
-
 
     def _build_water_psets(self, water: BoreholeWater) -> dict[str, BaseModel]:
         """Build the groundwater pset templates."""
-        wasser = Pset_Wasser_Water(wasserstandhoehe=water.entry_depth)
-        schicht = Pset_Schicht_Water(schichtnummer=UNDEFINED)
-        objektinformation = Pset_Objektinformation_Water()
+        wasser = Pset_Wasser_Groundwater(wasserstandhoehe=water.entry_depth)
+        schicht = Pset_Schicht_Groundwater(schichtnummer=UNDEFINED)
+        objektinformation = Pset_Objektinformation_Groundwater()
 
         return {
-            Pset_Wasser_Water.pset_name: wasser,
-            Pset_Schicht_Water.pset_name: schicht,
-            Pset_Objektinformation_Water.pset_name: objektinformation,
-        }    
+            Pset_Wasser_Groundwater.pset_name: wasser,
+            Pset_Schicht_Groundwater.pset_name: schicht,
+            Pset_Objektinformation_Groundwater.pset_name: objektinformation,
+        }
 
 
-__all__ = [
-    "BoreholeMLProcessor"
-]
+__all__ = ["BoreholeMLProcessor"]

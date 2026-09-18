@@ -1,5 +1,11 @@
 """
-Internal helpers to be used for borehole processing.
+Internal helper functions for borehole data processing.
+
+This module provides small, reusable utilities used throughout the borehole
+application for parsing, normalizing and handling common data transformations.
+
+The helpers are intended to keep the main processing and mapping logic
+concise and consistent.
 """
 
 from __future__ import annotations
@@ -10,11 +16,11 @@ from typing import Any
 
 from lxml import etree
 
-
 logger = logging.getLogger(__name__)
 
 
 UNDEFINED = "undefiniert"
+
 
 def _adjective_to_attributive(adjective: str) -> str:
     """``schluffig`` → ``schluffiger`` for combined soil names."""

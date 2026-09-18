@@ -1,18 +1,29 @@
-"""
+"""Utilities for mapping and normalizing BoreholeML codes and attributes.
 
+This module centralizes the lookup tables and conversion logic used by the
+borehole application. It loads mapping data from the bundled JSON assets and
+provides a single BoreholeMappings interface for translating BoreholeML
+codes into human-readable German descriptions and display values.
+
+Unknown or undefined values are handled consistently without failing the
+conversion process. Default mapping data is loaded lazily and cached for
+reuse.
 """
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 import json
 import logging
+import re
+from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
-import re
 from typing import Any
 
-from BIMFabrikHH_core.apps.boreholes.helper import UNDEFINED, _adjective_to_attributive, _clean, _split_rock_code, _extract_meaning
+from BIMFabrikHH_core.apps.boreholes.helper import (UNDEFINED,
+                                                    _adjective_to_attributive,
+                                                    _clean, _extract_meaning,
+                                                    _split_rock_code)
 
 logger = logging.getLogger(__name__)
 
@@ -76,7 +87,6 @@ class BoreholeMappings:
             compactness=cls._load_json(_COMPACTNESS_FILE),
         )
 
-
     @staticmethod
     def _load_json(filename: str) -> dict[str, Any]:
         path = ASSETS_DIR / filename
@@ -89,9 +99,8 @@ class BoreholeMappings:
         except (OSError, json.JSONDecodeError) as exc:
             logger.warning("Borehole mapping file %s could not be read: %s", path, exc)
             return {}
-        
-        return data if isinstance(data, dict) else {}
 
+        return data if isinstance(data, dict) else {}
 
     @staticmethod
     def _map_code(
@@ -107,50 +116,40 @@ class BoreholeMappings:
 
         return f"{code} ({meaning})" if meaning else code
 
-
     def map_archive_id(self, borehole_id: str) -> str:
-        """Map a BoreholeML ID to ``"archive_id"`` ("Archivnummer") assigned by Geologisches Landesamt Hamburg.
-        """
+        """Map a BoreholeML ID to ``"archive_id"`` ("Archivnummer") assigned by Geologisches Landesamt Hamburg."""
         text = _clean(borehole_id)
         mapping = self.archive_ids
 
         return mapping.get(text, "")
 
-
     def map_drilling_method(self, value: Any) -> str:
         """Map a drilling method code to ``"code (German name)"``, e.g. ``UN (unbekanntes Bohrverfahren)``."""
         return self._map_code(value, self.drilling_methods)
-
 
     def map_carbonate(self, value: Any) -> str:
         """Map a carbonate code to ``"code (German name)"``, e.g. ``c3 (karbonathaltig)``."""
         return self._map_code(value, self.carbonate_contents)
 
-
     def map_consistency(self, value: Any) -> str:
         """Map a consistency code to ``"code (German name)"``, e.g. ``hfe (halbfest)``."""
         return self._map_code(value, self.consistencies)
 
-
     def map_compactness(self, value: Any) -> str:
         """Map a compactness code to ``"code (German name)"``, e.g. ``ld3 (mitteldicht gelagert)``."""
-        return self._map_code(value, self.consistencies)
-    
+        return self._map_code(value, self.compactness)
 
     def map_genesis(self, value: Any) -> str:
         """Map a genesis code to ``"code (German name)"``, e.g. ``fl (fluviatil)``."""
         return self._map_code(value, self.genesis)
 
-
     def map_geogenesis(self, value: Any) -> str:
         """Map a geogenesis code to ``"code (German name)"``, e.g. ``yf (Auffüllung)``."""
         return self._map_code(value, self.geogenesis)
 
-
     def map_rock_color(self, value: Any) -> str:
         """Map a DIN colour code to ``"code (German name)"``, e.g. ``h8 (grau)``."""
         return self._map_code(value, self.rock_colors)
-
 
     def map_din_color(self, value: Any) -> str:
         """Map a DIN colour code to ``"code (German name)"``, e.g. ``gr (grau)``."""
@@ -161,7 +160,6 @@ class BoreholeMappings:
         mapping = self.visual_colors
         german_name = mapping.get("color_code_to_german_name", {}).get(code, "")
         return f"{code} ({german_name})" if german_name else code
-
 
     def map_chronostratigraphy(self, value: Any) -> str:
         """Map a stratigraphic code to ``"code (German name)"``."""
@@ -177,7 +175,6 @@ class BoreholeMappings:
             or _STRATIGRAPHY_NAMES.get(code.lower(), "")
         )
         return f"{code} ({german_name})" if german_name else code
-
 
     def map_hauptgemengteil(self, value: Any) -> str:
         """Map the main soil component, keeping compound explicit codes intact."""
@@ -203,7 +200,6 @@ class BoreholeMappings:
 
         return self.map_soil_symbol(text)
 
-
     def map_nebengemengteil(self, value: Any) -> str:
         """Map one or several secondary soil components."""
         text = _clean(value)
@@ -219,7 +215,6 @@ class BoreholeMappings:
         if not parts:
             return UNDEFINED
         return ", ".join(self.map_soil_symbol(part) for part in parts)
-
 
     def map_soil_symbol(self, symbol_value: Any) -> str:
         """Map a DIN EN ISO 14688-1 soil symbol to ``"code (German meaning)"``.
@@ -290,7 +285,6 @@ class BoreholeMappings:
 
         return symbol
 
-
     def visual_color_for_hauptgemengteil(self, value: Any) -> tuple[tuple[int, int, int], str]:
         """Resolve the DIN 4023 display colour from the main soil component.
 
@@ -328,7 +322,6 @@ class BoreholeMappings:
 
         return default
 
-
     @staticmethod
     def _rgb_tuple(raw: Any) -> tuple[int, int, int]:
         """Coerce a JSON ``[r, g, b]`` entry into a 0-255 int triple."""
@@ -343,7 +336,4 @@ class BoreholeMappings:
         return (254, 254, 254)
 
 
-
-__all__ = [
-    "BoreholeMappings"
-]
+__all__ = ["BoreholeMappings"]

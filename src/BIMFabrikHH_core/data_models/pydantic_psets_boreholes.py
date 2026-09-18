@@ -153,7 +153,6 @@ class Pset_Schicht_Borehole(PropertySetTemplate):
     )
 
 
-
 __all__ = [
     "Pset_Aufschluss_Borehole",
     "Pset_Aufschlussbereich_Borehole",
