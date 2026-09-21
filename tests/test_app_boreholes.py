@@ -10,6 +10,7 @@ crashing.
 from __future__ import annotations
 
 import pytest
+from lxml import etree
 from pydantic import BaseModel
 
 from BIMFabrikHH_core.apps.boreholes import BoreholesGenericApp
@@ -283,6 +284,45 @@ def test_split_rock_code_handles_both_notations(rock_code: str, expected: tuple)
 # ---------------------------------------------------------------------------
 # BoreholeMLProcessor.parse
 # ---------------------------------------------------------------------------
+
+def test_processor_parse_accepts_xml_string(processor):
+    xml = _borehole_xml(
+        intervals=_interval(from_depth="0", to_depth="1", rock_code="mS")
+    ).decode()
+
+    assert len(processor.parse(xml)) == 1
+
+
+def test_processor_parse_accepts_element(processor):
+    root = etree.fromstring(
+        _borehole_xml(
+            intervals=_interval(from_depth="0", to_depth="1", rock_code="mS")
+        )
+    )
+
+    assert len(processor.parse(root)) == 1
+
+
+def test_processor_parse_accepts_element_tree(processor):
+    root = etree.fromstring(
+        _borehole_xml(
+            intervals=_interval(from_depth="0", to_depth="1", rock_code="mS")
+        )
+    )
+
+    assert len(processor.parse(etree.ElementTree(root))) == 1
+
+
+def test_processor_parse_accepts_path(processor, tmp_path):
+    path = tmp_path / "boreholes.xml"
+    path.write_bytes(
+        _borehole_xml(
+            intervals=_interval(from_depth="0", to_depth="1", rock_code="mS")
+        )
+    )
+    
+    assert len(processor.parse(path)) == 1
+    assert len(processor.from_file(path)) == 1
 
 
 def test_processor_parse_reads_head_data(processor: BoreholeMLProcessor) -> None:
