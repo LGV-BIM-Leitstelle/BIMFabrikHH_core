@@ -135,7 +135,7 @@ def collect_groundwater_psets(
     include_property_sets: bool = True,
 ) -> List[BaseModel]:
     """ """
-    if not include_property_sets:
+    if not include_property_sets or record.groundwater is None:
         return []
 
     out: List[BaseModel] = []

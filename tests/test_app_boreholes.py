@@ -19,14 +19,17 @@ from BIMFabrikHH_core.apps.boreholes.mappings import BoreholeMappings
 from BIMFabrikHH_core.apps.boreholes.processing import (BOREHOLE_PORTAL_SID,
                                                         BOREHOLE_PORTAL_URL,
                                                         BoreholeMLProcessor)
-from BIMFabrikHH_core.data_models.boreholes import (BoreholeRecord,
-                                                    collect_borehole_psets)
+from BIMFabrikHH_core.data_models.boreholes import (BoreholeRecord, BoreholeWater,
+                                                    collect_borehole_psets, collect_groundwater_psets)
 from BIMFabrikHH_core.data_models.params_bbox import BoundingBoxParams
 from BIMFabrikHH_core.data_models.params_tree import RequestParams
 from BIMFabrikHH_core.data_models.pydantic_psets_BIMHH import Pset_Hyperlink
 from BIMFabrikHH_core.data_models.pydantic_psets_boreholes import (
     Pset_Aufschluss_Borehole, Pset_Aufschlussbereich_Borehole, Pset_Objektinformation_Borehole,
     Pset_Schicht_Borehole)
+from BIMFabrikHH_core.data_models.pydantic_psets_groundwater import ( Pset_Objektinformation_Groundwater, 
+                                                                     Pset_Schicht_Groundwater, 
+                                                                     Pset_Wasser_Groundwater, )
 
 BML = "http://www.infogeo.de/boreholeml/3.0"
 GML = "http://www.opengis.net/gml/3.2"
@@ -48,6 +51,7 @@ def _borehole_xml(
     borehole_id: str = "BDHH_TEST1",
     pos: str = "565084.160 5934034.654 14.300",
     intervals: str = "",
+    groundwater: str = "",
 ) -> bytes:
     """Minimal ``wfs:FeatureCollection`` with a single ``bml:Borehole``."""
     return f"""<?xml version="1.0" encoding="UTF-8"?>
@@ -64,6 +68,7 @@ def _borehole_xml(
       <bml:shortName><gmd:LocalisedCharacterString>B1</gmd:LocalisedCharacterString></bml:shortName>
       <bml:fullName><gmd:LocalisedCharacterString>B.45</gmd:LocalisedCharacterString></bml:fullName>
       <bml:totalLength uom="m">5.5</bml:totalLength>
+      {groundwater}
       <bml:drillingMethod>UN</bml:drillingMethod>
       <bml:drillingDate>1936-06-26</bml:drillingDate>
       <bml:project>Hbg.-Wexstr.</bml:project>
@@ -110,6 +115,21 @@ def _interval(
       </bml:Interval>
     </bml:layer>"""
 
+
+def _groundwater(*, 
+    entry_depth: str = "", 
+    balanced_level: str = "", 
+    end_level: str = ""
+    ) -> str:
+    return f"""
+      <bml:groundwater>
+        <bml:Groundwater>
+          <bml:entryDepth uom="m">{entry_depth}</bml:entryDepth>
+          <bml:balancedLevel uom="m">{balanced_level}</bml:balancedLevel>
+          <bml:endLevel uom="m">{end_level}</bml:endLevel>
+        </bml:Groundwater>
+      </bml:groundwater>
+    """
 
 def _lithology(rock_name: str = "", percentage: str = "", rock_color: str = "") -> str:
     return f"""
@@ -320,7 +340,7 @@ def test_processor_parse_accepts_path(processor, tmp_path):
             intervals=_interval(from_depth="0", to_depth="1", rock_code="mS")
         )
     )
-    
+
     assert len(processor.parse(path)) == 1
     assert len(processor.from_file(path)) == 1
 
@@ -341,6 +361,7 @@ def test_processor_parse_reads_head_data(processor: BoreholeMLProcessor) -> None
     assert record.bohrdatum == "1936-06-26"
     assert record.bohrvorgang == "UN (unbekanntes Bohrverfahren)"
     assert record.projekt == "Hbg.-Wexstr."
+
 
 
 def test_processor_parse_converts_depth_to_nhn(processor: BoreholeMLProcessor) -> None:
@@ -366,6 +387,62 @@ def test_processor_parse_orders_layers_top_down(processor: BoreholeMLProcessor) 
     )
     layers = processor.parse(xml)[0].layers
     assert [layer.upper_height for layer in layers] == sorted((layer.upper_height for layer in layers), reverse=True)
+
+
+def test_processor_parse_reads_groundwater(processor: BoreholeMLProcessor) -> None:
+    xml = _borehole_xml(
+        intervals=_interval(from_depth="0.0", to_depth="20.0", rock_code="mS"),
+        groundwater=_groundwater(entry_depth="7.3", balanced_level="6.5", end_level="14.7")
+    )
+
+    records = processor.parse(xml)
+
+    assert len(records) == 1
+    groundwater = records[0].groundwater
+
+    assert groundwater is not None
+    assert groundwater.entry_depth == pytest.approx(7.3)
+    assert groundwater.balanced_level == pytest.approx(6.5)
+    assert groundwater.end_level == pytest.approx(14.7)
+
+
+def test_processor_parse_skips_groundwater_without_entry_depth(processor: BoreholeMLProcessor) -> None:
+    xml = _borehole_xml(
+        intervals=_interval(from_depth="0.0", to_depth="20.0", rock_code="mS"),
+        groundwater=_groundwater(entry_depth=None, balanced_level="6.5", end_level="14.7")
+    )
+
+    records = processor.parse(xml)
+
+    assert len(records) == 1
+    assert records[0].groundwater is None
+
+
+@pytest.mark.parametrize( 
+    ("balanced_level", "end_level", "expected_balanced", "expected_end"), 
+    [ 
+        ("", "11.8", None, 11.8),
+        ("12.1", "", 12.1, None), 
+        ("invalid", "11.8", None, 11.8),
+        ("12.1", "invalid", 12.1, None), 
+    ],
+)
+def test_processor_parse_allows_missing_or_invalid_optional_groundwater_levels(processor: BoreholeMLProcessor, 
+                                                                               balanced_level, end_level, expected_balanced, expected_end) -> None:
+    xml = _borehole_xml(
+        intervals=_interval(from_depth="0.0", to_depth="20.0", rock_code="mS"),
+        groundwater=_groundwater(entry_depth="7.3", balanced_level=balanced_level, end_level=end_level)
+    )
+
+    records = processor.parse(xml)
+    groundwater = records[0].groundwater
+
+    assert len(records) == 1
+    assert groundwater is not None
+    assert groundwater.entry_depth == pytest.approx(7.3)
+
+    assert groundwater.balanced_level == pytest.approx(expected_balanced)
+    assert groundwater.end_level == pytest.approx(expected_end)
 
 
 def test_processor_parse_prefers_rock_code_over_lithology(processor: BoreholeMLProcessor) -> None:
@@ -448,6 +525,22 @@ def test_processor_parse_rejects_unsupported_source(processor: BoreholeMLProcess
 
 
 # ---------------------------------------------------------------------------
+# BoreholeWater
+# ---------------------------------------------------------------------------
+
+def test_borehole_water_allows_optional_levels():
+    water = BoreholeWater(
+        entry_depth=3.2,
+        balanced_level=None,
+        end_level=11.5,
+    )
+
+    assert water.entry_depth == 3.2
+    assert water.balanced_level is None
+    assert water.end_level == 11.5
+    assert water.psets == {}
+
+# ---------------------------------------------------------------------------
 # psets
 # ---------------------------------------------------------------------------
 
@@ -456,40 +549,53 @@ def test_parsed_record_carries_expected_psets(processor: BoreholeMLProcessor) ->
     xml = _borehole_xml(
         intervals=_interval(
             from_depth="0.0",
-            to_depth="2.5",
+            to_depth="20.5",
             rock_code="mS, yy",
             rock_name_text="Mittelsand, Bauschutt",
             strat="qh",
             geo_genesis="yf",
-        )
+        ),
+        groundwater=_groundwater(entry_depth="7.3", balanced_level="6.5", end_level="14.7")
     )
     record = processor.parse(xml)[0]
     layer = record.layers[0]
+    groundwater = record.groundwater
 
     assert set(record.psets) == {"Pset_Aufschluss", "Pset_Hyperlink"}
     assert set(layer.psets) == {"Pset_Aufschlussbereich", "Pset_Schicht", "Pset_Objektinformation"}
+    assert set(groundwater.psets) ==  {"Pset_Wasser", "Pset_Schicht", "Pset_Objektinformation"}
 
-    aufschluss = record.psets["Pset_Aufschluss"]
-    assert isinstance(aufschluss, Pset_Aufschluss_Borehole)
-    assert aufschluss.aufschlussart == "Bohrung"
-    assert aufschluss.aufschlussnummer == "B.45"
-    assert aufschluss.hoehenansatzpunkt == pytest.approx(14.3)
+    record_aufschluss = record.psets["Pset_Aufschluss"]
+    assert isinstance(record_aufschluss, Pset_Aufschluss_Borehole)
+    assert record_aufschluss.aufschlussart == "Bohrung"
+    assert record_aufschluss.aufschlussnummer == "B.45"
+    assert record_aufschluss.hoehenansatzpunkt == pytest.approx(14.3)
 
-    bereich = layer.psets["Pset_Aufschlussbereich"]
-    assert isinstance(bereich, Pset_Aufschlussbereich_Borehole)
-    assert bereich.bodenart == "mS (Mittelsand)"
-    assert bereich.bohrvorgang == "UN (unbekanntes Bohrverfahren)"
-    assert bereich.kalkgehalt == "c3 (karbonathaltig)"
-    assert bereich.stratigrafie.startswith("qh (")
+    layer_bereich = layer.psets["Pset_Aufschlussbereich"]
+    assert isinstance(layer_bereich, Pset_Aufschlussbereich_Borehole)
+    assert layer_bereich.bodenart == "mS (Mittelsand)"
+    assert layer_bereich.bohrvorgang == "UN (unbekanntes Bohrverfahren)"
+    assert layer_bereich.kalkgehalt == "c3 (karbonathaltig)"
+    assert layer_bereich.stratigrafie.startswith("qh (")
 
-    schicht = layer.psets["Pset_Schicht"]
-    assert isinstance(schicht, Pset_Schicht_Borehole)
-    assert schicht.genese == UNDEFINED
-    assert schicht.geogenese == "yf (Auffüllung)"
-    assert schicht.geologische_bezeichnung == "Mittelsand, Bauschutt"
-    assert schicht.bodenkonsistenz == UNDEFINED
+    layer_schicht = layer.psets["Pset_Schicht"]
+    assert isinstance(layer_schicht, Pset_Schicht_Borehole)
+    assert layer_schicht.genese == UNDEFINED
+    assert layer_schicht.geogenese == "yf (Auffüllung)"
+    assert layer_schicht.geologische_bezeichnung == "Mittelsand, Bauschutt"
+    assert layer_schicht.bodenkonsistenz == UNDEFINED
 
     assert isinstance(layer.psets["Pset_Objektinformation"], Pset_Objektinformation_Borehole)
+
+    water_wasser = groundwater.psets["Pset_Wasser"]
+    assert isinstance(water_wasser, Pset_Wasser_Groundwater)
+    assert water_wasser.wasserstandhoehe == pytest.approx(7.3)
+
+    water_schicht = groundwater.psets["Pset_Schicht"]
+    assert isinstance(water_schicht, Pset_Schicht_Groundwater)
+    assert water_schicht.schichtnummer == UNDEFINED
+
+    assert isinstance(groundwater.psets["Pset_Objektinformation"], Pset_Objektinformation_Groundwater)
 
 
 def test_collect_borehole_psets_merges_both_levels(processor: BoreholeMLProcessor) -> None:
@@ -509,10 +615,35 @@ def test_collect_borehole_psets_merges_both_levels(processor: BoreholeMLProcesso
     }
 
 
+def test_collect_groundwater_psets_merges_both_levels(processor: BoreholeMLProcessor) -> None:
+    xml = _borehole_xml(intervals=_interval(from_depth="0.0", to_depth="20.5", rock_code="mS"),
+                        groundwater=_groundwater(entry_depth="7.3", balanced_level="6.5", end_level="14.7"))
+    record = processor.parse(xml)[0]
+    psets = collect_groundwater_psets(record)
+
+    assert len(psets) == 5
+    assert all(isinstance(pset, BaseModel) for pset in psets)
+    assert {type(pset) for pset in psets} == {
+        Pset_Aufschluss_Borehole,
+        Pset_Hyperlink,
+        Pset_Wasser_Groundwater,
+        Pset_Schicht_Groundwater,
+        Pset_Objektinformation_Groundwater,
+    }
+
+
+
 def test_collect_borehole_psets_can_be_disabled(processor: BoreholeMLProcessor) -> None:
     xml = _borehole_xml(intervals=_interval(from_depth="0.0", to_depth="2.5", rock_code="mS"))
     record = processor.parse(xml)[0]
     assert collect_borehole_psets(record, record.layers[0], include_property_sets=False) == []
+
+
+def test_collect_water_psets_can_be_disabled(processor: BoreholeMLProcessor) -> None:
+    xml = _borehole_xml(intervals=_interval(from_depth="0.0", to_depth="20.5", rock_code="mS"),
+        groundwater=_groundwater(entry_depth="7.3", balanced_level="6.5", end_level="14.7"))
+    record = processor.parse(xml)[0]
+    assert collect_groundwater_psets(record, include_property_sets=False) == []
 
 
 def test_collect_borehole_psets_skips_non_pydantic_values(processor: BoreholeMLProcessor) -> None:
@@ -526,7 +657,6 @@ def test_collect_borehole_psets_skips_non_pydantic_values(processor: BoreholeMLP
 def test_serialized_pset_uses_bimhh_aliases() -> None:
     dumped = Pset_Aufschlussbereich_Borehole(bodenart="mS (Mittelsand)").model_dump(by_alias=True)
     assert dumped["_Bodenart"] == "mS (Mittelsand)"
-
 
 # ---------------------------------------------------------------------------
 # BoreholeMLProcessor._build_borehole_hyperlink
