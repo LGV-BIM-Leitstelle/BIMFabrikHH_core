@@ -84,12 +84,13 @@ ignoriert wird — dann wäre ein `include`-Eintrag tatsächlich nötig.
 ### Verwendung
 
 ```python
-from BIMFabrikHH_core.apps.boreholes.generic import (
-    BoreholesGenericApp,
-    load_borehole_records,
+from BIMFabrikHH_core.apps.boreholes import (
+    BoreholesGenericApp, BoreholeMLProcessor
 )
 
-records = load_borehole_records("response_WFS_boreholes_generic.xml")
+
+processor = BoreholeMLProcessor()
+records = processor.from_file("response_WFS_boreholes_generic.xml")
 BoreholesGenericApp.build_ifc(records, request_params=request_params)
 ```
 

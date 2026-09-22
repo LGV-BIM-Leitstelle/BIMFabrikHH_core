@@ -12,8 +12,10 @@ from typing import ClassVar, Optional
 from ifcfactory import PropertySetTemplate
 from pydantic import AliasChoices, Field
 
+from BIMFabrikHH_core.apps.boreholes.helper import UNDEFINED
 
-class Pset_Aufschluss(PropertySetTemplate):
+
+class Pset_Aufschluss_Borehole(PropertySetTemplate):
     """Borehole-level data (identical for every layer of one borehole)."""
 
     pset_name: ClassVar[str] = "Pset_Aufschluss"
@@ -21,17 +23,17 @@ class Pset_Aufschluss(PropertySetTemplate):
     aufschlussart: str = Field(
         validation_alias=AliasChoices("aufschlussart", "_Aufschlussart"),
         serialization_alias="_Aufschlussart",
-        default="undefiniert",
+        default=UNDEFINED,
     )
     aufschlussdatum: str = Field(
         validation_alias=AliasChoices("aufschlussdatum", "_Aufschlussdatum", "bohrdatum"),
         serialization_alias="_Aufschlussdatum",
-        default="undefiniert",
+        default=UNDEFINED,
     )
     aufschlussnummer: str = Field(
         validation_alias=AliasChoices("aufschlussnummer", "_Aufschlussnummer", "aufschlussbezeichnung"),
         serialization_alias="_Aufschlussnummer",
-        default="undefiniert",
+        default=UNDEFINED,
     )
     hoehenansatzpunkt: Optional[float] = Field(
         validation_alias=AliasChoices("hoehenansatzpunkt", "_HoeheAnsatzpunkt", "ansatzhoehe_nn"),
@@ -45,7 +47,7 @@ class Pset_Aufschluss(PropertySetTemplate):
     )
 
 
-class Pset_Aufschlussbereich(PropertySetTemplate):
+class Pset_Aufschlussbereich_Borehole(PropertySetTemplate):
     """Layer-level soil description (Bodenart, Farbe, Stratigraphie)."""
 
     pset_name: ClassVar[str] = "Pset_Aufschlussbereich"
@@ -53,32 +55,32 @@ class Pset_Aufschlussbereich(PropertySetTemplate):
     bodenart: str = Field(
         validation_alias=AliasChoices("bodenart", "_Bodenart", "hauptgemengteil"),
         serialization_alias="_Bodenart",
-        default="undefiniert",
+        default=UNDEFINED,
     )
     bodenart_ergaenzung: str = Field(
         validation_alias=AliasChoices("bodenart_ergaenzung", "_BodenartErgaenzung", "nebengemengteil"),
         serialization_alias="_BodenartErgaenzung",
-        default="undefiniert",
+        default=UNDEFINED,
     )
     bohrvorgang: str = Field(
         validation_alias=AliasChoices("bohrvorgang", "_Bohrvorgang"),
         serialization_alias="_Bohrvorgang",
-        default="undefiniert",
+        default=UNDEFINED,
     )
     farbe: str = Field(
         validation_alias=AliasChoices("farbe", "_Farbe"),
         serialization_alias="_Farbe",
-        default="undefiniert",
+        default=UNDEFINED,
     )
     kalkgehalt: str = Field(
         validation_alias=AliasChoices("kalkgehalt", "_Kalkgehalt"),
         serialization_alias="_Kalkgehalt",
-        default="undefiniert",
+        default=UNDEFINED,
     )
-    stratigraphie: str = Field(
-        validation_alias=AliasChoices("stratigraphie", "_Stratigraphie", "stratigrafie", "_Stratigrafie"),
-        serialization_alias="_Stratigraphie",
-        default="undefiniert",
+    stratigrafie: str = Field(
+        validation_alias=AliasChoices("stratigrafie", "_Stratigrafie", "stratigraphie", "_Stratigraphie"),
+        serialization_alias="_Stratigrafie",
+        default=UNDEFINED,
     )
 
 
@@ -119,7 +121,7 @@ class Pset_Objektinformation_Borehole(PropertySetTemplate):
     )
 
 
-class Pset_Schicht(PropertySetTemplate):
+class Pset_Schicht_Borehole(PropertySetTemplate):
     """Layer-level geotechnical classification."""
 
     pset_name: ClassVar[str] = "Pset_Schicht"
@@ -127,33 +129,33 @@ class Pset_Schicht(PropertySetTemplate):
     bodengruppe: str = Field(
         validation_alias=AliasChoices("bodengruppe", "_Bodengruppe"),
         serialization_alias="_Bodengruppe",
-        default="undefiniert",
+        default=UNDEFINED,
     )
     bodenkonsistenz: str = Field(
-        validation_alias=AliasChoices("bodenkonsistenz", "_Bodenkonsistenz", "konsistenz"),
+        validation_alias=AliasChoices("bodenkonsistenz", "_Bodenkonsistenz", "konsistenz", "consistency"),
         serialization_alias="_Bodenkonsistenz",
-        default="undefiniert",
+        default=UNDEFINED,
     )
     geologische_bezeichnung: str = Field(
         validation_alias=AliasChoices("geologische_bezeichnung", "_GeologischeBezeichnung"),
         serialization_alias="_GeologischeBezeichnung",
-        default="undefiniert",
+        default=UNDEFINED,
     )
     genese: str = Field(
-        validation_alias=AliasChoices("genese", "_Genese"),
+        validation_alias=AliasChoices("genese", "_Genese", "genesis"),
         serialization_alias="_Genese",
-        default="undefiniert",
+        default=UNDEFINED,
     )
     geogenese: str = Field(
-        validation_alias=AliasChoices("geogenese", "_Geogenese"),
+        validation_alias=AliasChoices("geogenese", "_Geogenese", "geogenesis"),
         serialization_alias="_Geogenese",
-        default="undefiniert",
+        default=UNDEFINED,
     )
 
 
 __all__ = [
-    "Pset_Aufschluss",
-    "Pset_Aufschlussbereich",
+    "Pset_Aufschluss_Borehole",
+    "Pset_Aufschlussbereich_Borehole",
     "Pset_Objektinformation_Borehole",
-    "Pset_Schicht",
+    "Pset_Schicht_Borehole",
 ]

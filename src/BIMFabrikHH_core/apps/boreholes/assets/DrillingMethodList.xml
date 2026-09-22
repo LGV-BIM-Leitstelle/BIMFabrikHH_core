@@ -1,0 +1,1816 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- version 2.1 - date: 2025-04-25 - designed for BoreholeML 3.1.0 -->
+<gmx:ML_CodeListDictionary xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:gco="http://www.isotc211.org/2005/gco" xmlns:gml="http://www.opengis.net/gml/3.2" xmlns:gmd="http://www.isotc211.org/2005/gmd" xmlns:gmx="http://www.isotc211.org/2005/gmx" xmlns:bmlcl="https://schemas.bgr.de/boreholeml/codelists/v2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.isotc211.org/2005/gmx http://schemas.opengis.net/iso/19139/20070417/gmx/gmx.xsd https://schemas.bgr.de/boreholeml/codelists/v2 https://schemas.bgr.de/boreholeml/codelists/v2/codelistItem_BMLCL.xsd" gml:id="DrillingMethodList">
+	<gml:description>Spezifisches Bohrverfahren nach technischer Ausführung</gml:description>
+	<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">DrillingMethodList</gml:identifier>
+	<gml:name>Bohrverfahren</gml:name>
+	<gml:remarks>version 2.1 - date: 2025-04-25 - designed for BoreholeML 3.1.0</gml:remarks>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_09_0001_0001">
+			<gml:description>Spülbohrverfahren ohne Gewinnung von gekernten Proben</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">DP</gml:identifier>
+			<gml:name>Spülbohrung ohne Kerngewinn, direkt (Rotarybohrung)</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml" gml:id="_09_0001_0001_en">
+					<gml:description>Flush drilling method without recovery of cored samples</gml:description>
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">DP</gml:identifier>
+					<gml:name>Flush drilling without core recovery, direct (rotary drilling)</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>1</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/690d5a50-852c-4b09-8bfa-cd9773a271b1</bmlcl:geolKA>
+			<bmlcl:modificationDate>2024-11-28</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_09_0002_0002">
+			<gml:description>Spülbohrverfahren ohne Gewinnung von gekernten Proben</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">DL</gml:identifier>
+			<gml:name>Spülbohrung ohne Kerngewinn, indirekt-Lufthebebohrung</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml" gml:id="_09_0002_0002_en">
+					<gml:description>Flush drilling method without recovery of cored samples</gml:description>
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">DL</gml:identifier>
+					<gml:name>Flush drilling without core recovery, indirect - air-lift drilling</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>2</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/3b559ba5-69a9-4ce0-ab52-d0c7797c55d7</bmlcl:geolKA>
+			<bmlcl:modificationDate>2024-11-28</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_09_0003_0003">
+			<gml:description>Spülbohrverfahren ohne Gewinnung von gekernten Proben</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">DG</gml:identifier>
+			<gml:name>Spülbohrung ohne Kerngewinn, indirekt-Saugbohrung</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml" gml:id="_09_0003_0003_en">
+					<gml:description>Flush drilling method without recovery of cored samples</gml:description>
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">DG</gml:identifier>
+					<gml:name>Flush drilling without core recovery, indirect - suction drilling</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>3</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/2cb8336c-9f00-4bea-bf47-1be4560d619c</bmlcl:geolKA>
+			<bmlcl:modificationDate>2024-11-28</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_09_0004_0004">
+			<gml:description>Spülbohrverfahren ohne Gewinnung von gekernten Proben</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">DW</gml:identifier>
+			<gml:name>Spülbohrung ohne Kerngewinn, indirekt-Strahlsaugbohren</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml" gml:id="_09_0004_0004_en">
+					<gml:description>Flush drilling method without recovery of cored samples</gml:description>
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">DW</gml:identifier>
+					<gml:name>Flush drilling without core recovery, indirect - jet suction drilling</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>4</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/d43362e9-096a-48d6-ab66-1991ffb1803b</bmlcl:geolKA>
+			<bmlcl:modificationDate>2024-11-28</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_09_0005_0005">
+			<gml:description>Spülbohrverfahren mit abschnittsweiser Gewinnung von gekernten Proben</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">KST1</gml:identifier>
+			<gml:name>Spülbohrung mit Teilkerngewinnung, Einfachkernrohr</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml" gml:id="_09_0005_0005_en">
+					<gml:description>Flush drilling method with partial recovery of cored samples</gml:description>
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">KST1</gml:identifier>
+					<gml:name>Flush drilling with partial core recovery, single-tube core barrel</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>5</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/0c72fbf0-39f6-47cb-bfa8-54ce4c6fa7d5</bmlcl:geolKA>
+			<bmlcl:modificationDate>2024-11-28</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_09_0006_0006">
+			<gml:description>Spülbohrverfahren mit abschnittsweiser Gewinnung von gekernten Proben</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">KST2</gml:identifier>
+			<gml:name>Spülbohrung mit Teilkerngewinnung, Doppelkernrohr</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml" gml:id="_09_0006_0006_en">
+					<gml:description>Flush drilling method with partial recovery of cored samples</gml:description>
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">KST2</gml:identifier>
+					<gml:name>Flush drilling with partial core recovery, double-tube core barrel</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>6</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/b4ae51ad-44e4-4260-96d8-a1a24d649340</bmlcl:geolKA>
+			<bmlcl:modificationDate>2024-11-28</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_09_0007_0007">
+			<gml:description>Spülbohrverfahren mit abschnittsweiser Gewinnung von gekernten Proben</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">KST3</gml:identifier>
+			<gml:name>Spülbohrung mit Teilkerngewinnung, Dreifachkernrohr</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml" gml:id="_09_0007_0007_en">
+					<gml:description>Flush drilling method with partial recovery of cored samples</gml:description>
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">KST3</gml:identifier>
+					<gml:name>Flush drilling with partial core recovery, triple-tube core barrel</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>7</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/7133623c-d239-4036-b4b1-ab0eec65ba89</bmlcl:geolKA>
+			<bmlcl:modificationDate>2024-11-28</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_09_0008_0008">
+			<gml:description>Spülbohrverfahren mit abschnittsweiser Gewinnung von gekernten Proben</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">KSTS</gml:identifier>
+			<gml:name>Spülbohrung mit Teilkerngewinnung, Seilkernrohr</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml" gml:id="_09_0008_0008_en">
+					<gml:description>Flush drilling method with partial recovery of cored samples</gml:description>
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">KSTS</gml:identifier>
+					<gml:name>Flush drilling with partial core recovery, wireline core barrel</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>8</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/699c4ab5-3978-4bc3-91b8-d766097f427d</bmlcl:geolKA>
+			<bmlcl:modificationDate>2024-11-28</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_09_0009_0009">
+			<gml:description>Spülbohrverfahren mit abschnittsweiser Gewinnung von gekernten Proben</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">KSTR</gml:identifier>
+			<gml:name>Spülbohrung mit Teilkerngewinnung, Rammkernrohr</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml" gml:id="_09_0009_0009_en">
+					<gml:description>Flush drilling method with partial recovery of cored samples</gml:description>
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">KSTR</gml:identifier>
+					<gml:name>Flush drilling with partial core recovery, driven core barrel</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>9</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/7c7dac21-31d3-4b26-9795-7fa1daf54de1</bmlcl:geolKA>
+			<bmlcl:modificationDate>2024-11-28</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_09_0010_0010">
+			<gml:description>Spülbohrverfahren mit abschnittsweiser Gewinnung von gekernten Proben</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">KSTÜ</gml:identifier>
+			<gml:name>Spülbohrung mit Teilkerngewinnung, Rammkernrohr mit Überbohrtechnik/Spülhilfe</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml" gml:id="_09_0010_0010_en">
+					<gml:description>Flush drilling method with partial recovery of cored samples</gml:description>
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">KSTÜ</gml:identifier>
+					<gml:name>Flush drilling w. partial core recovery, driven core barrel w. overdrilling technique/flush assist.</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>10</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/db0a403b-8b52-440d-bcd9-3972a95febe3</bmlcl:geolKA>
+			<bmlcl:modificationDate>2024-11-28</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_09_0011_0011">
+			<gml:description>Trockenbohrverfahren ohne Gewinnung von gekernten Proben</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">DB</gml:identifier>
+			<gml:name>Trockenbohrung ohne Kerngewinn, drehend am Gestänge-Schnecke</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml" gml:id="_09_0011_0011_en">
+					<gml:description>Dry drilling method without recovery of cored samples</gml:description>
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">DB</gml:identifier>
+					<gml:name>Dry drilling without core recovery, rotary - auger</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>11</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/ad193646-1bb2-432a-bad1-ff48618296b8</bmlcl:geolKA>
+			<bmlcl:modificationDate>2024-11-28</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_09_0012_0012">
+			<gml:description>Trockenbohrverfahren ohne Gewinnung von gekernten Proben</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">SB</gml:identifier>
+			<gml:name>Trockenbohrung ohne Kerngewinn, drehend am Gestänge-Schappe</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml" gml:id="_09_0012_0012_en">
+					<gml:description>Dry drilling method without recovery of cored samples</gml:description>
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">SB</gml:identifier>
+					<gml:name>Dry drilling without core recovery, rotary - blade</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>12</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/3793b124-766b-4886-846a-17730d1dd787</bmlcl:geolKA>
+			<bmlcl:modificationDate>2024-11-28</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_09_0013_0013">
+			<gml:description>Trockenbohrverfahren ohne Gewinnung von gekernten Proben</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">TBND</gml:identifier>
+			<gml:name>Trockenbohrung ohne Kerngewinn, schlagend am Seil-Ventilbüchsen</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml" gml:id="_09_0013_0013_en">
+					<gml:description>Dry drilling method without recovery of cored samples</gml:description>
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">TBND</gml:identifier>
+					<gml:name>Dry drilling without core recovery, cable tool - valve box</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>13</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/1c0d52b6-d735-44a5-8d7e-2a9ce88bcc5e</bmlcl:geolKA>
+			<bmlcl:modificationDate>2024-11-28</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_09_0014_0014">
+			<gml:description>Trockenbohrverfahren ohne Gewinnung von gekernten Proben</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">KP</gml:identifier>
+			<gml:name>Trockenbohrung ohne Kerngewinn, schlagend am Seil-Kiespumpe</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml" gml:id="_09_0014_0014_en">
+					<gml:description>Dry drilling method without recovery of cored samples</gml:description>
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">KP</gml:identifier>
+					<gml:name>Dry drilling without core recovery, cable tool - gravel pump</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>14</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/f3d92d1a-5308-46ac-9e50-1b8d7d353f80</bmlcl:geolKA>
+			<bmlcl:modificationDate>2024-11-28</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_09_0015_0015">
+			<gml:description>Trockenbohrverfahren ohne Gewinnung von gekernten Proben</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">TG</gml:identifier>
+			<gml:name>Trockenbohrung ohne Kerngewinn, schlagend am Seil-Greifer</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml" gml:id="_09_0015_0015_en">
+					<gml:description>Dry drilling method without recovery of cored samples</gml:description>
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">TG</gml:identifier>
+					<gml:name>Dry drilling without core recovery, cable tool - grab sampler</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>15</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/15828539-3064-40fd-bf61-41b7a8e020e6</bmlcl:geolKA>
+			<bmlcl:modificationDate>2024-11-28</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_09_0016_0016">
+			<gml:description>Trockenbohrverfahren ohne Gewinnung von gekernten Proben</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">SA</gml:identifier>
+			<gml:name>Trockenbohrung ohne Kerngewinn, schlagend am Seil-Schlagmeißel</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml" gml:id="_09_0016_0016_en">
+					<gml:description>Dry drilling method without recovery of cored samples</gml:description>
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">SA</gml:identifier>
+					<gml:name>Dry drilling without core recovery, cable tool - chisel</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>16</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/2bbb979a-0983-401a-bbfa-aa69e73e5ed3</bmlcl:geolKA>
+			<bmlcl:modificationDate>2024-11-28</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_09_0017_0017">
+			<gml:description>Trockenbohrverfahren mit abschnittsweiser Gewinnung von gekernten Proben</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">KTT1</gml:identifier>
+			<gml:name>Trockenbohrung mit Teilkerngewinnung, Einfachkernrohr</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml" gml:id="_09_0017_0017_en">
+					<gml:description>Dry drilling method with partial recovery of cored samples</gml:description>
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">KTT1</gml:identifier>
+					<gml:name>Dry drilling with partial core recovery, single-tube core barrel</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>17</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/539a1a21-2b84-46cf-af79-77f8d85c1f67</bmlcl:geolKA>
+			<bmlcl:modificationDate>2024-11-28</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_09_0018_0018">
+			<gml:description>Trockenbohrverfahren mit abschnittsweiser Gewinnung von gekernten Proben</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">KTT2</gml:identifier>
+			<gml:name>Trockenbohrung mit Teilkerngewinnung, Doppelkernrohr</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml" gml:id="_09_0018_0018_en">
+					<gml:description>Dry drilling method with partial recovery of cored samples</gml:description>
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">KTT2</gml:identifier>
+					<gml:name>Dry drilling with partial core recovery, double-tube core barrel</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>18</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/0988ee0b-bb47-4af4-8254-133d9c7688b5</bmlcl:geolKA>
+			<bmlcl:modificationDate>2024-11-28</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_09_0019_0019">
+			<gml:description>Trockenbohrverfahren mit abschnittsweiser Gewinnung von gekernten Proben</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">KTT3</gml:identifier>
+			<gml:name>Trockenbohrung mit Teilkerngewinnung, Dreifachkernrohr</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml" gml:id="_09_0019_0019_en">
+					<gml:description>Dry drilling method with partial recovery of cored samples</gml:description>
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">KTT3</gml:identifier>
+					<gml:name>Dry drilling with partial core recovery, triple-tube core barrel</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>19</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/6ee24bdd-fc0f-4618-bc14-ede27f13a4ef</bmlcl:geolKA>
+			<bmlcl:modificationDate>2024-11-28</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_09_0020_0020">
+			<gml:description>Trockenbohrverfahren mit abschnittsweiser Gewinnung von gekernten Proben</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">KTTS</gml:identifier>
+			<gml:name>Trockenbohrung mit Teilkerngewinnung, Seilkernrohr</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml" gml:id="_09_0020_0020_en">
+					<gml:description>Dry drilling method with partial recovery of cored samples</gml:description>
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">KTTS</gml:identifier>
+					<gml:name>Dry drilling with partial core recovery, wireline core barrel</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>20</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/df17ed21-3d54-472e-a4a1-29f0f8fca3ea</bmlcl:geolKA>
+			<bmlcl:modificationDate>2024-11-28</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_09_0021_0021">
+			<gml:description>Trockenbohrverfahren mit abschnittsweiser Gewinnung von gekernten Proben</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">KTTR</gml:identifier>
+			<gml:name>Trockenbohrung mit Teilkerngewinnung, Rammkernrohr</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml" gml:id="_09_0021_0021_en">
+					<gml:description>Dry drilling method with partial recovery of cored samples</gml:description>
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">KTTR</gml:identifier>
+					<gml:name>Dry drilling with partial core recovery, driven core barrel</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>21</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/ea7f89d9-9f07-4b3b-9e9c-93387b2c807f</bmlcl:geolKA>
+			<bmlcl:modificationDate>2024-11-28</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_09_0022_0022">
+			<gml:description>Trockenbohrverfahren mit abschnittsweiser Gewinnung von gekernten Proben</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">KTTÜ</gml:identifier>
+			<gml:name>Trockenbohrung mit Teilkerngewinnung, Rammkernrohr mit Überbohrtechnik/Spülhilfe</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml" gml:id="_09_0022_0022_en">
+					<gml:description>Dry drilling method with partial recovery of cored samples</gml:description>
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">KTTÜ</gml:identifier>
+					<gml:name>Dry drilling w. partial core recovery, driven core barrel w. overdrilling technique/flush assistance</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>22</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/f0b598d8-fb20-4e70-8834-9515f05682d8</bmlcl:geolKA>
+			<bmlcl:modificationDate>2024-11-28</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_09_0023_0023">
+			<gml:description>Kernbohrverfahren</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">KB1</gml:identifier>
+			<gml:name>Kernbohrung mit Einfachkernrohr</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml" gml:id="_09_0023_0023_en">
+					<gml:description>Core drilling method</gml:description>
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">KB1</gml:identifier>
+					<gml:name>Core drilling with single-tube core barrel</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>23</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/4b555d36-ec1f-4bb0-995a-7cc3e94cd18b</bmlcl:geolKA>
+			<bmlcl:modificationDate>2024-11-28</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_09_0024_0024">
+			<gml:description>Kernbohrverfahren</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">KB2</gml:identifier>
+			<gml:name>Kernbohrung mit Doppelkernrohr</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml" gml:id="_09_0024_0024_en">
+					<gml:description>Core drilling method</gml:description>
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">KB2</gml:identifier>
+					<gml:name>Core drilling with double-tube core barrel</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>24</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/1366879f-968b-4381-ab1a-1a545c49de28</bmlcl:geolKA>
+			<bmlcl:modificationDate>2024-11-28</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_09_0025_0025">
+			<gml:description>Kernbohrverfahren</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">KB3</gml:identifier>
+			<gml:name>Kernbohrung mit Dreifachkernrohr</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml" gml:id="_09_0025_0025_en">
+					<gml:description>Core drilling method</gml:description>
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">KB3</gml:identifier>
+					<gml:name>Core drilling with triple-tube core barrel</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>25</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/15ce4361-a977-461c-a0d0-9fd9ed421d42</bmlcl:geolKA>
+			<bmlcl:modificationDate>2024-11-28</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_09_0026_0026">
+			<gml:description>Kernbohrverfahren</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">SKB</gml:identifier>
+			<gml:name>Kernbohrung mit Seilkernrohr</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml" gml:id="_09_0026_0026_en">
+					<gml:description>Core drilling method</gml:description>
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">SKB</gml:identifier>
+					<gml:name>Core drilling with wireline core barrel</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>26</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/6a3aa109-56f3-47fe-a612-911c32e4c302</bmlcl:geolKA>
+			<bmlcl:modificationDate>2024-11-28</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_09_0027_0027">
+			<gml:description>Kernbohrverfahren</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">SK</gml:identifier>
+			<gml:name>Kernbohrung mit Rammkernrohr</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml" gml:id="_09_0027_0027_en">
+					<gml:description>Core drilling method</gml:description>
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">SK</gml:identifier>
+					<gml:name>Core drilling with driven core barrel</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>27</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/46f33be4-9b9e-46c5-89a9-65feb4a60ac2</bmlcl:geolKA>
+			<bmlcl:modificationDate>2024-11-28</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_09_0028_0028">
+			<gml:description>Kleinbohrverfahren</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">SKÜ</gml:identifier>
+			<gml:name>Kernbohrung mit Rammkernrohr mit Überbohrtechnik/Spülhilfe</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml" gml:id="_09_0028_0028_en">
+					<gml:description>Small-scale drilling method</gml:description>
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">SKÜ</gml:identifier>
+					<gml:name>Core drilling with driven core barrel with overdrilling technique/flush assistance</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>28</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/f1fb95d8-b598-4369-a351-d0fb9893fd15</bmlcl:geolKA>
+			<bmlcl:modificationDate>2024-11-28</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_09_0029_0029">
+			<gml:description>Kleinbohrverfahren</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">KRB</gml:identifier>
+			<gml:name>Kleinrammbohrung</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml" gml:id="_09_0029_0029_en">
+					<gml:description>Small-scale drilling method</gml:description>
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">KRB</gml:identifier>
+					<gml:name>Small-scale driven drilling</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>29</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/b9164c1f-f5f9-4f72-9496-121fe942f859</bmlcl:geolKA>
+			<bmlcl:modificationDate>2024-11-28</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_09_0030_0030">
+			<gml:description>Kleinbohrverfahren</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">KDB</gml:identifier>
+			<gml:name>Kleindruckbohrung</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml" gml:id="_09_0030_0030_en">
+					<gml:description>Small-scale drilling method</gml:description>
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">KDB</gml:identifier>
+					<gml:name>Small-scale pressure drilling</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>30</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/7802c056-aabb-48d5-87eb-48309fc5ae83</bmlcl:geolKA>
+			<bmlcl:modificationDate>2024-11-28</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_09_0031_0031">
+			<gml:description>Kleinbohrverfahren</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">HB</gml:identifier>
+			<gml:name>Handbohrung</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml" gml:id="_09_0031_0031_en">
+					<gml:description>Small-scale drilling method</gml:description>
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">HB</gml:identifier>
+					<gml:name>Hand drilling</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>31</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/aeb77c26-bec4-43ab-8f71-d866b5f84278</bmlcl:geolKA>
+			<bmlcl:modificationDate>2024-11-28</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_09_0032_0032">
+			<gml:description>Kleinbohrverfahren</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">PL</gml:identifier>
+			<gml:name>Handbohrung, Pürckhauer-Linnemann, Nutsondierung</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml" gml:id="_09_0032_0032_en">
+					<gml:description>Small-scale drilling method</gml:description>
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">PL</gml:identifier>
+					<gml:name>Hand drilling, Pürckhauer-Linnemann, nut sounding</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>32</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/b1c3966d-f565-42f5-b178-a327fe4fa8fa</bmlcl:geolKA>
+			<bmlcl:modificationDate>2024-11-28</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_09_0033_0033">
+			<gml:description>Kleinbohrverfahren</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">BG</gml:identifier>
+			<gml:name>Handbohrung, Gutsbohrung (Schlitzsonde für Torfe)</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml" gml:id="_09_0033_0033_en">
+					<gml:description>Small-scale drilling method</gml:description>
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">BG</gml:identifier>
+					<gml:name>Hand drilling, peat slit sampler (for peat)</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>33</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/c1971f45-c9f4-48ca-91d5-6e25f0a0f024</bmlcl:geolKA>
+			<bmlcl:modificationDate>2024-11-28</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_09_0034_0034">
+			<gml:description>Kleinbohrverfahren</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">MK</gml:identifier>
+			<gml:name>Handbohrung, Moor-Kammerbohrung</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml" gml:id="_09_0034_0034_en">
+					<gml:description>Small-scale drilling method</gml:description>
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">MK</gml:identifier>
+					<gml:name>Hand drilling, peat chamber drilling</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>34</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/1fc0f5db-4a9b-4624-b324-47e2410a3769</bmlcl:geolKA>
+			<bmlcl:modificationDate>2024-11-28</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_09_0035_0035">
+			<gml:description>Kleinbohrverfahren</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">ML</gml:identifier>
+			<gml:name>Handbohrung, Marschenlöffel</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml" gml:id="_09_0035_0035_en">
+					<gml:description>Small-scale drilling method</gml:description>
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">ML</gml:identifier>
+					<gml:name>Hand drilling, marsh spoon</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>35</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/414b8ae2-127c-494d-9b5b-56d80215f0f2</bmlcl:geolKA>
+			<bmlcl:modificationDate>2024-11-28</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_09_0036_0036">
+			<gml:description>Kleinbohrverfahren</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">FB</gml:identifier>
+			<gml:name>Handbohrung, Flügelbohrer</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml" gml:id="_09_0036_0036_en">
+					<gml:description>Small-scale drilling method</gml:description>
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">FB</gml:identifier>
+					<gml:name>Hand drilling, wing drill </gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>36</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/c302c2fe-27a1-40d2-9867-ec95d8ed8c4c</bmlcl:geolKA>
+			<bmlcl:modificationDate>2024-11-28</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_09_0037_0037">
+			<gml:description>Drucksondierungen/ Direct Push</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">DPU</gml:identifier>
+			<gml:name>Drucksondierungen/ Direct Push</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml" gml:id="_09_0037_0037_en">
+					<gml:description>Direct push probing</gml:description>
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">DPU</gml:identifier>
+					<gml:name>Direct push probing</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>37</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/ba440c7d-f330-4192-ade7-29005bd8c374</bmlcl:geolKA>
+			<bmlcl:modificationDate>2024-11-28</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_09_0038_0038">
+			<gml:description>Vibrationsbohrverfahren</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">VB</gml:identifier>
+			<gml:name>Vibrationsbohrverfahren</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml" gml:id="_09_0038_0038_en">
+					<gml:description>Vibratory drilling method</gml:description>
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">VB</gml:identifier>
+					<gml:name>Vibratory drilling method</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>38</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/05f38485-0812-4757-8f14-246c77953e62</bmlcl:geolKA>
+			<bmlcl:modificationDate>2024-11-28</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_09_0039_0039">
+			<gml:description>Maschinelle Grabung</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">BAK</gml:identifier>
+			<gml:name>Maschinelle Grabung (z. B. Kollektor)</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml" gml:id="_09_0039_0039_en">
+					<gml:description>Mechanical excavation</gml:description>
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">BAK</gml:identifier>
+					<gml:name>Mechanical excavation (e.g., collector)</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>39</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/43b2f5e8-0779-481a-ae09-f9358e0e2617</bmlcl:geolKA>
+			<bmlcl:modificationDate>2024-11-28</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_09_0040_0040">
+			<gml:description>Unbekanntes Bohrverfahren</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">UN</gml:identifier>
+			<gml:name>unbekanntes Bohrverfahren</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml" gml:id="_09_0040_0040_en">
+					<gml:description>Unknown drilling method</gml:description>
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">UN</gml:identifier>
+					<gml:name>Unknown drilling method </gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>40</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/d5e40d41-97d9-40de-a25d-46c1ca5112d5</bmlcl:geolKA>
+			<bmlcl:modificationDate>2024-11-28</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_09_0041_0041">
+			<gml:description>Systematik veraltet (Spülbohrverfahren)</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">DH</gml:identifier>
+			<gml:name>Drehschlagbohren (direkt im Festgestein) [veraltet]</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml" gml:id="_09_0041_0041_en">
+					<gml:description>Obsolete systematics (flush drilling method)</gml:description>
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">DH</gml:identifier>
+					<gml:name>Rotary percussion drilling (direct in bedrock) [obsolete]</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>41</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/8efdf672-f144-48a5-ba5a-6173b723b962</bmlcl:geolKA>
+			<bmlcl:modificationDate>2024-11-28</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_09_0042_0042">
+			<gml:description>Systematik veraltet (Spülbohrverfahren)</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">DR</gml:identifier>
+			<gml:name>Drehspülbohrung [veraltet]</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml" gml:id="_09_0042_0042_en">
+					<gml:description>Obsolete systematics (flush drilling method)</gml:description>
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">DR</gml:identifier>
+					<gml:name>Rotary flush drilling [obsolete]</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>42</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/03fd3e7a-fa01-41af-a060-2f07b393cf38</bmlcl:geolKA>
+			<bmlcl:modificationDate>2024-11-28</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_09_0043_0043">
+			<gml:description>Systematik veraltet (Spülbohrverfahren)</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">LSP</gml:identifier>
+			<gml:name>Linksspülbohren [veraltet]</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml" gml:id="_09_0043_0043_en">
+					<gml:description>Obsolete systematics (flush drilling method)</gml:description>
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">LSP</gml:identifier>
+					<gml:name>Reverse flush drilling [obsolete]</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>43</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/e441f365-474e-4442-9a0c-b8b6e1188859</bmlcl:geolKA>
+			<bmlcl:modificationDate>2024-11-28</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_09_0044_0044">
+			<gml:description>Systematik veraltet (Spülbohrverfahren)</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">DC</gml:identifier>
+			<gml:name>Counterflush-Bohrung [veraltet]</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml" gml:id="_09_0044_0044_en">
+					<gml:description>Obsolete systematics (flush drilling method)</gml:description>
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">DC</gml:identifier>
+					<gml:name>Counterflush drilling [obsolete]</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>44</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/d72ceffd-f8e5-4178-ad23-ef93fd456fe5</bmlcl:geolKA>
+			<bmlcl:modificationDate>2024-11-28</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_09_0045_0045">
+			<gml:description>Systematik veraltet (Spülbohrverfahren)</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">SG</gml:identifier>
+			<gml:name>Saugspülbohrung [veraltet]</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml" gml:id="_09_0045_0045_en">
+					<gml:description>Obsolete systematics (flush drilling method)</gml:description>
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">SG</gml:identifier>
+					<gml:name>Suction flush drilling [obsolete]</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>45</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/bf7c0d7b-7fd6-4b22-8b8d-721831a9ed6b</bmlcl:geolKA>
+			<bmlcl:modificationDate>2024-11-28</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_09_0046_0046">
+			<gml:description>Systematik veraltet (Spülbohrverfahren)</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">WP</gml:identifier>
+			<gml:name>Kraftspülbohren (Wasserpumpenantrieb) [veraltet]</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml" gml:id="_09_0046_0046_en">
+					<gml:description>Obsolete systematics (flush drilling method)</gml:description>
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">WP</gml:identifier>
+					<gml:name>Power flush drilling (water pump drive) [obsolete]</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>46</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/3367d696-89ff-4b87-a5c0-672a16802f44</bmlcl:geolKA>
+			<bmlcl:modificationDate>2024-11-28</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_09_0047_0047">
+			<gml:description>Systematik veraltet (Spülbohrverfahren)</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">KTR</gml:identifier>
+			<gml:name>Kombi Trocken/Rotaryspül [veraltet]</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml" gml:id="_09_0047_0047_en">
+					<gml:description>Obsolete systematics (flush drilling method)</gml:description>
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">KTR</gml:identifier>
+					<gml:name>Combination dry/rotary flush [obsolete]</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>47</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/4c0b9579-99c1-489a-997c-45512a6140c0</bmlcl:geolKA>
+			<bmlcl:modificationDate>2024-11-28</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_09_0048_0048">
+			<gml:description>Systematik veraltet (Spülbohrverfahren)</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">SP</gml:identifier>
+			<gml:name>Spülbohrung [veraltet]</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml" gml:id="_09_0048_0048_en">
+					<gml:description>Obsolete systematics (flush drilling method)</gml:description>
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">SP</gml:identifier>
+					<gml:name>Flush drilling [obsolete]</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>48</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/5132a248-8d4a-412a-918f-f6880d164ea5</bmlcl:geolKA>
+			<bmlcl:modificationDate>2024-11-28</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_09_0049_0050">
+			<gml:description>Systematik veraltet (Trockenbohrverfahren)</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">DT</gml:identifier>
+			<gml:name>Trockenbohrung, drehend [veraltet]</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml" gml:id="_09_0049_0050_en">
+					<gml:description>Obsolete systematics (dry drilling method)</gml:description>
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">DT</gml:identifier>
+					<gml:name>Dry drilling, rotary [obsolete]</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>50</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/1656f52f-a278-47e0-8690-eab3bab80ec0</bmlcl:geolKA>
+			<bmlcl:modificationDate>2024-11-28</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_09_0050_0051">
+			<gml:description>Systematik veraltet (Trockenbohrverfahren)</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">SF</gml:identifier>
+			<gml:name>Seilfreifallbohrung [veraltet]</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml" gml:id="_09_0050_0051_en">
+					<gml:description>Obsolete systematics (dry drilling method)</gml:description>
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">SF</gml:identifier>
+					<gml:name>Cable free-fall drilling [obsolete]</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>51</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/c4e77fed-b5ef-48f5-884e-e416d2daccb5</bmlcl:geolKA>
+			<bmlcl:modificationDate>2024-11-28</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_09_0051_0052">
+			<gml:description>Systematik veraltet (Trockenbohrverfahren)</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">RTKB</gml:identifier>
+			<gml:name>Rotations-Trockenkernbohrung [veraltet]</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml" gml:id="_09_0051_0052_en">
+					<gml:description>Obsolete systematics (dry drilling method)</gml:description>
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">RTKB</gml:identifier>
+					<gml:name>Rotary dry core drilling [obsolete]</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>52</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/e94940a0-4e4e-4244-b7d5-2a6d8481356e</bmlcl:geolKA>
+			<bmlcl:modificationDate>2024-11-28</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_09_0052_0053">
+			<gml:description>Systematik veraltet (Trockenbohrverfahren)</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">KTD</gml:identifier>
+			<gml:name>Kombi Trocken/Doppelkernspül [veraltet]</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml" gml:id="_09_0052_0053_en">
+					<gml:description>Obsolete systematics (dry drilling method)</gml:description>
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">KTD</gml:identifier>
+					<gml:name>Combination dry/double-tube flush [obsolete]</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>53</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/c23d2894-971b-4f67-aeae-2c1a941fa187</bmlcl:geolKA>
+			<bmlcl:modificationDate>2024-11-28</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_09_0053_0054">
+			<gml:description>Systematik veraltet (Trockenbohrverfahren)</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">TEB</gml:identifier>
+			<gml:name>Tellerbohrung [veraltet]</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml" gml:id="_09_0053_0054_en">
+					<gml:description>Obsolete systematics (dry drilling method)</gml:description>
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">TEB</gml:identifier>
+					<gml:name>Disc drilling [obsolete]</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>54</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/69a9950c-0cd5-4e69-9a5f-81a78f6f575f</bmlcl:geolKA>
+			<bmlcl:modificationDate>2024-11-28</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_09_0054_0055">
+			<gml:description>Systematik veraltet (Trockenbohrverfahren)</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">TB</gml:identifier>
+			<gml:name>Trockenbohrung [veraltet]</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml" gml:id="_09_0054_0055_en">
+					<gml:description>Obsolete systematics (dry drilling method)</gml:description>
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">TB</gml:identifier>
+					<gml:name>Dry drilling [obsolete]</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>55</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/b1dc5e64-aef8-417d-8871-e89aaa799150</bmlcl:geolKA>
+			<bmlcl:modificationDate>2024-11-28</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_09_0055_0060">
+			<gml:description>Systematik veraltet (Kernbohrverfahren)</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">SKL</gml:identifier>
+			<gml:name>Kernbohrverfahren mit Liner [veraltet]</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml" gml:id="_09_0055_0060_en">
+					<gml:description>Obsolete systematics (core drilling method)</gml:description>
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">SKL</gml:identifier>
+					<gml:name>Core drilling method with liner [obsolete]</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>60</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/d6a2e175-a4ab-4242-b700-29d2cee6c650</bmlcl:geolKA>
+			<bmlcl:modificationDate>2024-11-28</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_09_0056_0061">
+			<gml:description>Systematik veraltet (Kernbohrverfahren)</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">VKL</gml:identifier>
+			<gml:name>Vollkern-Lufthebebohrung [veraltet]</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml" gml:id="_09_0056_0061_en">
+					<gml:description>Obsolete systematics (core drilling method)</gml:description>
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">VKL</gml:identifier>
+					<gml:name>Full-core air-lift drilling [obsolete]</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>61</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/c38ea704-1608-4420-acab-541e7ad5d16e</bmlcl:geolKA>
+			<bmlcl:modificationDate>2024-11-28</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_09_0057_0062">
+			<gml:description>Systematik veraltet (Kernbohrverfahren)</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">VRS</gml:identifier>
+			<gml:name>Vollkern-Rotaryspülbohrung [veraltet]</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml" gml:id="_09_0057_0062_en">
+					<gml:description>Obsolete systematics (core drilling method)</gml:description>
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">VRS</gml:identifier>
+					<gml:name>Full-core rotary flush drilling [obsolete]</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>62</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/f5535f77-cbfd-48dc-a0ee-681bb1d4dfad</bmlcl:geolKA>
+			<bmlcl:modificationDate>2024-11-28</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_09_0058_0063">
+			<gml:description>Systematik veraltet (Kernbohrverfahren)</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">RRKB</gml:identifier>
+			<gml:name>Rammrotationskernbohrung [veraltet]</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml" gml:id="_09_0058_0063_en">
+					<gml:description>Obsolete systematics (core drilling method)</gml:description>
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">RRKB</gml:identifier>
+					<gml:name>Driven rotary core drilling [obsolete]</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>63</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/bd3c2e61-599d-44b5-aafe-9123809a42e7</bmlcl:geolKA>
+			<bmlcl:modificationDate>2024-11-28</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_09_0059_0064">
+			<gml:description>Systematik veraltet (Kernbohrverfahren)</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">RKB</gml:identifier>
+			<gml:name>Rotationskernbohrung [veraltet]</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml" gml:id="_09_0059_0064_en">
+					<gml:description>Obsolete systematics (core drilling method)</gml:description>
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">RKB</gml:identifier>
+					<gml:name>Rotary core drilling [obsolete]</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>64</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/7961c469-12c2-4d33-a15c-83e869b62751</bmlcl:geolKA>
+			<bmlcl:modificationDate>2024-11-28</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_09_0060_0065">
+			<gml:description>Systematik veraltet (Kernbohrverfahren)</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">BKB</gml:identifier>
+			<gml:name>Bohrung mit beweglicher Kernumhüllung [veraltet]</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml" gml:id="_09_0060_0065_en">
+					<gml:description>Obsolete systematics (core drilling method)</gml:description>
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">BKB</gml:identifier>
+					<gml:name>Drilling with movable core sleeve [obsolete]</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>65</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/1c92fad8-37bc-498e-89e8-35c953acd885</bmlcl:geolKA>
+			<bmlcl:modificationDate>2024-11-28</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_09_0061_0066">
+			<gml:description>Systematik veraltet (Kernbohrverfahren)</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">BKF</gml:identifier>
+			<gml:name>Bohrung mit fester Kernumhüllung [veraltet]</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml" gml:id="_09_0061_0066_en">
+					<gml:description>Obsolete systematics (core drilling method)</gml:description>
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">BKF</gml:identifier>
+					<gml:name>Drilling with fixed core sleeve [obsolete]</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>66</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/791c93c6-cebd-4b86-9c4f-209459c4917f</bmlcl:geolKA>
+			<bmlcl:modificationDate>2024-11-28</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_09_0062_0067">
+			<gml:description>Systematik veraltet (Kernbohrverfahren)</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">BKR</gml:identifier>
+			<gml:name>Bohrung mit orientierter Kernentnahme [veraltet]</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml" gml:id="_09_0062_0067_en">
+					<gml:description>Obsolete systematics (core drilling method)</gml:description>
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">BKR</gml:identifier>
+					<gml:name>Drilling with oriented core sampling [obsolete]</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>67</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/b198caed-1837-47d9-badc-062005fc819b</bmlcl:geolKA>
+			<bmlcl:modificationDate>2024-11-28</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_09_0063_0068">
+			<gml:description>Systematik veraltet (Kernbohrverfahren)</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">SL</gml:identifier>
+			<gml:name>Schlauchkernbohrung [veraltet]</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml" gml:id="_09_0063_0068_en">
+					<gml:description>Obsolete systematics (core drilling method)</gml:description>
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">SL</gml:identifier>
+					<gml:name>Tube core drilling [obsolete]</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>68</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/53d3cf44-f12b-489c-9277-6f64ffe922d7</bmlcl:geolKA>
+			<bmlcl:modificationDate>2024-11-28</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_09_0064_0069">
+			<gml:description>Systematik veraltet (Kernbohrverfahren)</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">BK</gml:identifier>
+			<gml:name>Kernbohrung [veraltet]</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml" gml:id="_09_0064_0069_en">
+					<gml:description>Obsolete systematics (core drilling method)</gml:description>
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">BK</gml:identifier>
+					<gml:name>Core drilling [obsolete]</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>69</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/3e4abb42-a6a1-4dad-a264-5e22bdc443dc</bmlcl:geolKA>
+			<bmlcl:modificationDate>2024-11-28</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_09_0065_0071">
+			<gml:description>Systematik veraltet (Kleinbohrverfahren)</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">RB</gml:identifier>
+			<gml:name>Rammbohrung [veraltet]</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml" gml:id="_09_0065_0071_en">
+					<gml:description>Obsolete systematics (small-scale drilling method)</gml:description>
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">RB</gml:identifier>
+					<gml:name>Driven drilling [obsolete]</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>71</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/3da7cad4-dac1-4498-9a30-90bd1436b54e</bmlcl:geolKA>
+			<bmlcl:modificationDate>2024-11-28</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_09_0066_0072">
+			<gml:description>Systematik veraltet (Kleinbohrverfahren)</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">DLRB</gml:identifier>
+			<gml:name>Druckluftrammbohrung [veraltet]</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml" gml:id="_09_0066_0072_en">
+					<gml:description>Obsolete systematics (small-scale drilling method)</gml:description>
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">DLRB</gml:identifier>
+					<gml:name>Pneumatic driven drilling [obsolete]</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>72</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/b3414cc7-dec9-4e75-ad52-e5d3c024728d</bmlcl:geolKA>
+			<bmlcl:modificationDate>2024-11-28</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_09_0067_0073">
+			<gml:description>Systematik veraltet (Kleinbohrverfahren)</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">HDB</gml:identifier>
+			<gml:name>Handdrehbohrung [veraltet]</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml" gml:id="_09_0067_0073_en">
+					<gml:description>Obsolete systematics (small-scale drilling method)</gml:description>
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">HDB</gml:identifier>
+					<gml:name>Hand rotary drilling [obsolete]</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>73</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/e8213640-bc7d-464a-ae7b-f2d43c2fba51</bmlcl:geolKA>
+			<bmlcl:modificationDate>2024-11-28</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_09_0068_0074">
+			<gml:description>Systematik veraltet (Kleinbohrverfahren)</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">HSB</gml:identifier>
+			<gml:name>Handschachtung [veraltet]</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml" gml:id="_09_0068_0074_en">
+					<gml:description>Obsolete systematics (small-scale drilling method)</gml:description>
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">HSB</gml:identifier>
+					<gml:name>Hand shafting [obsolete]</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>74</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/f36f3b34-0627-4068-969c-b48a72a268c5</bmlcl:geolKA>
+			<bmlcl:modificationDate>2024-11-28</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_09_0069_0075">
+			<gml:description>Systematik veraltet (Kleinbohrverfahren)</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">HSPB</gml:identifier>
+			<gml:name>Handspülbohrung [veraltet]</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml" gml:id="_09_0069_0075_en">
+					<gml:description>Obsolete systematics (small-scale drilling method)</gml:description>
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">HSPB</gml:identifier>
+					<gml:name>Hand flush drilling [obsolete]</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>75</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/42003f03-83d9-47a1-b3ac-4acea11daa07</bmlcl:geolKA>
+			<bmlcl:modificationDate>2024-11-28</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_09_0070_0076">
+			<gml:description>Systematik veraltet (Kleinbohrverfahren)</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">BS</gml:identifier>
+			<gml:name>Sondierbohrung [veraltet]</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml" gml:id="_09_0070_0076_en">
+					<gml:description>Obsolete systematics (small-scale drilling method)</gml:description>
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">BS</gml:identifier>
+					<gml:name>Probing drilling [obsolete]</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>76</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/cf6c8499-0009-4dad-923c-4fd4fc0a24c8</bmlcl:geolKA>
+			<bmlcl:modificationDate>2024-11-28</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_09_0071_0077">
+			<gml:description>Systematik veraltet (Kleinbohrverfahren)</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">SH</gml:identifier>
+			<gml:name>Hammerbohrung [veraltet]</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml" gml:id="_09_0071_0077_en">
+					<gml:description>Obsolete systematics (small-scale drilling method)</gml:description>
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">SH</gml:identifier>
+					<gml:name>Hammer drilling [obsolete]</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>77</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/0afa45e6-b61b-4771-8dbe-939e3ea83be7</bmlcl:geolKA>
+			<bmlcl:modificationDate>2024-11-28</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_09_0072_0078">
+			<gml:description>Systematik veraltet (Kleinbohrverfahren)</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">KB</gml:identifier>
+			<gml:name>Kammerbohrung [veraltet]</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml" gml:id="_09_0072_0078_en">
+					<gml:description>Obsolete systematics (small-scale drilling method)</gml:description>
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">KB</gml:identifier>
+					<gml:name>Chamber drilling [obsolete]</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>78</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/e82a1a08-a122-4707-ba8a-64269543ef28</bmlcl:geolKA>
+			<bmlcl:modificationDate>2024-11-28</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_09_0073_0079">
+			<gml:description>Systematik veraltet (Kleinbohrverfahren)</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">PS</gml:identifier>
+			<gml:name>Pürckhauer-Nutsondierung [veraltet]</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml" gml:id="_09_0073_0079_en">
+					<gml:description>Obsolete systematics (small-scale drilling method)</gml:description>
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">PS</gml:identifier>
+					<gml:name>Pürckhauer nut sounding [obsolete]</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>79</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/4ea629bf-9bf8-4625-8a6d-5c9924eafcdf</bmlcl:geolKA>
+			<bmlcl:modificationDate>2024-11-28</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_09_0074_0080">
+			<gml:description>Systematik veraltet (Kleinbohrverfahren)</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">LS</gml:identifier>
+			<gml:name>Linnemann-Nutsondierung [veraltet]</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml" gml:id="_09_0074_0080_en">
+					<gml:description>Obsolete systematics (small-scale drilling method)</gml:description>
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">LS</gml:identifier>
+					<gml:name>Linnemann nut sounding [obsolete]</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>80</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/21cedfee-246d-4492-916f-cbfc5a599da3</bmlcl:geolKA>
+			<bmlcl:modificationDate>2024-11-28</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_09_0075_0081">
+			<gml:description>Systematik veraltet (Kleinbohrverfahren)</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">MR</gml:identifier>
+			<gml:name>Moor- oder Marschenbohrung [veraltet]</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml" gml:id="_09_0075_0081_en">
+					<gml:description>Obsolete systematics (small-scale drilling method)</gml:description>
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">MR</gml:identifier>
+					<gml:name>Peat or marsh drilling [obsolete]</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>81</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/9c0bf3fc-00e4-497a-8b64-5dc8dc295850</bmlcl:geolKA>
+			<bmlcl:modificationDate>2024-11-28</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_09_0076_0082">
+			<gml:description>Systematik veraltet (Kleinbohrverfahren)</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">SR</gml:identifier>
+			<gml:name>Stechrohrkernbohrung [veraltet]</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml" gml:id="_09_0076_0082_en">
+					<gml:description>Obsolete systematics (small-scale drilling method)</gml:description>
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">SR</gml:identifier>
+					<gml:name>Tube core drilling [obsolete]</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>82</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/7b32975d-50fc-4b1c-8f07-54a7d8b0c5c6</bmlcl:geolKA>
+			<bmlcl:modificationDate>2024-11-28</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_09_0077_0084">
+			<gml:description>Systematik veraltet (Kleinbohrverfahren)</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">KTH</gml:identifier>
+			<gml:name>Kombi Trocken/Handspül [veraltet]</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml" gml:id="_09_0077_0084_en">
+					<gml:description>Obsolete systematics (other drilling method)</gml:description>
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">KTH</gml:identifier>
+					<gml:name>Combination dry/hand flush [obsolete]</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>84</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/ab178fe5-61f6-4d9b-af89-4195ade8f761</bmlcl:geolKA>
+			<bmlcl:modificationDate>2024-11-28</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_09_0078_0085">
+			<gml:description>Systematik veraltet (sonstiges Bohrverfahren)</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">BW</gml:identifier>
+			<gml:name>Nassbohrung [veraltet]</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml" gml:id="_09_0078_0085_en">
+					<gml:description>Obsolete systematics (other drilling method)</gml:description>
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">BW</gml:identifier>
+					<gml:name>Wet drilling [obsolete]</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>85</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/515d30e8-bb46-433c-9635-f71b3dde12a8</bmlcl:geolKA>
+			<bmlcl:modificationDate>2024-11-28</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_09_0079_0086">
+			<gml:description>Systematik veraltet (sonstiges Bohrverfahren)</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">DKB</gml:identifier>
+			<gml:name>Druckkernbohrung [veraltet]</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml" gml:id="_09_0079_0086_en">
+					<gml:description>Obsolete systematics (other drilling method)</gml:description>
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">DKB</gml:identifier>
+					<gml:name>Pressure core drilling [obsolete]</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>86</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/48c2d96e-22a9-4b2c-8ca7-0880d02a19f3</bmlcl:geolKA>
+			<bmlcl:modificationDate>2024-11-28</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_09_0080_0087">
+			<gml:description>Systematik veraltet (sonstiges Bohrverfahren)</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">VKD</gml:identifier>
+			<gml:name>Vollkern-Kraftdrehkopf [veraltet]</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml" gml:id="_09_0080_0087_en">
+					<gml:description>Obsolete systematics (other drilling method)</gml:description>
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">VKD</gml:identifier>
+					<gml:name>Full-core power rotary head [obsolete]</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>87</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/09891ed0-7d3a-46c1-aff6-3644cfc1406d</bmlcl:geolKA>
+			<bmlcl:modificationDate>2024-11-28</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_09_0081_0088">
+			<gml:description>Systematik veraltet (sonstiges Bohrverfahren)</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">VKS</gml:identifier>
+			<gml:name>Vollkern-Kraftspülkopf [veraltet]</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml" gml:id="_09_0081_0088_en">
+					<gml:description>Obsolete systematics (other drilling method)</gml:description>
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">VKS</gml:identifier>
+					<gml:name>Full-core power flush head [obsolete]</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>88</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/12d649a4-3817-4664-96a8-cf91e2dc8d4c</bmlcl:geolKA>
+			<bmlcl:modificationDate>2024-11-28</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_09_0082_0089">
+			<gml:description>Systematik veraltet (sonstiges Bohrverfahren)</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">ZKB</gml:identifier>
+			<gml:name>Teilkernbohrung [veraltet]</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml" gml:id="_09_0082_0089_en">
+					<gml:description>Obsolete systematics (other drilling method)</gml:description>
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">ZKB</gml:identifier>
+					<gml:name>Partial core drilling [obsolete]</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>89</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/19cd3154-e3b2-4561-886b-ffbe8e5e6423</bmlcl:geolKA>
+			<bmlcl:modificationDate>2024-11-28</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_09_0083_0090">
+			<gml:description>Systematik veraltet (sonstiges Bohrverfahren)</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">BUB</gml:identifier>
+			<gml:name>Druckbohrung [veraltet]</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml" gml:id="_09_0083_0090_en">
+					<gml:description>Obsolete systematics (other drilling method)</gml:description>
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">BUB</gml:identifier>
+					<gml:name>Pressure drilling [obsolete]</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>90</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/dc083c6d-f72a-454f-a89d-8267c09a9b0f</bmlcl:geolKA>
+			<bmlcl:modificationDate>2024-11-28</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_09_0084_0091">
+			<gml:description>Systematik veraltet (sonstiges Bohrverfahren)</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">LB</gml:identifier>
+			<gml:name>Lotbohrung [veraltet]</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml" gml:id="_09_0084_0091_en">
+					<gml:description>Obsolete systematics (other drilling method)</gml:description>
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">LB</gml:identifier>
+					<gml:name>Plumb drilling [obsolete]</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>91</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/3c7ddb8b-36ce-4b03-b223-6c7105892350</bmlcl:geolKA>
+			<bmlcl:modificationDate>2024-11-28</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_09_0085_0092">
+			<gml:description>Systematik veraltet (sonstiges Bohrverfahren)</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">MB</gml:identifier>
+			<gml:name>Meißelbohrung [veraltet]</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml" gml:id="_09_0085_0092_en">
+					<gml:description>Obsolete systematics (other drilling method)</gml:description>
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">MB</gml:identifier>
+					<gml:name>Chisel drilling [obsolete]</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>92</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/a64f1b47-15df-41b4-a0a3-a9d9aa202438</bmlcl:geolKA>
+			<bmlcl:modificationDate>2024-11-28</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_09_0086_0093">
+			<gml:description>Systematik veraltet (sonstiges Bohrverfahren)</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">BV</gml:identifier>
+			<gml:name>Kombi-Bohrverfahren, allgemein [veraltet]</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml" gml:id="_09_0086_0093_en">
+					<gml:description>Obsolete systematics (other drilling method)</gml:description>
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">BV</gml:identifier>
+					<gml:name>Combination drilling method, general [obsolete]</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>93</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/ec18ddb6-5712-4a1d-a653-d8bfd7dc9a2f</bmlcl:geolKA>
+			<bmlcl:modificationDate>2024-11-28</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_09_0087_0094">
+			<gml:description>Systematik veraltet (sonstiges Bohrverfahren)</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">KST</gml:identifier>
+			<gml:name>Kombi Spül/Teilkern [veraltet]</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml" gml:id="_09_0087_0094_en">
+					<gml:description>Obsolete systematics (other drilling method)</gml:description>
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">KST</gml:identifier>
+					<gml:name>Combination flush/partial core [obsolete]</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>94</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/107070ea-ba92-4032-b942-92c8e4c91c22</bmlcl:geolKA>
+			<bmlcl:modificationDate>2024-11-28</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_09_0088_0095">
+			<gml:description>Systematik veraltet (sonstiges Bohrverfahren)</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">KTT</gml:identifier>
+			<gml:name>Kombi Trocken/Teilkern [veraltet]</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml" gml:id="_09_0088_0095_en">
+					<gml:description>Obsolete systematics (other drilling method)</gml:description>
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">KTT</gml:identifier>
+					<gml:name>Combination dry/partial core [obsolete]</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>95</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/cf1d3a00-51ed-4451-85bb-55eb61577964</bmlcl:geolKA>
+			<bmlcl:modificationDate>2024-11-28</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_09_0089_0096">
+			<gml:description>Systematik veraltet (sonstiges Bohrverfahren)</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">W</gml:identifier>
+			<gml:name>sonstiges Bohrverfahren [veraltet]</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml" gml:id="_09_0089_0096_en">
+					<gml:description>Obsolete systematics (other drilling method) </gml:description>
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">W</gml:identifier>
+					<gml:name>Other drilling method [obsolete]</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>96</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/e47715e8-e650-483f-96db-710196e667d3</bmlcl:geolKA>
+			<bmlcl:modificationDate>2024-11-28</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:codeEntry>
+		<bmlcl:BMLML_CodeDefinition gml:id="_09_0090_0097">
+			<gml:description>Systematik veraltet (sonstiges Bohrverfahren)</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">DD</gml:identifier>
+			<gml:name>Drehbohrung, allgemein [veraltet]</gml:name>
+			<gmx:alternativeExpression>
+				<gmx:CodeAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml" gml:id="_09_0090_0097_en">
+					<gml:description>Obsolete systematics (other drilling method) </gml:description>
+					<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">DD</gml:identifier>
+					<gml:name>Rotary drilling, general [obsolete]</gml:name>
+					<gmx:locale xlink:href="EN.xml"/>
+				</gmx:CodeAlternativeExpression>
+			</gmx:alternativeExpression>
+			<bmlcl:keyID>97</bmlcl:keyID>
+			<bmlcl:parentID>0</bmlcl:parentID>
+			<bmlcl:hierarchyLevel>1</bmlcl:hierarchyLevel>
+			<bmlcl:geolKA>https://www.geokartieranleitung.de/desktopmodules/gkalist/api/7b1be34c-f9af-4cb4-be51-2faa4ec99090</bmlcl:geolKA>
+			<bmlcl:modificationDate>2024-11-28</bmlcl:modificationDate>
+		</bmlcl:BMLML_CodeDefinition>
+	</gmx:codeEntry>
+	<gmx:alternativeExpression>
+		<gmx:ClAlternativeExpression codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml" gml:id="DrillingMethodList_en">
+			<gml:description>specific method of drilling</gml:description>
+			<gml:identifier codeSpace="https://schemas.bgr.de/boreholeml/codelists/v2/DrillingMethodList.xml">DrillingMethodList</gml:identifier>
+			<gml:name>drilling method</gml:name>
+			<gmx:locale xlink:href="EN.xml"/>
+		</gmx:ClAlternativeExpression>
+	</gmx:alternativeExpression>
+</gmx:ML_CodeListDictionary>
