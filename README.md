@@ -450,4 +450,6 @@ For support and questions:
 
 ### Version History
 
+- **v0.3.0**: Boreholes, Flurstücke, guided DGM (Typ 2), Rust writers, LandXML
+- **v0.2.1**: Published PyPI release (June 2026)
 - **v0.1.0**: Initial release with basic functionality
