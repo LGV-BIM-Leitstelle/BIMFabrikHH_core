@@ -48,7 +48,7 @@ class IfcModelMethods:
 
             return version("bimfabrikhh-core")
         except Exception:
-            return "0.3.0"
+            return "0.3.1"
 
     @staticmethod
     def _stamp_file_identity(model: ifcopenshell.file) -> None:

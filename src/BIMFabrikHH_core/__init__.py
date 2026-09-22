@@ -22,7 +22,7 @@ A Python package for converting geospatial data to IFC format.
 Part of the Connected Urban Twins (CUT) project by the City of Hamburg.
 """
 
-__version__ = "0.3.0"
+__version__ = "0.3.1"
 __author__ = "Ahmed Salem <ahmed.salem@gv.hamburg.de>"
 __description__ = "Hamburg BIM Factory for geospatial data to IFC conversion"
 
