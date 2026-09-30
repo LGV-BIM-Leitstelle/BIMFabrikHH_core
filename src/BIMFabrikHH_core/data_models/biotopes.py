@@ -8,21 +8,23 @@ import colorsys
 import hashlib
 import json
 import logging
+from functools import lru_cache
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from BIMFabrikHH_core.apps.boreholes.helper import _clean
 from BIMFabrikHH_core.core.ogc_extractor import (
-    OgcGeometryCrs,
-    ensure_feature_collection,
-    feature_identifier,
-    geojson_feature_properties,
-    iter_geojson_features,
-    parse_feature_polygon_exterior_rings,
-)
+    OgcGeometryCrs, ensure_feature_collection, feature_identifier,
+    geojson_feature_properties, iter_geojson_features,
+    parse_feature_polygon_exterior_rings)
 
 logger = logging.getLogger(__name__)
+
+ASSETS_DIR = Path(__file__).resolve().parent / "assets"
+_BIOTOPE_MAPPING_FILE = "biotope_mapping_HH.json"
+UNDEFINED = "undefiniert"
 
 
 class BiotopeRecord(BaseModel):
@@ -40,23 +42,39 @@ class BiotopeRecord(BaseModel):
     )
 
     # TODO: Add descriptions
-    objectid:  int = Field(description="Biotopkataster Objekt-ID (TODO: Definition)")
+    objectid: int = Field(description="Biotopkataster Objekt-ID (TODO: Definition)")
     id_biotop: int = Field()
     dk5: int = Field()
     biotop_nr: int = Field()
     is_protected: bool = Field(description="Indicates whether the habitat is protected by law.")
     abschnitt: Optional[int] = Field()
-    hauptbiotoptyp: str = Field(default="", )
-    nebenbiotoptypen: str = Field(default="", )
-    paragraf: str = Field(default="", )
-    schutzstatus_teilweise: Optional[str] = Field(default=None, )
+    hauptbiotoptyp: str = Field(
+        default="",
+    )
+    nebenbiotoptypen: str = Field(
+        default="",
+    )
+    paragraf: str = Field(
+        default="",
+    )
+    schutzstatus_teilweise: Optional[str] = Field(
+        default=None,
+    )
     gesamtbewertung: int = Field()
     flaeche_oder_laenge: float = Field()
-    biotopbogen: str = Field(default="", )
-    aktualitaet: str = Field(default="", )
+    biotopbogen: str = Field(
+        default="",
+    )
+    aktualitaet: str = Field(
+        default="",
+    )
     naechste_kartierung: Optional[int] = Field()
-    aufnahmetyp: str = Field(default="", )
-    gruppe: str = Field(default="", )
+    aufnahmetyp: str = Field(
+        default="",
+    )
+    gruppe: str = Field(
+        default="",
+    )
 
     psets: Dict[str, BaseModel] = Field(default_factory=dict)
 
@@ -75,7 +93,6 @@ class BiotopeRecord(BaseModel):
         val = 0.86 + (digest[3] / 255.0) * 0.10
         r, g, b = colorsys.hsv_to_rgb(hue, sat, val)
         return int(r * 255), int(g * 255), int(b * 255)
-
 
 
 def collect_biotope_psets(
@@ -100,26 +117,71 @@ def collect_biotope_psets(
     return out
 
 
-def _record_with_psets_from_payload(payload: Dict[str, Any]) -> BiotopeRecord:
+def _load_config_json(filename: str) -> Dict[str, Any]:
+    path = ASSETS_DIR / filename
+    try:
+        with path.open(encoding="utf-8") as handle:
+            data = json.load(handle)
+    except FileNotFoundError:
+        logger.warning("Mapping file missing: %s", path)
+        return {}
+    except (OSError, json.JSONDecodeError) as exc:
+        logger.warning("Mapping file %s could not be read: %s", path, exc)
+        return {}
+    return data if isinstance(data, dict) else {}
+
+
+@lru_cache(maxsize=1)
+def load_biotope_mapping() -> Dict[str, str]:
+    """Load the biotope type table (https://www.bfn.de/eingriffsregelung-und-bundeskompensationsverordnung,
+    "Übersetzungsschlüssel der Biotoptypen und -werte der Länder und deren Erläuterungen");
+    empty dict when the file is missing.
+    """
+    return _load_config_json(_BIOTOPE_MAPPING_FILE)
+
+
+def map_biotope_type(biotope_code: str, biotope_mapping: Optional[Dict[str, str]] = None) -> str:
+    """Map a Hamburg biotope code to its description, e.g. "NRT" -> "Schilf-Röhricht der Tide-Elbe".
+
+    Args:
+        biotope_code: biotope code used by the Biotopkataster Hamburg.
+        biotope_mapping: Table from :func:`load_biotope_mapping`
+
+    Returns:
+        Biotope description string.
+    """
+    text = _clean(biotope_code)
+    mapping = biotope_mapping if biotope_mapping is not None else load_biotope_mapping()
+
+    return mapping.get(text, "")
+
+
+def _record_with_psets_from_payload(payload: Dict[str, Any], biotope_name_mapping: Dict[str, str]) -> BiotopeRecord:
     record = BiotopeRecord.model_validate(payload)
-    from BIMFabrikHH_core.data_models.pydantic_psets_biotopes import (
-        Pset_Objektinformation_Biotop,
-    )
+    from BIMFabrikHH_core.data_models.pydantic_psets_biotopes import \
+        Pset_Objektinformation_Biotop
+
+    hauptbiotoptyp_name = map_biotope_type(record.hauptbiotoptyp, biotope_name_mapping)
 
     pset = Pset_Objektinformation_Biotop(
-        biotopnummer=record.biotop_nr, #TODO: check which number/id is the correct one here. id_biotop vs. biotop_nr?
-        abschnitt_nr=record.abschnitt,
-        biotoptyp_land_code=record.hauptbiotoptyp,
-        biotoptyp_land_name="", # TODO map to name: Landesspezifische Bezeichnung des Biotoptyps.
+        biotopnummer=record.id_biotop,  # id_biotop is unique, in contrast to biotop_nr.
+        abschnitt_nr=record.abschnitt,  #  TODO: is "abschnitt" the number of section or the number of the section?
+        biotoptyp_land_code=record.hauptbiotoptyp,  #  TODO: Where to put nebenbiotoptypen?
+        biotoptyp_land_name=hauptbiotoptyp_name,
         biotop_gesamtwert=str(record.gesamtbewertung),
-        biotop_gesamtwert_liste="", # TODO Bezeichnung bzw. Referenz des verwendeten Bewertungsverfahrens für den Biotopgesamtwert.
-        biotop_gesamtwert_bedeutung="", # TODO map to meaning
-        gefaehrdung_status="", # TODO find status info
+        biotop_gesamtwert_liste="",  # TODO Bezeichnung bzw. Referenz des verwendeten Bewertungsverfahrens für den Biotopgesamtwert.
+        biotop_gesamtwert_bedeutung="",  # TODO map to meaning
+        gefaehrdung_status="",  # TODO find status info
         ist_gesetzl_gesch_biotop=record.is_protected,
-        ist_gesetzl_gesch_biotop_landesrecht="nicht geschützt" if not record.is_protected else "teilweise geschützt" if record.schutzstatus_teilweise else " vollständig geschützt",
-
+        ist_gesetzl_gesch_biotop_landesrecht=(
+            "nicht geschützt"
+            if not record.is_protected
+            else "teilweise geschützt" if record.schutzstatus_teilweise else " vollständig geschützt"
+        ),
         # Convert m^2 to ha
-        biotop_groesse_ha=(record.flaeche_oder_laenge/1000.0, "ha") if record.flaeche_oder_laenge is not None else None,
+        biotop_groesse_ha=(
+            (record.flaeche_oder_laenge / 10000.0, "ha") if record.flaeche_oder_laenge is not None else None
+        ),
     )
     return record.model_copy(update={"psets": {Pset_Objektinformation_Biotop.pset_name: pset}})
 
@@ -155,15 +217,14 @@ def records_from_geojson_feature_collection(
             "geometry_crs": geometry_crs,
             "is_protected": is_protected,
         }
-        out.append(_record_with_psets_from_payload(payload))
+
+        biotope_types = load_biotope_mapping()
+        out.append(_record_with_psets_from_payload(payload, biotope_name_mapping=biotope_types))
     return out
 
 
 def load_biotope_records(
-    path: Union[str, Path],
-    *,
-    geometry_crs: OgcGeometryCrs = "EPSG:25832",
-    is_protected: bool
+    path: Union[str, Path], *, geometry_crs: OgcGeometryCrs = "EPSG:25832", is_protected: bool
 ) -> List[BiotopeRecord]:
     """Load and parse a ``.json`` FeatureCollection from disk."""
     p = Path(path)
