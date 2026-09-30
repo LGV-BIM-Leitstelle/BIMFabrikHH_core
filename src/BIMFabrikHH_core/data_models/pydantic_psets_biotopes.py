@@ -17,6 +17,7 @@ Area = Literal["[length]**2"]
 
 UNDEFINED = "undefiniert"
 
+
 class Pset_Objektinformation_Biotop(PropertySetTemplate):
     """Property set for one Biotopkataster biotope, per Merkmalsgruppe TODO."""
 
@@ -48,11 +49,11 @@ class Pset_Objektinformation_Biotop(PropertySetTemplate):
         default=300,
     )
     biotop_nr: int = Field(
-        validation_alias=AliasChoices("biotop_nr", "biotopnummer",  "_Biotopnummer", "_BiotopNummer"),
-        serialization_alias="_Biotopnummer"
+        validation_alias=AliasChoices("biotop_nr", "biotopnummer", "_Biotopnummer", "_BiotopNummer"),
+        serialization_alias="_Biotopnummer",
     )
     abschnitt_nr: int = Field(
-        validation_alias=AliasChoices("abschnitt_nr", "biotopabschnittnummer",  "_BiotopAbschnittnummer"),
+        validation_alias=AliasChoices("abschnitt_nr", "biotopabschnittnummer", "_BiotopAbschnittnummer"),
         serialization_alias="_BiotopAbschnittnummer",
         default=1,
     )

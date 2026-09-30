@@ -15,19 +15,15 @@ from BIMFabrikHH_core.config.logging_config import get_logger
 from BIMFabrikHH_core.core.geometry import place_basepoint
 from BIMFabrikHH_core.core.model_creator import init_ifc_project
 from BIMFabrikHH_core.core.ogc_extractor import ring_xy_to_epsg25832
-from BIMFabrikHH_core.core.ogc_extractor.ogc_values_extractor import extract_psets_basepoint
-from BIMFabrikHH_core.data_models.biotopes import (
-    BiotopeRecord, collect_biotope_psets
-)
+from BIMFabrikHH_core.core.ogc_extractor.ogc_values_extractor import \
+    extract_psets_basepoint
+from BIMFabrikHH_core.data_models.biotopes import (BiotopeRecord,
+                                                   collect_biotope_psets)
 from BIMFabrikHH_core.data_models.params_tree import RequestParams
 from BIMFabrikHH_core.data_models.pydantic_georeferencing import (
-    CoordinateOperation,
-    CoordinateSystem,
-)
+    CoordinateOperation, CoordinateSystem)
 from BIMFabrikHH_core.data_models.pydantic_psets_BIMHH import (
-    Pset_Hyperlink,
-    default_bim_hamburg_hyperlink,
-)
+    Pset_Hyperlink, default_bim_hamburg_hyperlink)
 
 logger = get_logger("biotopes_generic_app")
 
@@ -38,6 +34,7 @@ _DEFAULT_LAYER: str = "_BIM_Biotop"
 _DEFAULT_OUTPUT_NAME: str = "output_biotopes_generic.ifc"
 _DEFAULT_BASEPOINT_SIZE: float = 5.0
 _DEFAULT_EXTRUSION_DEPTH_M: float = 30.0
+
 
 class BiotopesGenericApp:
     """Record-builder: ``list[BiotopeRecord]`` → extruded ``IfcBuildingElementProxy`` parcels."""
@@ -176,7 +173,7 @@ def _biotope_element_from_record(
 
     return BIMFactoryElement(
         type="IfcBuildingElementProxy",
-        name=record.element_name, # TODO: find good element name
+        name=record.element_name,  # TODO: find good element name
         qsets=False,
         children=styled_parts,
         psets=element_psets,

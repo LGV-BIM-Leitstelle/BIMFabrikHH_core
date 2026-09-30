@@ -40,7 +40,7 @@ _EXAMPLE_BBOX = BoundingBoxParams(min_x=9.9769, min_y=53.5478, max_x=9.991435, m
 
 def main() -> None:
     here = Path(__file__).resolve()
-    fixture = here.parent / _FIXTURE_NAME_PROTECTED
+    fixture = here.parent / _FIXTURE_NAME
     if not fixture.is_file():
         logger.error(
             "Fixture missing: %s — place the OGC FeatureCollection JSON next to this example.",
