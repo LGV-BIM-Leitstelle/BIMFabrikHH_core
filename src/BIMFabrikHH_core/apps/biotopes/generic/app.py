@@ -79,8 +79,6 @@ class BiotopesGenericApp:
             if phase_timings is not None:
                 phase_timings["project_setup_s"] = time.perf_counter() - _t0
 
-            shared_hyperlink = pset_hyperlink or default_bim_hamburg_hyperlink()
-
             _t0 = time.perf_counter()
             elements: List[BIMFactoryElement] = []
             for rec in records:
@@ -98,7 +96,7 @@ class BiotopesGenericApp:
                         color=color if color is not None else rec.element_color,
                         cad_layer=cad_layer,
                         transparency=transparency,
-                        shared_hyperlink=shared_hyperlink,
+                        overwrite_hyperlink=pset_hyperlink,
                         include_property_sets=include_property_sets,
                     )
                 )
@@ -154,7 +152,7 @@ def _biotope_element_from_record(
     color: RgbTuple,
     cad_layer: str,
     transparency: float,
-    shared_hyperlink: Pset_Hyperlink,
+    overwrite_hyperlink: Optional[Pset_Hyperlink],
     include_property_sets: bool,
 ) -> BIMFactoryElement:
     """One ``IfcBuildingElementProxy`` per parcel, one extrusion per MultiPolygon part."""
@@ -169,7 +167,7 @@ def _biotope_element_from_record(
         styled_parts.append(Style(item=extruded, rgb=color, transparency=transparency, cad_layer=cad_layer))
 
     pset_models: List[BaseModel] = collect_biotope_psets(record, include_property_sets=include_property_sets)
-    element_psets: List[BaseModel] = [*pset_models, shared_hyperlink]
+    element_psets: List[BaseModel] = [*pset_models, overwrite_hyperlink] if overwrite_hyperlink else pset_models
 
     return BIMFactoryElement(
         type="IfcBuildingElementProxy",

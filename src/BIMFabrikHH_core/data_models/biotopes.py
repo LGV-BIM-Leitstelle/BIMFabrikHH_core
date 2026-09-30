@@ -19,6 +19,7 @@ from BIMFabrikHH_core.core.ogc_extractor import (
     OgcGeometryCrs, ensure_feature_collection, feature_identifier,
     geojson_feature_properties, iter_geojson_features,
     parse_feature_polygon_exterior_rings)
+from BIMFabrikHH_core.data_models.pydantic_psets_BIMHH import Pset_Hyperlink
 
 logger = logging.getLogger(__name__)
 
@@ -156,6 +157,25 @@ def map_biotope_type(biotope_code: str, biotope_mapping: Optional[Dict[str, str]
     return mapping.get(text, "")
 
 
+def build_biotope_hyperlink(url: str, id_biotop: int) -> Pset_Hyperlink:
+    """Build the  link to a biotope's Biotopkataster Erhebungsbogen.
+
+    Args:
+        url: "biotopbogen" link from the biotope dataset
+        id_biotop: Unique database id of the biotope
+
+
+    Returns:
+        ``Pset_Hyperlink`` with the URL and a German remark.
+    """
+    if url:
+        bemerkung = f"Link zum Erhebungsbogen für Biotop {id_biotop}."
+    else:
+        bemerkung = f"Kein Erhebungsbogen verfügbar für Biotop {id_biotop}."
+    print(url, bemerkung)
+    return Pset_Hyperlink(hyperlink_001=url, hyperlink_001_bemerkung=bemerkung)
+
+
 def _record_with_psets_from_payload(payload: Dict[str, Any], biotope_name_mapping: Dict[str, str]) -> BiotopeRecord:
     record = BiotopeRecord.model_validate(payload)
     from BIMFabrikHH_core.data_models.pydantic_psets_biotopes import \
@@ -163,7 +183,7 @@ def _record_with_psets_from_payload(payload: Dict[str, Any], biotope_name_mappin
 
     hauptbiotoptyp_name = map_biotope_type(record.hauptbiotoptyp, biotope_name_mapping)
 
-    pset = Pset_Objektinformation_Biotop(
+    pset_objektinfo = Pset_Objektinformation_Biotop(
         biotopnummer=record.id_biotop,  # id_biotop is unique, in contrast to biotop_nr.
         abschnitt_nr=record.abschnitt,  #  TODO: is "abschnitt" the number of section or the number of the section?
         biotoptyp_land_code=record.hauptbiotoptyp,  #  TODO: Where to put nebenbiotoptypen?
@@ -183,7 +203,17 @@ def _record_with_psets_from_payload(payload: Dict[str, Any], biotope_name_mappin
             (record.flaeche_oder_laenge / 10000.0, "ha") if record.flaeche_oder_laenge is not None else None
         ),
     )
-    return record.model_copy(update={"psets": {Pset_Objektinformation_Biotop.pset_name: pset}})
+
+    pset_hyperlink = build_biotope_hyperlink(url=record.biotopbogen, id_biotop=record.id_biotop)
+
+    return record.model_copy(
+        update={
+            "psets": {
+                Pset_Objektinformation_Biotop.pset_name: pset_objektinfo,
+                Pset_Hyperlink.pset_name: pset_hyperlink,
+            }
+        }
+    )
 
 
 def records_from_geojson_feature_collection(
