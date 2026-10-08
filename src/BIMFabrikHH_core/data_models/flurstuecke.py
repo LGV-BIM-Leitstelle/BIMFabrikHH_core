@@ -50,7 +50,7 @@ class FlurstueckRecord(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True, extra="ignore")
 
     feature_id: Union[int, str] = Field(description="``feature.id`` from GeoJSON")
-    rings: MultiPolygon = Field(
+    polygons: MultiPolygon = Field(
         description="Exterior ring and holes per MultiPolygon part; (easting, northing) if EPSG:25832 else (lon, lat)"
     )
     geometry_crs: OgcGeometryCrs = Field(
@@ -177,7 +177,7 @@ def records_from_geojson_feature_collection(
         payload = {
             **props_raw,
             "feature_id": fid,
-            "rings": rings,
+            "polygons": rings,
             "geometry_crs": geometry_crs,
         }
         out.append(_record_with_psets_from_payload(payload))
