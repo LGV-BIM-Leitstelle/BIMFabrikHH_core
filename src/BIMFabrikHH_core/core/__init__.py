@@ -43,8 +43,8 @@ from BIMFabrikHH_core.core.ogc_extractor import (
     iter_geojson_features,
     parse_feature_linestring_path,
     parse_feature_multilinestring_paths,
-    parse_feature_polygon_exterior_ring,
-    positions_to_xy_ring,
+    parse_feature_polygon_first_exterior_ring,
+    positions_to_xy_line,
     ring_xy_to_epsg25832,
     strip_closing_duplicate_xy,
 )
@@ -75,8 +75,8 @@ __all__ = [
     "iter_geojson_features",
     "parse_feature_linestring_path",
     "parse_feature_multilinestring_paths",
-    "parse_feature_polygon_exterior_ring",
-    "positions_to_xy_ring",
+    "parse_feature_polygon_first_exterior_ring",
+    "positions_to_xy_line",
     "ring_xy_to_epsg25832",
     "strip_closing_duplicate_xy",
     # Utilities

@@ -26,7 +26,7 @@ from BIMFabrikHH_core.core.ogc_extractor import (
     feature_identifier,
     geojson_feature_properties,
     iter_geojson_features,
-    parse_feature_polygon_exterior_ring,
+    parse_feature_polygon_first_exterior_ring,
 )
 
 GeometryCrs = OgcGeometryCrs
@@ -124,7 +124,7 @@ def records_from_geojson_feature_collection(
     ensure_feature_collection(data)
     out: List[WasserschutzgebietRecord] = []
     for feat in iter_geojson_features(data):
-        ring = parse_feature_polygon_exterior_ring(feat)
+        ring = parse_feature_polygon_first_exterior_ring(feat)
         if ring is None:
             continue
         props_raw = geojson_feature_properties(feat)

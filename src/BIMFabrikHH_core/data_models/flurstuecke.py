@@ -32,11 +32,13 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from BIMFabrikHH_core.core.ogc_extractor import (
     OgcGeometryCrs,
+    MultiPolygon,
+    Polygon,
     ensure_feature_collection,
     feature_identifier,
     geojson_feature_properties,
     iter_geojson_features,
-    parse_feature_polygon_exterior_rings,
+    parse_feature_all_rings,
 )
 
 logger = logging.getLogger(__name__)
@@ -48,8 +50,8 @@ class FlurstueckRecord(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True, extra="ignore")
 
     feature_id: Union[int, str] = Field(description="``feature.id`` from GeoJSON")
-    rings: List[List[Tuple[float, float]]] = Field(
-        description="Exterior ring per MultiPolygon part; (easting, northing) if EPSG:25832 else (lon, lat)"
+    rings: MultiPolygon = Field(
+        description="Exterior ring and holes per MultiPolygon part; (easting, northing) if EPSG:25832 else (lon, lat)"
     )
     geometry_crs: OgcGeometryCrs = Field(
         default="EPSG:25832",
@@ -165,7 +167,7 @@ def records_from_geojson_feature_collection(
     ensure_feature_collection(data)
     out: List[FlurstueckRecord] = []
     for feat in iter_geojson_features(data):
-        rings = parse_feature_polygon_exterior_rings(feat)
+        rings = parse_feature_all_rings(feat)
         if not rings:
             continue
         props_raw = geojson_feature_properties(feat)
