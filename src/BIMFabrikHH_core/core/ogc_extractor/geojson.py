@@ -9,15 +9,15 @@ from typing import Any, Dict, Iterable, List, Optional, Tuple, Union, TypeAlias
 _MIN_POLYGON_EXTERIOR_POSITIONS: int = 4
 _MIN_LINESTRING_POSITIONS: int = 2
 
-Coordinate: TypeAlias = tuple[float, float]
-Ring: TypeAlias = list[Coordinate]
+Coordinate: TypeAlias = Tuple[float, float]
+Ring: TypeAlias = List[Coordinate]
 
 @dataclass
 class Polygon:
     exterior: Ring
-    holes: list[Ring]
+    holes: List[Ring]
 
-MultiPolygon = list[Polygon]
+MultiPolygon = List[Polygon]
 
 
 def ensure_feature_collection(data: Any) -> Dict[str, Any]:

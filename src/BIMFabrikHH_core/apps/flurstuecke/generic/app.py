@@ -32,7 +32,7 @@ from pydantic import BaseModel
 from BIMFabrikHH_core.config.logging_config import get_logger
 from BIMFabrikHH_core.core.geometry import place_basepoint
 from BIMFabrikHH_core.core.model_creator import init_ifc_project
-from BIMFabrikHH_core.core.ogc_extractor import ring_xy_to_epsg25832, MultiPolygon
+from BIMFabrikHH_core.core.ogc_extractor import ring_xy_to_epsg25832, polygon_rings_to_epsg25832, MultiPolygon
 from BIMFabrikHH_core.core.ogc_extractor.ogc_values_extractor import extract_psets_basepoint
 from BIMFabrikHH_core.data_models.flurstuecke import (
     FlurstueckRecord,
@@ -153,7 +153,7 @@ class FlurstueckeGenericApp:
             elements: List[BIMFactoryElement] = []
             for rec in records:
                 # TODO: convert rings to epsg25832 somewhere if they are not yet
-                xy_rings: MultiPolygon = [ring for ring in rec.rings if len(ring.exterior) >= 3]
+                xy_rings: MultiPolygon = [result for polygon in rec.polygons if len(polygon.exterior) >= 3 and (result := polygon_rings_to_epsg25832(polygon, rec.geometry_crs)) is not None]
                 # xy_rings = [
                 #     xy_ring for xy_ring in (ring_xy_to_epsg25832(ring, rec.geometry_crs) for ring in rec.rings) if len(xy_ring) >= 3
                 # ]
