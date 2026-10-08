@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import List, Literal, Tuple
 
 from BIMFabrikHH_core.core.georeferencing.coordinate_transformer import CoordinateTransformer
+from .geojson import Polygon, MultiPolygon, Ring
 
 OgcGeometryCrs = Literal["EPSG:4326", "EPSG:25832"]
 
@@ -34,6 +35,7 @@ def ring_xy_to_epsg25832(
     xe, yn = t.transform_xy_batch(xs, ys)
     return list(zip(xe, yn))
 
+# TODO: ring_xy_to_epsg25832 for exterior + holes (Polygon)
 
 __all__ = [
     "OgcGeometryCrs",
