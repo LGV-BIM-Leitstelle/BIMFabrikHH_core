@@ -197,12 +197,17 @@ def parse_feature_multilinestring_paths(feature: Dict[str, Any]) -> List[List[Tu
 
 __all__ = [
     "ensure_feature_collection",
-    "feature_identifier",
-    "geojson_feature_properties",
     "iter_geojson_features",
-    "parse_feature_linestring_path",
-    "parse_feature_multilinestring_paths",
+    
+    "positions_to_xy_line",
+    "geojson_feature_properties",
+    "feature_identifier",
+    "feature_geometry_type",
+    "parse_feature_polygons",
+    "parse_feature_for_all_polygon_rings",
     "parse_feature_for_polygon_first_exterior_ring",
     "parse_feature_for_polygon_exterior_rings",
-    "positions_to_xy_line",
+    "parse_feature_point",
+    "parse_feature_linestring_path",
+    "parse_feature_multilinestring_paths",    
 ]
