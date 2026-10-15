@@ -82,7 +82,7 @@ def _flurstueck_element_from_record(
             profile = Boolean(
                 operation=BooleanOperationTypes.Difference,
                 children=[profile, hole],
-            )  # TODO: check if this works
+            )
 
         extruded = Extrusion(basis=profile, depth=extrusion_depth)
         styled_parts.append(Style(item=extruded, rgb=color, transparency=transparency, cad_layer=cad_layer))
