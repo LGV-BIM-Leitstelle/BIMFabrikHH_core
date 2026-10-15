@@ -4,8 +4,10 @@ from __future__ import annotations
 
 from typing import List, Literal, Tuple
 
-from BIMFabrikHH_core.core.georeferencing.coordinate_transformer import CoordinateTransformer
-from .geojson import Polygon, MultiPolygon, Ring
+from BIMFabrikHH_core.core.georeferencing.coordinate_transformer import \
+    CoordinateTransformer
+
+from .geojson import Polygon, Ring
 
 OgcGeometryCrs = Literal["EPSG:4326", "EPSG:25832"]
 
@@ -37,19 +39,21 @@ def ring_xy_to_epsg25832(
 
 
 def polygon_rings_to_epsg25832(
-        polygon: Polygon,
-        source_crs: OgcGeometryCrs,
+    polygon: Polygon,
+    source_crs: OgcGeometryCrs,
 ) -> Polygon | None:
     """Return ring vertices in EPSG:25832 (metres). Return ``None`` if the exterior ring is empty or has ``len<3``."""
     exterior_epsg25832 = ring_xy_to_epsg25832(polygon.exterior, source_crs)
     if not exterior_epsg25832 or len(exterior_epsg25832) < 3:
         return None
-    
-    holes_epsg25832 = [ring_xy_to_epsg25832(hole, source_crs) for hole in polygon.holes if hole] # filter out [] entries
+
+    holes_epsg25832 = [
+        ring_xy_to_epsg25832(hole, source_crs) for hole in polygon.holes if hole
+    ]  # filter out [] entries
 
     polygon_epsg25832 = Polygon(exterior=exterior_epsg25832, holes=holes_epsg25832)
     return polygon_epsg25832
-         
+
 
 __all__ = [
     "OgcGeometryCrs",
