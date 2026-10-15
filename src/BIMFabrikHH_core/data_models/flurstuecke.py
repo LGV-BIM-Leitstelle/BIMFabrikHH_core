@@ -30,14 +30,12 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from BIMFabrikHH_core.core.ogc_extractor import (
-    OgcGeometryCrs,
-    ensure_feature_collection,
-    feature_identifier,
-    geojson_feature_properties,
-    iter_geojson_features,
-    parse_feature_polygon_exterior_rings,
-)
+from BIMFabrikHH_core.core.ogc_extractor import (MultiPolygon, OgcGeometryCrs,
+                                                 ensure_feature_collection,
+                                                 feature_identifier,
+                                                 geojson_feature_properties,
+                                                 iter_geojson_features,
+                                                 parse_feature_for_all_polygon_rings)
 
 logger = logging.getLogger(__name__)
 
@@ -48,8 +46,8 @@ class FlurstueckRecord(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True, extra="ignore")
 
     feature_id: Union[int, str] = Field(description="``feature.id`` from GeoJSON")
-    rings: List[List[Tuple[float, float]]] = Field(
-        description="Exterior ring per MultiPolygon part; (easting, northing) if EPSG:25832 else (lon, lat)"
+    polygons: MultiPolygon = Field(
+        description="Exterior ring and holes per MultiPolygon part; (easting, northing) if EPSG:25832 else (lon, lat)"
     )
     geometry_crs: OgcGeometryCrs = Field(
         default="EPSG:25832",
@@ -134,9 +132,8 @@ def collect_flurstueck_psets(
 
 def _record_with_psets_from_payload(payload: Dict[str, Any]) -> FlurstueckRecord:
     record = FlurstueckRecord.model_validate(payload)
-    from BIMFabrikHH_core.data_models.pydantic_psets_flurstuecke import (
-        Pset_Objektinformation_Flurstueck,
-    )
+    from BIMFabrikHH_core.data_models.pydantic_psets_flurstuecke import \
+        Pset_Objektinformation_Flurstueck
 
     pset = Pset_Objektinformation_Flurstueck(
         alkisidentifikator=record.idflurst,
@@ -165,7 +162,7 @@ def records_from_geojson_feature_collection(
     ensure_feature_collection(data)
     out: List[FlurstueckRecord] = []
     for feat in iter_geojson_features(data):
-        rings = parse_feature_polygon_exterior_rings(feat)
+        rings = parse_feature_for_all_polygon_rings(feat)
         if not rings:
             continue
         props_raw = geojson_feature_properties(feat)
@@ -175,7 +172,7 @@ def records_from_geojson_feature_collection(
         payload = {
             **props_raw,
             "feature_id": fid,
-            "rings": rings,
+            "polygons": rings,
             "geometry_crs": geometry_crs,
         }
         out.append(_record_with_psets_from_payload(payload))
