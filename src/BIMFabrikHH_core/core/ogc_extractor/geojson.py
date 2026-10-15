@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Dict, Iterable, List, Optional, Tuple, Union, TypeAlias
+from typing import Any, Dict, Iterable, List, Optional, Tuple, TypeAlias, Union
 
 # Minimum positions: polygon exterior must be closed (first == last) → at least 4 positions in GeoJSON.
 _MIN_POLYGON_EXTERIOR_POSITIONS: int = 4
@@ -12,10 +12,12 @@ _MIN_LINESTRING_POSITIONS: int = 2
 Coordinate: TypeAlias = Tuple[float, float]
 Ring: TypeAlias = List[Coordinate]
 
+
 @dataclass
 class Polygon:
     exterior: Ring
     holes: List[Ring]
+
 
 MultiPolygon = List[Polygon]
 
@@ -83,7 +85,7 @@ def parse_feature_polygons(feature: Dict[str, Any]) -> List[List[List[Tuple[floa
     return polygons
 
 
-def parse_feature_all_rings(feature: Dict[str, Any]) -> MultiPolygon:
+def parse_feature_for_all_polygon_rings(feature: Dict[str, Any]) -> MultiPolygon:
     """Exterior rings and holes of every ``Polygon`` / ``MultiPolygon`` part in the feature."""
     polygons = parse_feature_polygons(feature)
 
@@ -93,7 +95,7 @@ def parse_feature_all_rings(feature: Dict[str, Any]) -> MultiPolygon:
         rings = extract_all_rings_from_polygon(polygon)
         if rings:
             multipolygon.append(rings)
-    
+
     return multipolygon
 
 
@@ -119,13 +121,13 @@ def extract_all_rings_from_polygon(polygon: List[List[Tuple[float, float]]]) -> 
     return rings
 
 
-def parse_feature_polygon_first_exterior_ring(feature: Dict[str, Any]) -> Optional[List[Tuple[float, float]]]:
+def parse_feature_for_polygon_first_exterior_ring(feature: Dict[str, Any]) -> Optional[List[Tuple[float, float]]]:
     """Exterior ring of the first polygon on the feature, or ``None`` if not applicable."""
-    rings = parse_feature_polygon_exterior_rings(feature)
+    rings = parse_feature_for_polygon_exterior_rings(feature)
     return rings[0] if rings else None
 
 
-def parse_feature_polygon_exterior_rings(feature: Dict[str, Any]) -> List[List[Tuple[float, float]]]:
+def parse_feature_for_polygon_exterior_rings(feature: Dict[str, Any]) -> List[List[Tuple[float, float]]]:
     """Exterior rings of every ``Polygon`` / ``MultiPolygon`` part (holes ignored)."""
     geom = feature.get("geometry")
     if not isinstance(geom, dict):
@@ -200,8 +202,7 @@ __all__ = [
     "iter_geojson_features",
     "parse_feature_linestring_path",
     "parse_feature_multilinestring_paths",
-    "parse_feature_polygon_first_exterior_ring",
-    "parse_feature_polygon_exterior_rings",
+    "parse_feature_for_polygon_first_exterior_ring",
+    "parse_feature_for_polygon_exterior_rings",
     "positions_to_xy_line",
-
 ]

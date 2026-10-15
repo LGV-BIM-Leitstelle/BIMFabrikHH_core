@@ -1,8 +1,8 @@
 import pytest
 
 from BIMFabrikHH_core.core.ogc_extractor import (
-    ensure_feature_collection, feature_identifier, parse_feature_all_rings,
-    parse_feature_polygon_exterior_rings, positions_to_xy_line)
+    ensure_feature_collection, feature_identifier, parse_feature_for_all_polygon_rings,
+    parse_feature_for_polygon_exterior_rings, positions_to_xy_line)
 
 
 def _ring(x0, y0, x1, y1):
@@ -32,7 +32,7 @@ def test_polygon_preserves_exterior_and_hole():
     exterior = _ring(0, 0, 10, 10)
     hole = _ring(2, 2, 4, 4)
 
-    result = parse_feature_all_rings(_feature("Polygon", [exterior, hole]))
+    result = parse_feature_for_all_polygon_rings(_feature("Polygon", [exterior, hole]))
 
     assert len(result) == 1
     assert result[0].exterior == [(float(x), float(y)) for x, y in exterior]
@@ -47,7 +47,7 @@ def test_polygon_preserves_multiple_holes():
         _ring(10, 10, 15, 15),
     ]
 
-    result = parse_feature_all_rings(_feature("Polygon", [exterior, *holes]))
+    result = parse_feature_for_all_polygon_rings(_feature("Polygon", [exterior, *holes]))
 
     assert len(result) == 1
     assert len(result[0].holes) == 2
@@ -62,7 +62,7 @@ def test_multipolygon_preserves_each_part_and_its_holes():
     hole_b = _ring(22, 22, 24, 24)
     hole_c = _ring(31, 31, 35, 35)
 
-    result = parse_feature_all_rings(
+    result = parse_feature_for_all_polygon_rings(
         _feature(
             "MultiPolygon",
             [
@@ -88,7 +88,7 @@ def test_exterior_ring_helper_ignores_holes():
     exterior = _ring(0, 0, 10, 10)
     hole = _ring(2, 2, 4, 4)
 
-    result = parse_feature_polygon_exterior_rings(_feature("Polygon", [exterior, hole]))
+    result = parse_feature_for_polygon_exterior_rings(_feature("Polygon", [exterior, hole]))
 
     assert len(result) == 1
     assert result[0] == [(float(x), float(y)) for x, y in exterior]
@@ -112,6 +112,6 @@ def test_feature_identifier_uses_fallback_when_missing():
 
 @pytest.mark.unit
 def test_non_polygon_geometry_produces_no_polygons():
-    result = parse_feature_all_rings(_feature("Point", [1, 2]))
+    result = parse_feature_for_all_polygon_rings(_feature("Point", [1, 2]))
 
     assert result == []
