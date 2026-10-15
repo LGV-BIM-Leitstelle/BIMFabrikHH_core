@@ -19,13 +19,11 @@ from __future__ import annotations
 
 from typing import Optional
 
-from BIMFabrikHH_core.core.ogc_extractor.ogc_values_extractor import extract_project_info
+from BIMFabrikHH_core.core.ogc_extractor.ogc_values_extractor import \
+    extract_project_info
 from BIMFabrikHH_core.data_models.params_tree import RequestParams
 from BIMFabrikHH_core.data_models.pydantic_georeferencing import (
-    CoordinateOperation,
-    CoordinateSystem,
-    CoordinateSystemTemplates,
-)
+    CoordinateOperation, CoordinateSystem, CoordinateSystemTemplates)
 
 from .ifc_modelbuilder import IfcModelBuilder
 
