@@ -35,7 +35,7 @@ from BIMFabrikHH_core.core.geometry import place_basepoint
 from BIMFabrikHH_core.core.model_creator import init_ifc_project
 from BIMFabrikHH_core.core.ogc_extractor import (MultiPolygon,
                                                  polygon_rings_to_epsg25832,
-                                                 ring_xy_to_epsg25832)
+                                                 line_xy_to_epsg25832)
 from BIMFabrikHH_core.core.ogc_extractor.ogc_values_extractor import \
     extract_psets_basepoint
 from BIMFabrikHH_core.data_models.flurstuecke import (FlurstueckRecord,

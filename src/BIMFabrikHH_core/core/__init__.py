@@ -47,7 +47,7 @@ from BIMFabrikHH_core.core.ogc_extractor import (
     parse_feature_for_polygon_exterior_rings,
     parse_feature_for_all_polygon_rings,
     positions_to_xy_line,
-    ring_xy_to_epsg25832,
+    line_xy_to_epsg25832,
     strip_closing_duplicate_xy,
 )
 
@@ -81,7 +81,7 @@ __all__ = [
     "parse_feature_for_polygon_exterior_rings",
     "parse_feature_for_all_polygon_rings",
     "positions_to_xy_line",
-    "ring_xy_to_epsg25832",
+    "line_xy_to_epsg25832",
     "strip_closing_duplicate_xy",
     # Utilities
     "MathTool",

@@ -4,6 +4,7 @@ Biotopkataster - extensive biotopes (Flächenhafte Biotope).
 
 from __future__ import annotations
 
+from enum import Enum
 import colorsys
 import hashlib
 import json
@@ -16,9 +17,16 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from BIMFabrikHH_core.apps.boreholes.helper import _clean
 from BIMFabrikHH_core.core.ogc_extractor import (
-    OgcGeometryCrs, ensure_feature_collection, feature_identifier,
+    MultiPolygon,
+    Polygon,
+    OgcGeometryCrs, 
+    ensure_feature_collection, 
+    feature_identifier,
     geojson_feature_properties, iter_geojson_features,
-    parse_feature_polygon_exterior_rings)
+    parse_feature_for_all_polygon_rings,
+    parse_feature_multilinestring_paths,
+    parse_feature_point,
+    feature_geometry_type)
 from BIMFabrikHH_core.data_models.pydantic_psets_BIMHH import Pset_Hyperlink
 
 logger = logging.getLogger(__name__)
@@ -27,6 +35,11 @@ ASSETS_DIR = Path(__file__).resolve().parent / "assets"
 _BIOTOPE_MAPPING_FILE = "biotope_mapping_HH.json"
 UNDEFINED = "undefiniert"
 
+class BiotopeShape(Enum):
+    NONE = 0
+    POINT = 1
+    LINES = 2
+    AREA = 3
 
 class BiotopeRecord(BaseModel):
     """One Biotopkataster biotope: exterior rings + API attributes + optional psets."""
@@ -34,12 +47,24 @@ class BiotopeRecord(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True, extra="ignore")
 
     feature_id: Union[int, str] = Field(description="``feature.id`` from GeoJSON")
-    rings: List[List[Tuple[float, float]]] = Field(
-        description="Exterior ring per MultiPolygon part; (easting, northing) if EPSG:25832 else (lon, lat)"
-    )
+
     geometry_crs: OgcGeometryCrs = Field(
         default="EPSG:25832",
         description="CRS of ``rings`` vertex coordinates",
+    )
+
+    shape_type: BiotopeShape = Field(
+        description="Indicates whether the habitat geometry is a polygon, line or point."
+    )
+
+    rings: MultiPolygon | None = Field(
+        description="Multipolygon geometry: Exterior ring and holes per MultiPolygon part; (easting, northing) if EPSG:25832 else (lon, lat)"
+    )
+    lines: List[List[Tuple[float, float]]] | None = Field(
+        description="Line geometry: list of (multiple) lines of coordinate tuples; (easting, northing) if EPSG:25832 else (lon, lat)"
+    )
+    point: Tuple | None = Field(
+        description="Point geometry: Coordinate tuple; (easting, northing) if EPSG:25832 else (lon, lat)"
     )
 
     # TODO: Add descriptions
@@ -63,6 +88,7 @@ class BiotopeRecord(BaseModel):
     )
     gesamtbewertung: int = Field()
     flaeche_oder_laenge: float = Field()
+    breite_lineares_objekt: Optional[float] = Field(default=None)
     biotopbogen: str = Field(
         default="",
     )
@@ -183,6 +209,12 @@ def _record_with_psets_from_payload(payload: Dict[str, Any], biotope_name_mappin
 
     hauptbiotoptyp_name = map_biotope_type(record.hauptbiotoptyp, biotope_name_mapping)
 
+    protection_status_landesrecht = (
+        "nicht geschützt"
+        if not record.is_protected
+        else "teilweise geschützt" if record.schutzstatus_teilweise else " vollständig geschützt"
+    )
+
     pset_objektinfo = Pset_Objektinformation_Biotop(
         biotopnummer=record.id_biotop,  # id_biotop is unique, in contrast to biotop_nr.
         abschnitt_nr=record.abschnitt,  #  TODO: is "abschnitt" the number of section or the number of the section?
@@ -193,11 +225,7 @@ def _record_with_psets_from_payload(payload: Dict[str, Any], biotope_name_mappin
         biotop_gesamtwert_bedeutung="",  # TODO map to meaning
         gefaehrdung_status="",  # TODO find status info
         ist_gesetzl_gesch_biotop=record.is_protected,
-        ist_gesetzl_gesch_biotop_landesrecht=(
-            "nicht geschützt"
-            if not record.is_protected
-            else "teilweise geschützt" if record.schutzstatus_teilweise else " vollständig geschützt"
-        ),
+        ist_gesetzl_gesch_biotop_landesrecht=protection_status_landesrecht,
         # Convert m^2 to ha
         biotop_groesse_ha=(
             (record.flaeche_oder_laenge / 10000.0, "ha") if record.flaeche_oder_laenge is not None else None
@@ -233,9 +261,31 @@ def records_from_geojson_feature_collection(
     ensure_feature_collection(data)
     out: List[BiotopeRecord] = []
     for feat in iter_geojson_features(data):
-        rings = parse_feature_polygon_exterior_rings(feat)
-        if not rings:
+        geom_type = feature_geometry_type(feat)
+        rings = lines = point = None
+        if not geom_type:
             continue
+        shape_type = BiotopeShape.NONE
+        if geom_type in ["MultiPolygon", "Polygon"]:
+            shape_type = BiotopeShape.AREA
+            rings = parse_feature_for_all_polygon_rings(feat)
+            if not rings:
+                continue
+        elif geom_type == "MultiLineString":
+            shape_type = BiotopeShape.LINES
+            lines = parse_feature_multilinestring_paths(feat)
+            if not lines:
+                continue
+        elif geom_type == "Point":
+            shape_type = BiotopeShape.POINT
+            point = parse_feature_point(feat)
+            if not point:
+                continue
+        else:
+            continue
+
+        # geometry = rings | line | point
+
         props_raw = geojson_feature_properties(feat)
         if props_raw is None:
             continue
@@ -243,9 +293,13 @@ def records_from_geojson_feature_collection(
         payload = {
             **props_raw,
             "feature_id": fid,
+            # "geometry": geometry,
             "rings": rings,
+            "lines": lines,
+            "point": point,
             "geometry_crs": geometry_crs,
             "is_protected": is_protected,
+            "shape_type": shape_type,
         }
 
         biotope_types = load_biotope_mapping()

@@ -26,7 +26,7 @@ from pydantic import BaseModel
 from BIMFabrikHH_core.config.logging_config import get_logger
 from BIMFabrikHH_core.core.geometry import place_basepoint
 from BIMFabrikHH_core.core.model_creator import init_ifc_project
-from BIMFabrikHH_core.core.ogc_extractor import ring_xy_to_epsg25832
+from BIMFabrikHH_core.core.ogc_extractor import line_xy_to_epsg25832
 from BIMFabrikHH_core.data_models.params_tree import RequestParams
 from BIMFabrikHH_core.data_models.pydantic_georeferencing import (
     CoordinateOperation,
@@ -146,7 +146,7 @@ class WasserschutzgebieteGenericApp:
             _t0 = time.perf_counter()
             elements: List[BIMFactoryElement] = []
             for rec in records:
-                xy = ring_xy_to_epsg25832(rec.exterior_ring, rec.geometry_crs)
+                xy = line_xy_to_epsg25832(rec.exterior_ring, rec.geometry_crs)
                 if len(xy) < 3:
                     logger.warning("Skipping feature %s: ring too small in EPSG:25832", rec.feature_id)
                     continue

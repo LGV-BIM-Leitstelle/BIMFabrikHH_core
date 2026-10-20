@@ -22,7 +22,7 @@ from .ogc_values_extractor import (extract_level_of_geometry,
                                    extract_project_info,
                                    extract_psets_basepoint)
 from .rings import (OgcGeometryCrs, polygon_rings_to_epsg25832,
-                    ring_xy_to_epsg25832, strip_closing_duplicate_xy)
+                    line_xy_to_epsg25832, strip_closing_duplicate_xy)
 
 __all__ = [
     "OGCExtractorSettings",
@@ -43,7 +43,7 @@ __all__ = [
     "parse_feature_for_polygon_exterior_rings",
     "parse_feature_for_all_polygon_rings",
     "positions_to_xy_line",
-    "ring_xy_to_epsg25832",
+    "line_xy_to_epsg25832",
     "polygon_rings_to_epsg25832",
     "strip_closing_duplicate_xy",
 ]
