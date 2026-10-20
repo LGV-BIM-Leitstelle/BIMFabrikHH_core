@@ -74,16 +74,7 @@ def _flurstueck_element_from_record(
     for polygon in multipolygon:
         if not polygon.exterior:
             continue
-        exterior = Polygon(points=polygon.exterior)  # Polygon closes ring if not closed
-        holes = [Polygon(points=hole) for hole in polygon.holes]
-        profile = exterior
-
-        for hole in holes:
-            profile = Boolean(
-                operation=BooleanOperationTypes.Difference,
-                children=[profile, hole],
-            )
-
+        profile = Polygon(points=polygon.exterior, voids=polygon.holes)  # Polygon closes ring if not closed
         extruded = Extrusion(basis=profile, depth=extrusion_depth)
         styled_parts.append(Style(item=extruded, rgb=color, transparency=transparency, cad_layer=cad_layer))
 
