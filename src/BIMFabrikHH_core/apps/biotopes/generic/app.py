@@ -10,7 +10,7 @@ from typing import Callable, List, Optional, Tuple, Union
 
 from BIMFabrikHH_core.core.ogc_extractor.geojson import MultiPolygon
 from BIMFabrikHH_core.core.ogc_extractor.rings import polygon_rings_to_epsg25832
-from ifcfactory import BIMFactoryElement, Boolean, BooleanOperationTypes, Extrusion, MeshRepresentation, Polygon, Style
+from ifcfactory import BIMFactoryElement, Extrusion, Polygon, PolylineOffset, Style
 from pydantic import BaseModel
 
 from BIMFabrikHH_core.config.logging_config import get_logger
@@ -189,16 +189,7 @@ def _polygon_biotope_element_from_record(
     for polygon in multipolygon:
         if not polygon.exterior:
             continue
-        exterior = Polygon(points=polygon.exterior)  # Polygon closes ring if not closed
-        holes = [Polygon(points=hole) for hole in polygon.holes]
-        profile = exterior
-
-        for hole in holes:
-            profile = Boolean(
-                operation=BooleanOperationTypes.Difference,
-                children=[profile, hole],
-            )
-
+        profile = Polygon(points=polygon.exterior, voids=polygon.holes)  # Polygon closes ring if not closed
         extruded = Extrusion(basis=profile, depth=extrusion_depth)
         styled_parts.append(Style(item=extruded, rgb=color, transparency=transparency, cad_layer=cad_layer))
 
@@ -217,7 +208,7 @@ def _polygon_biotope_element_from_record(
 def _line_biotope_element_from_record(
     *,
     record: BiotopeRecord,
-    lines: List[List[Tuple]],
+    lines: List[List[Tuple[float, float]]],
     extrusion_depth: float,
     color: RgbTuple,
     cad_layer: str,
@@ -230,21 +221,11 @@ def _line_biotope_element_from_record(
     for line in lines:
         if not line:
             continue
-        vertices_zero = [(float(pos[0]), float(pos[1]), 0.0) for pos in line]
-        vertices_extruded = [(float(pos[0]), float(pos[1]), extrusion_depth) for pos in line]
 
-        vertices = 2 * vertices_zero # only for initialization, is overwritten
-        vertices[::2] = vertices_zero
-        vertices[1::2] = vertices_extruded
+        line_with_thickness = PolylineOffset(points=line, offset=record.breite_lineares_objekt)
+        extrusion = Extrusion(basis=line_with_thickness, depth=extrusion_depth)
 
-        faces = [[v, v+1, v+2] for v in range(0,len(vertices)-2)]
-
-        if not vertices or not faces or len(faces) != len(vertices)-2:
-            continue
-
-        custom_mesh = MeshRepresentation(vertices=vertices, faces=faces)
-        extruded = Extrusion(basis=custom_mesh, depth=extrusion_depth)
-        styled_parts.append(Style(item=custom_mesh, rgb=color, transparency=transparency, cad_layer=cad_layer))
+        styled_parts.append(Style(item=extrusion, rgb=color, transparency=transparency, cad_layer=cad_layer))
 
     pset_models: List[BaseModel] = collect_biotope_psets(record, include_property_sets=include_property_sets)
     element_psets: List[BaseModel] = [*pset_models, overwrite_hyperlink] if overwrite_hyperlink else pset_models
