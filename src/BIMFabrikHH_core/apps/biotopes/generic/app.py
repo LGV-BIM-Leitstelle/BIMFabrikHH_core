@@ -10,13 +10,13 @@ from typing import Callable, List, Optional, Tuple, Union
 
 from BIMFabrikHH_core.core.ogc_extractor.geojson import MultiPolygon
 from BIMFabrikHH_core.core.ogc_extractor.rings import polygon_rings_to_epsg25832
-from ifcfactory import BIMFactoryElement, Extrusion, Polygon, PolylineOffset, Style
+from ifcfactory import BIMFactoryElement, Box, Extrusion, MeshRepresentation, Polygon, PolylineOffset, Style, Transform
 from pydantic import BaseModel
 
 from BIMFabrikHH_core.config.logging_config import get_logger
 from BIMFabrikHH_core.core.geometry import place_basepoint
 from BIMFabrikHH_core.core.model_creator import init_ifc_project
-from BIMFabrikHH_core.core.ogc_extractor import line_xy_to_epsg25832
+from BIMFabrikHH_core.core.ogc_extractor import line_xy_to_epsg25832, point_xy_to_epsg25832
 from BIMFabrikHH_core.core.ogc_extractor.ogc_values_extractor import \
     extract_psets_basepoint
 from BIMFabrikHH_core.data_models.biotopes import (BiotopeRecord, BiotopeShape,
@@ -87,7 +87,7 @@ class BiotopesGenericApp:
                 if rec.shape_type == BiotopeShape.AREA:
                     xy_rings: MultiPolygon = [
                         result
-                        for polygon in rec.rings
+                        for polygon in rec.polygons
                         if len(polygon.exterior) >= 3
                         and (result := polygon_rings_to_epsg25832(polygon, rec.geometry_crs)) is not None
                     ]
@@ -115,7 +115,7 @@ class BiotopesGenericApp:
                         if (result := line_xy_to_epsg25832(line, rec.geometry_crs)) is not None
                     ]
                     if not xy_lines or not any(xy_lines): 
-                        logger.warning("Skipping feature %s: no coordinate line in EPSG:25832", rec.feature_id)
+                        logger.warning("Skipping feature %s: no coordinates line in EPSG:25832", rec.feature_id)
                         continue
                     elements.append(
                         _line_biotope_element_from_record(
@@ -131,12 +131,31 @@ class BiotopesGenericApp:
                     )
                     if on_progress:
                         on_progress()
+                elif rec.shape_type == BiotopeShape.POINT:
+                    xy_point: Tuple[float, float] = point_xy_to_epsg25832(rec.point, rec.geometry_crs)
+                    if not xy_point: 
+                        logger.warning("Skipping feature %s: no coordinates point in EPSG:25832", rec.feature_id)
+                        continue
+                    elements.append(
+                        _point_biotope_element_from_record(
+                            record=rec,
+                            point=xy_point,
+                            extrusion_depth=extrusion_depth_m,
+                            color=color if color is not None else rec.element_color,
+                            cad_layer=cad_layer,
+                            transparency=transparency,
+                            overwrite_hyperlink=pset_hyperlink,
+                            include_property_sets=include_property_sets,
+                        )
+                    )
+                    if on_progress:
+                        on_progress()
 
             if phase_timings is not None:
                 phase_timings["prepare_elements_s"] = time.perf_counter() - _t0
 
             if not elements:
-                logger.error("No valid geometries after preparing rings.")
+                logger.error("No valid BIMFactory elements could be prepared form biotope records.")
                 return None
 
             _t0 = time.perf_counter()
@@ -235,5 +254,35 @@ def _line_biotope_element_from_record(
         name=record.element_name,
         qsets=False,
         children=styled_parts,
+        psets=element_psets,
+    )
+
+
+def _point_biotope_element_from_record(
+    *,
+    record: BiotopeRecord,
+    point: Tuple[float, float],
+    extrusion_depth: float,
+    color: RgbTuple,
+    cad_layer: str,
+    transparency: float,
+    overwrite_hyperlink: Optional[Pset_Hyperlink],
+    include_property_sets: bool,
+) -> BIMFactoryElement:
+    """TODO"""
+    length = 5.0
+    box = Box(width=length, depth=length, height=extrusion_depth)
+
+    styled = Style(item=box,rgb=color, transparency=transparency, cad_layer=cad_layer)
+    placed = Transform(item=styled, translation=(point[0], point[1], 0.0))
+
+    pset_models: List[BaseModel] = collect_biotope_psets(record, include_property_sets=include_property_sets)
+    element_psets: List[BaseModel] = [*pset_models, overwrite_hyperlink] if overwrite_hyperlink else pset_models
+
+    return BIMFactoryElement(
+        type="IfcBuildingElementProxy",
+        name=record.element_name,
+        qsets=False,
+        children=[placed],
         psets=element_psets,
     )

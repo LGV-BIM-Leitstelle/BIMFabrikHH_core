@@ -21,6 +21,20 @@ def strip_closing_duplicate_xy(ring: Ring) -> Ring:
     return ring
 
 
+def point_xy_to_epsg25832(
+    point: Tuple[float, float],
+    source_crs: OgcGeometryCrs,
+) -> Tuple[float, float]:
+    """Return vertex in EPSG:25832 (metres). ``source_crs`` is the CRS of ``point`` XY."""
+    if source_crs == "EPSG:25832":
+        return point
+    x = point[0]
+    y = point[1]
+    t = CoordinateTransformer(_WGS84_TO_UTM32[0], _WGS84_TO_UTM32[1])
+    xe, yn, _ = t.transform_point(x, y)
+    return (xe, yn)
+
+
 def line_xy_to_epsg25832(
     line: Ring,
     source_crs: OgcGeometryCrs,

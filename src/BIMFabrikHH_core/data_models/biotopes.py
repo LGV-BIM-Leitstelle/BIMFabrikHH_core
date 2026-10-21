@@ -18,7 +18,6 @@ from pydantic import BaseModel, ConfigDict, Field
 from BIMFabrikHH_core.apps.boreholes.helper import _clean
 from BIMFabrikHH_core.core.ogc_extractor import (
     MultiPolygon,
-    Polygon,
     OgcGeometryCrs, 
     ensure_feature_collection, 
     feature_identifier,
@@ -42,7 +41,7 @@ class BiotopeShape(Enum):
     AREA = 3
 
 class BiotopeRecord(BaseModel):
-    """One Biotopkataster biotope: exterior rings + API attributes + optional psets."""
+    """One Biotopkataster biotope: geometry (polygon/lines/point) + API attributes + optional psets."""
 
     model_config = ConfigDict(arbitrary_types_allowed=True, extra="ignore")
 
@@ -50,14 +49,14 @@ class BiotopeRecord(BaseModel):
 
     geometry_crs: OgcGeometryCrs = Field(
         default="EPSG:25832",
-        description="CRS of ``rings`` vertex coordinates",
+        description="CRS of vertex coordinates",
     )
 
     shape_type: BiotopeShape = Field(
         description="Indicates whether the habitat geometry is a polygon, line or point."
     )
 
-    rings: MultiPolygon | None = Field(
+    polygons: MultiPolygon | None = Field(
         description="Multipolygon geometry: Exterior ring and holes per MultiPolygon part; (easting, northing) if EPSG:25832 else (lon, lat)"
     )
     lines: List[List[Tuple[float, float]]] | None = Field(
@@ -86,8 +85,8 @@ class BiotopeRecord(BaseModel):
     schutzstatus_teilweise: Optional[str] = Field(
         default=None,
     )
-    gesamtbewertung: int = Field()
-    flaeche_oder_laenge: float = Field()
+    gesamtbewertung: Optional[int] = Field(default=None)
+    flaeche_oder_laenge: Optional[float] = Field(default=None)
     breite_lineares_objekt: Optional[float] = Field(default=None)
     biotopbogen: str = Field(
         default="",
@@ -198,7 +197,6 @@ def build_biotope_hyperlink(url: str, id_biotop: int) -> Pset_Hyperlink:
         bemerkung = f"Link zum Erhebungsbogen für Biotop {id_biotop}."
     else:
         bemerkung = f"Kein Erhebungsbogen verfügbar für Biotop {id_biotop}."
-    print(url, bemerkung)
     return Pset_Hyperlink(hyperlink_001=url, hyperlink_001_bemerkung=bemerkung)
 
 
@@ -284,8 +282,6 @@ def records_from_geojson_feature_collection(
         else:
             continue
 
-        # geometry = rings | line | point
-
         props_raw = geojson_feature_properties(feat)
         if props_raw is None:
             continue
@@ -293,7 +289,6 @@ def records_from_geojson_feature_collection(
         payload = {
             **props_raw,
             "feature_id": fid,
-            # "geometry": geometry,
             "rings": rings,
             "lines": lines,
             "point": point,
