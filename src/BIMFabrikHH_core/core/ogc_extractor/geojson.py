@@ -2,11 +2,24 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
+from dataclasses import dataclass
+from typing import Any, Dict, Iterable, List, Optional, Tuple, TypeAlias, Union
 
 # Minimum positions: polygon exterior must be closed (first == last) → at least 4 positions in GeoJSON.
 _MIN_POLYGON_EXTERIOR_POSITIONS: int = 4
 _MIN_LINESTRING_POSITIONS: int = 2
+
+Coordinate: TypeAlias = Tuple[float, float]
+Ring: TypeAlias = List[Coordinate]
+
+
+@dataclass
+class PolygonRings:
+    exterior: Ring
+    holes: List[Ring]
+
+
+MultiPolygon: TypeAlias = List[PolygonRings]
 
 
 def ensure_feature_collection(data: Any) -> Dict[str, Any]:
@@ -47,6 +60,65 @@ def feature_identifier(feature: Dict[str, Any], *, fallback: str) -> Union[str, 
     return fid if fid is not None else fallback
 
 
+def feature_geometry_type(feature: Dict[str, Any]) -> str | None:
+    """Geometry type of a feature."""
+    geom = feature.get("geometry")
+    if not isinstance(geom, dict):
+        return None
+    return geom.get("type")
+
+
+def parse_feature_polygons(feature: Dict[str, Any]) -> List[List[List[Tuple[float, float]]]]:
+    """``Polygon`` / ``MultiPolygon`` coordinates in the feature."""
+    geom = feature.get("geometry")
+    if not isinstance(geom, dict):
+        return []
+    geom_type = geom.get("type")
+    coords = geom.get("coordinates")
+    polygons: List[List[List[Tuple[float, float]]]] = []
+    if geom_type == "Polygon":
+        polygons = [coords] if isinstance(coords, list) else []
+    elif geom_type == "MultiPolygon":
+        polygons = coords if isinstance(coords, list) else []
+    else:
+        return []
+    return polygons
+
+
+def parse_feature_for_all_polygon_rings(feature: Dict[str, Any]) -> MultiPolygon:
+    """Exterior rings and holes of every ``Polygon`` / ``MultiPolygon`` part in the feature."""
+    polygons = parse_feature_polygons(feature)
+
+    multipolygon: MultiPolygon = []
+
+    for polygon in polygons:
+        rings = extract_all_rings_from_polygon(polygon)
+        if rings is not None:
+            multipolygon.append(rings)
+
+    return multipolygon
+
+
+def extract_all_rings_from_polygon(polygon: Any) -> Optional[PolygonRings]:
+    """Exterior ring and interior rings (holes) of one polygon, or ``None`` if the exterior is invalid."""
+    if not isinstance(polygon, list) or not polygon or not isinstance(polygon[0], list):
+        return None
+
+    exterior = positions_to_xy_ring(polygon[0])
+    if len(exterior) < _MIN_POLYGON_EXTERIOR_POSITIONS:
+        return None
+
+    holes: List[Ring] = []
+    for ring in polygon[1:]:
+        if not isinstance(ring, list):
+            continue
+        ring_xy = positions_to_xy_ring(ring)
+        if len(ring_xy) >= _MIN_POLYGON_EXTERIOR_POSITIONS:
+            holes.append(ring_xy)
+
+    return PolygonRings(exterior=exterior, holes=holes)
+
+
 def parse_feature_polygon_exterior_ring(feature: Dict[str, Any]) -> Optional[List[Tuple[float, float]]]:
     """Exterior ring of the first polygon on the feature, or ``None`` if not applicable."""
     rings = parse_feature_polygon_exterior_rings(feature)
@@ -76,6 +148,17 @@ def parse_feature_polygon_exterior_rings(feature: Dict[str, Any]) -> List[List[T
         if len(ring) >= _MIN_POLYGON_EXTERIOR_POSITIONS:
             rings.append(ring)
     return rings
+
+
+def parse_feature_point(feature: Dict[str, Any]) -> Tuple[float, float] | None:
+    """Vertices of a ``Point`` geometry, or ``None``."""
+    geom = feature.get("geometry")
+    if not isinstance(geom, dict) or geom.get("type") != "Point":
+        return None
+    coords = geom.get("coordinates")
+    if not isinstance(coords, (list, tuple)) or len(coords) < 2:
+        return None
+    return (float(coords[0]), float(coords[1]))
 
 
 def parse_feature_linestring_path(feature: Dict[str, Any]) -> Optional[List[Tuple[float, float]]]:
@@ -120,4 +203,12 @@ __all__ = [
     "parse_feature_polygon_exterior_ring",
     "parse_feature_polygon_exterior_rings",
     "positions_to_xy_ring",
+    "Coordinate",
+    "Ring",
+    "PolygonRings",
+    "MultiPolygon",
+    "feature_geometry_type",
+    "parse_feature_point",
+    "parse_feature_polygons",
+    "parse_feature_for_all_polygon_rings",
 ]

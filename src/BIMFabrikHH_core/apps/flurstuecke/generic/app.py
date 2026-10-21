@@ -32,7 +32,7 @@ from pydantic import BaseModel
 from BIMFabrikHH_core.config.logging_config import get_logger
 from BIMFabrikHH_core.core.geometry import place_basepoint
 from BIMFabrikHH_core.core.model_creator import init_ifc_project
-from BIMFabrikHH_core.core.ogc_extractor import ring_xy_to_epsg25832
+from BIMFabrikHH_core.core.ogc_extractor import MultiPolygon, polygon_rings_to_epsg25832
 from BIMFabrikHH_core.core.ogc_extractor.ogc_values_extractor import extract_psets_basepoint
 from BIMFabrikHH_core.data_models.flurstuecke import (
     FlurstueckRecord,
@@ -62,7 +62,7 @@ _DEFAULT_EXTRUSION_DEPTH_M: float = 30.0
 def _flurstueck_element_from_record(
     *,
     record: FlurstueckRecord,
-    xy_rings: List[List[Tuple[float, float]]],
+    multipolygon: MultiPolygon,
     extrusion_depth: float,
     color: RgbTuple,
     cad_layer: str,
@@ -72,12 +72,11 @@ def _flurstueck_element_from_record(
 ) -> BIMFactoryElement:
     """One ``IfcBuildingElementProxy`` per parcel, one extrusion per MultiPolygon part."""
     styled_parts: List[Style] = []
-    for ring in xy_rings:
-        closed = list(ring)
-        if not closed or closed[0] != closed[-1]:
-            closed += [closed[0]]
 
-        profile = Polygon(points=closed)
+    for polygon in multipolygon:
+        if not polygon.exterior:
+            continue
+        profile = Polygon(points=polygon.exterior, voids=polygon.holes)
         extruded = Extrusion(basis=profile, depth=extrusion_depth)
         styled_parts.append(Style(item=extruded, rgb=color, transparency=transparency, cad_layer=cad_layer))
 
@@ -147,16 +146,18 @@ class FlurstueckeGenericApp:
             _t0 = time.perf_counter()
             elements: List[BIMFactoryElement] = []
             for rec in records:
-                xy_rings = [
-                    xy for xy in (ring_xy_to_epsg25832(ring, rec.geometry_crs) for ring in rec.rings) if len(xy) >= 3
+                polygons: MultiPolygon = [
+                    projected
+                    for polygon in rec.polygons
+                    if (projected := polygon_rings_to_epsg25832(polygon, rec.geometry_crs)) is not None
                 ]
-                if not xy_rings:
+                if not polygons:
                     logger.warning("Skipping feature %s: no ring with 3+ vertices in EPSG:25832", rec.feature_id)
                     continue
                 elements.append(
                     _flurstueck_element_from_record(
                         record=rec,
-                        xy_rings=xy_rings,
+                        multipolygon=polygons,
                         extrusion_depth=extrusion_depth_m,
                         color=color if color is not None else rec.element_color,
                         cad_layer=cad_layer,

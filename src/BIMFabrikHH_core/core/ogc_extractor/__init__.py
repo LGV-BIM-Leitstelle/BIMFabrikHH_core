@@ -8,18 +8,24 @@ FeatureCollection parsing and projected ring helpers for feature payloads.
 
 from .config import OGCExtractorSettings, ogc_extractor_settings
 from .geojson import (
+    MultiPolygon,
+    PolygonRings,
+    Ring,
     ensure_feature_collection,
+    feature_geometry_type,
     feature_identifier,
     geojson_feature_properties,
     iter_geojson_features,
+    parse_feature_for_all_polygon_rings,
     parse_feature_linestring_path,
     parse_feature_multilinestring_paths,
+    parse_feature_point,
     parse_feature_polygon_exterior_ring,
     parse_feature_polygon_exterior_rings,
     positions_to_xy_ring,
 )
 from .ogc_values_extractor import extract_level_of_geometry, extract_project_info, extract_psets_basepoint
-from .rings import OgcGeometryCrs, ring_xy_to_epsg25832, strip_closing_duplicate_xy
+from .rings import OgcGeometryCrs, polygon_rings_to_epsg25832, ring_xy_to_epsg25832, strip_closing_duplicate_xy
 
 __all__ = [
     "OGCExtractorSettings",
@@ -39,4 +45,11 @@ __all__ = [
     "positions_to_xy_ring",
     "ring_xy_to_epsg25832",
     "strip_closing_duplicate_xy",
+    "Ring",
+    "PolygonRings",
+    "MultiPolygon",
+    "feature_geometry_type",
+    "parse_feature_point",
+    "parse_feature_for_all_polygon_rings",
+    "polygon_rings_to_epsg25832",
 ]

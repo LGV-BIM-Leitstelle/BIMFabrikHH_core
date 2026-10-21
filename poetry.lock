@@ -750,61 +750,57 @@ advanced = ["typst"]
 
 [[package]]
 name = "ifcfactory"
-version = "0.3.0"
+version = "0.4.0"
 description = "A modular geometry system for creating BIM elements with composable geometry creation"
 optional = false
 python-versions = "<3.13,>=3.11"
 groups = ["main"]
 files = [
-    {file = "ifcfactory-0.3.0-py3-none-any.whl", hash = "sha256:a0da31df2a8182d3375937780063e02faced3a1b6413587b2caff036d9e4e70f"},
-    {file = "ifcfactory-0.3.0.tar.gz", hash = "sha256:0ad75c21ac6ca0557492a127cb6ad720eeee5e8da3dc42b8ff658b85f93c95b1"},
+    {file = "ifcfactory-0.4.0-py3-none-any.whl", hash = "sha256:2723bbc956fef8d8bb35665c93be8783f4d34bba4c907d280ab73749b4702e66"},
+    {file = "ifcfactory-0.4.0.tar.gz", hash = "sha256:d2635787a34bb0dbbeb5a08a8d6bfef105a3b86f4be9c4e47b7f6faf6113ce6c"},
 ]
 
 [package.dependencies]
 icosphere = ">=0.1.3,<0.2.0"
 ifc5d = ">=0.8.4,<0.9.0"
-ifcopenshell = "0.8.4"
+ifcopenshell = "0.8.5"
 pint = ">=0.25.2,<0.26.0"
 pydantic = ">=2.12.5,<3.0.0"
+shapely = ">=2.0,<3.0"
 
 [[package]]
 name = "ifcopenshell"
-version = "0.8.4"
+version = "0.8.5"
 description = "Python bindings, utility functions, and high-level API for IfcOpenShell"
 optional = false
-python-versions = "<3.15,>=3.9"
+python-versions = "<3.15,>=3.10"
 groups = ["main"]
 files = [
-    {file = "ifcopenshell-0.8.4-py310-none-macosx_10_15_x86_64.whl", hash = "sha256:c84c8c221ce9be99e8b230f441026537f37cc0247eff8a785bb0d49a6f735bd5"},
-    {file = "ifcopenshell-0.8.4-py310-none-macosx_11_0_arm64.whl", hash = "sha256:d2e711e3d26f062da1f1e64d047457888e79e1a997e4c1d92377ceeb35827476"},
-    {file = "ifcopenshell-0.8.4-py310-none-manylinux_2_31_aarch64.whl", hash = "sha256:2e140aa1923b61ccd8a595ed5e41cba7e85d4edd6eedd6dde44c613fc8f6030c"},
-    {file = "ifcopenshell-0.8.4-py310-none-manylinux_2_31_x86_64.whl", hash = "sha256:b8d8ad402e2d2bf01d048a7695b2e0daed23aa168cd9d91146424e1076bde19d"},
-    {file = "ifcopenshell-0.8.4-py310-none-win_amd64.whl", hash = "sha256:4bdd5bc460e1a85b312a0f06e7bbe4e08cd0ea1c86dc883580a5c1399e893738"},
-    {file = "ifcopenshell-0.8.4-py311-none-macosx_10_15_x86_64.whl", hash = "sha256:42c1fad922297491503241a18bac44bca4f2a189ada4b597a21c52ad054d28c4"},
-    {file = "ifcopenshell-0.8.4-py311-none-macosx_11_0_arm64.whl", hash = "sha256:698fde0441fad89c946614b04bbd8a6c4fae37c9143bbfae4899bfc23a6bbf32"},
-    {file = "ifcopenshell-0.8.4-py311-none-manylinux_2_31_aarch64.whl", hash = "sha256:a673d0aff3962d8640a9f7e7a607da5b99ee6c0b76f8c42bb030ec693799dce7"},
-    {file = "ifcopenshell-0.8.4-py311-none-manylinux_2_31_x86_64.whl", hash = "sha256:761d70ef5ed12572d4c07f260b1687a5e1150576092dd270e5f56103310efa64"},
-    {file = "ifcopenshell-0.8.4-py311-none-win_amd64.whl", hash = "sha256:5a03b6c355c023abf2dc19aad0d49b49b936662024e050852eb243aa8a2e0c2d"},
-    {file = "ifcopenshell-0.8.4-py312-none-macosx_10_15_x86_64.whl", hash = "sha256:c21d254dfb38f21c0361a803b0574725c633695ff05ec7664be581ce0e3180f7"},
-    {file = "ifcopenshell-0.8.4-py312-none-macosx_11_0_arm64.whl", hash = "sha256:e3c15f5bd9409bef4cc8f15b571e964176130e00b96b5a96172ceaade58a1d05"},
-    {file = "ifcopenshell-0.8.4-py312-none-manylinux_2_31_aarch64.whl", hash = "sha256:96f8af02de0ddb75e834f19a1fd687c6d2fe673f3ee4e02e3d94387bd72121b1"},
-    {file = "ifcopenshell-0.8.4-py312-none-manylinux_2_31_x86_64.whl", hash = "sha256:7f601a566f4c167b8bc7e9e30c67037679fdf64a2e523b2c6311c29a268edfe8"},
-    {file = "ifcopenshell-0.8.4-py312-none-win_amd64.whl", hash = "sha256:302541b240454ea694a84967fed3935547ad2634cba7b168b144fd1b81c8cd1c"},
-    {file = "ifcopenshell-0.8.4-py313-none-macosx_10_15_x86_64.whl", hash = "sha256:180e2c905020b4c7fc165276972dec4ea0f9d9808f8c7e808d0a8ac2ad217926"},
-    {file = "ifcopenshell-0.8.4-py313-none-macosx_11_0_arm64.whl", hash = "sha256:254a676a4e5934fd37333230fc5e3c67d018ce2583fb37d7518be2ee9f5736c8"},
-    {file = "ifcopenshell-0.8.4-py313-none-manylinux_2_31_aarch64.whl", hash = "sha256:63866b3214d15e7719c34d1e62b31f25ae141bd91573a99009cb5c132361730f"},
-    {file = "ifcopenshell-0.8.4-py313-none-manylinux_2_31_x86_64.whl", hash = "sha256:af94394224a1dab0516219ef7dd31d74b764cfee0c6ea5b35728530457e3740e"},
-    {file = "ifcopenshell-0.8.4-py313-none-win_amd64.whl", hash = "sha256:41b9a7493636c30a964ba0375218e20573c32dc31ee50bd6bee9343c3b3e3e8f"},
-    {file = "ifcopenshell-0.8.4-py314-none-macosx_10_15_x86_64.whl", hash = "sha256:85229c21440179c02544967c7e41eed332fe3eedde7127942ff1988eee94b2c3"},
-    {file = "ifcopenshell-0.8.4-py314-none-macosx_11_0_arm64.whl", hash = "sha256:57e660e2aa83cdb65749b2938a8b64288a9c7af2304a908caad624aee4c946ec"},
-    {file = "ifcopenshell-0.8.4-py314-none-manylinux_2_31_aarch64.whl", hash = "sha256:3ba5fec85d7ef2562e5cd4d134a1986722dab321d551bc50fae1b4f583085ba5"},
-    {file = "ifcopenshell-0.8.4-py314-none-manylinux_2_31_x86_64.whl", hash = "sha256:fcdefb0013502deae6e19368bd797ec56df5b9e7ab0a0c60af796ea7ffe2e75f"},
-    {file = "ifcopenshell-0.8.4-py314-none-win_amd64.whl", hash = "sha256:08bc343d45bcc6e8fd5dc8be37789e48b8b77596a61721ed7550c2e8f4e8f8a3"},
-    {file = "ifcopenshell-0.8.4-py39-none-macosx_10_15_x86_64.whl", hash = "sha256:64135134c2b67feb4ef292cbba64de4bc68d95c99cec1cbf85e12221808c1461"},
-    {file = "ifcopenshell-0.8.4-py39-none-macosx_11_0_arm64.whl", hash = "sha256:7a00e84481eced23ee3a1a50576d27172558b72a7fdd4164a2daa3bc687c2f11"},
-    {file = "ifcopenshell-0.8.4-py39-none-manylinux_2_31_aarch64.whl", hash = "sha256:5bed01aa75a9cddc360e213eb98bbf1a8dd6c03f6c00d8b2be9c2db5b93fd794"},
-    {file = "ifcopenshell-0.8.4-py39-none-manylinux_2_31_x86_64.whl", hash = "sha256:c557f7c86623bb084564278746648cb83249837e079b2724ef3a8c3768013a63"},
-    {file = "ifcopenshell-0.8.4-py39-none-win_amd64.whl", hash = "sha256:96bf75a95956b7b22554668aadd788f39af4f8384249d856e7b7e7ce6ac08eae"},
+    {file = "ifcopenshell-0.8.5-py310-none-macosx_10_15_x86_64.whl", hash = "sha256:3b1c5a2ea655d96914ddafd258aa6183f29fb7a08b2b10a329b204b8deca7226"},
+    {file = "ifcopenshell-0.8.5-py310-none-macosx_11_0_arm64.whl", hash = "sha256:beb9e761ea9b6678c5edff4d6ab31e40a771fffca3bc295810045de564f1b018"},
+    {file = "ifcopenshell-0.8.5-py310-none-manylinux_2_31_aarch64.whl", hash = "sha256:8de53ba37e762f2e2ba7cf502f15504b886233f681c30245ae7b4ed82087445d"},
+    {file = "ifcopenshell-0.8.5-py310-none-manylinux_2_31_x86_64.whl", hash = "sha256:487189a6a70f9c688ae58efa075312d0dbba3e83839abaafbfe669bbfdb66e2a"},
+    {file = "ifcopenshell-0.8.5-py310-none-win_amd64.whl", hash = "sha256:86b60a3fba3c5b3c5a152a71b1a5038a78384fcaa0bab61297bf363c8bedd325"},
+    {file = "ifcopenshell-0.8.5-py311-none-macosx_10_15_x86_64.whl", hash = "sha256:ba916b73a1dd011abeee564b2bb0027c3dc679d77733d44f2f38009b70d413b5"},
+    {file = "ifcopenshell-0.8.5-py311-none-macosx_11_0_arm64.whl", hash = "sha256:7dba9a0348600bd59ceb9222333e493b9b1c49fc69251a73bc707e77a445007d"},
+    {file = "ifcopenshell-0.8.5-py311-none-manylinux_2_31_aarch64.whl", hash = "sha256:e568a859b489ba43013795c3d682758d1ee905fe08919d2c96b5c5676167b243"},
+    {file = "ifcopenshell-0.8.5-py311-none-manylinux_2_31_x86_64.whl", hash = "sha256:612e955ab0975bbc4134fe26c4c36d71a12525fd5c4b391573e6df3cd81713ec"},
+    {file = "ifcopenshell-0.8.5-py311-none-win_amd64.whl", hash = "sha256:a994cb398aa822b0153ace11fc19deea108706d3a10339de9ac9dc13da21076d"},
+    {file = "ifcopenshell-0.8.5-py312-none-macosx_10_15_x86_64.whl", hash = "sha256:38f63e13cf326b195e2b9ac4ed45396cdda9b3ad29318ce04d7c4a401f7a3921"},
+    {file = "ifcopenshell-0.8.5-py312-none-macosx_11_0_arm64.whl", hash = "sha256:89e60dbe8ea7014174ab332b6caad25465c446c118a896435f594ab24602a10a"},
+    {file = "ifcopenshell-0.8.5-py312-none-manylinux_2_31_aarch64.whl", hash = "sha256:a5183ae0431a9b87d89ca2e880dae986e4140f088293c3872a88ed3177e7308d"},
+    {file = "ifcopenshell-0.8.5-py312-none-manylinux_2_31_x86_64.whl", hash = "sha256:dd154b121815e25bc4890f030bf2bdd8d99b059448e0d1205ac81388a3d321f4"},
+    {file = "ifcopenshell-0.8.5-py312-none-win_amd64.whl", hash = "sha256:7927921dbfd18024f44780880c37e48460bbca7476da3b0c2607e044b31521d5"},
+    {file = "ifcopenshell-0.8.5-py313-none-macosx_10_15_x86_64.whl", hash = "sha256:f8abac2bd3a3eb11009beb290834d8a5a2330d59a8600dede0faf7ddf8a8f16f"},
+    {file = "ifcopenshell-0.8.5-py313-none-macosx_11_0_arm64.whl", hash = "sha256:9444ed9b924eaa76037653c56261098846bffa2f4732eefa8b83687163addecd"},
+    {file = "ifcopenshell-0.8.5-py313-none-manylinux_2_31_aarch64.whl", hash = "sha256:233e2afd81456ac278f2dd21360c509999498d0b8dc207230eb05e3063f87860"},
+    {file = "ifcopenshell-0.8.5-py313-none-manylinux_2_31_x86_64.whl", hash = "sha256:c03c47abbfd0afddcbc91b510d984d7c017a222877460da5e0a6496d89f185e4"},
+    {file = "ifcopenshell-0.8.5-py313-none-win_amd64.whl", hash = "sha256:6dd40d29b21d1c92104a4585a1ee6a31811305b68f5e3f7ee991f89f4d386366"},
+    {file = "ifcopenshell-0.8.5-py314-none-macosx_10_15_x86_64.whl", hash = "sha256:f9e35e2df5397c795b320421192fcdb006573d1b36524f420d2474a4f9d842cf"},
+    {file = "ifcopenshell-0.8.5-py314-none-macosx_11_0_arm64.whl", hash = "sha256:8cf1f7fd49367aeba75eb56682f1454b2f353a979c6111a165bc05bc62148600"},
+    {file = "ifcopenshell-0.8.5-py314-none-manylinux_2_31_aarch64.whl", hash = "sha256:005dced5aaa45064e73287c75ed9cf5f8ba54bce80c496fd76404313833cd62e"},
+    {file = "ifcopenshell-0.8.5-py314-none-manylinux_2_31_x86_64.whl", hash = "sha256:15b488347efce0d7f5ab5b6d5561cf30428353b6ee8c7c8a53724f4b10ad4ac6"},
+    {file = "ifcopenshell-0.8.5-py314-none-win_amd64.whl", hash = "sha256:13a5992dc07e69c0c78df5479e1ff9635e6ce9fa70c841d9ce2931e8481eabb9"},
 ]
 
 [package.dependencies]
@@ -2375,6 +2371,56 @@ docs = ["myst-parser", "pydata-sphinx-theme", "sphinx"]
 test = ["argcomplete (>=3.0.3) ; python_version < \"3.12\"", "argcomplete (>=3.5.2) ; python_version >= \"3.12\"", "mypy (>=2.0) ; implementation_name != \"pypy\"", "pre-commit", "pytest (>=7.0,<10.0)", "pytest-mock", "pytest-mypy-testing ; implementation_name != \"pypy\""]
 
 [[package]]
+name = "triangle"
+version = "20250106"
+description = "Python binding to the triangle library"
+optional = false
+python-versions = ">=3.7"
+groups = ["main"]
+files = [
+    {file = "triangle-20250106-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:5eb99ec1002f164b7a40bec47c9915818231c3563f3900d973b6a2cb2befef9d"},
+    {file = "triangle-20250106-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:d32c36a7188234a225a41f98224e430eae48ba252942696f2a7c83693a41fd0f"},
+    {file = "triangle-20250106-cp310-cp310-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:e08357d66a48d8742d25479f55478911750513f4d3875e836d5d6cc0ba9dbda1"},
+    {file = "triangle-20250106-cp310-cp310-win32.whl", hash = "sha256:11a0b634af43789e4525f2f4247dda83043f9fdfd710b55bcb82b514471ab6d7"},
+    {file = "triangle-20250106-cp310-cp310-win_amd64.whl", hash = "sha256:8a31f67e3506cc3aa33f82f1f94ea365b9625a7737fa119d628580c8bac0b0bf"},
+    {file = "triangle-20250106-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:93bd02b3341b2e4452952cb7605cf239bddd788a6f410ea54aeeb7db61836ba5"},
+    {file = "triangle-20250106-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:80da149e4584cc599fc9bcff31dddd524528a41119f5af321911e599d82ad6e1"},
+    {file = "triangle-20250106-cp311-cp311-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:c1a22e82701fe97c0cbfe9ecbfc394a4a36442f1fe2836a721ddb95be9cdb299"},
+    {file = "triangle-20250106-cp311-cp311-win32.whl", hash = "sha256:3097f96859c02c9e3f5a2c35b0016b28005e7e6f061059b9c7a412e2ad01eb86"},
+    {file = "triangle-20250106-cp311-cp311-win_amd64.whl", hash = "sha256:cbd195668be437cfdc8cf192cec5748ebbb5d3bff19201f8503495916dd54ded"},
+    {file = "triangle-20250106-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:64106544f6d137b619f7f724abbb7c2c78353691cccfc163e9d0b2e2476e0853"},
+    {file = "triangle-20250106-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:38c221bb6e403f81de49050899502a8326c9565f62c4d69171070b41dc25cb69"},
+    {file = "triangle-20250106-cp312-cp312-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:b582b342cddb660dffc6bd7d7233f66952d2a3d18ccbc097660a8e370ee38d0c"},
+    {file = "triangle-20250106-cp312-cp312-win32.whl", hash = "sha256:9532797a15687225a0ee67619ad6f3baeb72bf193541eb96f782e41c577cc81b"},
+    {file = "triangle-20250106-cp312-cp312-win_amd64.whl", hash = "sha256:0327032a7984a7262180ef2ddd78b36dfdcdecbc79f0f9f173732ce7c670b8ed"},
+    {file = "triangle-20250106-cp313-cp313-macosx_11_0_arm64.whl", hash = "sha256:5f7ebba7ff2dc80d588e8a9286659160cdd35ee00b8cce375181a860c478deaf"},
+    {file = "triangle-20250106-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:4b2f2c3510a8e810a9edefdf9b3ce7f2fae6980b91ba89271446370bff09c849"},
+    {file = "triangle-20250106-cp313-cp313-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:fde20cb1f18a63faf3fa8d62210a1907367f5c7dd961cee8fb6a2f6fabbe8c53"},
+    {file = "triangle-20250106-cp313-cp313-win32.whl", hash = "sha256:54cc9eb2d585632f09fe95f6741e995284b9a990cbabd3cea36b392312d70e30"},
+    {file = "triangle-20250106-cp313-cp313-win_amd64.whl", hash = "sha256:f1eadad15ad9ceabf967342de54f6d4619647ddced83ddce18d33d8e08841b31"},
+    {file = "triangle-20250106-cp37-cp37m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:1c73f568e5d2f6268d22a7a5fee6c0d2c9af5deb9a05fd6f6c7f397b164d0f04"},
+    {file = "triangle-20250106-cp37-cp37m-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:5f02665bce928f27e53eac7680546470946b650b249a350e37874940d45d04c1"},
+    {file = "triangle-20250106-cp37-cp37m-win32.whl", hash = "sha256:0c7cb3e59f6f290da1c4039a09811081ff5550dfb31485b2acc8d2aa508811f2"},
+    {file = "triangle-20250106-cp37-cp37m-win_amd64.whl", hash = "sha256:a56f42ab2cb96fe42a5eed7c2e647c38c0bb74af5edbc0b4f623fea6174008c5"},
+    {file = "triangle-20250106-cp38-cp38-macosx_11_0_arm64.whl", hash = "sha256:81ea44b0b04e2827e62b24fb7c248497a997b2254566b27fde8d71bc674fe39f"},
+    {file = "triangle-20250106-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:34e9d8f25a88abce5d41f656461d86295ae882e083b215198dbcbad6e7f2fd02"},
+    {file = "triangle-20250106-cp38-cp38-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:6c923bd6d621d689bfe9c0cc066d6a119bdf4fc937aaf1f83bc05103d99fda2c"},
+    {file = "triangle-20250106-cp38-cp38-win32.whl", hash = "sha256:0488dc08fbd35ed814b4c0041c63ffcf883b3941b67bb33e252576b11720f49f"},
+    {file = "triangle-20250106-cp38-cp38-win_amd64.whl", hash = "sha256:8349e320ac5a93d64e46774a3de1695c9a881e7eb020c0d438ee27edd27243c5"},
+    {file = "triangle-20250106-cp39-cp39-macosx_11_0_arm64.whl", hash = "sha256:1cfd226514e49adf82081cb17d159d110fa3741d9ede6097d409388ed3ba2afa"},
+    {file = "triangle-20250106-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:0b6e77548a806ebf56bbc2125a8d31156be63d5d5e702c29dadcdd69d81e4500"},
+    {file = "triangle-20250106-cp39-cp39-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:218d7e37812c512686477a720c4d60cbc8c022549cbb35a9205fb76c07ccb988"},
+    {file = "triangle-20250106-cp39-cp39-win32.whl", hash = "sha256:9aeefbfab5115d3e89141405b9c341b2d71c93668f9a34db6102a9796141564e"},
+    {file = "triangle-20250106-cp39-cp39-win_amd64.whl", hash = "sha256:fb4c47ab7ecb52b0c932325d438c74f57027fce85867ecd7fc1ea00b57b6e397"},
+]
+
+[package.dependencies]
+numpy = "*"
+
+[package.extras]
+test = ["pytest"]
+
+[[package]]
 name = "typing-extensions"
 version = "4.14.1"
 description = "Backported and Experimental Type Hints for Python 3.9+"
@@ -2446,4 +2492,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.11,<3.12"
-content-hash = "4c6cc23a95503055138e600c68a29e1b0cf6227ef936ae9d8c83ef05d4ac7e27"
+content-hash = "b4cbb4e352e92f87616f382b8d22a02a6bef1ba573edd5ad75e10b5eb937ea1b"
