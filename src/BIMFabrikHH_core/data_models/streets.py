@@ -32,7 +32,7 @@ from BIMFabrikHH_core.core.ogc_extractor import (
     feature_identifier,
     geojson_feature_properties,
     iter_geojson_features,
-    parse_feature_for_polygon_exterior_rings,
+    parse_feature_polygon_exterior_rings,
 )
 
 GeometryCrs = OgcGeometryCrs
@@ -237,7 +237,7 @@ def records_from_geojson_feature_collection(
     ensure_feature_collection(data)
     out: List[StreetRecord] = []
     for feat in iter_geojson_features(data):
-        rings = parse_feature_for_polygon_exterior_rings(feat)
+        rings = parse_feature_polygon_exterior_rings(feat)
         if not rings:
             continue
         props_raw = geojson_feature_properties(feat)

@@ -1,7 +1,6 @@
 import pytest
 
-from BIMFabrikHH_core.data_models.pydantic_psets_flurstuecke import \
-    Pset_Objektinformation_Flurstueck
+from BIMFabrikHH_core.data_models.pydantic_psets_flurstuecke import Pset_Objektinformation_Flurstueck
 
 
 @pytest.mark.unit
@@ -15,7 +14,7 @@ def test_default_pset_objektinformation_flurstueck():
     assert pset.loi == 300
     assert pset.bemerkung == "undefiniert"
     assert pset.alkisidentifikator == ""
-    assert pset.amtlicheflaeche == None
+    assert pset.amtlicheflaeche is None
     assert pset.flurstueckkennzeichen == ""
     assert pset.gemarkungname == ""
     assert pset.lzibeginnt == "undefiniert"

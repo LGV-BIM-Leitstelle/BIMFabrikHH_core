@@ -26,25 +26,27 @@ import time
 from pathlib import Path
 from typing import Callable, List, Optional, Tuple, Union
 
-from ifcfactory import (BIMFactoryElement, Boolean, BooleanOperationTypes,
-                        Extrusion, Polygon, Style)
+from ifcfactory import BIMFactoryElement, Extrusion, Polygon, Style
 from pydantic import BaseModel
 
 from BIMFabrikHH_core.config.logging_config import get_logger
 from BIMFabrikHH_core.core.geometry import place_basepoint
 from BIMFabrikHH_core.core.model_creator import init_ifc_project
-from BIMFabrikHH_core.core.ogc_extractor import (MultiPolygon,
-                                                 polygon_rings_to_epsg25832,
-                                                 ring_xy_to_epsg25832)
-from BIMFabrikHH_core.core.ogc_extractor.ogc_values_extractor import \
-    extract_psets_basepoint
-from BIMFabrikHH_core.data_models.flurstuecke import (FlurstueckRecord,
-                                                      collect_flurstueck_psets)
+from BIMFabrikHH_core.core.ogc_extractor import MultiPolygon, polygon_rings_to_epsg25832
+from BIMFabrikHH_core.core.ogc_extractor.ogc_values_extractor import extract_psets_basepoint
+from BIMFabrikHH_core.data_models.flurstuecke import (
+    FlurstueckRecord,
+    collect_flurstueck_psets,
+)
 from BIMFabrikHH_core.data_models.params_tree import RequestParams
 from BIMFabrikHH_core.data_models.pydantic_georeferencing import (
-    CoordinateOperation, CoordinateSystem)
+    CoordinateOperation,
+    CoordinateSystem,
+)
 from BIMFabrikHH_core.data_models.pydantic_psets_BIMHH import (
-    Pset_Hyperlink, default_bim_hamburg_hyperlink)
+    Pset_Hyperlink,
+    default_bim_hamburg_hyperlink,
+)
 
 logger = get_logger("flurstuecke_generic_app")
 
@@ -74,7 +76,7 @@ def _flurstueck_element_from_record(
     for polygon in multipolygon:
         if not polygon.exterior:
             continue
-        profile = Polygon(points=polygon.exterior, voids=polygon.holes)  # Polygon closes ring if not closed
+        profile = Polygon(points=polygon.exterior, voids=polygon.holes)
         extruded = Extrusion(basis=profile, depth=extrusion_depth)
         styled_parts.append(Style(item=extruded, rgb=color, transparency=transparency, cad_layer=cad_layer))
 
@@ -144,19 +146,18 @@ class FlurstueckeGenericApp:
             _t0 = time.perf_counter()
             elements: List[BIMFactoryElement] = []
             for rec in records:
-                xy_rings: MultiPolygon = [
-                    result
+                polygons: MultiPolygon = [
+                    projected
                     for polygon in rec.polygons
-                    if len(polygon.exterior) >= 3
-                    and (result := polygon_rings_to_epsg25832(polygon, rec.geometry_crs)) is not None
+                    if (projected := polygon_rings_to_epsg25832(polygon, rec.geometry_crs)) is not None
                 ]
-                if not xy_rings:
+                if not polygons:
                     logger.warning("Skipping feature %s: no ring with 3+ vertices in EPSG:25832", rec.feature_id)
                     continue
                 elements.append(
                     _flurstueck_element_from_record(
                         record=rec,
-                        multipolygon=xy_rings,
+                        multipolygon=polygons,
                         extrusion_depth=extrusion_depth_m,
                         color=color if color is not None else rec.element_color,
                         cad_layer=cad_layer,

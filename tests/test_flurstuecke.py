@@ -1,11 +1,11 @@
 import pytest
-from ifcfactory._internal.pset_base import Quantity
 
 from BIMFabrikHH_core.data_models.flurstuecke import (
-    FlurstueckRecord, collect_flurstueck_psets,
-    records_from_geojson_feature_collection)
-from BIMFabrikHH_core.data_models.pydantic_psets_flurstuecke import \
-    Pset_Objektinformation_Flurstueck
+    FlurstueckRecord,
+    collect_flurstueck_psets,
+    records_from_geojson_feature_collection,
+)
+from BIMFabrikHH_core.data_models.pydantic_psets_flurstuecke import Pset_Objektinformation_Flurstueck
 
 
 def square(x0=0, y0=0, x1=10, y1=10):

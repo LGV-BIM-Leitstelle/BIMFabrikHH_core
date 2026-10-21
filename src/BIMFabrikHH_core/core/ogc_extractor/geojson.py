@@ -14,12 +14,12 @@ Ring: TypeAlias = List[Coordinate]
 
 
 @dataclass
-class Polygon:
+class PolygonRings:
     exterior: Ring
     holes: List[Ring]
 
 
-MultiPolygon = List[Polygon]
+MultiPolygon: TypeAlias = List[PolygonRings]
 
 
 def ensure_feature_collection(data: Any) -> Dict[str, Any]:
@@ -38,7 +38,7 @@ def iter_geojson_features(data: Dict[str, Any]) -> Iterable[Dict[str, Any]]:
             yield feat
 
 
-def positions_to_xy_line(positions: List[Any]) -> List[Tuple[float, float]]:
+def positions_to_xy_ring(positions: List[Any]) -> List[Tuple[float, float]]:
     """Normalize a GeoJSON position sequence to ``(x, y)`` floats (ignore Z/M if present)."""
     out: List[Tuple[float, float]] = []
     for pt in positions:
@@ -93,41 +93,39 @@ def parse_feature_for_all_polygon_rings(feature: Dict[str, Any]) -> MultiPolygon
 
     for polygon in polygons:
         rings = extract_all_rings_from_polygon(polygon)
-        if rings:
+        if rings is not None:
             multipolygon.append(rings)
 
     return multipolygon
 
 
-def extract_all_rings_from_polygon(polygon: List[List[Tuple[float, float]]]) -> Polygon | None:
-    """Exterior rings and interior rings (holes) of one polygon."""
-    exterior_ring: Ring
-    holes: list[Ring] = []
-    if not isinstance(polygon, list):
+def extract_all_rings_from_polygon(polygon: Any) -> Optional[PolygonRings]:
+    """Exterior ring and interior rings (holes) of one polygon, or ``None`` if the exterior is invalid."""
+    if not isinstance(polygon, list) or not polygon or not isinstance(polygon[0], list):
         return None
 
-    for index, ring in enumerate(polygon):
-        if not ring or not isinstance(ring, list):
+    exterior = positions_to_xy_ring(polygon[0])
+    if len(exterior) < _MIN_POLYGON_EXTERIOR_POSITIONS:
+        return None
+
+    holes: List[Ring] = []
+    for ring in polygon[1:]:
+        if not isinstance(ring, list):
             continue
-        ring_xy = positions_to_xy_line(ring)
-        if len(ring_xy) < _MIN_POLYGON_EXTERIOR_POSITIONS:
-            continue
-        if index == 0:
-            exterior_ring = ring_xy
-        else:
+        ring_xy = positions_to_xy_ring(ring)
+        if len(ring_xy) >= _MIN_POLYGON_EXTERIOR_POSITIONS:
             holes.append(ring_xy)
 
-    rings = Polygon(exterior=exterior_ring, holes=holes)
-    return rings
+    return PolygonRings(exterior=exterior, holes=holes)
 
 
-def parse_feature_for_polygon_first_exterior_ring(feature: Dict[str, Any]) -> Optional[List[Tuple[float, float]]]:
+def parse_feature_polygon_exterior_ring(feature: Dict[str, Any]) -> Optional[List[Tuple[float, float]]]:
     """Exterior ring of the first polygon on the feature, or ``None`` if not applicable."""
-    rings = parse_feature_for_polygon_exterior_rings(feature)
+    rings = parse_feature_polygon_exterior_rings(feature)
     return rings[0] if rings else None
 
 
-def parse_feature_for_polygon_exterior_rings(feature: Dict[str, Any]) -> List[List[Tuple[float, float]]]:
+def parse_feature_polygon_exterior_rings(feature: Dict[str, Any]) -> List[List[Tuple[float, float]]]:
     """Exterior rings of every ``Polygon`` / ``MultiPolygon`` part (holes ignored)."""
     geom = feature.get("geometry")
     if not isinstance(geom, dict):
@@ -146,7 +144,7 @@ def parse_feature_for_polygon_exterior_rings(feature: Dict[str, Any]) -> List[Li
     for poly in polygons:
         if not poly or not isinstance(poly, list) or not isinstance(poly[0], list):
             continue
-        ring = positions_to_xy_line(poly[0])
+        ring = positions_to_xy_ring(poly[0])
         if len(ring) >= _MIN_POLYGON_EXTERIOR_POSITIONS:
             rings.append(ring)
     return rings
@@ -171,7 +169,7 @@ def parse_feature_linestring_path(feature: Dict[str, Any]) -> Optional[List[Tupl
     coords = geom.get("coordinates")
     if not isinstance(coords, list):
         return None
-    path = positions_to_xy_line(coords)
+    path = positions_to_xy_ring(coords)
     if len(path) < _MIN_LINESTRING_POSITIONS:
         return None
     return path
@@ -189,7 +187,7 @@ def parse_feature_multilinestring_paths(feature: Dict[str, Any]) -> List[List[Tu
     for line in coords:
         if not isinstance(line, list):
             continue
-        path = positions_to_xy_line(line)
+        path = positions_to_xy_ring(line)
         if len(path) >= _MIN_LINESTRING_POSITIONS:
             paths.append(path)
     return paths
@@ -197,17 +195,20 @@ def parse_feature_multilinestring_paths(feature: Dict[str, Any]) -> List[List[Tu
 
 __all__ = [
     "ensure_feature_collection",
-    "iter_geojson_features",
-    
-    "positions_to_xy_line",
-    "geojson_feature_properties",
     "feature_identifier",
+    "geojson_feature_properties",
+    "iter_geojson_features",
+    "parse_feature_linestring_path",
+    "parse_feature_multilinestring_paths",
+    "parse_feature_polygon_exterior_ring",
+    "parse_feature_polygon_exterior_rings",
+    "positions_to_xy_ring",
+    "Coordinate",
+    "Ring",
+    "PolygonRings",
+    "MultiPolygon",
     "feature_geometry_type",
+    "parse_feature_point",
     "parse_feature_polygons",
     "parse_feature_for_all_polygon_rings",
-    "parse_feature_for_polygon_first_exterior_ring",
-    "parse_feature_for_polygon_exterior_rings",
-    "parse_feature_point",
-    "parse_feature_linestring_path",
-    "parse_feature_multilinestring_paths",    
 ]

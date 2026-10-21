@@ -1,8 +1,13 @@
 import pytest
 
 from BIMFabrikHH_core.core.ogc_extractor import (
-    ensure_feature_collection, feature_identifier, parse_feature_for_all_polygon_rings,
-    parse_feature_for_polygon_exterior_rings, positions_to_xy_line)
+    ensure_feature_collection,
+    feature_identifier,
+    parse_feature_for_all_polygon_rings,
+    parse_feature_polygon_exterior_rings,
+    polygon_rings_to_epsg25832,
+    positions_to_xy_ring,
+)
 
 
 def _ring(x0, y0, x1, y1):
@@ -88,7 +93,7 @@ def test_exterior_ring_helper_ignores_holes():
     exterior = _ring(0, 0, 10, 10)
     hole = _ring(2, 2, 4, 4)
 
-    result = parse_feature_for_polygon_exterior_rings(_feature("Polygon", [exterior, hole]))
+    result = parse_feature_polygon_exterior_rings(_feature("Polygon", [exterior, hole]))
 
     assert len(result) == 1
     assert result[0] == [(float(x), float(y)) for x, y in exterior]
@@ -96,7 +101,7 @@ def test_exterior_ring_helper_ignores_holes():
 
 @pytest.mark.unit
 def test_positions_convert_to_float_and_ignore_extra_dimensions():
-    assert positions_to_xy_line([[1, 2, 3], ["4", "5", 6], [7]]) == [(1.0, 2.0), (4.0, 5.0)]
+    assert positions_to_xy_ring([[1, 2, 3], ["4", "5", 6], [7]]) == [(1.0, 2.0), (4.0, 5.0)]
 
 
 @pytest.mark.unit
@@ -115,3 +120,48 @@ def test_non_polygon_geometry_produces_no_polygons():
     result = parse_feature_for_all_polygon_rings(_feature("Point", [1, 2]))
 
     assert result == []
+
+
+@pytest.mark.unit
+def test_polygon_with_invalid_exterior_is_skipped():
+    degenerate_exterior = [[0, 0], [1, 0], [0, 0]]
+
+    result = parse_feature_for_all_polygon_rings(_feature("Polygon", [degenerate_exterior, _ring(0, 0, 1, 1)]))
+
+    assert result == []
+
+
+@pytest.mark.unit
+def test_multipolygon_skips_empty_and_invalid_parts():
+    valid = _ring(0, 0, 10, 10)
+
+    result = parse_feature_for_all_polygon_rings(
+        _feature("MultiPolygon", [[], [[[0, 0], [1, 1]]], "not-a-polygon", [valid]])
+    )
+
+    assert len(result) == 1
+    assert result[0].exterior == [(float(x), float(y)) for x, y in valid]
+    assert result[0].holes == []
+
+
+@pytest.mark.unit
+def test_degenerate_holes_are_dropped():
+    exterior = _ring(0, 0, 10, 10)
+    hole = _ring(2, 2, 4, 4)
+
+    result = parse_feature_for_all_polygon_rings(_feature("Polygon", [exterior, [[1, 1], [2, 2]], hole]))
+
+    assert len(result) == 1
+    assert result[0].holes == [[(float(x), float(y)) for x, y in hole]]
+
+
+@pytest.mark.unit
+def test_polygon_rings_to_epsg25832_drops_closing_vertex_and_keeps_holes():
+    polygon = parse_feature_for_all_polygon_rings(_feature("Polygon", [_ring(0, 0, 10, 10), _ring(2, 2, 4, 4)]))[0]
+
+    result = polygon_rings_to_epsg25832(polygon, "EPSG:25832")
+
+    assert result is not None
+    assert len(result.exterior) == 4
+    assert len(result.holes) == 1
+    assert len(result.holes[0]) == 4
