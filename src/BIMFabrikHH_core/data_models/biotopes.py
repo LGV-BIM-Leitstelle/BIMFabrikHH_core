@@ -216,6 +216,8 @@ def _record_with_psets_from_payload(payload: Dict[str, Any], biotope_name_mappin
     pset_objektinfo = Pset_Objektinformation_Biotop(
         biotopnummer=record.id_biotop,  # id_biotop is unique, in contrast to biotop_nr.
         abschnitt_nr=record.abschnitt,  #  TODO: is "abschnitt" the number of section or the number of the section?
+        biotoptyp_bkompv_code="",
+        biotoptyp_bkompv_land="",
         biotoptyp_land_code=record.hauptbiotoptyp,  #  TODO: Where to put nebenbiotoptypen?
         biotoptyp_land_name=hauptbiotoptyp_name,
         biotop_gesamtwert=str(record.gesamtbewertung),

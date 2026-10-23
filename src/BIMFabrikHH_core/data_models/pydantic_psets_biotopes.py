@@ -57,6 +57,16 @@ class Pset_Objektinformation_Biotop(PropertySetTemplate):
         serialization_alias="_BiotopAbschnittnummer",
         default=1,
     )
+    biotoptyp_bkompv_code: str = Field(
+        validation_alias=AliasChoices("biotoptyp_bkompv_code", "_BiotoptypBKompVCode"),
+        serialization_alias="_BiotoptypBKompVCode",
+        default=UNDEFINED,
+    )
+    biotoptyp_bkompv_name: str = Field(
+        validation_alias=AliasChoices("biotoptyp_bkompv_name", "_BiotoptypBKompVName"),
+        serialization_alias="_BiotoptypBKompVName",
+        default=UNDEFINED,
+    )
     biotoptyp_land_code: str = Field(
         validation_alias=AliasChoices("biotoptyp_land_code", "_BiotoptypLandCode"),
         serialization_alias="_BiotoptypLandCode",
