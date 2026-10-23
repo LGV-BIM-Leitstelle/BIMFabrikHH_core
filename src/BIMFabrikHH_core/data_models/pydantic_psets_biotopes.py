@@ -18,25 +18,14 @@ Area = Literal["[length]**2"]
 UNDEFINED = "undefiniert"
 
 
-class Pset_Objektinformation_Biotop(PropertySetTemplate):
-    """Property set for one Biotopkataster biotope, per Merkmalsgruppe TODO."""
+class Pset_Objektinformation_Lebensraum(PropertySetTemplate):
+    """TODO"""
 
     pset_name: ClassVar[str] = "Pset_Objektinformation"
-
     idebene1: str = Field(
         validation_alias=AliasChoices("idebene1", "_IDEbene1"),
         serialization_alias="_IDEbene1",
-        default="Biotop",
-    )
-    idebene2: str = Field(
-        validation_alias=AliasChoices("idebene2", "_IDEbene2"),
-        serialization_alias="_IDEbene2",
-        default="Biotop",
-    )
-    idebene3: str = Field(
-        validation_alias=AliasChoices("idebene3", "_IDEbene3"),
-        serialization_alias="_IDEbene3",
-        default="Biotop",
+        default="Lebensraum",
     )
     log: int = Field(
         validation_alias=AliasChoices("log", "_LoG"),
@@ -47,7 +36,48 @@ class Pset_Objektinformation_Biotop(PropertySetTemplate):
         validation_alias=AliasChoices("loi", "_LoI"),
         serialization_alias="_LoI",
         default=300,
+    )    
+    kartierung_jahr: str = Field(
+        validation_alias=AliasChoices("kartierung_jahr", "_KartierungJahr"),
+        serialization_alias="_KartierungJahr",
+        default=UNDEFINED,
     )
+    kartierer: str = Field(
+        validation_alias=AliasChoices("kartierer", "_Kartierer"),
+        serialization_alias="_Kartierer",
+        default=UNDEFINED,
+    )
+    erhebungsmethode: str = Field(
+        validation_alias=AliasChoices("erhebungsmethode", "_Erhebungsmethode"),
+        serialization_alias="_Erhebungsmethode",
+        default=UNDEFINED,
+    )
+    bemerkung: str = Field(
+        validation_alias=AliasChoices("bemerkung", "_Bemerkung"),
+        serialization_alias="_Bemerkung",
+        default=UNDEFINED,
+    )
+    ist_ffh_lebensraum: bool = Field(
+        validation_alias=AliasChoices("is_ffh_lebensraum", "ist_ffh_lebensraum", "_IstFFHLebensraum"),
+        serialization_alias="_IstFFHLebensraum",
+        default=False,
+    )
+
+
+class Pset_Objektinformation_Biotop(Pset_Objektinformation_Lebensraum):
+    """Property set for one Biotopkataster biotope, per Merkmalsgruppe TODO."""
+
+    idebene2: str = Field(
+        validation_alias=AliasChoices("idebene2", "_IDEbene2"),
+        serialization_alias="_IDEbene2",
+        default="Biotop",
+    )
+    idebene3: str = Field(
+        validation_alias=AliasChoices("idebene3", "_IDEbene3"),
+        serialization_alias="_IDEbene3",
+        default="Biotop",
+    )
+
     biotop_nr: int = Field(
         validation_alias=AliasChoices("biotop_nr", "biotopnummer", "_Biotopnummer", "_BiotopNummer"),
         serialization_alias="_Biotopnummer",

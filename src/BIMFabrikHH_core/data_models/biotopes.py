@@ -4,6 +4,7 @@ Biotopkataster - extensive biotopes (Flächenhafte Biotope).
 
 from __future__ import annotations
 
+from datetime import datetime
 from enum import Enum
 import colorsys
 import hashlib
@@ -68,41 +69,48 @@ class BiotopeRecord(BaseModel):
 
     # TODO: Add descriptions
     objectid: int = Field(description="Biotopkataster Objekt-ID (TODO: Definition)")
-    id_biotop: int = Field()
-    dk5: int = Field()
-    biotop_nr: int = Field()
+    id_biotop: int = Field(description="TODO",)
+    dk5: int = Field(description="TODO",)
+    biotop_nr: int = Field(description="TODO",)
+    abschnitt: Optional[int] = Field(description="TODO",)
+
+    biotop_erfasst_am: str = Field(description="TODO",
+        default="",
+    )
     is_protected: bool = Field(description="Indicates whether the habitat is protected by law.")
-    abschnitt: Optional[int] = Field()
-    hauptbiotoptyp: str = Field(
+    hauptbiotoptyp: str = Field(description="TODO",
         default="",
     )
-    nebenbiotoptypen: str = Field(
+    nebenbiotoptypen: str = Field(description="TODO",
         default="",
     )
-    paragraf: str = Field(
+    paragraf: str = Field(description="TODO",
         default="",
     )
-    schutzstatus_teilweise: Optional[str] = Field(
+    schutzstatus_teilweise: Optional[str] = Field(description="TODO",
         default=None,
     )
-    gesamtbewertung: Optional[int] = Field(default=None)
-    flaeche_oder_laenge: Optional[float] = Field(default=None)
-    breite_lineares_objekt: Optional[float] = Field(default=None)
-    biotopbogen: str = Field(
+    gesamtbewertung: Optional[int] = Field(description="TODO", default=None)
+    
+    code_ffh_lebensraumtyp_bfn: Optional[str] = Field(description="TODO", default=None)
+
+    flaeche_oder_laenge: Optional[float] = Field(description="TODO", default=None)
+    breite_lineares_objekt: Optional[float] = Field(description="TODO", default=None)
+    biotopbogen: str = Field(description="TODO",
         default="",
     )
-    aktualitaet: str = Field(
+    aktualitaet: str = Field(description="TODO",
         default="",
     )
-    naechste_kartierung: Optional[int] = Field()
-    aufnahmetyp: str = Field(
+    naechste_kartierung: Optional[int] = Field(description="TODO",)
+    aufnahmetyp: str = Field(description="TODO",
         default="",
     )
-    gruppe: str = Field(
+    gruppe: str = Field(description="TODO",
         default="",
     )
 
-    psets: Dict[str, BaseModel] = Field(default_factory=dict)
+    psets: Dict[str, BaseModel] = Field(description="TODO", default_factory=dict)
 
     @property
     def element_name(self) -> str:
@@ -200,12 +208,41 @@ def build_biotope_hyperlink(url: str, id_biotop: int) -> Pset_Hyperlink:
     return Pset_Hyperlink(hyperlink_001=url, hyperlink_001_bemerkung=bemerkung)
 
 
+def _combine_haupt_and_neben_biotopes(haupt: str, neben: str = None):
+    if not neben:
+        return str(haupt)
+    else:
+        neben_unique = list(dict.fromkeys(neben))
+        neben_str = '; '.join(map(str, set(neben_unique)))
+        return f"{str(haupt)} ({neben_str})"
+
+
 def _record_with_psets_from_payload(payload: Dict[str, Any], biotope_name_mapping: Dict[str, str]) -> BiotopeRecord:
     record = BiotopeRecord.model_validate(payload)
     from BIMFabrikHH_core.data_models.pydantic_psets_biotopes import \
         Pset_Objektinformation_Biotop
 
-    hauptbiotoptyp_name = map_biotope_type(record.hauptbiotoptyp, biotope_name_mapping)
+    hauptbiotoptyp_code = record.hauptbiotoptyp
+    hauptbiotoptyp_name = map_biotope_type(hauptbiotoptyp_code, biotope_name_mapping)
+    nebenbiotoptyp_codes: List[str] = [nebenbiotoptyp.strip() for nebenbiotoptyp in record.nebenbiotoptypen.split(",")]
+    nebenbiotoptyp_names: List[str] = [map_biotope_type(nebenbiotoptyp_code, biotope_name_mapping) for nebenbiotoptyp_code in nebenbiotoptyp_codes]
+
+    biotoptyp_land_code_combined = _combine_haupt_and_neben_biotopes(hauptbiotoptyp_code,  nebenbiotoptyp_codes)
+    biotoptyp_land_name_combined = _combine_haupt_and_neben_biotopes(hauptbiotoptyp_name, nebenbiotoptyp_names)
+
+    # Source: https://www.hamburg.de/resource/blob/1079968/2b87716c8f78cfc971df24d34d837b7e/biotopbewertung-juli-2025-data.pdf 
+    # TODO: load and store somewhere 
+    bewertung_dict = {
+        "1": "weitgehend unbelebt",
+        "2": "extrem verarmt",
+        "3": "stark verarmt",
+        "4": "verarmt",
+        "5": "noch wertvoll",
+        "6": "wertvoll",
+        "7": "besonders wertvoll",
+        "8": "hochgradig wertvoll",
+        "9": "herausragend",
+    }
 
     protection_status_landesrecht = (
         "nicht geschützt"
@@ -213,23 +250,30 @@ def _record_with_psets_from_payload(payload: Dict[str, Any], biotope_name_mappin
         else "teilweise geschützt" if record.schutzstatus_teilweise else " vollständig geschützt"
     )
 
+    try:
+        kartierung_jahr = str(datetime.strptime(record.biotop_erfasst_am, '%d.%m.%Y').year)
+    except ValueError:
+        kartierung_jahr = UNDEFINED
+
     pset_objektinfo = Pset_Objektinformation_Biotop(
+        kartierung_jahr = kartierung_jahr,
         biotopnummer=record.id_biotop,  # id_biotop is unique, in contrast to biotop_nr.
         abschnitt_nr=record.abschnitt,  #  TODO: is "abschnitt" the number of section or the number of the section?
-        biotoptyp_bkompv_code="",
-        biotoptyp_bkompv_land="",
-        biotoptyp_land_code=record.hauptbiotoptyp,  #  TODO: Where to put nebenbiotoptypen?
-        biotoptyp_land_name=hauptbiotoptyp_name,
+        # biotoptyp_bkompv_code="",
+        # biotoptyp_bkompv_land="",
+        biotoptyp_land_code=biotoptyp_land_code_combined,
+        biotoptyp_land_name=biotoptyp_land_name_combined,
         biotop_gesamtwert=str(record.gesamtbewertung),
-        biotop_gesamtwert_liste="",  # TODO Bezeichnung bzw. Referenz des verwendeten Bewertungsverfahrens für den Biotopgesamtwert.
-        biotop_gesamtwert_bedeutung="",  # TODO map to meaning
-        gefaehrdung_status="",  # TODO find status info
+        biotop_gesamtwert_bedeutung=bewertung_dict.get(str(record.gesamtbewertung), UNDEFINED),
+        # biotop_gesamtwert_liste="",  # TODO Bezeichnung bzw. Referenz des verwendeten Bewertungsverfahrens für den Biotopgesamtwert.
+        # gefaehrdung_status="",  # TODO find status info
         ist_gesetzl_gesch_biotop=record.is_protected,
         ist_gesetzl_gesch_biotop_landesrecht=protection_status_landesrecht,
         # Convert m^2 to ha
         biotop_groesse_ha=(
             (record.flaeche_oder_laenge / 10000.0, "ha") if record.flaeche_oder_laenge is not None else None
         ),
+        ist_ffh_lebensraum=record.code_ffh_lebensraumtyp_bfn is not None
     )
 
     pset_hyperlink = build_biotope_hyperlink(url=record.biotopbogen, id_biotop=record.id_biotop)
@@ -262,14 +306,14 @@ def records_from_geojson_feature_collection(
     out: List[BiotopeRecord] = []
     for feat in iter_geojson_features(data):
         geom_type = feature_geometry_type(feat)
-        rings = lines = point = None
+        polygons = lines = point = None
         if not geom_type:
             continue
         shape_type = BiotopeShape.NONE
         if geom_type in ["MultiPolygon", "Polygon"]:
             shape_type = BiotopeShape.AREA
-            rings = parse_feature_for_all_polygon_rings(feat)
-            if not rings:
+            polygons = parse_feature_for_all_polygon_rings(feat)
+            if not polygons:
                 continue
         elif geom_type == "MultiLineString":
             shape_type = BiotopeShape.LINES
@@ -291,7 +335,7 @@ def records_from_geojson_feature_collection(
         payload = {
             **props_raw,
             "feature_id": fid,
-            "rings": rings,
+            "polygons": polygons,
             "lines": lines,
             "point": point,
             "geometry_crs": geometry_crs,
