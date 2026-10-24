@@ -6,8 +6,8 @@ record-builder apps (``TreesBasicApp`` / ``TreesGenericApp``).
 
 Stages covered here:
 
-1. :func:`calculate_tree_height` — height fallback (measured vs. crown-based
-   rule of thumb, clamped to a minimum).
+1. :func:`calculate_tree_trunk_height` — trunk-height fallback (measured vs.
+   crown-based rule of thumb, clamped to a minimum).
 2. :func:`build_tree_psets` — factory for the Pydantic pset templates
    (``Pset_Objektinformation_Tree`` + ``Pset_Bauwerk_Tree``).
 3. :func:`dataframe_to_records` — turn a DataFrame of tree attributes into
@@ -51,7 +51,7 @@ from .column_schema import DEFAULT_OAF_SCHEMA, TreeColumnSchema
 logger = logging.getLogger(__name__)
 
 MIN_TREE_HEIGHT_M: float = 1.10
-CROWN_TO_HEIGHT_RATIO: float = 0.85
+TRUNK_HEIGHT_TO_CROWN_RATIO: float = 0.85
 MIN_STAMMDURCHMESSER_M: float = 0.05
 MIN_TRUNK_RADIUS_M: float = 0.025
 DEFAULT_KRONENDURCHMESSER_M: float = 5.0
@@ -65,24 +65,20 @@ _MAX_TREE_CROWN_DETAIL: int = 4
 DEFAULT_TREE_LOG: int = Pset_Objektinformation_Tree.model_fields["log"].default
 DEFAULT_TREE_LOI: int = Pset_Objektinformation_Tree.model_fields["loi"].default
 
-# Trunk-height fallback constants (used when ``baumhoehe`` is not set).
-_MIN_TRUNK_HEIGHT_M: float = 3.5
-_TRUNK_HEIGHT_CROWN_FACTOR: float = 1.35
-_SMALL_CROWN_DIAMETER_M: float = 3.0
-
-
 @dataclass(frozen=True)
 class TreeDimensions:
-    """Visual dimensions of one tree, derived from a :class:`TreeRecord`.
+    """3D-model dimensions of one tree, derived from a :class:`TreeRecord`.
 
-    All values are in metres. Used by both ``TreesBasicApp`` and
-    ``TreesGenericApp`` so the trunk-height / radius rules live in one
-    place.
+    All values are in metres. Used by ``TreesBasicApp``, ``TreesGenericApp``
+    and ``TreesRustApp`` so the radius / height rules live in one place.
+
+    ``trunk_cylinder_height`` is **not** the Stammhöhe: the trunk cylinder
+    runs up to the centre of the crown sphere, i.e. Stammhöhe + ``crown_radius``.
     """
 
     crown_radius: float
     trunk_radius: float
-    trunk_height: float
+    trunk_cylinder_height: float
 
 
 def resolve_tree_dimensions(
@@ -91,23 +87,27 @@ def resolve_tree_dimensions(
     min_crown_radius_m: float = 0.0,
     min_trunk_radius_m: float = MIN_TRUNK_RADIUS_M,
 ) -> TreeDimensions:
-    """Compute ``TreeDimensions`` for a :class:`TreeRecord`.
+    """Compute the 3D-model ``TreeDimensions`` for a :class:`TreeRecord`.
 
-    Rule (same one both tree apps previously duplicated):
+    The tree heights are derived in three steps, each in one function:
+
+    1. :func:`calculate_tree_trunk_height` — Stammhöhe (measured, or
+       ``0.85 × kronendurchmesser``); stored on ``TreeRecord.baumhoehe``.
+    2. :func:`full_tree_height` — Gesamthöhe = Stammhöhe + ``kronendurchmesser``,
+       published as ``_Baumhoehe``.
+    3. This function — geometry: the trunk cylinder is
+       Stammhöhe + ``crown_radius`` tall and the crown sphere is centred on its
+       top, so the treetop lands exactly at the Gesamthöhe from step 2.
+
+    Rules:
 
     * ``crown_radius`` = ``kronendurchmesser / 2``, floored at
       ``min_crown_radius_m``.
     * ``trunk_radius`` = ``stammdurchmesser / 2``, floored at
       ``min_trunk_radius_m`` (default 5 cm diameter).
-    * ``trunk_height`` is taken from ``record.baumhoehe`` when available
-      (with the crown radius added so the crown sits above the trunk);
-      otherwise it falls back to ``1.35 × crown_diameter`` for crowns
-      at least 3 m across and to a minimum of 3.5 m for smaller crowns.
-
-    ``record.baumhoehe`` is therefore the **Stammhöhe**, not the whole tree.
-    The crown sphere is centred on the trunk top, so the treetop ends up one
-    full ``kronendurchmesser`` higher — see :func:`full_tree_height`, which is
-    what belongs in the ``_Baumhoehe`` property.
+    * ``trunk_cylinder_height`` = Stammhöhe + ``crown_radius``. The Stammhöhe is
+      ``record.baumhoehe``; records built without one get the same estimate
+      as step 1.
 
     Args:
         record: The tree record.
@@ -122,19 +122,12 @@ def resolve_tree_dimensions(
     """
     crown_radius = max(min_crown_radius_m, record.kronendurchmesser / 2)
     trunk_radius = max(min_trunk_radius_m, record.stammdurchmesser / 2)
-    crown_diameter = crown_radius * 2
-
-    if record.baumhoehe is not None and record.baumhoehe > 0:
-        trunk_height = float(record.baumhoehe) + crown_radius
-    elif crown_diameter < _SMALL_CROWN_DIAMETER_M:
-        trunk_height = _MIN_TRUNK_HEIGHT_M
-    else:
-        trunk_height = _TRUNK_HEIGHT_CROWN_FACTOR * crown_diameter
+    stammhoehe, _ = calculate_tree_trunk_height(crown_radius * 2, record.baumhoehe)
 
     return TreeDimensions(
         crown_radius=crown_radius,
         trunk_radius=trunk_radius,
-        trunk_height=trunk_height,
+        trunk_cylinder_height=stammhoehe + crown_radius,
     )
 
 
@@ -204,56 +197,56 @@ def collect_pydantic_psets(
     return out
 
 
-def calculate_tree_height(
+def calculate_tree_trunk_height(
     kronendurchmesser: float,
-    baumhoehe: Optional[float] = None,
+    stammhoehe: Optional[float] = None,
 ) -> tuple[float, str]:
-    """Resolve a tree height value + a German remark describing the rule used.
+    """Resolve the trunk height (Stammhöhe) + a German remark describing the rule used.
 
-    Policy (same as cadaster / surveying apps):
+    The result is the trunk only; the crown is added on top by
+    :func:`full_tree_height` (published ``_Baumhoehe``) and by
+    :func:`resolve_tree_dimensions` (3D geometry).
 
-    - If ``baumhoehe`` is present and positive, use it — clamped to
-      :data:`MIN_TREE_HEIGHT_M`.
-    - Otherwise, derive the height from the crown diameter as
-      :data:`CROWN_TO_HEIGHT_RATIO` × ``kronendurchmesser`` — clamped to
-      :data:`MIN_TREE_HEIGHT_M`.
+    Policy:
+
+    - If ``stammhoehe`` is present and positive, use it — clamped to
+      :data:`MIN_TREE_HEIGHT_M`. Only surveying data (BricsCAD height lines)
+      carries a measured trunk height.
+    - Otherwise, derive it from the crown diameter as
+      :data:`TRUNK_HEIGHT_TO_CROWN_RATIO` × ``kronendurchmesser`` — clamped to
+      :data:`MIN_TREE_HEIGHT_M`. This is always the case for the
+      Strassenbaumkataster / OGC API, which has no height attribute.
 
     Args:
         kronendurchmesser: Crown diameter in meters. Used as the fallback
-            source when ``baumhoehe`` is not available.
-        baumhoehe: Measured tree height in meters, or ``None``.
+            source when ``stammhoehe`` is not available.
+        stammhoehe: Measured trunk height in meters, or ``None`` (always
+            ``None`` for Strassenbaumkataster data).
 
     Returns:
-        ``(height_m, remark)`` where ``height_m`` is always
-        ``>= MIN_TREE_HEIGHT_M``.
+        ``(stammhoehe_m, remark)`` where ``stammhoehe_m`` is always
+        ``>= MIN_TREE_HEIGHT_M``. ``remark`` has the form
+        ``"Stammhöhe 7.65m (geschätzt: 0.85 × Kronendurchmesser)"`` and can be
+        passed to :func:`full_tree_height` as ``stammhoehe_bemerkung``.
     """
-    if baumhoehe is not None and baumhoehe > 0:
-        measured = float(baumhoehe)
+    if stammhoehe is not None and stammhoehe > 0:
+        measured = float(stammhoehe)
         final = max(measured, MIN_TREE_HEIGHT_M)
         if final > measured:
-            return (
-                final,
-                f"Gemessene Baumhoehe ({measured:.2f}m) auf Mindesthöhe " f"{MIN_TREE_HEIGHT_M:.2f}m angepasst",
-            )
-        return final, "Gemessene Baumhoehe"
+            return final, f"Stammhöhe {final:.2f}m (Mindesthöhe)"
+        return final, f"Stammhöhe {final:.2f}m (gemessen)"
 
-    calculated = CROWN_TO_HEIGHT_RATIO * float(kronendurchmesser)
+    calculated = TRUNK_HEIGHT_TO_CROWN_RATIO * float(kronendurchmesser)
     final = max(calculated, MIN_TREE_HEIGHT_M)
     if final > calculated:
-        return (
-            final,
-            f"{CROWN_TO_HEIGHT_RATIO} × {float(kronendurchmesser):.2f}m Kronendurchmesser "
-            f"= {calculated:.2f}m, auf Mindesthöhe {MIN_TREE_HEIGHT_M:.2f}m angepasst",
-        )
-    return (
-        final,
-        f"{CROWN_TO_HEIGHT_RATIO} × {float(kronendurchmesser):.2f}m Kronendurchmesser " f"= {calculated:.2f}m",
-    )
+        return final, f"Stammhöhe {final:.2f}m (Mindesthöhe)"
+    return final, f"Stammhöhe {final:.2f}m (geschätzt: {TRUNK_HEIGHT_TO_CROWN_RATIO} × Kronendurchmesser)"
 
 
 def full_tree_height(
     stammhoehe_m: float,
     kronendurchmesser_m: float,
+    stammhoehe_bemerkung: Optional[str] = None,
 ) -> tuple[float, str]:
     """Gesamthöhe + remark for ``_Baumhoehe``, from the trunk height.
 
@@ -271,21 +264,24 @@ def full_tree_height(
 
     Args:
         stammhoehe_m: Trunk height in metres, as returned by
-            :func:`calculate_tree_height` and stored on ``TreeRecord.baumhoehe``.
+            :func:`calculate_tree_trunk_height` and stored on ``TreeRecord.baumhoehe``.
         kronendurchmesser_m: Crown diameter in metres.
+        stammhoehe_bemerkung: Remark returned by :func:`calculate_tree_trunk_height`.
+            Replaces the plain ``"Stammhöhe …m"`` part so the remark also says
+            whether the trunk height was measured or estimated.
 
     Returns:
         ``(gesamthoehe_m, remark)`` ready for :func:`build_tree_psets`, with
-        ``gesamthoehe_m`` rounded to two decimals.
+        ``gesamthoehe_m`` rounded to two decimals. ``remark`` is the sum that
+        gives ``gesamthoehe_m``, e.g.
+        ``"Stammhöhe 7.65m (geschätzt: 0.85 × Kronendurchmesser) + Kronendurchmesser 9.00m"``;
+        the total itself is published as ``_Baumhoehe``.
     """
     stammhoehe = round(float(stammhoehe_m), 2)
     kronendurchmesser = round(float(kronendurchmesser_m), 2)
     gesamthoehe_m = round(stammhoehe + kronendurchmesser, 2)
-    remark = (
-        f"Gesamthöhe = {stammhoehe:.2f}m Stammhöhe "
-        f"+ {kronendurchmesser:.2f}m Kronendurchmesser = {gesamthoehe_m:.2f}m"
-    )
-    return gesamthoehe_m, remark
+    stammhoehe_part = stammhoehe_bemerkung or f"Stammhöhe {stammhoehe:.2f}m"
+    return gesamthoehe_m, f"{stammhoehe_part} + Kronendurchmesser {kronendurchmesser:.2f}m"
 
 
 def build_tree_psets(
@@ -314,7 +310,8 @@ def build_tree_psets(
 
     This helper intentionally takes **no** row dict and does **no** height
     calculation — callers compute ``baumhoehe_m`` / ``baumhoehe_bemerkung``
-    upstream via :func:`calculate_tree_height` and pass them in. Keeps the
+    upstream via :func:`calculate_tree_trunk_height` and :func:`full_tree_height`
+    and pass them in. Keeps the
     function a pure template factory.
 
     Args:
@@ -395,7 +392,7 @@ def dataframe_to_records(
 
     Handles the usual pre-processing previously duplicated in cadaster and
     core/basic: trunk-circumference → diameter conversion, pflanzjahr
-    fallback chain, height fallback via :func:`calculate_tree_height`, and
+    fallback chain, trunk-height fallback via :func:`calculate_tree_trunk_height`, and
     pset construction via :func:`build_tree_psets`.
 
     Args:
@@ -448,17 +445,17 @@ def dataframe_to_records(
         stammumfang_cm = _num(schema.stammumfang_cm, default_stammumfang_cm)
         stammdurchmesser_m = _stammumfang_cm_to_stammdurchmesser_m(stammumfang_cm)
 
-        baumhoehe_raw = row_dict.get(schema.baumhoehe)
-        if baumhoehe_raw is None or (isinstance(baumhoehe_raw, float) and pd.isna(baumhoehe_raw)):
-            baumhoehe_in: Optional[float] = None
+        stammhoehe_raw = row_dict.get(schema.baumhoehe)
+        if stammhoehe_raw is None or (isinstance(stammhoehe_raw, float) and pd.isna(stammhoehe_raw)):
+            stammhoehe_in: Optional[float] = None
         else:
             try:
-                baumhoehe_in = float(baumhoehe_raw)
+                stammhoehe_in = float(stammhoehe_raw)
             except (TypeError, ValueError):
-                baumhoehe_in = None
+                stammhoehe_in = None
 
-        height_m, _height_remark = calculate_tree_height(kronendurchmesser_m, baumhoehe_in)
-        gesamthoehe_m, gesamthoehe_remark = full_tree_height(height_m, kronendurchmesser_m)
+        stammhoehe_m, stammhoehe_remark = calculate_tree_trunk_height(kronendurchmesser_m, stammhoehe_in)
+        gesamthoehe_m, gesamthoehe_remark = full_tree_height(stammhoehe_m, kronendurchmesser_m, stammhoehe_remark)
 
         pflanzjahr_val = row_dict.get(schema.pflanzjahr_primary)
         if pflanzjahr_val is None or (isinstance(pflanzjahr_val, float) and pd.isna(pflanzjahr_val)):
@@ -501,7 +498,7 @@ def dataframe_to_records(
                 stammdurchmesser=stammdurchmesser_m,
                 detail=detail,
                 segments=segments,
-                baumhoehe=height_m,
+                baumhoehe=stammhoehe_m,
                 psets=psets,
             )
         )
@@ -624,7 +621,6 @@ def validate_tree_records(
 
 
 __all__ = [
-    "CROWN_TO_HEIGHT_RATIO",
     "DEFAULT_DETAIL",
     "DEFAULT_KRONENDURCHMESSER_M",
     "DEFAULT_OAF_SCHEMA",
@@ -635,10 +631,11 @@ __all__ = [
     "MIN_STAMMDURCHMESSER_M",
     "MIN_TREE_HEIGHT_M",
     "MIN_TRUNK_RADIUS_M",
+    "TRUNK_HEIGHT_TO_CROWN_RATIO",
     "TreeColumnSchema",
     "TreeDimensions",
     "build_tree_psets",
-    "calculate_tree_height",
+    "calculate_tree_trunk_height",
     "collect_pydantic_psets",
     "dataframe_to_records",
     "drape_records_on_dgm",
