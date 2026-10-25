@@ -86,7 +86,7 @@ def _tree_dict(
         "name": name,
         "position": tuple(float(v) for v in record.position),
         "trunk_radius": dims.trunk_radius,
-        "trunk_height": dims.trunk_height,
+        "trunk_height": dims.trunk_cylinder_height,
         "crown_radius": dims.crown_radius,
         "detail": int(record.detail),
         "segments": int(record.segments),

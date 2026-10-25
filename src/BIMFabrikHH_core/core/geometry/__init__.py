@@ -3,17 +3,16 @@ Geometry Module for BIMFabrikHH
 ==============================
 
 This module provides composable, dataclass-based geometry creation for IFC models.
-It combines the generic geometry primitives with tree-specific implementations.
+Tree geometry lives in ``tree_objects_generic``.
 
 Main Classes:
 - Box, Cube, Rect, Extrusion: Basic geometry primitives
 - Transform, Representation, Product: Composable geometry operations
-- Tree, Trunk, Crown, TreeCluster: Tree-specific geometry
 - MeshRepresentation: Mesh geometry container
 """
 
 # Import order matters to avoid circular dependencies
-# Import in dependency order: primitives -> advanced -> basepoint -> tree
+# Import in dependency order: primitives -> advanced -> basepoint
 
 # Primitive objects (base layer - imported from ifcfactory)
 from ifcfactory import (
@@ -45,9 +44,6 @@ from .advanced_objects import ProjectBasePointNorthMesh, ProjectBasePointNorthQu
 # Basepoint placement helper (depends on advanced_objects + georeferencing)
 from .basepoint import place_basepoint
 
-# Tree objects (depends on primitives)
-from .tree_objects import Crown, Tree, TreeCluster, Trunk
-
 __all__ = [
     "Box",
     "Cube",
@@ -72,8 +68,4 @@ __all__ = [
     "ProjectBasePointNorthMesh",
     "ProjectBasePointNorthQuad",
     "place_basepoint",
-    "Tree",
-    "Trunk",
-    "Crown",
-    "TreeCluster",
 ]

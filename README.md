@@ -56,7 +56,7 @@ This project is under intensive development. Features are being added and improv
     - Two record-builder apps sharing a single `TreeRecord` input contract:
       - `TreesBasicApp` (`apps/trees/basic/app.py`): mesh trunk + icosphere crown via `ifcopenshell.api`.
       - `TreesGenericApp` (`apps/trees/generic/app.py`): `ifcfactory.BIMFactoryElement` pipeline.
-    - Shared data-processing helpers in `apps/trees/processing.py` (`dataframe_to_records`, `build_tree_psets`, `calculate_tree_height`, `validate_tree_records`, `resolve_tree_dimensions`, `collect_pydantic_psets`). Both apps consume these so their `app.py` files hold only IFC-writing logic.
+    - Shared data-processing helpers in `apps/trees/processing.py` (`dataframe_to_records`, `build_tree_psets`, `calculate_tree_trunk_height`, `validate_tree_records`, `resolve_tree_dimensions`, `collect_pydantic_psets`). Both apps consume these so their `app.py` files hold only IFC-writing logic.
     - DataFrame column mapping via `TreeColumnSchema` (`apps/trees/column_schema.py`) with presets `DEFAULT_OAF_SCHEMA` (Hamburg OGC API / surveying) and `BAUMKATASTER_SCHEMA` (Strassenbaumkataster).
     - The older generic elevation exporter (`BaumGenericElevationApp`, former `tree_model` dataclasses) was removed; migrate callers to `TreesGenericApp.build_ifc` or `TreesBasicApp.build_ifc`.
 
@@ -264,8 +264,7 @@ BIMFabrikHH_core/
 │       │   │   ├── advanced_objects.py  # Advanced geometry objects
 │       │   │   ├── city_furniture.py    # City furniture objects
 │       │   │   ├── standard_profiles.py # Standard profiles
-│       │   │   ├── tree_objects.py      # Tree geometry objects
-│       │   │   └── tree_objects_generic.py  # Generic tree objects
+│       │   │   └── tree_objects_generic.py  # Tree geometry objects
 │       │   ├── utils/              # Utility functions
 │       │   │   ├── geometry_utils.py    # Geometry utilities
 │       │   │   ├── spatial_utils.py     # Spatial utilities

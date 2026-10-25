@@ -258,7 +258,7 @@ def _write_tree(
         y=y,
         z=z,
         radius=dims.trunk_radius,
-        height=dims.trunk_height,
+        height=dims.trunk_cylinder_height,
         snippets=snippets,
     )
     _write_crown(
@@ -267,7 +267,7 @@ def _write_tree(
         crown_entity=crown,
         x=x,
         y=y,
-        z=z + dims.trunk_height,
+        z=z + dims.trunk_cylinder_height,
         radius=dims.crown_radius,
         level_of_geom=level_of_geom,
         snippets=snippets,

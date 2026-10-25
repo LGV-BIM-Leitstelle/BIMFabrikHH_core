@@ -50,7 +50,9 @@ class TreeColumnSchema:
 
     # Dimensions. ``stammumfang_cm`` is trunk circumference in cm (Hamburg
     # OGC convention); ``dataframe_to_records`` converts it to a diameter
-    # in meters internally.
+    # in meters internally. ``baumhoehe`` holds a measured trunk height
+    # (Stammhöhe) and only exists in surveying data; the Strassenbaumkataster /
+    # OGC API has no height column, so the trunk height is always estimated.
     kronendurchmesser: str = "kronendurchmesser"
     stammumfang_cm: str = "stammumfang"
     baumhoehe: str = "baumhoehe"

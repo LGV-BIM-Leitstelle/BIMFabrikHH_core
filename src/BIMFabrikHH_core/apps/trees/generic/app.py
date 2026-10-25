@@ -225,7 +225,7 @@ def _tree_element_from_record(
         position=record.position,
         crown_radius=dims.crown_radius,
         trunk_radius=dims.trunk_radius,
-        trunk_height=dims.trunk_height,
+        trunk_height=dims.trunk_cylinder_height,
         crown_detail=record.detail,
         trunk_segments=record.segments,
         psets=pset_templates,

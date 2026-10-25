@@ -21,7 +21,7 @@ import random
 from datetime import date
 from typing import List, Sequence, Tuple
 
-from BIMFabrikHH_core.apps.trees import build_tree_psets, calculate_tree_height, full_tree_height
+from BIMFabrikHH_core.apps.trees import build_tree_psets, calculate_tree_trunk_height, full_tree_height
 from BIMFabrikHH_core.apps.trees.generic import TreeRecord, TreesGenericApp
 from BIMFabrikHH_core.config import setup_logging
 from BIMFabrikHH_core.config.paths import PathConfig
@@ -55,11 +55,13 @@ _SPECIES: Sequence[Tuple[str, str]] = (
 def build_example_tree_records() -> List[TreeRecord]:
     """``N_TREES`` random records inside the generic DGM crop (fixed seed).
 
-    The trunk height follows the cadastre rule via :func:`calculate_tree_height`
-    — a measured height clamped to 1.10 m, else 0.85 x Kronendurchmesser — and
+    The trunk height follows :func:`calculate_tree_trunk_height` — a measured
+    trunk height clamped to 1.10 m, else 0.85 x Kronendurchmesser — and
     :func:`full_tree_height` turns it into the Gesamthöhe published as
-    ``_Baumhoehe``. Every fourth tree has no measured height, so both branches
-    of that rule end up in the IFC.
+    ``_Baumhoehe``. The "measured" heights here are random demo values so both
+    branches end up in the IFC: every fourth tree is estimated, the rest are
+    marked "gemessen". Real Strassenbaumkataster data has no height attribute,
+    so every Kataster tree is estimated.
     """
     rng = random.Random(RANDOM_SEED)
     aufnahmedatum = date.today().isoformat()
@@ -72,11 +74,13 @@ def build_example_tree_records() -> List[TreeRecord]:
         stammdurchmesser = stammumfang / math.pi
         gattung, art = rng.choice(_SPECIES)
         measured_height = None if i % 4 == 0 else rng.uniform(8.0, 22.0)
-        stammhoehe_m, _ = calculate_tree_height(
+        stammhoehe_m, stammhoehe_bemerkung = calculate_tree_trunk_height(
             kronendurchmesser=kronendurchmesser,
-            baumhoehe=measured_height,
+            stammhoehe=measured_height,
         )
-        gesamthoehe_m, gesamthoehe_bemerkung = full_tree_height(stammhoehe_m, kronendurchmesser)
+        gesamthoehe_m, gesamthoehe_bemerkung = full_tree_height(
+            stammhoehe_m, kronendurchmesser, stammhoehe_bemerkung
+        )
         baumnummer = f"{i:03d}"
         records.append(
             TreeRecord(
