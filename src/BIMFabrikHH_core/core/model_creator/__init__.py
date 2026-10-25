@@ -11,7 +11,7 @@ from . import ifc_utils as root
 # Core model creation classes
 from .ifc_modelbuilder import IfcModelBuilder
 from .ifc_utils import IfcModelMethods, validate_ifc
-from .project_init import init_ifc_project
+from .project_init import georeference_options, init_ifc_project, output_coordinate_system
 
 # Property set utilities
 from .pset_utils import assign_psets_to_element, extract_psets_from_row
@@ -21,7 +21,9 @@ __all__ = [
     "IfcModelBuilder",  # Main class for building IFC models with saving capabilities
     "IfcModelMethods",  # Utility methods for IFC model creation and management
     "validate_ifc",  # Run ifcopenshell.validate --rules on an exported IFC file
+    "georeference_options",  # init_ifc_project CRS keywords from an output transformer
     "init_ifc_project",  # One-call builder + project/site/building setup
+    "output_coordinate_system",  # IFC CRS from an output transformer (also for the Rust writers)
     # Property set utilities
     "assign_psets_to_element",
     "extract_psets_from_row",

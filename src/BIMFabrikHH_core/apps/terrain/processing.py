@@ -23,13 +23,14 @@ import numpy as np
 from scipy.spatial import Delaunay
 
 from BIMFabrikHH_core.config.logging_config import get_logger
+from BIMFabrikHH_core.core.georeferencing.coordinate_transformer import CoordinateTransformer
 from BIMFabrikHH_core.core.georeferencing.extract_elevation import (
     invalid_z,
     is_url,
     open_geotiff,
     sample_elevations_from_raster,
 )
-from BIMFabrikHH_core.core.georeferencing.coordinate_transformer import CoordinateTransformer
+from BIMFabrikHH_core.apps.streets.processing import transform_record_rings, transformer_to_dgm
 from BIMFabrikHH_core.core.ogc_extractor import strip_closing_duplicate_xy
 from BIMFabrikHH_core.data_models.streets import (
     PARCELS_LABEL,
@@ -78,8 +79,6 @@ WATER_EMPTY_INTERIOR: FrozenSet[str] = frozenset(
 WATER_PLANAR: FrozenSet[str] = WATER_EMPTY_INTERIOR
 WATER_FLOWING: FrozenSet[str] = frozenset()
 DEFAULT_FLOWING_WATER_WINDOW_M: float = 30.0
-_WGS84 = "EPSG:4326"
-_UTM32 = "EPSG:25832"
 
 
 @dataclass(frozen=True)
@@ -311,16 +310,15 @@ def collect_guide_rings(
 ) -> List[GuideRing]:
     """Densify ALKIS Nutzung exterior rings to ``(N, 2)`` arrays in EPSG:25832.
 
-    ``records`` are :class:`StreetRecord`-like objects (``rings``, ``geometry_crs``).
-    When ``bbox_utm`` is set, each ring is clipped to that rectangle so Bruchkanten
-    cannot extend the TIN past the same crop used for the unguided DGM.
+    ``records`` are :class:`StreetRecord`-like objects (``rings``) in the DGM
+    tile CRS (see :func:`resolve_guide_records`). When ``bbox_utm`` is set, each
+    ring is clipped to that rectangle so Bruchkanten cannot extend the TIN past
+    the same crop used for the unguided DGM.
     """
-    transformer: Optional[CoordinateTransformer] = None
     out: List[GuideRing] = []
 
     for rec in records:
         rings = getattr(rec, "rings", None) or []
-        source_crs = getattr(rec, "geometry_crs", _UTM32)
         nutzart = str(getattr(rec, "nutzart", "") or "")
         bez = str(getattr(rec, "bez", "") or "")
         label = nutzung_split_label(nutzart, bez)
@@ -328,13 +326,7 @@ def collect_guide_rings(
             cleaned = strip_closing_duplicate_xy(list(ring))
             if len(cleaned) < 3:
                 continue
-            if source_crs == _UTM32:
-                arr = np.asarray(cleaned, dtype=float)
-            else:
-                if transformer is None:
-                    transformer = CoordinateTransformer(_WGS84, _UTM32)
-                xe, yn = transformer.transform_xy_batch([p[0] for p in cleaned], [p[1] for p in cleaned])
-                arr = np.column_stack((xe, yn))
+            arr = np.asarray(cleaned, dtype=float)
             if bbox_utm is not None:
                 arr = _clip_ring_to_bbox(arr, bbox_utm)
                 if arr is None:
@@ -1264,15 +1256,17 @@ def resolve_guide_records(
     bbox_wgs84: Optional[Tuple[float, float, float, float]],
     *,
     guide_from_oaf: bool,
+    source_epsg: Optional[int] = None,
     write_geojson: bool = False,
     output_dir: Optional[Union[str, Path]] = None,
 ) -> Optional[Sequence[Any]]:
-    """Return the guide records to use, fetching from the Hamburg OAF if asked.
+    """Return the guide records to use in the DGM tile CRS, fetching from the Hamburg OAF if asked.
 
     Writer-neutral: both :class:`TerrainGenericApp` and :class:`TerrainRustApp`
-    call this. When ``guide_records`` is already provided (or ``guide_from_oaf``
-    is ``False``) it is returned unchanged. ``guide_from_oaf=True`` with no
-    records pulls ALKIS ``Nutzung`` for ``bbox_wgs84``; ``write_geojson`` then
+    call this. Provided ``guide_records`` are in ``source_epsg`` and are
+    transformed into the DGM tile CRS (``None`` keeps them as they are).
+    ``guide_from_oaf=True`` with no records pulls ALKIS ``Nutzung`` for
+    ``bbox_wgs84``, already in the DGM tile CRS; ``write_geojson`` then
     persists the response next to ``output_dir``.
     """
     if guide_from_oaf and guide_records is None:
@@ -1289,7 +1283,19 @@ def resolve_guide_records(
         )
     if write_geojson:
         logger.warning("write_geojson=True is ignored unless guide_from_oaf fetches Nutzung")
-    return guide_records
+    if guide_records is None:
+        return None
+    return transform_record_rings(guide_records, transformer_to_dgm(source_epsg))
+
+
+def transform_mesh(mesh: TerrainMesh, transformer: CoordinateTransformer) -> TerrainMesh:
+    """``mesh`` with vertex and nullpunkt XY transformed; Z and faces unchanged."""
+    if transformer.is_identity or mesh.is_empty():
+        return mesh
+    arr = np.asarray(mesh.vertices, dtype=float)
+    arr[:, 0], arr[:, 1] = transformer.transformer.transform(arr[:, 0], arr[:, 1])
+    nullpunkt = transformer.transform_point(*mesh.nullpunkt)[:2] if mesh.nullpunkt is not None else None
+    return TerrainMesh(vertices=arr.tolist(), faces=mesh.faces, nullpunkt=nullpunkt)
 
 
 def build_landuse_parts(
@@ -1598,6 +1604,7 @@ __all__ = [
     "NUTZART_ORDER",
     "build_landuse_parts",
     "resolve_guide_records",
+    "transform_mesh",
     "combine_terrain_meshes",
     "merge_parcel_meshes",
     "WATER_EMPTY_INTERIOR",

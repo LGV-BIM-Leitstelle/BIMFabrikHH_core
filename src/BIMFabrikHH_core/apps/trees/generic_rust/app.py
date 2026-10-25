@@ -14,10 +14,17 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple, Union
 
-from BIMFabrikHH_core.apps.trees.processing import drape_records_on_dgm, resolve_tree_dimensions
+from BIMFabrikHH_core.apps.trees.processing import (
+    check_positions_in_dgm_crs,
+    drape_records_on_dgm,
+    resolve_tree_dimensions,
+    transform_record_positions,
+)
 from BIMFabrikHH_core.config.logging_config import get_logger
 from BIMFabrikHH_core.config.paths import PathConfig
-from BIMFabrikHH_core.core.georeferencing.crs_transform import bbox_wgs84_to_epsg25832
+from BIMFabrikHH_core.core.geometry import basepoint_xy
+from BIMFabrikHH_core.core.georeferencing import CoordinateTransformer, warn_if_degree_coordinates
+from BIMFabrikHH_core.core.model_creator import output_coordinate_system
 from BIMFabrikHH_core.data_models import TreeRecord
 
 logger = get_logger("trees_rust_app")
@@ -114,7 +121,9 @@ class TreesRustApp:
         bbox_wgs84: Optional[Tuple[float, float, float, float]] = None,
         project_name: str = "Trees_Generic_Project",
         site_name: str = "Trees_Generic_Site",
-        epsg: int = 25832,
+        source_epsg: Optional[int] = None,
+        output_epsg: Optional[int] = None,
+        vertical_epsg: Optional[int] = None,
         psets=None,
         tif_files: Optional[Iterable[Union[str, Path]]] = None,
         dgm_folder: Optional[Union[str, Path]] = None,
@@ -130,22 +139,36 @@ class TreesRustApp:
         tiles (same contract as :meth:`TreesGenericApp.build_ifc`). Optional
         ``drape_vertices`` / ``drape_faces`` instead fill ``z = 0`` from a DGM mesh.
         Basepoint XY is ``basepoint_origin``, else the ``bbox_wgs84`` lower-left
-        reprojected to EPSG:25832, else none.
+        (only with a known CRS), else none.
+
+        ``source_epsg`` / ``output_epsg`` / ``vertical_epsg`` work as in
+        :meth:`TreesGenericApp.build_ifc`: positions and ``basepoint_origin`` are
+        in ``source_epsg`` and are transformed into ``output_epsg`` when given;
+        Rust writes the resulting CRS and height system into the IFC header.
+        Without ``source_epsg`` the positions are written as they are and the
+        IFC gets no georeferencing.
         """
         if not records:
             logger.error("TreesRustApp.build_ifc: no tree records.")
             return None
+        transformer = CoordinateTransformer.from_source_to_output(source_epsg, output_epsg, vertical_epsg)
+        warn_if_degree_coordinates((r.position for r in records), transformer)
         if tif_files is not None:
+            check_positions_in_dgm_crs(transformer)
             records = drape_records_on_dgm(
                 records,
                 tif_files,
                 folder_path=dgm_folder,
                 default_elevation=default_elevation,
             )
-        basepoint = basepoint_origin
-        if basepoint is None and bbox_wgs84 is not None:
-            bbox_epsg = bbox_wgs84_to_epsg25832(bbox_wgs84)
-            basepoint = (bbox_epsg[0], bbox_epsg[1])
+        if drape_vertices is not None and transformer is not None and not transformer.is_identity:
+            raise ValueError("drape_vertices needs the DGM mesh in the output CRS; drape with tif_files instead")
+        records = transform_record_positions(records, transformer)
+        basepoint = basepoint_xy(
+            basepoint_origin=basepoint_origin,
+            bbox_wgs84=bbox_wgs84 if transformer is not None else None,
+            transformer=transformer,
+        )
         trees_to_ifc, default_psets = _rust()
         dest = Path(output_path) if output_path is not None else PathConfig.OUTPUT / output_name
         dest.parent.mkdir(parents=True, exist_ok=True)
@@ -162,7 +185,7 @@ class TreesRustApp:
             str(dest),
             project_name=project_name,
             site_name=site_name,
-            epsg=epsg,
+            crs=output_coordinate_system(transformer),
             psets=psets,
             basepoint=basepoint,
             drape_vertices=drape_vertices,

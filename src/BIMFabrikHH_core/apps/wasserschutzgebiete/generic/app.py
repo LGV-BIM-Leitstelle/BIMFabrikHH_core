@@ -6,12 +6,9 @@ Extruded polygon slabs per :class:`WasserschutzgebietRecord` with
 ``ifcfactory`` ``Polygon`` + ``Extrusion`` + ``Style`` (same idea as
 :class:`StandardProfileBuilder`).
 
-Ring coordinates must end up in **EPSG:25832** for the IFC georeferencing
-context: either records already carry ``geometry_crs=EPSG:25832``
-``(easting, northing)``, or ``EPSG:4326`` ``(lon, lat)`` and are reprojected
-via :func:`BIMFabrikHH_core.core.ogc_extractor.ring_xy_to_epsg25832`.
-
-Geometry uses **map metres** (full easting / northing in EPSG:25832).
+Ring coordinates are written as they are, in **map metres**;
+``request_params.source_epsg`` declares their CRS and
+``request_params.output_epsg`` transforms them into another one.
 """
 
 from __future__ import annotations
@@ -25,13 +22,11 @@ from pydantic import BaseModel
 
 from BIMFabrikHH_core.config.logging_config import get_logger
 from BIMFabrikHH_core.core.geometry import place_basepoint
-from BIMFabrikHH_core.core.model_creator import init_ifc_project
-from BIMFabrikHH_core.core.ogc_extractor import ring_xy_to_epsg25832
+from BIMFabrikHH_core.core.georeferencing import CoordinateTransformer, warn_if_degree_coordinates
+from BIMFabrikHH_core.core.model_creator import georeference_options, init_ifc_project
+from BIMFabrikHH_core.core.ogc_extractor import transform_ring_xy
 from BIMFabrikHH_core.data_models.params_tree import RequestParams
-from BIMFabrikHH_core.data_models.pydantic_georeferencing import (
-    CoordinateOperation,
-    CoordinateSystem,
-)
+from BIMFabrikHH_core.data_models.pydantic_georeferencing import CoordinateOperation
 from BIMFabrikHH_core.data_models.pydantic_psets_BIMHH import (
     Pset_Hyperlink,
     default_bim_hamburg_hyperlink,
@@ -104,7 +99,6 @@ class WasserschutzgebieteGenericApp:
         request_params: RequestParams,
         output_path: Optional[Union[str, Path]] = None,
         output_name: str = _DEFAULT_OUTPUT_NAME,
-        coordinate_system: Optional[CoordinateSystem] = None,
         coordinate_operation: Optional[CoordinateOperation] = None,
         color: RgbTuple = _DEFAULT_RGB,
         cad_layer: str = _DEFAULT_LAYER,
@@ -121,17 +115,29 @@ class WasserschutzgebieteGenericApp:
 
         Psets come from ``record.psets`` (plus default hyperlink), same pattern as
         :class:`TreesGenericApp` / ``collect_pydantic_psets``.
+
+        Rings and ``basepoint_origin`` are in ``request_params.source_epsg``
+        (25832 for the Hamburg OGC API) and are transformed into
+        ``request_params.output_epsg`` when given. Without ``source_epsg`` the
+        IFC gets no georeferencing and no bbox basepoint.
+
+        Raises:
+            ValueError: ``request_params.output_epsg`` without ``source_epsg``.
         """
         if not records:
             logger.error("No Wasserschutzgebiet records to export.")
             return None
+        transformer = CoordinateTransformer.from_source_to_output(
+            request_params.source_epsg, request_params.output_epsg, request_params.vertical_epsg
+        )
+        warn_if_degree_coordinates((p for rec in records for p in rec.exterior_ring), transformer)
 
         try:
             _t0 = time.perf_counter()
             model_builder = init_ifc_project(
                 request_params=request_params,
-                coordinate_system=coordinate_system,
                 coordinate_operation=coordinate_operation,
+                **georeference_options(transformer),
             )
             model = model_builder.model
             if model is None:
@@ -146,9 +152,9 @@ class WasserschutzgebieteGenericApp:
             _t0 = time.perf_counter()
             elements: List[BIMFactoryElement] = []
             for rec in records:
-                xy = ring_xy_to_epsg25832(rec.exterior_ring, rec.geometry_crs)
+                xy = transform_ring_xy(rec.exterior_ring, transformer)
                 if len(xy) < 3:
-                    logger.warning("Skipping feature %s: ring too small in EPSG:25832", rec.feature_id)
+                    logger.warning("Skipping feature %s: ring has fewer than 3 vertices", rec.feature_id)
                     continue
                 elements.append(
                     _wsg_element_from_record(
@@ -186,8 +192,9 @@ class WasserschutzgebieteGenericApp:
                 model=model,
                 site=model_builder.site,
                 basepoint_origin=basepoint_origin,
-                bbox_wgs84=request_params.bbox_as_wgs84_tuple,
+                bbox_wgs84=request_params.bbox_as_wgs84_tuple if transformer is not None else None,
                 size=basepoint_size,
+                transformer=transformer,
             )
 
             _t0 = time.perf_counter()

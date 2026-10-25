@@ -1,8 +1,9 @@
 from typing import Any, Dict, List, Optional, Tuple
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 from .params_bbox import BoundingBoxParams
+from .pydantic_georeferencing import check_projected_epsg, check_source_epsg, check_vertical_epsg
 
 
 class ProjectInfos(BaseModel):
@@ -46,7 +47,11 @@ class RequestParams(BaseModel):
     """
 
     bbox: Optional[BoundingBoxParams] = Field(
-        default=None, description="Bounding box parameters (optional; if None, terrain uses full raster)"
+        default=None,
+        description=(
+            "Bounding box in WGS84 longitude / latitude, independent of source_epsg and output_epsg "
+            "(optional; if None, terrain uses full raster)"
+        ),
     )
     containers: Optional[List[Container]] = None
     use_dgm_elevation: bool = Field(
@@ -56,11 +61,44 @@ class RequestParams(BaseModel):
             "Tree model generation only; defaults to true. Set false to keep elevation 0."
         ),
     )
+    source_epsg: Optional[int] = Field(
+        default=None,
+        description=(
+            "EPSG code of the coordinate system the source data is in, e.g. 25832 for the Hamburg "
+            "services, 4326 for WGS84 longitude / latitude or 5555 (only its horizontal part is "
+            "used). Written to the IFC when no output_epsg is given, which then requires a 2D "
+            "projected system in metres; otherwise output_epsg is required. WGS84 is converted to "
+            "ETRS89 systems without a datum shift, so WGS84 positions can be off by about 1 m. "
+            "Empty: the coordinates are written as they are, without any coordinate system in the IFC."
+        ),
+    )
+    output_epsg: Optional[int] = Field(
+        default=None,
+        description=(
+            "EPSG code the IFC should be in, e.g. 25832 (ETRS89 / UTM 32N) or 10285 (Gauß-Krüger "
+            "Hamburg). The data is transformed from source_epsg into it, so the apps require "
+            "source_epsg (the API sets it to the CRS it fetches the data in). Empty: no "
+            "transformation. Heights are not transformed, see vertical_epsg."
+        ),
+    )
+    vertical_epsg: Optional[int] = Field(
+        default=None,
+        description=(
+            "EPSG code of the height system of the source data, e.g. 7837 (DHHN2016) or 5783 "
+            "(DHHN92). Heights are not transformed; the code is written to the IFC as vertical "
+            "datum and needs source_epsg. A compound source_epsg already names its heights (5555: "
+            "DHHN92) and a different vertical_epsg is rejected. Empty: the vertical datum of a "
+            "compound source_epsg, otherwise none."
+        ),
+    )
 
     model_config = {
         "json_schema_extra": {
             "example": {
                 "bbox": {"min_x": 9.9756, "min_y": 53.5522, "max_x": 9.9789, "max_y": 53.5536},
+                "source_epsg": 25832,
+                "output_epsg": 10285,
+                "vertical_epsg": 7837,
                 "containers": [
                     {
                         "containerTitle": "Tree Information",
@@ -74,6 +112,16 @@ class RequestParams(BaseModel):
             }
         }
     }
+
+    @model_validator(mode="after")
+    def _check_epsg_codes(self) -> "RequestParams":
+        if self.source_epsg is not None:
+            check_source_epsg(self.source_epsg, self.output_epsg, self.bbox_as_wgs84_tuple)
+        if self.output_epsg is not None:
+            check_projected_epsg(self.output_epsg, self.bbox_as_wgs84_tuple)
+        if self.vertical_epsg is not None:
+            check_vertical_epsg(self.vertical_epsg, self.source_epsg)
+        return self
 
     @property
     def bbox_as_wgs84_tuple(self) -> Optional[Tuple[float, float, float, float]]:

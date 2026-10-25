@@ -41,15 +41,18 @@ from BIMFabrikHH_core.apps.city._ifc_common import (
     clean_polygon_ring,
     parse_face_with_voids,
 )
-from BIMFabrikHH_core.apps.city.processing import parse_gml_files
+from BIMFabrikHH_core.apps.city.processing import (
+    parse_gml_files,
+    resolve_file_path,
+    transform_buildings,
+    with_tile_crs,
+)
 from BIMFabrikHH_core.config.logging_config import get_logger
 from BIMFabrikHH_core.core.geometry import place_basepoint
-from BIMFabrikHH_core.core.model_creator import init_ifc_project
+from BIMFabrikHH_core.core.georeferencing import CoordinateTransformer
+from BIMFabrikHH_core.core.model_creator import georeference_options, init_ifc_project
 from BIMFabrikHH_core.data_models.params_tree import RequestParams
-from BIMFabrikHH_core.data_models.pydantic_georeferencing import (
-    CoordinateOperation,
-    CoordinateSystem,
-)
+from BIMFabrikHH_core.data_models.pydantic_georeferencing import CoordinateOperation
 from BIMFabrikHH_core.data_models.pydantic_psets_BIMHH import (
     Pset_Hyperlink,
     default_bim_hamburg_hyperlink,
@@ -89,7 +92,6 @@ class CityGenericApp:
         request_params: RequestParams,
         output_path: Optional[Union[str, Path]] = None,
         output_name: str = _DEFAULT_OUTPUT_NAME,
-        coordinate_system: Optional[CoordinateSystem] = None,
         coordinate_operation: Optional[CoordinateOperation] = None,
         color: RgbTuple = _DEFAULT_CITY_RGB,
         cad_layer: str = _DEFAULT_CITY_LAYER,
@@ -102,24 +104,29 @@ class CityGenericApp:
     ) -> Optional[Path]:
         """Build an IFC file from a list of :class:`Building` records.
 
+        The buildings are in ``request_params.source_epsg`` and are
+        transformed into ``request_params.output_epsg`` when given; the IFC
+        header gets the output CRS with ``request_params.vertical_epsg`` as
+        height system. Without ``source_epsg`` the coordinates are written as
+        they are and the IFC gets no georeferencing.
+
         Args:
             buildings: Pre-parsed :class:`Building` records.
-            request_params: Project metadata (containers, bbox). The
-                WGS84 bbox, if present, is used as the fallback
+            request_params: Project metadata (containers, bbox, EPSG codes).
+                With a ``source_epsg``, the WGS84 bbox is the fallback
                 basepoint origin.
             output_path: Full path to write the IFC to. When ``None``,
                 the file is written to ``PathConfig.OUTPUT / output_name``.
             output_name: Default filename when ``output_path`` is ``None``.
-            coordinate_system: Override the default EPSG:25832 CRS.
             coordinate_operation: Override the default coordinate operation.
             color: RGB as ``(R, G, B)`` in 0-255 **or** normalized 0-1 floats.
             cad_layer: CAD layer assigned to every building mesh.
             transparency: 0.0 = opaque, 1.0 = fully transparent.
             pset_hyperlink: Optional shared :class:`Pset_Hyperlink`. Defaults
                 to the BIM.Hamburg homepage entry.
-            basepoint_origin: Explicit ``(x, y)`` origin in EPSG:25832.
+            basepoint_origin: Explicit ``(x, y)`` origin in ``source_epsg``.
                 When ``None``, falls back to ``request_params.bbox``
-                lower-left (reprojected WGS84 → EPSG:25832).
+                lower-left in the output CRS.
             basepoint_size: Edge length of the basepoint quad (meters).
             on_progress: Optional zero-argument callback invoked after
                 each building is built.
@@ -134,13 +141,17 @@ class CityGenericApp:
             logger.error("No buildings to export.")
             return None
 
+        transformer = CoordinateTransformer.from_source_to_output(
+            request_params.source_epsg, request_params.output_epsg, request_params.vertical_epsg
+        )
+        buildings = transform_buildings(buildings, transformer)
+
         try:
             _t0 = time.perf_counter()
-
             model_builder = init_ifc_project(
                 request_params=request_params,
-                coordinate_system=coordinate_system,
                 coordinate_operation=coordinate_operation,
+                **georeference_options(transformer),
             )
             model = model_builder.model
             if model is None:
@@ -180,8 +191,9 @@ class CityGenericApp:
                 model=model,
                 site=model_builder.site,
                 basepoint_origin=basepoint_origin,
-                bbox_wgs84=request_params.bbox_as_wgs84_tuple,
+                bbox_wgs84=request_params.bbox_as_wgs84_tuple if transformer is not None else None,
                 size=basepoint_size,
+                transformer=transformer,
             )
 
             _t0 = time.perf_counter()
@@ -209,7 +221,6 @@ class CityGenericApp:
         building_id_filter: Optional[str] = None,
         output_path: Optional[Union[str, Path]] = None,
         output_name: str = _DEFAULT_OUTPUT_NAME,
-        coordinate_system: Optional[CoordinateSystem] = None,
         coordinate_operation: Optional[CoordinateOperation] = None,
         color: RgbTuple = _DEFAULT_CITY_RGB,
         cad_layer: str = _DEFAULT_CITY_LAYER,
@@ -222,22 +233,26 @@ class CityGenericApp:
     ) -> Optional[Path]:
         """One-shot: parse CityGML tiles, then build the IFC.
 
-        Uses the WGS84 bbox from ``request_params`` to crop the parser
-        and — when ``basepoint_origin`` is not given — as the fallback
-        basepoint origin.
+        Uses the WGS84 bbox from ``request_params`` to crop the tiles in
+        ``request_params.source_epsg`` (a bbox needs it) and — when
+        ``basepoint_origin`` is not given — as the fallback basepoint origin.
+        EPSG handling as in :meth:`build_ifc`; an empty ``source_epsg`` /
+        ``vertical_epsg`` is taken from the ``srsName`` of local tiles, and a
+        contradicting one raises (see :func:`with_tile_crs`).
         """
+        request_params = with_tile_crs(request_params, [resolve_file_path(f, folder_path) for f in gml_files])
         buildings = parse_gml_files(
             gml_files,
             folder_path=folder_path,
             bbox_wgs84=request_params.bbox_as_wgs84_tuple,
             building_id_filter=building_id_filter,
+            source_epsg=request_params.source_epsg,
         )
         return cls.build_ifc(
             buildings,
             request_params=request_params,
             output_path=output_path,
             output_name=output_name,
-            coordinate_system=coordinate_system,
             coordinate_operation=coordinate_operation,
             color=color,
             cad_layer=cad_layer,

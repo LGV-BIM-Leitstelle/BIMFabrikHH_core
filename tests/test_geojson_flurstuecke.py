@@ -5,8 +5,8 @@ from BIMFabrikHH_core.core.ogc_extractor import (
     feature_identifier,
     parse_feature_for_all_polygon_rings,
     parse_feature_polygon_exterior_rings,
-    polygon_rings_to_epsg25832,
     positions_to_xy_ring,
+    transform_polygon_rings,
 )
 
 
@@ -156,10 +156,10 @@ def test_degenerate_holes_are_dropped():
 
 
 @pytest.mark.unit
-def test_polygon_rings_to_epsg25832_drops_closing_vertex_and_keeps_holes():
+def test_transform_polygon_rings_drops_closing_vertex_and_keeps_holes():
     polygon = parse_feature_for_all_polygon_rings(_feature("Polygon", [_ring(0, 0, 10, 10), _ring(2, 2, 4, 4)]))[0]
 
-    result = polygon_rings_to_epsg25832(polygon, "EPSG:25832")
+    result = transform_polygon_rings(polygon, None)
 
     assert result is not None
     assert len(result.exterior) == 4

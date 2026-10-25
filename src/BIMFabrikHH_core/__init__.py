@@ -79,7 +79,6 @@ from .data_models.streets import (
 from .data_models.terrain_mesh import TerrainMesh
 from .data_models.tree_record import TreeRecord
 from .data_models.wasserschutzgebiete import (
-    GeometryCrs,
     WasserschutzgebietRecord,
     collect_wasserschutz_psets,
     load_wasserschutzgebiete_records,
@@ -115,7 +114,6 @@ __all__ = [
     "Component",
     "TerrainMesh",
     "TreeRecord",
-    "GeometryCrs",
     "WasserschutzgebietRecord",
     "collect_wasserschutz_psets",
     "load_wasserschutzgebiete_records",

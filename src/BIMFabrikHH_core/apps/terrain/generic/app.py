@@ -24,6 +24,7 @@ from ifcfactory import BIMFactoryElement, MeshRepresentation, Style
 from ifcopenshell.util.shape_builder import ShapeBuilder
 from pydantic import BaseModel
 
+from BIMFabrikHH_core.apps.streets.processing import dgm_output_transformer
 from BIMFabrikHH_core.apps.terrain._ifc_common import (
     DEFAULT_TERRAIN_LAYER,
     DEFAULT_TERRAIN_RGB,
@@ -38,11 +39,12 @@ from BIMFabrikHH_core.apps.terrain.processing import (
     build_landuse_parts,
     extract_mesh_adaptive,
     resolve_guide_records,
+    transform_mesh,
 )
 from BIMFabrikHH_core.config.logging_config import get_logger
-from BIMFabrikHH_core.core.geometry import place_basepoint
+from BIMFabrikHH_core.core.geometry import basepoint_xy, place_basepoint
 from BIMFabrikHH_core.core.georeferencing import bbox_request_params_to_epsg25832
-from BIMFabrikHH_core.core.model_creator import init_ifc_project
+from BIMFabrikHH_core.core.model_creator import init_ifc_project, output_coordinate_system
 from BIMFabrikHH_core.core.ogc_extractor.ogc_values_extractor import (
     extract_psets_basepoint,
 )
@@ -91,7 +93,7 @@ class TerrainGenericApp:
         """Build an IFC file from a prepared :class:`TerrainMesh`.
 
         Args:
-            mesh: Triangulated terrain mesh in the project CRS (EPSG:25832).
+            mesh: Triangulated terrain mesh in the CRS of ``coordinate_system``.
             request_params: Project metadata and pset containers.
             psets: Pydantic pset models to attach to the DGM element.
                 Defaults to :class:`Pset_Objektinformation_DGM` and
@@ -100,7 +102,7 @@ class TerrainGenericApp:
                 the file is written to ``PathConfig.OUTPUT / output_name``.
             output_name: Default filename when ``output_path`` is ``None``.
             basepoint_size: Edge length of the basepoint quad (meters).
-            basepoint_origin: Explicit ``(x, y)`` origin in EPSG:25832 for
+            basepoint_origin: Explicit ``(x, y)`` origin in the mesh CRS for
                 the basepoint quad. When ``None``, placement uses the request
                 WGS84 bbox lower-left (via :attr:`RequestParams.bbox_as_wgs84_tuple`)
                 if ``bbox`` is set; otherwise no Nullpunktobjekt is written.
@@ -111,6 +113,8 @@ class TerrainGenericApp:
             parts: Optional ``(label, mesh, psets)`` pieces from
                 ``merge_parcels`` or ``split_by_landuse``. When ``None``, one
                 mesh is written.
+            coordinate_system: IFC projected CRS of the mesh; ``None`` uses
+                the :func:`init_ifc_project` default (EPSG:25832, DHHN2016).
 
         Returns:
             Path to the saved IFC file, or ``None`` on failure.
@@ -202,7 +206,6 @@ class TerrainGenericApp:
         write_geojson: bool = False,
         export_landxml: bool = False,
         landxml_path: Optional[Union[str, Path]] = None,
-        coordinate_system: Optional[CoordinateSystem] = None,
     ) -> Optional[Path]:
         """One-shot: extract a mesh from GeoTIFFs, then build the IFC.
 
@@ -235,11 +238,22 @@ class TerrainGenericApp:
         1.2 TIN with one ``<Surface>`` per part (DGM + each Nutzung type),
         the exact same triangles as the IFC. ``landxml_path`` overrides the
         destination; otherwise it is the IFC path with a ``.xml`` suffix.
+
+        ``guide_records`` are in ``request_params.source_epsg`` (see
+        :func:`resolve_guide_records`).
+
+        The mesh is built in the DGM tile CRS (EPSG:25832, heights DHHN2016)
+        and its XY are transformed into ``request_params.output_epsg`` when
+        given (see :func:`dgm_output_transformer`); the IFC header, the
+        basepoint and the LandXML use that CRS. ``basepoint_origin`` is in the
+        DGM tile CRS.
         """
+        transformer = dgm_output_transformer(request_params.output_epsg, move_to_origin=move_to_origin)
         guide_records = resolve_guide_records(
             guide_records,
             request_params.bbox_as_wgs84_tuple,
             guide_from_oaf=guide_from_oaf,
+            source_epsg=request_params.source_epsg,
             write_geojson=write_geojson,
             output_dir=(Path(output_path).parent if output_path is not None else None),
         )
@@ -267,6 +281,8 @@ class TerrainGenericApp:
             split_by_landuse=split_by_landuse,
             merge_parcels=merge_parcels,
         )
+        mesh = transform_mesh(mesh, transformer)
+        labeled = [(label, transform_mesh(part, transformer)) for label, part in labeled]
         parts: Optional[List[Tuple[str, TerrainMesh, Optional[Sequence[BaseModel]]]]] = (
             [
                 (key, part, terrain_part_psets(key, guide_records, dgm_psets=psets))
@@ -284,11 +300,15 @@ class TerrainGenericApp:
             output_path=output_path,
             output_name=output_name,
             basepoint_size=basepoint_size,
-            basepoint_origin=basepoint_origin,
+            basepoint_origin=basepoint_xy(
+                basepoint_origin=basepoint_origin,
+                bbox_wgs84=request_params.bbox_as_wgs84_tuple,
+                transformer=transformer,
+            ),
             color=color,
             cad_layer=cad_layer,
             parts=parts,
-            coordinate_system=coordinate_system,
+            coordinate_system=output_coordinate_system(transformer),
         )
         ifc_s = time.perf_counter() - t1
         logger.info(
@@ -306,7 +326,7 @@ class TerrainGenericApp:
                 result,
                 surfaces,
                 landxml_path=landxml_path,
-                epsg=_epsg_code(coordinate_system),
+                epsg=transformer.target_epsg,
             )
 
         return result
@@ -315,18 +335,6 @@ class TerrainGenericApp:
 # ---------------------------------------------------------------------------
 # Module-level helpers
 # ---------------------------------------------------------------------------
-
-
-def _epsg_code(coordinate_system: Optional[CoordinateSystem]) -> int:
-    if coordinate_system is None:
-        return 25832
-    name = (coordinate_system.name or "").strip().upper()
-    if name.startswith("EPSG:"):
-        try:
-            return int(name.split(":", 1)[1])
-        except ValueError:
-            return 25832
-    return 25832
 
 
 class _TerrainMeshRepresentation(MeshRepresentation):

@@ -76,7 +76,6 @@ def test_parses_parcel_attributes_and_creates_pset():
     assert record.aktualit == properties["aktualit"]
     assert record.lagebeztxt == properties["lagebeztxt"]
     assert record.tntxt == properties["tntxt"]
-    assert record.geometry_crs == "EPSG:25832"
 
     assert len(record.polygons) == 1
     assert len(record.psets) == 1
@@ -191,20 +190,6 @@ def test_multiple_missing_feature_ids_are_distinct():
     )
 
     assert records[0].feature_id != records[1].feature_id
-
-
-@pytest.mark.unit
-def test_geometry_crs_is_preserved():
-    data = {
-        "type": "FeatureCollection",
-        "features": [parcel_feature()],
-    }
-
-    default_record = records_from_geojson_feature_collection(data)[0]
-    geographic_record = records_from_geojson_feature_collection(data, geometry_crs="EPSG:4326")[0]
-
-    assert default_record.geometry_crs == "EPSG:25832"
-    assert geographic_record.geometry_crs == "EPSG:4326"
 
 
 @pytest.mark.unit

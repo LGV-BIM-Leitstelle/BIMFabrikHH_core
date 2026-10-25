@@ -213,7 +213,6 @@ def test_collect_guide_rings_clips_to_bbox() -> None:
     rec = StreetRecord(
         feature_id=1,
         rings=[[(-10.0, -10.0), (20.0, -10.0), (20.0, 20.0), (-10.0, 20.0)]],
-        geometry_crs="EPSG:25832",
         nutzart="Strassenverkehr",
     )
     bbox = (0.0, 0.0, 10.0, 10.0)
@@ -231,7 +230,6 @@ def test_collect_guide_rings_drops_rings_outside_bbox() -> None:
     rec = StreetRecord(
         feature_id=2,
         rings=[[(100.0, 100.0), (110.0, 100.0), (110.0, 110.0)]],
-        geometry_crs="EPSG:25832",
     )
     assert collect_guide_rings([rec], spacing=100.0, bbox_utm=(0.0, 0.0, 10.0, 10.0)) == []
 

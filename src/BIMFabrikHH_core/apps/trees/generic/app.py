@@ -22,15 +22,17 @@ from ifcfactory import BIMFactoryElement
 
 from BIMFabrikHH_core.apps.trees.processing import (
     MIN_TRUNK_RADIUS_M,
+    check_positions_in_dgm_crs,
     collect_pydantic_psets,
     drape_records_on_dgm,
     resolve_tree_dimensions,
+    transform_record_positions,
 )
 from BIMFabrikHH_core.core.geometry import place_basepoint
 from BIMFabrikHH_core.core.geometry.tree_objects_generic import RgbTuple, create_tree_element
-from BIMFabrikHH_core.core.model_creator import init_ifc_project, validate_ifc
+from BIMFabrikHH_core.core.georeferencing import CoordinateTransformer, warn_if_degree_coordinates
+from BIMFabrikHH_core.core.model_creator import georeference_options, init_ifc_project, validate_ifc
 from BIMFabrikHH_core.data_models import TreeRecord
-from BIMFabrikHH_core.data_models.pydantic_georeferencing import CoordinateSystemTemplates
 
 DEFAULT_OUTPUT_NAME = "output_trees_generic.ifc"
 DEFAULT_TRUNK_COLOR: RgbTuple = (112, 69, 46)
@@ -53,6 +55,9 @@ class TreesGenericApp:
         trunk_layer: str = DEFAULT_TRUNK_LAYER,
         crown_layer: str = DEFAULT_CROWN_LAYER,
         name_prefix: str = "",
+        source_epsg: Optional[int] = None,
+        output_epsg: Optional[int] = None,
+        vertical_epsg: Optional[int] = None,
         basepoint_origin: Optional[Tuple[float, float]] = None,
         basepoint_size: float = 1.0,
         basepoint_psets: Optional[Dict[str, Any]] = None,
@@ -75,10 +80,22 @@ class TreesGenericApp:
                 normalized 0-1 floats (``ifcfactory.Style`` accepts both).
             trunk_layer / crown_layer: CAD layer names assigned via ``Style``.
             name_prefix: Prepended to every IFC tree name (e.g. ``"SBK_"``).
-            basepoint_origin: Optional ``(x, y)`` in EPSG:25832 for the
+            source_epsg: CRS of the record positions and ``basepoint_origin``,
+                e.g. 25832 for the Hamburg services, 10285 for Gauß-Krüger
+                survey data or 4326 for WGS84 longitude / latitude (then
+                ``output_epsg`` is required, see :func:`check_source_epsg`).
+                ``None``: positions are written as they are and the IFC gets
+                no georeferencing.
+            output_epsg: IFC output CRS; tree XY are transformed from
+                ``source_epsg`` into it (``source_epsg`` is then required).
+                ``None`` keeps ``source_epsg``.
+            vertical_epsg: Height system of the tree Z, written as IFC vertical
+                datum, e.g. 7837 (DHHN2016) for DGM-draped trees; needs
+                ``source_epsg``. ``None``: none, unless ``source_epsg`` is compound.
+            basepoint_origin: Optional ``(x, y)`` in ``source_epsg`` for the
                 Nullpunktobjekt quad. When ``None``, ``bbox_wgs84`` may supply
-                placement (lower-left reprojected); if both are unset, no
-                basepoint is written (same contract as :func:`place_basepoint`).
+                placement (lower-left reprojected, only with a known CRS); if
+                neither applies, no basepoint is written.
             basepoint_size: Edge length of the basepoint quad (metres); mirrors
                 :class:`TreesBasicApp`.
             basepoint_psets: Optional property-set payload forwarded to
@@ -87,6 +104,8 @@ class TreesGenericApp:
                 only when ``basepoint_origin`` is ``None``.
             tif_files: Optional DGM GeoTIFF names or paths. When set, each
                 tree's Z is sampled from those tiles (no terrain IFC needed).
+                The tiles are EPSG:25832, so ``source_epsg`` must be 25832 or
+                ``None`` (the caller then vouches the positions match).
             dgm_folder: Optional directory or URL prefix joined with
                 ``tif_files`` (same contract as streets drape).
             default_elevation: Z used when a tree XY misses every tile.
@@ -100,7 +119,10 @@ class TreesGenericApp:
         Returns:
             Absolute path of the saved IFC file.
         """
+        transformer = CoordinateTransformer.from_source_to_output(source_epsg, output_epsg, vertical_epsg)
+        warn_if_degree_coordinates((r.position for r in records), transformer)
         if tif_files is not None:
+            check_positions_in_dgm_crs(transformer)
             _t_drape = time.perf_counter()
             records = drape_records_on_dgm(
                 records,
@@ -110,12 +132,13 @@ class TreesGenericApp:
             )
             if phase_timings is not None:
                 phase_timings["drape_s"] = time.perf_counter() - _t_drape
+        records = transform_record_positions(records, transformer)
 
         _t0 = time.perf_counter()
         model_builder = init_ifc_project(
             project_name="Trees_Generic_Project",
             site_name="Trees_Generic_Site",
-            coordinate_system=CoordinateSystemTemplates.gauss_kruger_hamburg(),
+            **georeference_options(transformer),
         )
         if phase_timings is not None:
             phase_timings["project_setup_s"] = time.perf_counter() - _t0
@@ -153,15 +176,16 @@ class TreesGenericApp:
         if phase_timings is not None:
             phase_timings["build_in_s"] = time.perf_counter() - _t0
 
-        if basepoint_origin is not None or bbox_wgs84 is not None:
+        if basepoint_origin is not None or (bbox_wgs84 is not None and transformer is not None):
             _t_bp = time.perf_counter()
             place_basepoint(
                 model=model,
                 site=site,
                 basepoint_origin=basepoint_origin,
-                bbox_wgs84=None if basepoint_origin is not None else bbox_wgs84,
+                bbox_wgs84=bbox_wgs84,
                 size=basepoint_size,
                 psets=basepoint_psets or {},
+                transformer=transformer,
             )
             if phase_timings is not None:
                 phase_timings["basepoint_s"] = time.perf_counter() - _t_bp

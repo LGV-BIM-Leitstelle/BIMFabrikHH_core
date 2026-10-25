@@ -10,8 +10,10 @@ feature, using the ``ifcfactory`` ``BIMFactoryElement`` +
 orchestration as :class:`WasserschutzgebieteGenericApp`.
 
 Geometry comes from ``alkis_vereinfacht / Nutzung``; ground elevation comes
-from the ``Digitales Höhenmodell Hamburg DGM 1`` GeoTIFF tiles. Both share
-EPSG:25832 (ETRS89 / UTM 32N) and NHN heights.
+from the ``Digitales Höhenmodell Hamburg DGM 1`` GeoTIFF tiles (EPSG:25832,
+NHN heights). ``request_params.source_epsg`` declares the CRS of the rings,
+which are transformed into the DGM CRS; without it they are used as they are.
+The draped meshes are then transformed into ``request_params.output_epsg``.
 """
 
 from __future__ import annotations
@@ -27,11 +29,15 @@ from BIMFabrikHH_core.apps.streets.processing import (
     DEFAULT_EDGE_SPACING_M,
     DEFAULT_VERTICAL_OFFSET_M,
     DrapedStreet,
+    dgm_output_transformer,
     drape_streets,
+    transform_draped_streets,
+    transform_record_rings,
+    transformer_to_dgm,
 )
 from BIMFabrikHH_core.config.logging_config import get_logger
-from BIMFabrikHH_core.core.geometry import place_basepoint
-from BIMFabrikHH_core.core.model_creator import init_ifc_project
+from BIMFabrikHH_core.core.geometry import basepoint_xy, place_basepoint
+from BIMFabrikHH_core.core.model_creator import init_ifc_project, output_coordinate_system
 from BIMFabrikHH_core.core.ogc_extractor.ogc_values_extractor import extract_psets_basepoint
 from BIMFabrikHH_core.data_models.params_tree import RequestParams
 from BIMFabrikHH_core.data_models.pydantic_psets_BIMHH import (
@@ -123,14 +129,31 @@ class StreetsGenericApp:
 
         When ``color`` is ``None``, RGB is chosen from ``nutzart``
         (``Strassenverkehr`` / ``Weg`` / ``Bahnverkehr``).
+
+        Rings and ``basepoint_origin`` are in ``request_params.source_epsg`` and
+        are transformed into the DGM tile CRS (EPSG:25832) for draping. The
+        draped meshes and the basepoint are then transformed into
+        ``request_params.output_epsg`` (DGM tile CRS when ``None``), which is
+        the IFC CRS; heights stay DHHN2016.
         """
         if not records:
             logger.error("No street records to export.")
             return None
+        to_dgm = transformer_to_dgm(request_params.source_epsg)
+        to_output = dgm_output_transformer(request_params.output_epsg)
+        records = transform_record_rings(records, to_dgm)
+        basepoint_dgm = basepoint_xy(
+            basepoint_origin=basepoint_origin, bbox_wgs84=request_params.bbox_as_wgs84_tuple, transformer=to_dgm
+        )
+        basepoint = to_output.transform_point(*basepoint_dgm)[:2] if basepoint_dgm is not None else None
 
         try:
             _t0 = time.perf_counter()
-            model_builder = init_ifc_project(request_params=request_params, building_name="Strassen")
+            model_builder = init_ifc_project(
+                request_params=request_params,
+                building_name="Strassen",
+                coordinate_system=output_coordinate_system(to_output),
+            )
             model = model_builder.model
             if model is None:
                 logger.error("Failed to create IFC model")
@@ -149,6 +172,7 @@ class StreetsGenericApp:
                 edge_spacing_m=edge_spacing_m,
                 default_elevation=default_elevation,
             )
+            draped_streets = transform_draped_streets(draped_streets, to_output)
             if phase_timings is not None:
                 phase_timings["drape_s"] = time.perf_counter() - _t0
 
@@ -182,8 +206,7 @@ class StreetsGenericApp:
             place_basepoint(
                 model=model,
                 site=model_builder.site,
-                basepoint_origin=basepoint_origin,
-                bbox_wgs84=(None if basepoint_origin is not None else request_params.bbox_as_wgs84_tuple),
+                basepoint_origin=basepoint,
                 size=basepoint_size,
                 psets=extract_psets_basepoint(request_params.containers or []),
             )

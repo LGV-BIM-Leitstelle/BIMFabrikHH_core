@@ -9,9 +9,9 @@ By default only the three traffic classes are accepted:
 - ``Weg``
 - ``Bahnverkehr``
 
-Vertex coordinates are either **EPSG:25832** ``(easting, northing)`` (default,
-the collection ``storageCrs``) or **EPSG:4326** ``(lon, lat)`` — set
-``geometry_crs`` when parsing.
+Vertex coordinates are kept as delivered; their CRS is declared by the
+caller via ``RequestParams.source_epsg``. :func:`load_guide_records_from_oaf`
+fetches them in EPSG:25832.
 
 Like :class:`WasserschutzgebietRecord` / :class:`TreeRecord`, each record carries
 IFC pset templates under ``psets``.
@@ -27,15 +27,12 @@ from typing import Any, Dict, FrozenSet, List, Optional, Sequence, Tuple, Union
 from pydantic import BaseModel, ConfigDict, Field
 
 from BIMFabrikHH_core.core.ogc_extractor import (
-    OgcGeometryCrs,
     ensure_feature_collection,
     feature_identifier,
     geojson_feature_properties,
     iter_geojson_features,
     parse_feature_polygon_exterior_rings,
 )
-
-GeometryCrs = OgcGeometryCrs
 
 logger = logging.getLogger(__name__)
 
@@ -108,13 +105,7 @@ class StreetRecord(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True, extra="ignore")
 
     feature_id: Union[int, str] = Field(description="``feature.id`` from GeoJSON")
-    rings: List[List[Tuple[float, float]]] = Field(
-        description="Exterior rings; (easting, northing) if EPSG:25832 else (lon, lat)"
-    )
-    geometry_crs: GeometryCrs = Field(
-        default="EPSG:25832",
-        description="CRS of ``rings`` vertex coordinates",
-    )
+    rings: List[List[Tuple[float, float]]] = Field(description="Exterior rings, XY as delivered")
 
     oid: str = Field(default="", description="ALKIS object id")
     nutzart: str = Field(default="", description="Nutzungsart (Strassenverkehr / Weg / Bahnverkehr)")
@@ -221,7 +212,6 @@ def pset_for_parcel_group(records: Sequence[StreetRecord]) -> "Pset_Objektinform
 def records_from_geojson_feature_collection(
     data: Dict[str, Any],
     *,
-    geometry_crs: GeometryCrs = "EPSG:25832",
     nutzarten: Optional[FrozenSet[str]] = DEFAULT_NUTZARTEN,
 ) -> List[StreetRecord]:
     """Parse a GeoJSON FeatureCollection into :class:`StreetRecord` list.
@@ -231,7 +221,6 @@ def records_from_geojson_feature_collection(
 
     Args:
         data: GeoJSON FeatureCollection object.
-        geometry_crs: CRS of the vertex coordinates (``EPSG:25832`` or ``EPSG:4326``).
         nutzarten: Allowed ``nutzart`` values. ``None`` keeps every Nutzung class.
     """
     ensure_feature_collection(data)
@@ -251,7 +240,6 @@ def records_from_geojson_feature_collection(
             **props_raw,
             "feature_id": fid,
             "rings": rings,
-            "geometry_crs": geometry_crs,
         }
         out.append(_record_with_psets_from_payload(payload))
     return out
@@ -260,7 +248,6 @@ def records_from_geojson_feature_collection(
 def load_streets_records(
     path: Union[str, Path],
     *,
-    geometry_crs: GeometryCrs = "EPSG:25832",
     nutzarten: Optional[FrozenSet[str]] = DEFAULT_NUTZARTEN,
 ) -> List[StreetRecord]:
     """Load and parse a ``.json`` FeatureCollection from disk."""
@@ -269,7 +256,7 @@ def load_streets_records(
         data = json.load(f)
     if not isinstance(data, dict):
         raise ValueError("JSON root must be an object")
-    return records_from_geojson_feature_collection(data, geometry_crs=geometry_crs, nutzarten=nutzarten)
+    return records_from_geojson_feature_collection(data, nutzarten=nutzarten)
 
 
 def _feature_nutzart(feature: Dict[str, Any]) -> str:
@@ -366,7 +353,6 @@ __all__ = [
     "PARCELS_LABEL",
     "PARCEL_NUTZARTEN",
     "WEITERE_NUTZARTEN",
-    "GeometryCrs",
     "StreetRecord",
     "collect_street_psets",
     "fetch_nutzung_feature_collection",

@@ -72,7 +72,7 @@ def test_attributes_fall_back_to_the_record_without_psets() -> None:
 
 def test_trees_rust_app_writes_ifc(tmp_path: Path) -> None:
     dest = tmp_path / "trees.ifc"
-    written = TreesRustApp.build_ifc([_record()], output_path=dest, include_property_sets=True)
+    written = TreesRustApp.build_ifc([_record()], output_path=dest, include_property_sets=True, source_epsg=25832)
     assert written == dest
     text = dest.read_text()
     assert text.startswith("ISO-10303-21")

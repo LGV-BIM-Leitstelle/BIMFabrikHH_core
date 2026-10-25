@@ -6,7 +6,7 @@ from typing import get_type_hints
 import pytest
 
 from BIMFabrikHH_core.apps.city import CityBasicApp, parse_gml_files
-from BIMFabrikHH_core.apps.city.processing import _building_overlaps_bbox, _resolve_file_path
+from BIMFabrikHH_core.apps.city.processing import _building_overlaps_bbox, resolve_file_path
 from BIMFabrikHH_core.data_models.params_bbox import BoundingBoxParams
 from BIMFabrikHH_core.data_models.params_tree import Component, Container, RequestParams
 from BIMFabrikHH_core.data_models.pydantic_psets_city_model import Building, CityModelAttributes
@@ -50,16 +50,16 @@ class TestCityProcessing:
     """Unit tests for the pure data-processing helpers."""
 
     def test_resolve_file_path_none_folder(self):
-        assert _resolve_file_path("tile.xml", None) == "tile.xml"
+        assert resolve_file_path("tile.xml", None) == "tile.xml"
 
     def test_resolve_file_path_http_folder(self):
-        assert _resolve_file_path("tile.xml", "https://example.com/tiles") == ("https://example.com/tiles/tile.xml")
+        assert resolve_file_path("tile.xml", "https://example.com/tiles") == ("https://example.com/tiles/tile.xml")
 
     def test_resolve_file_path_absolute_folder(self):
-        assert _resolve_file_path("tile.xml", "/mnt/assets") == "/mnt/assets/tile.xml"
+        assert resolve_file_path("tile.xml", "/mnt/assets") == "/mnt/assets/tile.xml"
 
     def test_resolve_file_path_absolute_file_overrides_mounted(self):
-        assert _resolve_file_path("/abs/tile.xml", "/mnt/assets") == "/abs/tile.xml"
+        assert resolve_file_path("/abs/tile.xml", "/mnt/assets") == "/abs/tile.xml"
 
     def test_building_overlaps_bbox_inside(self):
         building = _make_building(

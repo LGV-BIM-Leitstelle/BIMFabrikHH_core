@@ -11,8 +11,9 @@ Each cylinder sits at its lower layer boundary (``lower_height``) with the
 layer thickness as height, so the layers of a borehole stack from the
 Ansatzpunkt downwards.
 
-Geometry uses **map metres** (full easting / northing in EPSG:25832); the WFS
-delivers EPSG:5555, whose horizontal part is EPSG:25832.
+The WFS delivers EPSG:5555, whose horizontal part is EPSG:25832. Positions are
+written as they are, in **map metres**; ``request_params.source_epsg`` declares
+their CRS and ``request_params.output_epsg`` transforms them into another one.
 
 The IFC display colour comes from the layer's ``hauptgemengteil`` (DIN 4023),
 not from its ``farbe`` code, which stays metadata in
@@ -32,15 +33,16 @@ from pydantic import BaseModel
 
 from BIMFabrikHH_core.config.logging_config import get_logger
 from BIMFabrikHH_core.core.geometry import place_basepoint
-from BIMFabrikHH_core.core.model_creator import init_ifc_project
+from BIMFabrikHH_core.core.georeferencing import CoordinateTransformer, warn_if_degree_coordinates
+from BIMFabrikHH_core.core.model_creator import georeference_options, init_ifc_project
 from BIMFabrikHH_core.core.ogc_extractor import extract_psets_basepoint
 from BIMFabrikHH_core.data_models.boreholes import (BoreholeLayer,
                                                     BoreholeRecord,
                                                     collect_borehole_psets,
                                                     collect_groundwater_psets)
 from BIMFabrikHH_core.data_models.params_tree import RequestParams
-from BIMFabrikHH_core.data_models.pydantic_georeferencing import (
-    CoordinateOperation, CoordinateSystem)
+from BIMFabrikHH_core.data_models.pydantic_georeferencing import \
+    CoordinateOperation
 from BIMFabrikHH_core.data_models.pydantic_psets_BIMHH import Pset_Hyperlink
 
 logger = get_logger("boreholes_generic_app")
@@ -186,7 +188,6 @@ class BoreholesGenericApp:
         request_params: RequestParams,
         output_path: Optional[Union[str, Path]] = None,
         output_name: str = _DEFAULT_OUTPUT_NAME,
-        coordinate_system: Optional[CoordinateSystem] = None,
         coordinate_operation: Optional[CoordinateOperation] = None,
         cylinder_radius_m: float = _DEFAULT_CYLINDER_RADIUS_M,
         color: Optional[RgbTuple] = None,
@@ -203,10 +204,16 @@ class BoreholesGenericApp:
         Args:
             records: Pre-parsed :class:`BoreholeRecord` list, e.g. from
                 :func:`~BIMFabrikHH_core.apps.boreholes.processing.records_from_boreholeml`.
-            request_params: Project / site / building names and bbox.
+            request_params: Project / site / building names, bbox and the
+                optional ``source_epsg`` / ``output_epsg``. ``source_epsg`` is
+                the CRS of the record positions and ``basepoint_origin`` (25832
+                or the compound 5555 for the Hamburg WFS; a geographic or
+                compound source needs ``output_epsg``); without it the IFC gets
+                no georeferencing
+                and no bbox basepoint. ``output_epsg`` transforms into another
+                CRS and needs ``source_epsg``.
             output_path: Explicit target file; defaults to the output folder.
             output_name: Filename used when ``output_path`` is ``None``.
-            coordinate_system: Override for the georeferencing context.
             coordinate_operation: Override for the map conversion.
             cylinder_radius_m: Radius of every layer cylinder in metres.
             color: Fixed colour for all layers; ``None`` keeps the per-layer
@@ -221,17 +228,31 @@ class BoreholesGenericApp:
 
         Returns:
             Path of the written IFC file, or ``None`` on failure.
+
+        Raises:
+            ValueError: ``request_params.output_epsg`` without ``source_epsg``.
         """
         if not records:
             logger.error("No borehole records to export.")
             return None
+        transformer = CoordinateTransformer.from_source_to_output(
+            request_params.source_epsg, request_params.output_epsg, request_params.vertical_epsg
+        )
+        eastings = [r.easting for r in records]
+        northings = [r.northing for r in records]
+        warn_if_degree_coordinates(zip(eastings, northings), transformer)
 
         try:
             _t0 = time.perf_counter()
+            if transformer is not None and not transformer.is_identity:
+                xs, ys = transformer.transform_xy_batch(eastings, northings)
+                records = [
+                    rec.model_copy(update={"easting": x, "northing": y}) for rec, x, y in zip(records, xs, ys)
+                ]
             model_builder = init_ifc_project(
                 request_params=request_params,
-                coordinate_system=coordinate_system,
                 coordinate_operation=coordinate_operation,
+                **georeference_options(transformer),
             )
             model = model_builder.model
             if model is None:
@@ -294,9 +315,10 @@ class BoreholesGenericApp:
                 model=model,
                 site=model_builder.site,
                 basepoint_origin=basepoint_origin,
-                bbox_wgs84=request_params.bbox_as_wgs84_tuple,
+                bbox_wgs84=request_params.bbox_as_wgs84_tuple if transformer is not None else None,
                 size=basepoint_size,
                 psets=extract_psets_basepoint(request_params.containers or []),
+                transformer=transformer,
             )
 
             _t0 = time.perf_counter()

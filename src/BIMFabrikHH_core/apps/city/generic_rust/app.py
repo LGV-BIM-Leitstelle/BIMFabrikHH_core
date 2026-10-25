@@ -9,6 +9,12 @@ paths (or CityJSON text) and get an IFC path back.
 ``mode="mesh"`` is one ``IfcBuildingElementProxy`` per building
 (:class:`CityGenericApp`). ``mode="typed"`` is one product per surface
 (:class:`CityGenericEntityApp`).
+
+EPSG handling matches :class:`CityGenericApp`: the tiles are in
+``request_params.source_epsg`` and are transformed into
+``request_params.output_epsg`` when given. Rust has no PROJ, so the pyproj
+transformation is passed to Rust as ``transform`` and called once with all
+coordinates.
 """
 
 from __future__ import annotations
@@ -16,16 +22,14 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Optional, Sequence, Tuple, Union
 
-from pyproj import Transformer
-
+from BIMFabrikHH_core.apps.city.processing import bbox_in_source_crs, with_tile_crs
 from BIMFabrikHH_core.config.logging_config import get_logger
 from BIMFabrikHH_core.config.paths import PathConfig
+from BIMFabrikHH_core.core.geometry import basepoint_xy
+from BIMFabrikHH_core.core.georeferencing import CoordinateTransformer
+from BIMFabrikHH_core.core.model_creator import output_coordinate_system
 from BIMFabrikHH_core.core.ogc_extractor.ogc_values_extractor import extract_project_info
 from BIMFabrikHH_core.data_models.params_tree import RequestParams
-from BIMFabrikHH_core.data_models.pydantic_georeferencing import (
-    CoordinateSystem,
-    CoordinateSystemTemplates,
-)
 
 logger = get_logger("city_rust_app")
 
@@ -60,7 +64,6 @@ class CityRustApp:
         building_id_filter: Optional[str] = None,
         output_path: Optional[Union[str, Path]] = None,
         output_name: str = _DEFAULT_OUTPUT_NAME,
-        coordinate_system: Optional[CoordinateSystem] = None,
         color: Optional[Tuple[float, float, float]] = None,
         cad_layer: bool = True,
         basepoint_origin: Optional[Tuple[float, float]] = None,
@@ -75,12 +78,20 @@ class CityRustApp:
         ``[]`` for no property sets. ``ifc_types`` defaults to
         ``hamburg_ifc_types()`` when ``mode="typed"``. ``folder_path`` is
         accepted for :class:`CityGenericApp` call-site compatibility and is unused.
+
+        A ``request_params.bbox`` crops the tiles in ``source_epsg`` (it needs
+        one); the basepoint is ``basepoint_origin`` (in ``source_epsg``), else
+        the bbox lower-left, both in the output CRS. Without ``source_epsg``
+        the coordinates are written as they are, without georeferencing. An
+        empty ``source_epsg`` / ``vertical_epsg`` is taken from the ``srsName``
+        of the tiles, and a contradicting one raises (see :func:`with_tile_crs`).
         """
         del folder_path
         paths = [str(p) for p in gml_files]
         if not paths:
             logger.error("CityRustApp.from_gml_files: no GML files.")
             return None
+        request_params = with_tile_crs(request_params, paths)
         dest = _resolve_output(output_path, output_name)
         gml_to_ifc, _, _, _ = _rust()
         written = gml_to_ifc(
@@ -90,7 +101,6 @@ class CityRustApp:
             **_export_kwargs(
                 request_params,
                 mode=mode,
-                coordinate_system=coordinate_system,
                 color=color,
                 cad_layer=cad_layer,
                 basepoint_origin=basepoint_origin,
@@ -111,7 +121,6 @@ class CityRustApp:
         building_id_filter: Optional[str] = None,
         output_path: Optional[Union[str, Path]] = None,
         output_name: str = _DEFAULT_OUTPUT_NAME,
-        coordinate_system: Optional[CoordinateSystem] = None,
         color: Optional[Tuple[float, float, float]] = None,
         cad_layer: bool = True,
         basepoint_origin: Optional[Tuple[float, float]] = None,
@@ -119,7 +128,10 @@ class CityRustApp:
         ifc_types=None,
         progress: bool = False,
     ) -> Optional[Path]:
-        """Parse CityJSON (path, paths, or document text) and write one IFC."""
+        """Parse CityJSON (path, paths, or document text) and write one IFC.
+
+        Options and EPSG handling as in :meth:`from_gml_files`.
+        """
         dest = _resolve_output(output_path, output_name)
         _, cityjson_to_ifc, _, _ = _rust()
         written = cityjson_to_ifc(
@@ -129,7 +141,6 @@ class CityRustApp:
             **_export_kwargs(
                 request_params,
                 mode=mode,
-                coordinate_system=coordinate_system,
                 color=color,
                 cad_layer=cad_layer,
                 basepoint_origin=basepoint_origin,
@@ -148,28 +159,10 @@ def _resolve_output(output_path: Optional[Union[str, Path]], output_name: str) -
     return dest
 
 
-def _epsg(coordinate_system: Optional[CoordinateSystem]) -> int:
-    name = (coordinate_system or CoordinateSystemTemplates.epsg_25832()).name
-    if name.upper().startswith("EPSG:"):
-        return int(name.split(":", 1)[1])
-    return 25832
-
-
-def _bbox_epsg(request_params: RequestParams, epsg: int) -> Optional[Tuple[float, float, float, float]]:
-    wgs = request_params.bbox_as_wgs84_tuple
-    if wgs is None:
-        return None
-    transformer = Transformer.from_crs("EPSG:4326", f"EPSG:{epsg}", always_xy=True)
-    x1, y1 = transformer.transform(wgs[0], wgs[1])
-    x2, y2 = transformer.transform(wgs[2], wgs[3])
-    return (min(x1, x2), min(y1, y2), max(x1, x2), max(y1, y2))
-
-
 def _export_kwargs(
     request_params: RequestParams,
     *,
     mode: str,
-    coordinate_system: Optional[CoordinateSystem],
     color: Optional[Tuple[float, float, float]],
     cad_layer: bool,
     basepoint_origin: Optional[Tuple[float, float]],
@@ -178,11 +171,19 @@ def _export_kwargs(
     progress: bool,
 ) -> dict:
     project_name, site_name, _ = extract_project_info(request_params.containers)
-    epsg = _epsg(coordinate_system)
-    bbox_epsg = _bbox_epsg(request_params, epsg)
-    basepoint = basepoint_origin
-    if basepoint is None and bbox_epsg is not None:
-        basepoint = (bbox_epsg[0], bbox_epsg[1])
+    transformer = CoordinateTransformer.from_source_to_output(
+        request_params.source_epsg, request_params.output_epsg, request_params.vertical_epsg
+    )
+    bbox_wgs84 = request_params.bbox_as_wgs84_tuple
+    bbox_epsg = bbox_in_source_crs(bbox_wgs84, request_params.source_epsg)
+    basepoint = basepoint_xy(
+        basepoint_origin=basepoint_origin,
+        bbox_wgs84=bbox_wgs84 if transformer is not None else None,
+        transformer=transformer,
+    )
+    transform = None
+    if transformer is not None and not transformer.is_identity:
+        transform = transformer.transformer.transform
     _, _, default_psets, hamburg_ifc_types = _rust()
     if psets is None:
         psets = default_psets()
@@ -192,8 +193,9 @@ def _export_kwargs(
         "mode": mode,
         "project_name": project_name,
         "site_name": site_name,
-        "epsg": epsg,
+        "crs": output_coordinate_system(transformer),
         "bbox_epsg": bbox_epsg,
+        "transform": transform,
         "basepoint": basepoint,
         "psets": psets,
         "ifc_types": ifc_types,

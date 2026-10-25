@@ -3,8 +3,8 @@
 Parsed from GeoJSON ``FeatureCollection`` responses such as
 ``/datasets/v1/wasserschutzgebiete/collections/wasserschutzgebiete/items``.
 Geometry is expected as ``Polygon``; only the exterior ring is used.
-Ring coordinates are either **EPSG:25832** ``(easting, northing)`` (default)
-or **EPSG:4326** ``(lon, lat)`` — set ``geometry_crs`` when parsing.
+Ring coordinates are kept as delivered; their CRS is declared by the caller
+via ``RequestParams.source_epsg``.
 
 Like :class:`TreeRecord`, each row carries IFC pset templates under
 ``psets`` (filled by :func:`records_from_geojson_feature_collection` or by
@@ -21,15 +21,12 @@ from typing import Any, Dict, List, Tuple, Union
 from pydantic import BaseModel, ConfigDict, Field
 
 from BIMFabrikHH_core.core.ogc_extractor import (
-    OgcGeometryCrs,
     ensure_feature_collection,
     feature_identifier,
     geojson_feature_properties,
     iter_geojson_features,
     parse_feature_polygon_exterior_ring,
 )
-
-GeometryCrs = OgcGeometryCrs
 
 logger = logging.getLogger(__name__)
 
@@ -40,13 +37,7 @@ class WasserschutzgebietRecord(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True, extra="ignore")
 
     feature_id: Union[int, str] = Field(description="``feature.id`` from GeoJSON")
-    exterior_ring: List[Tuple[float, float]] = Field(
-        description="Exterior ring; (easting, northing) if EPSG:25832 else (lon, lat)"
-    )
-    geometry_crs: GeometryCrs = Field(
-        default="EPSG:25832",
-        description="CRS of ``exterior_ring`` vertex coordinates",
-    )
+    exterior_ring: List[Tuple[float, float]] = Field(description="Exterior ring, XY as delivered")
 
     wsg: str = Field(description="Kürzel / Typ (z. B. WSG)")
     gebietsname: str = Field(description="Name des Schutzgebiets")
@@ -108,18 +99,13 @@ def _record_with_psets_from_payload(
     return record.model_copy(update={"psets": {Pset_Objektinformation_Wasserschutzgebiet.pset_name: pset}})
 
 
-def records_from_geojson_feature_collection(
-    data: dict[str, Any],
-    *,
-    geometry_crs: GeometryCrs = "EPSG:25832",
-) -> List[WasserschutzgebietRecord]:
+def records_from_geojson_feature_collection(data: dict[str, Any]) -> List[WasserschutzgebietRecord]:
     """Parse a GeoJSON FeatureCollection dict into :class:`WasserschutzgebietRecord` list.
 
     Skips features without ``Polygon`` geometry or empty rings.
 
     Args:
         data: GeoJSON FeatureCollection object.
-        geometry_crs: CRS of the polygon coordinates (``EPSG:25832`` or ``EPSG:4326``).
     """
     ensure_feature_collection(data)
     out: List[WasserschutzgebietRecord] = []
@@ -135,28 +121,22 @@ def records_from_geojson_feature_collection(
             **props_raw,
             "feature_id": fid,
             "exterior_ring": ring,
-            "geometry_crs": geometry_crs,
         }
         out.append(_record_with_psets_from_payload(payload))
     return out
 
 
-def load_wasserschutzgebiete_records(
-    path: Union[str, Path],
-    *,
-    geometry_crs: GeometryCrs = "EPSG:25832",
-) -> List[WasserschutzgebietRecord]:
+def load_wasserschutzgebiete_records(path: Union[str, Path]) -> List[WasserschutzgebietRecord]:
     """Load and parse a ``.json`` FeatureCollection from disk."""
     p = Path(path)
     with p.open(encoding="utf-8") as f:
         data = json.load(f)
     if not isinstance(data, dict):
         raise ValueError("JSON root must be an object")
-    return records_from_geojson_feature_collection(data, geometry_crs=geometry_crs)
+    return records_from_geojson_feature_collection(data)
 
 
 __all__ = [
-    "GeometryCrs",
     "WasserschutzgebietRecord",
     "collect_wasserschutz_psets",
     "load_wasserschutzgebiete_records",
