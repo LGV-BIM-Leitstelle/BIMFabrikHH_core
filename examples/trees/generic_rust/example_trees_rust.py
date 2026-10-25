@@ -9,6 +9,9 @@ Because both examples share bbox and Nullpunkt, the output opens together
 with ``terrain/generic/example_dgm_generic.ifc`` and with the ifcfactory
 tree IFC.
 
+Writes one IFC per code in the generic example's ``OUTPUT_EPSGS``
+(``example_trees_rust_<epsg>.ifc``).
+
 Needs ``bimfabrikhh_core_rs`` installed (``pip install bimfabrikhh-core-rs``).
 """
 
@@ -27,11 +30,13 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "generic"))
 from example_trees_generic import (  # noqa: E402
     BBOX_WGS84,
     DGM_FOLDER,
+    OUTPUT_EPSGS,
+    SOURCE_EPSG,
     USE_DGM,
     build_example_tree_records,
 )
 
-OUTPUT_FILENAME: str = "example_trees_rust.ifc"
+OUTPUT_FILENAME: str = "example_trees_rust_{epsg}.ifc"
 
 
 def main() -> None:
@@ -47,18 +52,21 @@ def main() -> None:
         f"{len(tif_files)} tile(s) in {DGM_FOLDER}" if tif_files else "off (hand-written Z)",
     )
 
-    start = time.perf_counter()
-    # Colours stay at the Rust defaults: that writer expects 0-255 RGB,
-    # while the ifcfactory example uses normalized 0-1 floats.
-    out = TreesRustApp.build_ifc(
-        records,
-        output_path=Path(__file__).parent / OUTPUT_FILENAME,
-        include_property_sets=True,
-        bbox_wgs84=BBOX_WGS84,
-        tif_files=tif_files,
-    )
-    logging.info("TIMING trees (Rust): %.3f s", time.perf_counter() - start)
-    logging.info("Done. IFC path: %s", out)
+    for epsg in OUTPUT_EPSGS:
+        start = time.perf_counter()
+        # Colours stay at the Rust defaults: that writer expects 0-255 RGB,
+        # while the ifcfactory example uses normalized 0-1 floats.
+        out = TreesRustApp.build_ifc(
+            records,
+            output_path=Path(__file__).parent / OUTPUT_FILENAME.format(epsg=epsg),
+            include_property_sets=True,
+            bbox_wgs84=BBOX_WGS84,
+            tif_files=tif_files,
+            source_epsg=SOURCE_EPSG,
+            output_epsg=epsg,
+        )
+        logging.info("TIMING trees (Rust) EPSG:%d: %.3f s", epsg, time.perf_counter() - start)
+        logging.info("Done. IFC path: %s", out)
 
 
 if __name__ == "__main__":

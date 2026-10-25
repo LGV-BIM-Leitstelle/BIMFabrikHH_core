@@ -43,7 +43,7 @@ def main():
         name="EPSG:25832",
         geodetic_datum="ETRS89",
         description="ETRS89 / UTM zone 32N",
-        vertical_datum="DHHN2016",
+        vertical_datum="EPSG:7837",
         map_projection="Transverse Mercator",
         map_zone="32",
     )

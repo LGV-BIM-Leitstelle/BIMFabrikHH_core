@@ -73,7 +73,7 @@ def example_custom_coordinate_system():
         name="Custom Local CRS",
         description="Custom coordinate system for local project area",
         geodetic_datum="ETRS89",
-        vertical_datum="DHHN2016",
+        vertical_datum="EPSG:7837",
         map_projection="Transverse Mercator",
         map_zone="31",
     )

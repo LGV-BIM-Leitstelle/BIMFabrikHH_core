@@ -2,8 +2,8 @@
 
 Loads ``response_WFS_boreholes_generic.xml`` next to this script (a saved
 Hamburg ``HH_WFS_BoreholeML3`` ``GetFeature`` response, so no live HTTP) and
-writes ``example_boreholes_generic.ifc`` with one stacked cylinder per soil
-layer in map metres.
+writes ``example_boreholes_generic_<epsg>.ifc`` per code in ``OUTPUT_EPSGS``
+with one stacked cylinder per soil layer in map metres of that CRS.
 
 Fetching is deliberately not part of the app: the API hands the parsed WFS
 response to :func:`records_from_boreholeml`, this example reads the same XML
@@ -32,6 +32,10 @@ _FIXTURE_NAME = "response_WFS_boreholes_generic.xml"
 # Must match the extent the fixture was fetched with: the bbox only positions
 # the Projektnullpunkt, it does not select boreholes from the saved response.
 _FIXTURE_BBOX = BoundingBoxParams(min_x=9.9861, min_y=53.4867, max_x=9.9872, max_y=53.4872)
+# Horizontal part of the WFS default EPSG:5555.
+SOURCE_EPSG = 25832
+# ETRS89 / UTM zone 32N and ETRS89 / Gauss-Krueger zone 3 (Hamburg).
+OUTPUT_EPSGS = (25832, 10285)
 
 
 def main() -> None:
@@ -66,28 +70,31 @@ def main() -> None:
             "building": Component(title="IfcBuilding", value="Innenstadt"),
         },
     )
-    request_body = RequestParams(bbox=_FIXTURE_BBOX, containers=[container])
-    output_file = here.parent / "example_boreholes_generic.ifc"
+    for epsg in OUTPUT_EPSGS:
+        request_body = RequestParams(
+            bbox=_FIXTURE_BBOX, containers=[container], source_epsg=SOURCE_EPSG, output_epsg=epsg
+        )
+        output_file = here.parent / f"example_boreholes_generic_{epsg}.ifc"
 
-    logger.info("Building → %s", output_file.name)
-    result = BoreholesGenericApp.build_ifc(
-        records,
-        request_params=request_body,
-        output_path=output_file,
-    )
-    if not result:
-        logger.error("IFC build failed", extra={"debug_category": "error"})
-        sys.exit(1)
-    logger.info(
-        "OK → %s\n%s",
-        result.name,
-        result.parent,
-        extra={"debug_category": "success"},
-    )
-    subprocess.run(
-        [sys.executable, "-m", "ifcopenshell.validate", "--rules", str(result)],
-        check=True,
-    )
+        logger.info("Building → %s", output_file.name)
+        result = BoreholesGenericApp.build_ifc(
+            records,
+            request_params=request_body,
+            output_path=output_file,
+        )
+        if not result:
+            logger.error("IFC build failed", extra={"debug_category": "error"})
+            sys.exit(1)
+        logger.info(
+            "OK → %s\n%s",
+            result.name,
+            result.parent,
+            extra={"debug_category": "success"},
+        )
+        subprocess.run(
+            [sys.executable, "-m", "ifcopenshell.validate", "--rules", str(result)],
+            check=True,
+        )
 
 
 if __name__ == "__main__":

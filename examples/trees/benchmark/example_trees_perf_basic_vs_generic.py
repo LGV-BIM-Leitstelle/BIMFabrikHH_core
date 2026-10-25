@@ -243,6 +243,7 @@ def main() -> None:
             output_path=path_generic,
             include_property_sets=True,
             phase_timings=timings_gen,
+            source_epsg=25832,
         )
         timings_gen["tree_pset_s"] = float(pset_s[0])
     wall_gen = time.perf_counter() - t_wall_p0

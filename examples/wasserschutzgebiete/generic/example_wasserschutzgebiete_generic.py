@@ -2,7 +2,8 @@
 
 Loads ``response_OGC_wasserschutzgebiete_generic.json`` next to this script (saved
 Hamburg OGC API FeatureCollection in **EPSG:25832** polygon coordinates; no live HTTP)
-and writes ``example_wasserschutzgebiete_generic.ifc`` with geometry in map metres.
+and writes ``example_wasserschutzgebiete_generic_<epsg>.ifc`` per code in ``OUTPUT_EPSGS``
+with geometry in map metres of that CRS.
 
 API reference: `Wasserschutzgebiete Hamburg <https://api.hamburg.de/datasets/v1/wasserschutzgebiete/api?f=html>`_.
 """
@@ -23,6 +24,10 @@ from BIMFabrikHH_core.config import get_logger, setup_logging
 logger = get_logger()
 
 _FIXTURE_NAME = "response_OGC_wasserschutzgebiete_generic.json"
+# CRS of the fixture coordinates.
+SOURCE_EPSG = 25832
+# ETRS89 / UTM zone 32N and ETRS89 / Gauss-Krueger zone 3 (Hamburg).
+OUTPUT_EPSGS = (25832, 10285)
 
 
 def main() -> None:
@@ -52,28 +57,29 @@ def main() -> None:
             "type": Component(title="Model Type", value="Extruded Schutzzonen"),
         },
     )
-    request_body = RequestParams(containers=[container])
-    output_file = here.parent / "example_wasserschutzgebiete_generic.ifc"
+    for epsg in OUTPUT_EPSGS:
+        request_body = RequestParams(containers=[container], source_epsg=SOURCE_EPSG, output_epsg=epsg)
+        output_file = here.parent / f"example_wasserschutzgebiete_generic_{epsg}.ifc"
 
-    logger.info("Building → %s", output_file.name)
-    result = WasserschutzgebieteGenericApp.build_ifc(
-        records,
-        request_params=request_body,
-        output_path=output_file,
-    )
-    if not result:
-        logger.error("IFC build failed", extra={"debug_category": "error"})
-        sys.exit(1)
-    logger.info(
-        "OK → %s\n%s",
-        result.name,
-        result.parent,
-        extra={"debug_category": "success"},
-    )
-    subprocess.run(
-        [sys.executable, "-m", "ifcopenshell.validate", "--rules", str(result)],
-        check=True,
-    )
+        logger.info("Building → %s", output_file.name)
+        result = WasserschutzgebieteGenericApp.build_ifc(
+            records,
+            request_params=request_body,
+            output_path=output_file,
+        )
+        if not result:
+            logger.error("IFC build failed", extra={"debug_category": "error"})
+            sys.exit(1)
+        logger.info(
+            "OK → %s\n%s",
+            result.name,
+            result.parent,
+            extra={"debug_category": "success"},
+        )
+        subprocess.run(
+            [sys.executable, "-m", "ifcopenshell.validate", "--rules", str(result)],
+            check=True,
+        )
 
 
 if __name__ == "__main__":
