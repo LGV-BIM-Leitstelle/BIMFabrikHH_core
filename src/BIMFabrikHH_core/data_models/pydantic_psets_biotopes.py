@@ -123,7 +123,7 @@ class Pset_Objektinformation_Biotop(Pset_Objektinformation_Lebensraum):
         default=UNDEFINED,
     )
     gefaehrdung_status: str = Field(
-        validation_alias=AliasChoices("gefaerdung_status", "_GefaehrdungStatus"),
+        validation_alias=AliasChoices("gefaehrdung_status", "gefaerdung_status", "_GefaehrdungStatus"),
         serialization_alias="_GefaehrdungStatus",
         default=UNDEFINED,
     )

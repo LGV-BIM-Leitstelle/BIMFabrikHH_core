@@ -36,6 +36,8 @@ _BIOTOPE_HH_DESCRIPTIONS_FILE = "biotope_descriptions_HH.json"
 _BIOTOPE_HH_BKOMPV_FILE = "biotope_code_HH_to_BKompV.json"
 _BIOTOPE_BKOMPV_DESCRIPTIONS_FILE = "biotope_descriptions_BKompV.json"
 
+_BIOTOP_BEWERTUNG_HH = "Biotopbewertung für die Biotopkartierung Hamburg"
+
 UNDEFINED = "undefiniert"
 
 class BiotopeShape(Enum):
@@ -96,6 +98,7 @@ class BiotopeRecord(BaseModel):
     gesamtbewertung: Optional[int] = Field(description="TODO", default=None)
     
     code_ffh_lebensraumtyp_bfn: Optional[str] = Field(description="TODO", default=None)
+    erhaltungszustand_bfn: Optional[str] = Field(description="TODO", default=None)
 
     flaeche_oder_laenge: Optional[float] = Field(description="TODO", default=None)
     breite_lineares_objekt: Optional[float] = Field(description="TODO", default=None)
@@ -264,10 +267,10 @@ def build_biotope_hyperlink(url: str, id_biotop: int) -> Pset_Hyperlink:
     return Pset_Hyperlink(hyperlink_001=url, hyperlink_001_bemerkung=bemerkung)
 
 
-def _combine_haupt_and_neben_biotopes(haupt: str, neben: str = None):
+def _combine_haupt_and_neben_biotopes(haupt: str, neben: list[str] = []):
     if not haupt:
         return ""
-    if not neben:
+    if not neben or not any(neben):
         return str(haupt)
     else:
         neben_unique = list(dict.fromkeys(neben))
@@ -331,13 +334,13 @@ def _record_with_psets_from_payload(payload: Dict[str, Any], biotope_name_mappin
         biotoptyp_land_name=biotoptyp_land_name_combined or UNDEFINED,
         biotop_gesamtwert=str(record.gesamtbewertung),
         biotop_gesamtwert_bedeutung=bewertung_dict.get(str(record.gesamtbewertung), UNDEFINED),
-        # biotop_gesamtwert_liste="",  # TODO Bezeichnung bzw. Referenz des verwendeten Bewertungsverfahrens für den Biotopgesamtwert.
-        # gefaehrdung_status="",  # TODO find status info
+        biotop_gesamtwert_liste=str(_BIOTOP_BEWERTUNG_HH),  # TODO Bezeichnung bzw. Referenz des verwendeten Bewertungsverfahrens für den Biotopgesamtwert.
+        gefaehrdung_status=record.erhaltungszustand_bfn or UNDEFINED,  # TODO find status info
         ist_gesetzl_gesch_biotop=record.is_protected,
         ist_gesetzl_gesch_biotop_landesrecht=protection_status_landesrecht,
-        # Convert m^2 to ha
+        # TODO: writing "ha", it gets converted to m**2. -> Find out how to display in ha.
         biotop_groesse_ha=(
-            (record.flaeche_oder_laenge / 10000.0, "ha") if record.flaeche_oder_laenge is not None else None
+            (record.flaeche_oder_laenge, "m**2") if record.flaeche_oder_laenge is not None else None
         ),
         ist_ffh_lebensraum=record.code_ffh_lebensraumtyp_bfn is not None
     )
