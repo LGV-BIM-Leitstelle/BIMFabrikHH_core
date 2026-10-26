@@ -32,7 +32,10 @@ from BIMFabrikHH_core.data_models.pydantic_psets_BIMHH import Pset_Hyperlink
 logger = logging.getLogger(__name__)
 
 ASSETS_DIR = Path(__file__).resolve().parent / "assets"
-_BIOTOPE_MAPPING_FILE = "biotope_mapping_HH.json"
+_BIOTOPE_HH_DESCRIPTIONS_FILE = "biotope_descriptions_HH.json"
+_BIOTOPE_HH_BKOMPV_FILE = "biotope_code_HH_to_BKompV.json"
+_BIOTOPE_BKOMPV_DESCRIPTIONS_FILE = "biotope_descriptions_BKompV.json"
+
 UNDEFINED = "undefiniert"
 
 class BiotopeShape(Enum):
@@ -166,26 +169,79 @@ def _load_config_json(filename: str) -> Dict[str, Any]:
 
 
 @lru_cache(maxsize=1)
-def load_biotope_mapping() -> Dict[str, str]:
-    """Load the biotope type table (https://www.bfn.de/eingriffsregelung-und-bundeskompensationsverordnung,
+def load_biotope_hh_to_bkompv_mapping() -> Dict[str, str]:
+    """Load the table mapping Hamburg biotope type codes to their corresponding Bundeskompensationsverordnung (BKompV)
+      codes, based on (https://www.bfn.de/eingriffsregelung-und-bundeskompensationsverordnung,
     "Übersetzungsschlüssel der Biotoptypen und -werte der Länder und deren Erläuterungen");
     empty dict when the file is missing.
     """
-    return _load_config_json(_BIOTOPE_MAPPING_FILE)
+    return _load_config_json(_BIOTOPE_HH_BKOMPV_FILE)
 
 
-def map_biotope_type(biotope_code: str, biotope_mapping: Optional[Dict[str, str]] = None) -> str:
-    """Map a Hamburg biotope code to its description, e.g. "NRT" -> "Schilf-Röhricht der Tide-Elbe".
+@lru_cache(maxsize=1)
+def load_biotope_hh_descriptions_mapping() -> Dict[str, str]:
+    """Load the table mapping Hamburg biotope type codes to their descriptions, based on 
+    (https://www.bfn.de/eingriffsregelung-und-bundeskompensationsverordnung,
+    "Übersetzungsschlüssel der Biotoptypen und -werte der Länder und deren Erläuterungen");
+    empty dict when the file is missing.
+    """
+    return _load_config_json(_BIOTOPE_HH_DESCRIPTIONS_FILE)
+
+
+@lru_cache(maxsize=1)
+def load_biotope_bkompv_descriptions_mapping() -> Dict[str, str]:
+    """Load the table mapping BKompV biotope type codes to their descriptions, based on 
+    (https://www.bfn.de/eingriffsregelung-und-bundeskompensationsverordnung,
+    "Liste der Biotoptypen und -werte nach Anlage 2 BKompV im Excel-Format");
+    empty dict when the file is missing.
+    """
+    return _load_config_json(_BIOTOPE_BKOMPV_DESCRIPTIONS_FILE)
+
+
+def map_biotope_type_hh_descriptions(biotope_code: str, biotope_mapping: Optional[Dict[str, str]] = None) -> str:
+    """Map a Hamburg biotope type code to its description, e.g. "NRT" -> "Schilf-Röhricht der Tide-Elbe".
 
     Args:
         biotope_code: biotope code used by the Biotopkataster Hamburg.
-        biotope_mapping: Table from :func:`load_biotope_mapping`
+        biotope_mapping: Table from :func:`load_biotope_hh_to_bkompv_mapping`
 
     Returns:
         Biotope description string.
     """
     text = _clean(biotope_code)
-    mapping = biotope_mapping if biotope_mapping is not None else load_biotope_mapping()
+    mapping = biotope_mapping if biotope_mapping is not None else load_biotope_hh_descriptions_mapping()
+
+    return mapping.get(text, "")
+
+
+def map_biotope_type_bkompv_descriptions(biotope_code: str, biotope_mapping: Optional[Dict[str, str]] = None) -> str:
+    """Map a BKompV biotope type code to its description, e.g. "38.02.01" -> "Schilf-Wasserröhricht".
+
+    Args:
+        biotope_code: biotope code used by the BKompV.
+        biotope_mapping: Table from :func:`load_biotope_bkompv_descriptions_mapping`
+
+    Returns:
+        Biotope description string.
+    """
+    text = _clean(biotope_code)
+    mapping = biotope_mapping if biotope_mapping is not None else load_biotope_bkompv_descriptions_mapping()
+
+    return mapping.get(text, "")
+
+
+def map_biotope_type_bkompv_codes(biotope_code: str, biotope_mapping: Optional[Dict[str, str]] = None) -> str:
+    """Map a Hamburg biotope type code to its corresponding BKompV code, e.g. "NRT" -> "38.02.01".
+
+    Args:
+        biotope_code: biotope code used by the Biotopkataster Hamburg.
+        biotope_mapping: Table from :func:`load_biotope_hh_to_bkompv_mapping`
+
+    Returns:
+        Biotope code used in the BKompV.
+    """
+    text = _clean(biotope_code)
+    mapping = biotope_mapping if biotope_mapping is not None else load_biotope_hh_to_bkompv_mapping()
 
     return mapping.get(text, "")
 
@@ -209,11 +265,13 @@ def build_biotope_hyperlink(url: str, id_biotop: int) -> Pset_Hyperlink:
 
 
 def _combine_haupt_and_neben_biotopes(haupt: str, neben: str = None):
+    if not haupt:
+        return ""
     if not neben:
         return str(haupt)
     else:
         neben_unique = list(dict.fromkeys(neben))
-        neben_str = '; '.join(map(str, set(neben_unique)))
+        neben_str = '; '.join(map(str, neben_unique))
         return f"{str(haupt)} ({neben_str})"
 
 
@@ -222,13 +280,21 @@ def _record_with_psets_from_payload(payload: Dict[str, Any], biotope_name_mappin
     from BIMFabrikHH_core.data_models.pydantic_psets_biotopes import \
         Pset_Objektinformation_Biotop
 
-    hauptbiotoptyp_code = record.hauptbiotoptyp
-    hauptbiotoptyp_name = map_biotope_type(hauptbiotoptyp_code, biotope_name_mapping)
-    nebenbiotoptyp_codes: List[str] = [nebenbiotoptyp.strip() for nebenbiotoptyp in record.nebenbiotoptypen.split(",")]
-    nebenbiotoptyp_names: List[str] = [map_biotope_type(nebenbiotoptyp_code, biotope_name_mapping) for nebenbiotoptyp_code in nebenbiotoptyp_codes]
+    hauptbiotoptyp_land_code = record.hauptbiotoptyp
+    hauptbiotoptyp_land_name = map_biotope_type_hh_descriptions(hauptbiotoptyp_land_code, biotope_name_mapping)
+    nebenbiotoptyp_land_codes: List[str] = [nebenbiotoptyp.strip() for nebenbiotoptyp in record.nebenbiotoptypen.split(",")]
+    nebenbiotoptyp_land_names: List[str] = [map_biotope_type_hh_descriptions(nebenbiotoptyp_code, biotope_name_mapping) for nebenbiotoptyp_code in nebenbiotoptyp_land_codes]
 
-    biotoptyp_land_code_combined = _combine_haupt_and_neben_biotopes(hauptbiotoptyp_code,  nebenbiotoptyp_codes)
-    biotoptyp_land_name_combined = _combine_haupt_and_neben_biotopes(hauptbiotoptyp_name, nebenbiotoptyp_names)
+    biotoptyp_land_code_combined = _combine_haupt_and_neben_biotopes(hauptbiotoptyp_land_code,  nebenbiotoptyp_land_codes)
+    biotoptyp_land_name_combined = _combine_haupt_and_neben_biotopes(hauptbiotoptyp_land_name, nebenbiotoptyp_land_names)
+
+    hauptbiotoptyp_bkompv_code = map_biotope_type_bkompv_codes(hauptbiotoptyp_land_code)
+    hauptbiotoptyp_bkompv_name = map_biotope_type_bkompv_descriptions(hauptbiotoptyp_bkompv_code)
+    nebenbiotoptyp_bkompv_codes: List[str] = [map_biotope_type_bkompv_codes(land_code) for land_code in nebenbiotoptyp_land_codes]
+    nebenbiotoptyp_bkompv_names: List[str] = [map_biotope_type_bkompv_descriptions(bkompv_code) for bkompv_code in nebenbiotoptyp_bkompv_codes]
+
+    biotoptyp_bkompv_code_combined = _combine_haupt_and_neben_biotopes(hauptbiotoptyp_bkompv_code,  nebenbiotoptyp_bkompv_codes)
+    biotoptyp_bkompv_name_combined = _combine_haupt_and_neben_biotopes(hauptbiotoptyp_bkompv_name, nebenbiotoptyp_bkompv_names)
 
     # Source: https://www.hamburg.de/resource/blob/1079968/2b87716c8f78cfc971df24d34d837b7e/biotopbewertung-juli-2025-data.pdf 
     # TODO: load and store somewhere 
@@ -258,11 +324,11 @@ def _record_with_psets_from_payload(payload: Dict[str, Any], biotope_name_mappin
     pset_objektinfo = Pset_Objektinformation_Biotop(
         kartierung_jahr = kartierung_jahr,
         biotopnummer=record.id_biotop,  # id_biotop is unique, in contrast to biotop_nr.
-        abschnitt_nr=record.abschnitt,  #  TODO: is "abschnitt" the number of section or the number of the section?
-        # biotoptyp_bkompv_code="",
-        # biotoptyp_bkompv_land="",
-        biotoptyp_land_code=biotoptyp_land_code_combined,
-        biotoptyp_land_name=biotoptyp_land_name_combined,
+        abschnitt_nr=record.abschnitt,  #  TODO: is "abschnitt" the number of sections or the number of the section?
+        biotoptyp_bkompv_code=biotoptyp_bkompv_code_combined or UNDEFINED,
+        biotoptyp_bkompv_name=biotoptyp_bkompv_name_combined or UNDEFINED,
+        biotoptyp_land_code=biotoptyp_land_code_combined or UNDEFINED,
+        biotoptyp_land_name=biotoptyp_land_name_combined or UNDEFINED,
         biotop_gesamtwert=str(record.gesamtbewertung),
         biotop_gesamtwert_bedeutung=bewertung_dict.get(str(record.gesamtbewertung), UNDEFINED),
         # biotop_gesamtwert_liste="",  # TODO Bezeichnung bzw. Referenz des verwendeten Bewertungsverfahrens für den Biotopgesamtwert.
@@ -343,7 +409,7 @@ def records_from_geojson_feature_collection(
             "shape_type": shape_type,
         }
 
-        biotope_types = load_biotope_mapping()
+        biotope_types = load_biotope_hh_descriptions_mapping()
         out.append(_record_with_psets_from_payload(payload, biotope_name_mapping=biotope_types))
     return out
 
