@@ -1,8 +1,9 @@
 """Generic Flurstuecke example (offline GeoJSON fixture).
 
 Loads ``response_OGC_flurstuecke_generic.json`` next to this script and writes
-``example_flurstuecke_generic.ifc`` with the parcels as 30 m ``IfcBuildingElementProxy``
-volumes standing on ``z = 0``, geometry in map metres.
+``example_flurstuecke_generic_<epsg>.ifc`` per code in ``OUTPUT_EPSGS`` with the
+parcels as 30 m ``IfcBuildingElementProxy`` volumes standing on ``z = 0``,
+geometry in map metres of that CRS.
 
 The fixture is a saved Hamburg OGC API FeatureCollection with **EPSG:25832**
 ``MultiPolygon`` coordinates — no live HTTP from ``BIMFabrikHH_core``. It holds
@@ -44,6 +45,10 @@ _FIXTURE_NAME = "response_OGC_flurstuecke_generic.json"
 
 # Same crop as ``examples/terrain/generic/local_dgm.py`` EXAMPLE_BBOX.
 _EXAMPLE_BBOX = BoundingBoxParams(min_x=9.9769, min_y=53.5478, max_x=9.991435, max_y=53.55622)
+# CRS of the fixture coordinates (``crs=`` of the OGC request).
+SOURCE_EPSG = 25832
+# ETRS89 / UTM zone 32N and ETRS89 / Gauss-Krueger zone 3 (Hamburg).
+OUTPUT_EPSGS = (25832, 10285)
 
 
 def main() -> None:
@@ -77,31 +82,34 @@ def main() -> None:
             "type": Component(title="Model Type", value="Extruded Flurstuecke as IfcBuildingElementProxy"),
         },
     )
-    request_body = RequestParams(bbox=_EXAMPLE_BBOX, containers=[container])
-    output_file = here.parent / "example_flurstuecke_generic.ifc"
+    for epsg in OUTPUT_EPSGS:
+        request_body = RequestParams(
+            bbox=_EXAMPLE_BBOX, containers=[container], source_epsg=SOURCE_EPSG, output_epsg=epsg
+        )
+        output_file = here.parent / f"example_flurstuecke_generic_{epsg}.ifc"
 
-    logger.info("Building → %s", output_file.name)
-    start = time.perf_counter()
-    result = FlurstueckeGenericApp.build_ifc(
-        records,
-        request_params=request_body,
-        output_path=output_file,
-    )
-    elapsed = time.perf_counter() - start
-    if not result:
-        logger.error("IFC build failed", extra={"debug_category": "error"})
-        sys.exit(1)
-    logger.info("TIMING Flurstuecke: %.3f s  → %s", elapsed, result.name)
-    logger.info(
-        "OK → %s\n%s",
-        result.name,
-        result.parent,
-        extra={"debug_category": "success"},
-    )
-    subprocess.run(
-        [sys.executable, "-m", "ifcopenshell.validate", "--rules", str(result)],
-        check=True,
-    )
+        logger.info("Building → %s", output_file.name)
+        start = time.perf_counter()
+        result = FlurstueckeGenericApp.build_ifc(
+            records,
+            request_params=request_body,
+            output_path=output_file,
+        )
+        elapsed = time.perf_counter() - start
+        if not result:
+            logger.error("IFC build failed", extra={"debug_category": "error"})
+            sys.exit(1)
+        logger.info("TIMING Flurstuecke EPSG:%d: %.3f s  → %s", epsg, elapsed, result.name)
+        logger.info(
+            "OK → %s\n%s",
+            result.name,
+            result.parent,
+            extra={"debug_category": "success"},
+        )
+        subprocess.run(
+            [sys.executable, "-m", "ifcopenshell.validate", "--rules", str(result)],
+            check=True,
+        )
 
 
 if __name__ == "__main__":

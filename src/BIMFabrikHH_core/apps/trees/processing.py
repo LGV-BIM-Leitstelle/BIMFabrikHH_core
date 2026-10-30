@@ -41,8 +41,9 @@ import pandas as pd
 from ifcfactory import ureg
 from pydantic import BaseModel
 
-from BIMFabrikHH_core.core.georeferencing import sample_elevations_for_points
+from BIMFabrikHH_core.core.georeferencing import DGM_TILE_EPSG, CoordinateTransformer, sample_elevations_for_points
 from BIMFabrikHH_core.core.ogc_extractor.ogc_values_extractor import extract_level_of_geometry
+from BIMFabrikHH_core.data_models.pydantic_georeferencing import horizontal_crs
 from BIMFabrikHH_core.data_models.pydantic_psets_tree import Pset_Bauwerk_Tree, Pset_Objektinformation_Tree
 from BIMFabrikHH_core.data_models.tree_record import TreeRecord
 
@@ -507,6 +508,18 @@ def dataframe_to_records(
     return records
 
 
+def check_positions_in_dgm_crs(transformer: Optional[CoordinateTransformer]) -> None:
+    """Raise ``ValueError`` unless the tree positions are horizontally in the DGM tile CRS.
+
+    A compound source such as 5555 passes through its horizontal part. ``None``
+    (no source CRS) passes: the caller vouches that the positions match the tiles.
+    """
+    if transformer is not None and transformer.source_crs != horizontal_crs(DGM_TILE_EPSG):
+        raise ValueError(
+            f"DGM draping needs tree positions in EPSG:{DGM_TILE_EPSG}, got {transformer.source_crs.name}"
+        )
+
+
 def drape_records_on_dgm(
     records: List[TreeRecord],
     tif_files: Iterable[Union[str, Path]],
@@ -537,6 +550,19 @@ def drape_records_on_dgm(
         draped.append(rec.model_copy(update={"position": (float(x), float(y), float(z))}))
     logger.info("Draped %d TreeRecord(s) onto DGM GeoTIFF(s)", len(draped))
     return draped
+
+
+def transform_record_positions(
+    records: List[TreeRecord], transformer: Optional[CoordinateTransformer]
+) -> List[TreeRecord]:
+    """Return copies of ``records`` with XY transformed by ``transformer``; Z is unchanged.
+
+    ``None`` (no known CRS) or an identity transformer keep the positions as they are.
+    """
+    if transformer is None or transformer.is_identity or not records:
+        return list(records)
+    xs, ys = transformer.transform_xy_batch([r.position[0] for r in records], [r.position[1] for r in records])
+    return [rec.model_copy(update={"position": (x, y, float(rec.position[2]))}) for rec, x, y in zip(records, xs, ys)]
 
 
 def validate_tree_records(
@@ -638,7 +664,9 @@ __all__ = [
     "calculate_tree_trunk_height",
     "collect_pydantic_psets",
     "dataframe_to_records",
+    "check_positions_in_dgm_crs",
     "drape_records_on_dgm",
+    "transform_record_positions",
     "full_tree_height",
     "resolve_tree_dimensions",
     "tree_crown_detail_from_containers",

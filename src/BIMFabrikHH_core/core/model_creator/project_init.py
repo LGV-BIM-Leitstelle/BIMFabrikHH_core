@@ -17,7 +17,7 @@ Typical use:
 
 from __future__ import annotations
 
-from typing import Optional
+from typing import TYPE_CHECKING, Any, Dict, Optional
 
 from BIMFabrikHH_core.core.ogc_extractor.ogc_values_extractor import extract_project_info
 from BIMFabrikHH_core.data_models.params_tree import RequestParams
@@ -29,6 +29,27 @@ from BIMFabrikHH_core.data_models.pydantic_georeferencing import (
 
 from .ifc_modelbuilder import IfcModelBuilder
 
+if TYPE_CHECKING:
+    from BIMFabrikHH_core.core.georeferencing.coordinate_transformer import CoordinateTransformer
+
+
+def output_coordinate_system(transformer: Optional["CoordinateTransformer"]) -> Optional[CoordinateSystem]:
+    """IFC CRS for an app's output ``transformer``: its target CRS with its height system as vertical datum.
+
+    ``None`` (coordinates without a known CRS) means no georeferencing.
+    """
+    if transformer is None:
+        return None
+    return CoordinateSystem.from_epsg(transformer.target_epsg, vertical_epsg=transformer.vertical_epsg)
+
+
+def georeference_options(transformer: Optional["CoordinateTransformer"]) -> Dict[str, Any]:
+    """:func:`init_ifc_project` CRS keywords for an app's output ``transformer`` (see :func:`output_coordinate_system`)."""
+    coordinate_system = output_coordinate_system(transformer)
+    if coordinate_system is None:
+        return {"georeferenced": False}
+    return {"coordinate_system": coordinate_system}
+
 
 def init_ifc_project(
     *,
@@ -38,6 +59,7 @@ def init_ifc_project(
     building_name: Optional[str] = None,
     coordinate_system: Optional[CoordinateSystem] = None,
     coordinate_operation: Optional[CoordinateOperation] = None,
+    georeferenced: bool = True,
 ) -> IfcModelBuilder:
     """Create and initialise an :class:`IfcModelBuilder`.
 
@@ -61,6 +83,9 @@ def init_ifc_project(
         building_name: Explicit building name override.
         coordinate_system: Override for the default EPSG:25832 CRS.
         coordinate_operation: Override for the default coordinate operation.
+        georeferenced: ``False`` writes no ``IfcMapConversion`` / ``IfcProjectedCRS``
+            at all, for coordinates without a known CRS; ``coordinate_system``
+            and ``coordinate_operation`` are then ignored.
 
     Returns:
         A ready-to-use :class:`IfcModelBuilder` whose ``model``, ``site``
@@ -72,7 +97,7 @@ def init_ifc_project(
     if request_params is not None:
         extracted_project, extracted_site, extracted_building = extract_project_info(request_params.containers)
 
-    crs = coordinate_system or CoordinateSystemTemplates.epsg_25832()
+    crs = (coordinate_system or CoordinateSystemTemplates.epsg_25832()) if georeferenced else None
     coord_op = coordinate_operation or CoordinateSystemTemplates.get_default_coordinate_operation()
 
     builder = IfcModelBuilder()
@@ -86,4 +111,4 @@ def init_ifc_project(
     return builder
 
 
-__all__ = ["init_ifc_project"]
+__all__ = ["georeference_options", "init_ifc_project", "output_coordinate_system"]

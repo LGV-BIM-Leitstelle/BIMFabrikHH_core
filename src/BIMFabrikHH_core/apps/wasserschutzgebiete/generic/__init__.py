@@ -2,7 +2,6 @@
 
 from BIMFabrikHH_core.data_models.pydantic_psets_wasserschutzgebiete import Pset_Objektinformation_Wasserschutzgebiet
 from BIMFabrikHH_core.data_models.wasserschutzgebiete import (
-    GeometryCrs,
     WasserschutzgebietRecord,
     collect_wasserschutz_psets,
     load_wasserschutzgebiete_records,
@@ -13,7 +12,6 @@ from .app import WasserschutzgebieteGenericApp
 
 __all__ = [
     "WasserschutzgebieteGenericApp",
-    "GeometryCrs",
     "WasserschutzgebietRecord",
     "collect_wasserschutz_psets",
     "load_wasserschutzgebiete_records",

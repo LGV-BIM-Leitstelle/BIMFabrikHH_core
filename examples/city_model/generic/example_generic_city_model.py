@@ -47,6 +47,9 @@ def main() -> None:
     request_body = RequestParams(
         bbox=BoundingBoxParams(min_x=9.9647, min_y=53.5531, max_x=9.9711, max_y=53.5564),
         containers=[container],
+        # Hamburg tiles: UTM 32N positions, DHHN2016 heights.
+        source_epsg=25832,
+        vertical_epsg=7837,
     )
 
     output_file = citymodel_folder / "example_generic_city_model.ifc"

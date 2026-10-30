@@ -9,7 +9,6 @@ from BIMFabrikHH_core.data_models.pydantic_psets_streets import Pset_Objektinfor
 from BIMFabrikHH_core.data_models.streets import (
     DEFAULT_NUTZARTEN,
     GUIDE_NUTZARTEN,
-    GeometryCrs,
     StreetRecord,
     collect_street_psets,
     load_streets_records,
@@ -22,7 +21,6 @@ __all__ = [
     "StreetsGenericApp",
     "DEFAULT_NUTZARTEN",
     "GUIDE_NUTZARTEN",
-    "GeometryCrs",
     "StreetRecord",
     "collect_street_psets",
     "load_streets_records",

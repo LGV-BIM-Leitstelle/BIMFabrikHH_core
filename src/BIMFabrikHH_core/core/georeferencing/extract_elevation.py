@@ -20,6 +20,11 @@ from BIMFabrikHH_core.config.logging_config import get_logger
 
 logger = get_logger("extract_elevation")
 
+#: CRS of the DGM GeoTIFF tiles; points passed to :func:`sample_elevations_for_points` must use it.
+DGM_TILE_EPSG: int = 25832
+#: Height system of the DGM GeoTIFF tiles (DHHN2016); sampled Z is in it.
+DGM_TILE_VERTICAL_EPSG: int = 7837
+
 # GDAL float32 nodata and the 0.0 fill used in some Hamburg DGM1 holes.
 _NODATA_SENTINEL = -1e20
 _ZERO_FILL = 0.0

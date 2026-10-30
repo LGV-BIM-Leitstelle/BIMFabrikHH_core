@@ -27,6 +27,7 @@ from BIMFabrikHH_core.apps.city.parser import CityGMLParser
 from BIMFabrikHH_core.config.logging_config import get_logger
 from BIMFabrikHH_core.core.georeferencing.crs_transform import bbox_wgs84_to_epsg25832
 from BIMFabrikHH_core.core.utils.geometry_utils import extract_polygon_with_voids
+from BIMFabrikHH_core.data_models.pydantic_georeferencing import BboxWgs84
 from BIMFabrikHH_core.data_models.pydantic_psets_city_model import TypedCityBuilding
 
 logger = get_logger("city_generic_entity_parser")
@@ -213,7 +214,6 @@ class CityGMLTypedSurfaceParser(CityGMLParser):
 # Public parsing entry point (was processing.py)
 # ---------------------------------------------------------------------------
 
-BboxWgs84 = Tuple[float, float, float, float]
 BboxUtm = Tuple[float, float, float, float]
 
 

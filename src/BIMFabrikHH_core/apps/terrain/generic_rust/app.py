@@ -21,6 +21,7 @@ from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple, Union
 
 from pydantic import BaseModel
 
+from BIMFabrikHH_core.apps.streets.processing import dgm_output_transformer
 from BIMFabrikHH_core.apps.terrain._ifc_common import (
     DEFAULT_TERRAIN_LAYER,
     RgbTuple,
@@ -33,12 +34,14 @@ from BIMFabrikHH_core.apps.terrain.processing import (
     build_landuse_parts,
     extract_mesh_adaptive,
     resolve_guide_records,
+    transform_mesh,
 )
 from BIMFabrikHH_core.config.logging_config import get_logger
 from BIMFabrikHH_core.config.paths import PathConfig
-from BIMFabrikHH_core.core.georeferencing import bbox_request_params_to_epsg25832
+from BIMFabrikHH_core.core.georeferencing import DGM_TILE_VERTICAL_EPSG, bbox_request_params_to_epsg25832
 from BIMFabrikHH_core.core.ogc_extractor.ogc_values_extractor import extract_project_info
 from BIMFabrikHH_core.data_models.params_tree import RequestParams
+from BIMFabrikHH_core.data_models.pydantic_georeferencing import CoordinateSystem
 from BIMFabrikHH_core.data_models.terrain_mesh import TerrainMesh
 
 logger = get_logger("terrain_rust_app")
@@ -104,7 +107,8 @@ class TerrainRustApp:
 
         ``psets`` defaults to ``terrain_mapping.specs()``. Pass ``[]`` for none.
         Basepoint XY is ``basepoint_origin``, else ``mesh.nullpunkt``, else
-        the request bbox lower-left in EPSG:25832.
+        the request bbox lower-left in EPSG:25832. ``epsg`` is the CRS of the
+        mesh; the IFC header gets it with the DGM height system (DHHN2016).
         Omit ``color`` to use Rust ``TERRAIN_RGB`` (102, 204, 0).
         """
         if mesh.is_empty():
@@ -127,7 +131,7 @@ class TerrainRustApp:
             name=name,
             project_name=project_name or "DGM",
             site_name=site_name or "Hamburg_Site",
-            epsg=epsg,
+            crs=CoordinateSystem.from_epsg(epsg, vertical_epsg=DGM_TILE_VERTICAL_EPSG),
             psets=psets,
             basepoint=basepoint,
             layer=cad_layer,
@@ -197,7 +201,7 @@ class TerrainRustApp:
             str(dest),
             project_name=project_name or "DGM",
             site_name=site_name or "Hamburg_Site",
-            epsg=epsg,
+            crs=CoordinateSystem.from_epsg(epsg, vertical_epsg=DGM_TILE_VERTICAL_EPSG),
             basepoint=basepoint,
             progress=progress,
         )
@@ -220,7 +224,6 @@ class TerrainRustApp:
         color: Optional[RgbTuple] = None,
         cad_layer: str = _DEFAULT_TERRAIN_LAYER,
         psets: Optional[Sequence[BaseModel]] = None,
-        epsg: int = 25832,
         progress: bool = False,
         guide_records: Optional[Sequence[Any]] = None,
         guide_edge_spacing_m: float = DEFAULT_GUIDE_EDGE_SPACING_M,
@@ -238,12 +241,21 @@ class TerrainRustApp:
         ``split_by_landuse`` is set, the guided TIN is split into land-use
         parts written as separate proxies; otherwise a single DGM mesh is
         written. ``export_landxml`` additionally writes a LandXML 1.2 TIN with
-        one ``<Surface>`` per part.
+        one ``<Surface>`` per part. ``guide_records`` are in
+        ``request_params.source_epsg`` (see :func:`resolve_guide_records`).
+
+        The mesh is built in the DGM tile CRS (EPSG:25832, heights DHHN2016)
+        and its XY are transformed into ``request_params.output_epsg`` when
+        given (see :func:`dgm_output_transformer`); the IFC header, the
+        basepoint and the LandXML use that CRS. ``basepoint_origin`` is in the
+        DGM tile CRS.
         """
+        transformer = dgm_output_transformer(request_params.output_epsg, move_to_origin=move_to_origin)
         guide_records = resolve_guide_records(
             guide_records,
             request_params.bbox_as_wgs84_tuple,
             guide_from_oaf=guide_from_oaf,
+            source_epsg=request_params.source_epsg,
             write_geojson=write_geojson,
             output_dir=(Path(output_path).parent if output_path is not None else None),
         )
@@ -270,6 +282,11 @@ class TerrainRustApp:
             split_by_landuse=split_by_landuse,
             merge_parcels=merge_parcels,
         )
+        mesh = transform_mesh(mesh, transformer)
+        labeled = [(label, transform_mesh(part, transformer)) for label, part in labeled]
+        if basepoint_origin is not None:
+            basepoint_origin = transformer.transform_point(*basepoint_origin)[:2]
+        epsg = transformer.target_epsg
 
         if labeled:
             result = cls.build_parts_ifc(

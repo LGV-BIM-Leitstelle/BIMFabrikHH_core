@@ -3,7 +3,8 @@
 Turns ALKIS ``Nutzung`` traffic polygons (:class:`StreetRecord`) into draped 3D
 meshes ready for IFC export:
 
-1. reproject exterior rings to EPSG:25832 (if needed),
+1. take exterior rings in the DGM tile CRS (EPSG:25832, see
+   :func:`transform_record_rings` / :func:`transformer_to_dgm`),
 2. densify long edges so the surface can follow the DGM,
 3. sample ground elevation for every vertex from one or more DGM GeoTIFFs
    (reusing the terrain app's raster helpers), and
@@ -19,26 +20,27 @@ Public entry point:
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from pathlib import Path
-from typing import Iterable, List, Optional, Sequence, Tuple, Union
+from typing import Any, Iterable, List, Optional, Sequence, Tuple, Union
 
 import numpy as np
 from scipy.spatial import Delaunay
 
-from BIMFabrikHH_core.core.georeferencing import sample_elevations_for_points
 from BIMFabrikHH_core.config.logging_config import get_logger
-from BIMFabrikHH_core.core.georeferencing.coordinate_transformer import CoordinateTransformer
-from BIMFabrikHH_core.core.ogc_extractor import strip_closing_duplicate_xy
+from BIMFabrikHH_core.core.georeferencing import (
+    DGM_TILE_EPSG,
+    DGM_TILE_VERTICAL_EPSG,
+    CoordinateTransformer,
+    sample_elevations_for_points,
+)
+from BIMFabrikHH_core.core.ogc_extractor import transform_ring_xy
 from BIMFabrikHH_core.data_models.streets import StreetRecord
 
 logger = get_logger("streets_processing")
 
 DEFAULT_VERTICAL_OFFSET_M: float = 0.2
 DEFAULT_EDGE_SPACING_M: float = 5.0
-
-_WGS84 = "EPSG:4326"
-_UTM32 = "EPSG:25832"
 
 
 @dataclass
@@ -58,25 +60,58 @@ class DrapedStreet:
 # ---------------------------------------------------------------------------
 
 
-def rings_to_epsg25832(
-    rings: Sequence[Sequence[Tuple[float, float]]],
-    source_crs: str,
-) -> List[np.ndarray]:
-    """Return each exterior ring as an open ``(N, 2)`` array in EPSG:25832 metres."""
-    cleaned = [strip_closing_duplicate_xy(list(ring)) for ring in rings]
-    cleaned = [r for r in cleaned if len(r) >= 3]
+def transformer_to_dgm(source_epsg: Optional[int]) -> Optional[CoordinateTransformer]:
+    """Transformer from ``source_epsg`` into the DGM tile CRS, or ``None`` without a source.
 
-    if source_crs == _UTM32:
-        return [np.asarray(r, dtype=float) for r in cleaned]
+    ``None`` means the coordinates are used as they are; the caller vouches
+    they match the DGM.
+    """
+    if source_epsg is None:
+        return None
+    return CoordinateTransformer.from_source_to_output(source_epsg, DGM_TILE_EPSG)
 
-    transformer = CoordinateTransformer(_WGS84, _UTM32)
-    out: List[np.ndarray] = []
-    for ring in cleaned:
-        xs = [pt[0] for pt in ring]
-        ys = [pt[1] for pt in ring]
-        xe, yn = transformer.transform_xy_batch(xs, ys)
-        out.append(np.column_stack((xe, yn)))
-    return out
+
+def dgm_output_transformer(output_epsg: Optional[int], *, move_to_origin: bool = False) -> CoordinateTransformer:
+    """Transformer from the DGM tile CRS (heights DHHN2016) into ``output_epsg``.
+
+    Identity when ``output_epsg`` is ``None``. Its target is the CRS the IFC
+    header, basepoint and LandXML are written in.
+
+    Raises:
+        ValueError: ``move_to_origin`` together with a different ``output_epsg``;
+            the shifted vertices are local and cannot be transformed.
+    """
+    transformer = CoordinateTransformer.from_source_to_output(DGM_TILE_EPSG, output_epsg, DGM_TILE_VERTICAL_EPSG)
+    if move_to_origin and not transformer.is_identity:
+        raise ValueError(f"move_to_origin cannot be combined with output_epsg EPSG:{output_epsg}")
+    return transformer
+
+
+def transform_draped_streets(streets: Sequence[DrapedStreet], transformer: CoordinateTransformer) -> List[DrapedStreet]:
+    """Copies of ``streets`` with vertex XY transformed in one batch; Z and faces unchanged."""
+    if transformer.is_identity:
+        return list(streets)
+    points = [v for street in streets for v in street.vertices]
+    xs, ys = transformer.transform_xy_batch([p[0] for p in points], [p[1] for p in points])
+    moved = iter(zip(xs, ys, (p[2] for p in points)))
+    return [replace(street, vertices=[next(moved) for _ in street.vertices]) for street in streets]
+
+
+def transform_record_rings(records: Sequence[Any], transformer: Optional[CoordinateTransformer]) -> List[Any]:
+    """Return copies of ``records`` with every ``rings`` entry transformed by ``transformer``.
+
+    ``None`` or an identity transformer keep the records as they are.
+    """
+    if transformer is None or transformer.is_identity:
+        return list(records)
+    return [
+        rec.model_copy(update={"rings": [transformer.transform_ring(ring) for ring in rec.rings]}) for rec in records
+    ]
+
+
+def open_rings_xy(rings: Sequence[Sequence[Tuple[float, float]]]) -> List[np.ndarray]:
+    """Return each ring with at least 3 vertices as an open ``(N, 2)`` array."""
+    return [np.asarray(xy, dtype=float) for ring in rings if (xy := transform_ring_xy(list(ring), None))]
 
 
 # ---------------------------------------------------------------------------
@@ -180,6 +215,7 @@ def drape_streets(
 ) -> List[DrapedStreet]:
     """Drape every Nutzung record onto the DGM and build surface meshes.
 
+    Ring XY must already be in the DGM tile CRS (see :func:`transform_record_rings`).
     Elevations for *all* vertices of *all* records are sampled together (one
     pass per tile) for efficiency, then meshed per record.
     """
@@ -188,7 +224,7 @@ def drape_streets(
     reprojected: List[List[np.ndarray]] = []
     flat_points: List[np.ndarray] = []
     for rec in records:
-        rings_utm = [densify_ring(r, edge_spacing_m) for r in rings_to_epsg25832(rec.rings, rec.geometry_crs)]
+        rings_utm = [densify_ring(r, edge_spacing_m) for r in open_rings_xy(rec.rings)]
         rings_utm = [r for r in rings_utm if len(r) >= 3]
         reprojected.append(rings_utm)
         for r in rings_utm:
@@ -229,6 +265,10 @@ __all__ = [
     "DrapedStreet",
     "build_polygon_mesh",
     "densify_ring",
+    "dgm_output_transformer",
     "drape_streets",
-    "rings_to_epsg25832",
+    "open_rings_xy",
+    "transform_draped_streets",
+    "transform_record_rings",
+    "transformer_to_dgm",
 ]

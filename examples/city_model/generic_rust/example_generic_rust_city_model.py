@@ -40,6 +40,9 @@ def main() -> None:
                 },
             )
         ],
+        # Hamburg tiles: UTM 32N positions, DHHN2016 heights.
+        source_epsg=25832,
+        vertical_epsg=7837,
     )
 
     output_file = Path(__file__).parent / "example_generic_rust_city_model.ifc"

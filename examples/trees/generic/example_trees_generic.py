@@ -11,6 +11,9 @@ This example does **not** fetch cadastral data or use pandas. It places
 
 Set ``USE_DGM = False`` to keep the hand-written Z and skip raster
 sampling; with it on, Z comes from the DGM1 tiles covering that crop.
+
+One IFC is written per code in ``OUTPUT_EPSGS`` (``example_trees_generic_<epsg>.ifc``):
+the records are in ``SOURCE_EPSG`` and the app transforms them into each output CRS.
 """
 
 from __future__ import annotations
@@ -31,7 +34,11 @@ TRUNK_COLOR: Tuple[float, float, float] = (0.44, 0.27, 0.18)
 CROWN_COLOR: Tuple[float, float, float] = (0.13, 0.50, 0.18)
 LEVEL_OF_DETAIL: int = 2
 TRUNK_SEGMENTS: int = 10
-OUTPUT_FILENAME: str = "example_trees_generic.ifc"
+OUTPUT_FILENAME: str = "example_trees_generic_{epsg}.ifc"
+# The random positions are drawn in ETRS89 / UTM zone 32N, like the Hamburg services.
+SOURCE_EPSG: int = 25832
+# ETRS89 / UTM zone 32N and ETRS89 / Gauss-Krueger zone 3 (Hamburg).
+OUTPUT_EPSGS: Tuple[int, ...] = (25832, 10285)
 NAME_PREFIX: str = ""
 USE_DGM: bool = True
 N_TREES: int = 50
@@ -111,7 +118,7 @@ def build_example_tree_records() -> List[TreeRecord]:
 def main() -> None:
     logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
-    logging.info("Example: generic trees via TreesGenericApp (no fetch, no transform)")
+    logging.info("Example: generic trees via TreesGenericApp (no fetch)")
     records = build_example_tree_records()
     logging.info("Built %d TreeRecord(s)", len(records))
     logging.info(
@@ -128,18 +135,21 @@ def main() -> None:
         f"{len(tif_files)} tile(s) in {DGM_FOLDER}" if tif_files else "off (hand-written Z)",
     )
 
-    out = TreesGenericApp.build_ifc(
-        records,
-        output_path=OUTPUT_FILENAME,
-        include_property_sets=True,
-        trunk_color=TRUNK_COLOR,
-        crown_color=CROWN_COLOR,
-        name_prefix=NAME_PREFIX,
-        validate=True,
-        bbox_wgs84=BBOX_WGS84,
-        tif_files=tif_files,
-    )
-    logging.info("Done. IFC path: %s", out)
+    for epsg in OUTPUT_EPSGS:
+        out = TreesGenericApp.build_ifc(
+            records,
+            output_path=OUTPUT_FILENAME.format(epsg=epsg),
+            include_property_sets=True,
+            trunk_color=TRUNK_COLOR,
+            crown_color=CROWN_COLOR,
+            name_prefix=NAME_PREFIX,
+            validate=True,
+            bbox_wgs84=BBOX_WGS84,
+            tif_files=tif_files,
+            source_epsg=SOURCE_EPSG,
+            output_epsg=epsg,
+        )
+        logging.info("Done. EPSG:%d IFC path: %s", epsg, out)
 
 
 if __name__ == "__main__":

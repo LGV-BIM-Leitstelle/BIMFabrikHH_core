@@ -5,9 +5,8 @@ Parsed from GeoJSON ``FeatureCollection`` responses such as
 Geometry is ``MultiPolygon`` (a parcel may be multi-part); only exterior
 rings are kept.
 
-Vertex coordinates are either **EPSG:25832** ``(easting, northing)`` (default,
-the collection ``storageCrs``) or **EPSG:4326** ``(lon, lat)`` — set
-``geometry_crs`` when parsing.
+Vertex coordinates are kept as delivered; their CRS is declared by the
+caller via ``RequestParams.source_epsg``.
 
 Only the API fields that carry information are modelled. ``flur``,
 ``flstnrnen`` and ``abwrecht`` exist in the collection schema but are empty for
@@ -32,7 +31,6 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from BIMFabrikHH_core.core.ogc_extractor import (
     MultiPolygon,
-    OgcGeometryCrs,
     ensure_feature_collection,
     feature_identifier,
     geojson_feature_properties,
@@ -49,13 +47,7 @@ class FlurstueckRecord(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True, extra="ignore")
 
     feature_id: Union[int, str] = Field(description="``feature.id`` from GeoJSON")
-    polygons: MultiPolygon = Field(
-        description="Exterior ring and holes per MultiPolygon part; (easting, northing) if EPSG:25832 else (lon, lat)"
-    )
-    geometry_crs: OgcGeometryCrs = Field(
-        default="EPSG:25832",
-        description="CRS of ``rings`` vertex coordinates",
-    )
+    polygons: MultiPolygon = Field(description="Exterior ring and holes per MultiPolygon part, XY as delivered")
 
     oid: str = Field(default="", description="ALKIS Objekt-ID (``idflurst`` plus ``FL`` suffix)")
     idflurst: str = Field(default="", description="ALKIS-Identifikator des Flurstücks → ``_ALKISIdentifikator``")
@@ -150,18 +142,13 @@ def _record_with_psets_from_payload(payload: Dict[str, Any]) -> FlurstueckRecord
     return record.model_copy(update={"psets": {Pset_Objektinformation_Flurstueck.pset_name: pset}})
 
 
-def records_from_geojson_feature_collection(
-    data: Dict[str, Any],
-    *,
-    geometry_crs: OgcGeometryCrs = "EPSG:25832",
-) -> List[FlurstueckRecord]:
+def records_from_geojson_feature_collection(data: Dict[str, Any]) -> List[FlurstueckRecord]:
     """Parse a GeoJSON FeatureCollection into :class:`FlurstueckRecord` list.
 
     Skips features without polygon geometry or with empty rings.
 
     Args:
         data: GeoJSON FeatureCollection object.
-        geometry_crs: CRS of the vertex coordinates (``EPSG:25832`` or ``EPSG:4326``).
     """
     ensure_feature_collection(data)
     out: List[FlurstueckRecord] = []
@@ -177,24 +164,19 @@ def records_from_geojson_feature_collection(
             **props_raw,
             "feature_id": fid,
             "polygons": polygons,
-            "geometry_crs": geometry_crs,
         }
         out.append(_record_with_psets_from_payload(payload))
     return out
 
 
-def load_flurstuecke_records(
-    path: Union[str, Path],
-    *,
-    geometry_crs: OgcGeometryCrs = "EPSG:25832",
-) -> List[FlurstueckRecord]:
+def load_flurstuecke_records(path: Union[str, Path]) -> List[FlurstueckRecord]:
     """Load and parse a ``.json`` FeatureCollection from disk."""
     p = Path(path)
     with p.open(encoding="utf-8") as f:
         data = json.load(f)
     if not isinstance(data, dict):
         raise ValueError("JSON root must be an object")
-    return records_from_geojson_feature_collection(data, geometry_crs=geometry_crs)
+    return records_from_geojson_feature_collection(data)
 
 
 __all__ = [

@@ -33,7 +33,6 @@ from BIMFabrikHH_core.core.model_creator.ifc_snippets import IfcSnippets
 
 # OGC extractor imports
 from BIMFabrikHH_core.core.ogc_extractor import (
-    OgcGeometryCrs,
     ensure_feature_collection,
     extract_level_of_geometry,
     extract_project_info,
@@ -45,8 +44,8 @@ from BIMFabrikHH_core.core.ogc_extractor import (
     parse_feature_multilinestring_paths,
     parse_feature_polygon_exterior_ring,
     positions_to_xy_ring,
-    ring_xy_to_epsg25832,
     strip_closing_duplicate_xy,
+    transform_ring_xy,
 )
 
 # Utility imports
@@ -68,7 +67,6 @@ __all__ = [
     "extract_level_of_geometry",
     "extract_psets_basepoint",
     # OGC extractor (GeoJSON + request metadata)
-    "OgcGeometryCrs",
     "ensure_feature_collection",
     "feature_identifier",
     "geojson_feature_properties",
@@ -77,8 +75,8 @@ __all__ = [
     "parse_feature_multilinestring_paths",
     "parse_feature_polygon_exterior_ring",
     "positions_to_xy_ring",
-    "ring_xy_to_epsg25832",
     "strip_closing_duplicate_xy",
+    "transform_ring_xy",
     # Utilities
     "MathTool",
 ]

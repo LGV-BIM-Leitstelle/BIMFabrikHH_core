@@ -26,7 +26,13 @@ from .pydantic_default_pset_data import (
 )
 
 # Georeferencing models
-from .pydantic_georeferencing import CoordinateSystem, CoordinateSystemTemplates
+from .pydantic_georeferencing import (
+    CoordinateSystem,
+    CoordinateSystemTemplates,
+    check_projected_epsg,
+    check_source_epsg,
+    check_vertical_epsg,
+)
 
 # Property set models
 from .pydantic_psets_BIMHH import (
@@ -63,6 +69,9 @@ __all__ = [
     # Georeferencing models
     "CoordinateSystem",
     "CoordinateSystemTemplates",
+    "check_projected_epsg",
+    "check_source_epsg",
+    "check_vertical_epsg",
     # Property set models
     "Pset_Objektinformation",
     "Pset_Objektinformation_DGM",

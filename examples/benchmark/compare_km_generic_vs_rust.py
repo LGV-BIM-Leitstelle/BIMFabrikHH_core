@@ -144,6 +144,8 @@ def _request(bbox_utm: tuple[float, float, float, float], *, title: str, cid: st
                 components={"description": Component(title="Description", value=title)},
             )
         ],
+        source_epsg=25832,
+        vertical_epsg=7837,
     )
 
 
@@ -211,12 +213,12 @@ def _run_trees(km: int, bbox: tuple[float, float, float, float], out: Path) -> l
     g_path, r_path = out / f"trees_{km}km_generic.ifc", out / f"trees_{km}km_rust.ifc"
     gp, tg = _timed(
         lambda: TreesGenericApp.build_ifc(
-            records, output_path=g_path, include_property_sets=True, basepoint_origin=bbox[:2]
+            records, output_path=g_path, include_property_sets=True, basepoint_origin=bbox[:2], source_epsg=25832
         )
     )
     rp, tr = _timed(
         lambda: TreesRustApp.build_ifc(
-            records, output_path=r_path, include_property_sets=True, basepoint_origin=bbox[:2]
+            records, output_path=r_path, include_property_sets=True, basepoint_origin=bbox[:2], source_epsg=25832
         )
     )
     logger.info("trees %dkm  %d records  generic=%.2fs rust=%.2fs", km, len(records), tg, tr)

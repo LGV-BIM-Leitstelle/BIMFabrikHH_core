@@ -98,7 +98,7 @@ class IfcModelBuilder:
     def build_project(
         self,
         project_name: str,
-        coordinate_system: CoordinateSystem | str,
+        coordinate_system: Optional[CoordinateSystem | str],
         coordinate_operation: CoordinateOperation,
         site_name: Optional[str] = None,
         building_name: Optional[str] = None,
@@ -109,7 +109,8 @@ class IfcModelBuilder:
 
         Args:
             project_name (str): Name of the project.
-            coordinate_system (CoordinateSystem | str): Coordinate system configuration or template name.
+            coordinate_system (CoordinateSystem | str | None): Coordinate system configuration or template
+                name. ``None`` writes no georeferencing (no ``IfcMapConversion`` / ``IfcProjectedCRS``).
             coordinate_operation (CoordinateOperation): Coordinate transformation parameters.
             site_name (Optional[str]): Name of the site.
             building_name (Optional[str]): Name of the building.
@@ -128,6 +129,9 @@ class IfcModelBuilder:
             self.ifc_creator.create_building(self.model, building_name, self.site) if building_name else None
         )
         self.storey = self.ifc_creator.create_storey(self.model, storey_name, self.building) if storey_name else None
+
+        if coordinate_system is None:
+            return
 
         # Create georeferencing information
         self.ifc_creator.create_georeference(self.model)
