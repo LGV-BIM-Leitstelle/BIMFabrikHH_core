@@ -10,7 +10,7 @@ components with sophisticated mesh generation logic.
 from typing import Annotated, Any, ClassVar, List, Optional
 
 import ifcopenshell
-from ifcfactory import BIMFactoryElement, ElementInterface, Extrusion, MeshRepresentation, Polygon, Style, Transform
+from ifcfactory import BIMFactoryElement, ElementInterface, MeshRepresentation, Style
 from pydantic import BaseModel, Field
 
 from BIMFabrikHH_core.data_models.pydantic_psets_BIMHH import (
@@ -151,7 +151,6 @@ class BaseProjectBasePointNorth(BaseModel):
             (0.033, 0.375),
             (-0.033, 0.45),
             (-0.05, 0.45),
-            (-0.05, 0.35),
         ]
 
     @staticmethod
@@ -197,39 +196,37 @@ class BaseProjectBasePointNorth(BaseModel):
         """Helper to create a styled mesh representation"""
         return Style(
             rgb=self.ARROW_COLOR,
+            transparency=0.0,
             item=MeshRepresentation(vertices=vertices, faces=faces_list),
             cad_layer=self.ARROW_LAYER,
         )
 
-    def create_styled_extrusion(self, polygon_points, z_offset, depth=None):
-        """Helper to create a styled extruded shape.
+    def create_styled_prism(self, polygon_points, z_offset, depth=None):
+        """Helper to create a styled prism mesh (closed, outward faces).
 
-        The extrusion is placed so its surface is flush (bündig) with the face:
-        - Top face (z_offset > 0): extrusion base at z - depth, top at z (flush with face)
-        - Bottom face (z_offset < 0): extrusion base at z, top at z + depth (flush with face)
+        The prism is placed so its surface is flush (bündig) with the face:
+        - Top face (z_offset > 0): base at z - depth, top at z (flush with face)
+        - Bottom face (z_offset < 0): base at z, top at z + depth (flush with face)
         """
         if depth is None:
             depth = self.EXTRUSION_HEIGHT_FACTOR * self.size
-        # For the top face: lower base by depth so top surface is flush with the face.
-        # For the bottom face: start exactly at the face so the bottom surface is flush.
-        z = z_offset * self.size - (depth if z_offset > 0 else 0)
-        return Style(
-            rgb=self.ARROW_COLOR,
-            item=Transform(
-                translation=(0.0, 0.0, z),
-                item=Extrusion(
-                    basis=Polygon(points=polygon_points),
-                    depth=depth,
-                ),
-            ),
-            cad_layer=self.ARROW_LAYER,
-        )
+        z0 = z_offset * self.size - (depth if z_offset > 0 else 0)
+        ring = list(polygon_points)
+        signed_area = sum(x0 * y1 - x1 * y0 for (x0, y0), (x1, y1) in zip(ring, ring[1:] + ring[:1]))
+        if signed_area < 0:
+            ring.reverse()
+        n = len(ring)
+        vertices = [(x, y, z0) for x, y in ring] + [(x, y, z0 + depth) for x, y in ring]
+        faces = [list(range(n, 2 * n)), list(reversed(range(n)))]
+        faces += [[i, (i + 1) % n, n + (i + 1) % n, n + i] for i in range(n)]
+        return self.create_styled_mesh(vertices, faces)
 
     def get_base_children(self):
         """Get the base pyramid mesh with styling"""
         return [
             Style(
                 rgb=self.PYRAMID_COLOR,
+                transparency=0.0,
                 item=self._create_pyramid_mesh(),
                 cad_layer=self.PYRAMID_LAYER,
             )
@@ -291,18 +288,18 @@ def create_basepoint_quad(size: float, psets=None):
         psets=psets,
         children=[
             *temp_basepoint.get_base_children(),
-            # N letter extruded at top surface (2D polygon scaled by size)
-            temp_basepoint.create_styled_extrusion(
+            # N letter prism at top surface (2D polygon scaled by size)
+            temp_basepoint.create_styled_prism(
                 temp_basepoint.scale_coordinates_2d(temp_basepoint.get_n_base_coordinates()),
                 z_offset=1.0,
             ),
-            # Arrow extruded at top surface (2D polygon scaled by size)
-            temp_basepoint.create_styled_extrusion(
+            # Arrow prism at top surface (2D polygon scaled by size)
+            temp_basepoint.create_styled_prism(
                 temp_basepoint.scale_coordinates_2d(temp_basepoint.get_arrow_base_coordinates()),
                 z_offset=1.0,
             ),
-            # Arrow extruded at bottom surface (2D polygon scaled by size)
-            temp_basepoint.create_styled_extrusion(
+            # Arrow prism at bottom surface (2D polygon scaled by size)
+            temp_basepoint.create_styled_prism(
                 temp_basepoint.scale_coordinates_2d(temp_basepoint.get_arrow_base_coordinates()),
                 z_offset=-1.0,
             ),

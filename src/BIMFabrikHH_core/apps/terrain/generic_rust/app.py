@@ -38,8 +38,10 @@ from BIMFabrikHH_core.apps.terrain.processing import (
 )
 from BIMFabrikHH_core.config.logging_config import get_logger
 from BIMFabrikHH_core.config.paths import PathConfig
+from BIMFabrikHH_core.core.geometry import basepoint_pset_values
 from BIMFabrikHH_core.core.georeferencing import DGM_TILE_VERTICAL_EPSG, bbox_request_params_to_epsg25832
-from BIMFabrikHH_core.core.ogc_extractor.ogc_values_extractor import extract_project_info
+from BIMFabrikHH_core.core.model_creator import psets_to_wire
+from BIMFabrikHH_core.core.ogc_extractor.ogc_values_extractor import extract_project_info, extract_psets_basepoint
 from BIMFabrikHH_core.data_models.params_tree import RequestParams
 from BIMFabrikHH_core.data_models.pydantic_georeferencing import CoordinateSystem
 from BIMFabrikHH_core.data_models.terrain_mesh import TerrainMesh
@@ -49,6 +51,8 @@ logger = get_logger("terrain_rust_app")
 # Single-mesh colour is Rust ``TERRAIN_RGB`` (omit ``color``). Guided parts recolour per label.
 _DEFAULT_TERRAIN_LAYER = DEFAULT_TERRAIN_LAYER
 _DEFAULT_OUTPUT_NAME = "output_dgm_rust.ifc"
+#: Same as TerrainGenericApp.
+_DEFAULT_BASEPOINT_SIZE: float = 5.0
 _MISSING_RS = (
     "TerrainRustApp needs bimfabrikhh_core_rs in this environment. "
     "Install with `pip install bimfabrikhh-core-rs`."
@@ -64,27 +68,6 @@ def _rust():
     return terrain_to_ifc, terrain_parts_to_ifc, default_psets
 
 
-def _pset_to_wire(pset: BaseModel) -> Tuple[str, Dict[str, Any]]:
-    """One Pydantic BIM.HH pset → ``(pset_name, {property: value})`` for Rust."""
-    name = getattr(type(pset), "pset_name", type(pset).__name__)
-    props = pset.model_dump(by_alias=True, exclude_none=True)
-    return name, {str(k): v for k, v in props.items()}
-
-
-def _psets_to_wire(psets: Optional[Sequence[BaseModel]]) -> Dict[str, Dict[str, Any]]:
-    """A part's Pydantic psets → the ``{pset_name: {property: value}}`` Rust wants.
-
-    Uses the exact same pset models as :class:`TerrainGenericApp` (via
-    :func:`terrain_part_psets`), just serialized, so the written property sets
-    are identical between the two writers.
-    """
-    wire: Dict[str, Dict[str, Any]] = {}
-    for pset in psets or []:
-        name, props = _pset_to_wire(pset)
-        wire[name] = props
-    return wire
-
-
 class TerrainRustApp:
     """DGM export that delegates the IFC write to Rust."""
 
@@ -96,6 +79,7 @@ class TerrainRustApp:
         output_path: Optional[Union[str, Path]] = None,
         output_name: str = _DEFAULT_OUTPUT_NAME,
         basepoint_origin: Optional[Tuple[float, float]] = None,
+        basepoint_size: float = _DEFAULT_BASEPOINT_SIZE,
         color: Optional[RgbTuple] = None,
         cad_layer: str = _DEFAULT_TERRAIN_LAYER,
         name: str = "DGM",
@@ -106,6 +90,7 @@ class TerrainRustApp:
         """Write a single prepared :class:`TerrainMesh` to IFC.
 
         ``psets`` defaults to ``terrain_mapping.specs()``. Pass ``[]`` for none.
+        ``basepoint_size`` is the Nullpunktobjekt edge length, as in :class:`TerrainGenericApp`.
         Basepoint XY is ``basepoint_origin``, else ``mesh.nullpunkt``, else
         the request bbox lower-left in EPSG:25832. ``epsg`` is the CRS of the
         mesh; the IFC header gets it with the DGM height system (DHHN2016).
@@ -134,6 +119,8 @@ class TerrainRustApp:
             crs=CoordinateSystem.from_epsg(epsg, vertical_epsg=DGM_TILE_VERTICAL_EPSG),
             psets=psets,
             basepoint=basepoint,
+            basepoint_size=basepoint_size,
+            basepoint_psets=basepoint_pset_values(extract_psets_basepoint(request_params.containers or [])),
             layer=cad_layer,
             progress=progress,
             **extra,
@@ -150,6 +137,7 @@ class TerrainRustApp:
         output_path: Optional[Union[str, Path]] = None,
         output_name: str = _DEFAULT_OUTPUT_NAME,
         basepoint_origin: Optional[Tuple[float, float]] = None,
+        basepoint_size: float = _DEFAULT_BASEPOINT_SIZE,
         color: Optional[RgbTuple] = None,
         cad_layer: str = _DEFAULT_TERRAIN_LAYER,
         name: str = "DGM",
@@ -190,7 +178,7 @@ class TerrainRustApp:
                 "vertices": part.vertices,
                 "faces": part.faces,
                 "layer": part_layer,
-                "psets": _psets_to_wire(part_psets),
+                "psets": psets_to_wire(part_psets or []),
             }
             if label != "DGM" or color is not None:
                 item["color"] = part_color
@@ -203,6 +191,8 @@ class TerrainRustApp:
             site_name=site_name or "Hamburg_Site",
             crs=CoordinateSystem.from_epsg(epsg, vertical_epsg=DGM_TILE_VERTICAL_EPSG),
             basepoint=basepoint,
+            basepoint_size=basepoint_size,
+            basepoint_psets=basepoint_pset_values(extract_psets_basepoint(request_params.containers or [])),
             progress=progress,
         )
         logger.info("TerrainRustApp wrote %d part(s) → %s", len(payload), written)
@@ -221,6 +211,7 @@ class TerrainRustApp:
         output_path: Optional[Union[str, Path]] = None,
         output_name: str = _DEFAULT_OUTPUT_NAME,
         basepoint_origin: Optional[Tuple[float, float]] = None,
+        basepoint_size: float = _DEFAULT_BASEPOINT_SIZE,
         color: Optional[RgbTuple] = None,
         cad_layer: str = _DEFAULT_TERRAIN_LAYER,
         psets: Optional[Sequence[BaseModel]] = None,
@@ -296,6 +287,7 @@ class TerrainRustApp:
                 output_path=output_path,
                 output_name=output_name,
                 basepoint_origin=basepoint_origin,
+                basepoint_size=basepoint_size,
                 color=color,
                 cad_layer=cad_layer,
                 psets=psets,
@@ -309,6 +301,7 @@ class TerrainRustApp:
                 output_path=output_path,
                 output_name=output_name,
                 basepoint_origin=basepoint_origin,
+                basepoint_size=basepoint_size,
                 color=color,
                 cad_layer=cad_layer,
                 psets=psets,

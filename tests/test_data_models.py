@@ -1,10 +1,14 @@
 import datetime
+from typing import ClassVar, Optional
 
 import pytest
-from ifcfactory import ureg
-from pydantic import ValidationError
+from ifcfactory import PropertySetTemplate, ureg
+from ifcfactory._internal.pset_base import Length, Quantity
+from pydantic import Field, ValidationError
 
 # Import the data models to test
+from BIMFabrikHH_core.core.geometry import basepoint_pset_values
+from BIMFabrikHH_core.core.model_creator import psets_to_wire
 from BIMFabrikHH_core.data_models.params_bbox import BoundingBoxParams
 from BIMFabrikHH_core.data_models.params_tree import Component, Container, ModelParams, ProjectInfos, RequestParams
 from BIMFabrikHH_core.data_models.pydantic_georeferencing import CoordinateOperation, CoordinateSystem
@@ -275,6 +279,65 @@ class TestPsetHyperlink:
         assert pset.hyperlink_001 == "www.bim.hamburg.de"
         assert pset.hyperlink_001_bemerkung == "Link zur Homepage von BIM.Hamburg"
         assert pset.pset_name == "Pset_Hyperlink"
+
+    def test_default_bemerkung(self):
+        assert Pset_Hyperlink().hyperlink_001_bemerkung == "Link zur Homepage von BIM.Hamburg"
+
+    def test_accepts_lowercase_bemerkung_title(self):
+        pset = Pset_Hyperlink(**{"_Hyperlink_001_bemerkung": "Eigener Text"})
+
+        assert pset.hyperlink_001_bemerkung == "Eigener Text"
+        assert pset.model_dump(by_alias=True)["_Hyperlink_001_Bemerkung"] == "Eigener Text"
+
+
+class TestBasepointPsetValues:
+    """``basepoint_pset_values`` gives the Rust writers the Python Nullpunktobjekt values."""
+
+    def test_none_and_empty_give_no_psets(self):
+        assert basepoint_pset_values(None) == {}
+        assert basepoint_pset_values({}) == {}
+
+    def test_aliases_defaults_and_unknown_psets(self):
+        values = basepoint_pset_values(
+            {
+                "Pset_Hyperlink": {"_Hyperlink_001": "https://bim.hamburg.de", "_Hyperlink_001_bemerkung": "Text"},
+                "Pset_Unbekannt": {"a": 1},
+            }
+        )
+        assert values == {
+            "Pset_Hyperlink": {"_Hyperlink_001": "https://bim.hamburg.de", "_Hyperlink_001_Bemerkung": "Text"}
+        }
+
+    def test_defaults_are_filled(self):
+        values = basepoint_pset_values({"Pset_Hyperlink": {"_Hyperlink_001": "https://bim.hamburg.de"}})
+        assert values["Pset_Hyperlink"]["_Hyperlink_001_Bemerkung"] == "Link zur Homepage von BIM.Hamburg"
+
+
+class TestPsetsToWire:
+    """``psets_to_wire`` types values the way ifcfactory writes them."""
+
+    def test_python_types_dates_and_quantities(self):
+        class Pset_Test(PropertySetTemplate):
+            pset_name: ClassVar[str] = "Pset_Test"
+            jahr: int = Field(serialization_alias="_Jahr")
+            hoehe: float = Field(serialization_alias="_Hoehe")
+            durchmesser: Quantity[Length] = Field(serialization_alias="_Durchmesser")
+            datum: datetime.date = Field(serialization_alias="_Datum")
+            nummer: str = Field(serialization_alias="_Nummer")
+            leer: Optional[str] = Field(default=None, serialization_alias="_Leer")
+
+        pset = Pset_Test(
+            jahr=1990, hoehe=3.0, durchmesser=50 * ureg.centimeter, datum=datetime.date(2026, 9, 12), nummer="001"
+        )
+        assert psets_to_wire([pset]) == {
+            "Pset_Test": {
+                "_Jahr": 1990,
+                "_Hoehe": 3.0,
+                "_Durchmesser": {"ifc_type": "IfcLengthMeasure", "value": 0.5},
+                "_Datum": "2026-09-12",
+                "_Nummer": "001",
+            }
+        }
 
 
 class TestPsetObjektinformationTree:

@@ -51,7 +51,7 @@ class DefaultPsetHyperlink(BaseModel):
 
     pset_name: ClassVar[str] = "Pset_Hyperlink"
     hyperlink_001: str = Field(default="www.bim.hamburg.de", alias="_Hyperlink_001")
-    hyperlink_001_Bemerkung: str = Field(default="LinkZurHomepageVonBIM.Hamburg", alias="_Hyperlink_001_Bemerkung")
+    hyperlink_001_Bemerkung: str = Field(default="Link zur Homepage von BIM.Hamburg", alias="_Hyperlink_001_Bemerkung")
 
 
 class DefaultPsetData(BaseModel):

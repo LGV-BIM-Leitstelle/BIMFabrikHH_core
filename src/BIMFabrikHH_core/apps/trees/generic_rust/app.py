@@ -22,7 +22,7 @@ from BIMFabrikHH_core.apps.trees.processing import (
 )
 from BIMFabrikHH_core.config.logging_config import get_logger
 from BIMFabrikHH_core.config.paths import PathConfig
-from BIMFabrikHH_core.core.geometry import basepoint_xy
+from BIMFabrikHH_core.core.geometry import basepoint_pset_values, basepoint_xy
 from BIMFabrikHH_core.core.georeferencing import CoordinateTransformer, warn_if_degree_coordinates
 from BIMFabrikHH_core.core.model_creator import output_coordinate_system
 from BIMFabrikHH_core.data_models import TreeRecord
@@ -118,6 +118,8 @@ class TreesRustApp:
         crown_color: Tuple[float, ...] = (33, 128, 46),
         name_prefix: str = "",
         basepoint_origin: Optional[Tuple[float, float]] = None,
+        basepoint_size: float = 1.0,
+        basepoint_psets: Optional[Dict[str, Any]] = None,
         bbox_wgs84: Optional[Tuple[float, float, float, float]] = None,
         project_name: str = "Trees_Generic_Project",
         site_name: str = "Trees_Generic_Site",
@@ -139,7 +141,10 @@ class TreesRustApp:
         tiles (same contract as :meth:`TreesGenericApp.build_ifc`). Optional
         ``drape_vertices`` / ``drape_faces`` instead fill ``z = 0`` from a DGM mesh.
         Basepoint XY is ``basepoint_origin``, else the ``bbox_wgs84`` lower-left
-        (only with a known CRS), else none.
+        (only with a known CRS), else none. ``basepoint_size`` is its edge length, as in
+        :meth:`TreesGenericApp.build_ifc`. ``basepoint_psets`` is the
+        :func:`extract_psets_basepoint` payload, as for
+        :meth:`TreesGenericApp.build_ifc`; omit it and the Nullpunktobjekt has no psets.
 
         ``source_epsg`` / ``output_epsg`` / ``vertical_epsg`` work as in
         :meth:`TreesGenericApp.build_ifc`: positions and ``basepoint_origin`` are
@@ -188,6 +193,8 @@ class TreesRustApp:
             crs=output_coordinate_system(transformer),
             psets=psets,
             basepoint=basepoint,
+            basepoint_size=basepoint_size,
+            basepoint_psets=basepoint_pset_values(basepoint_psets),
             drape_vertices=drape_vertices,
             drape_faces=drape_faces,
             progress=progress,

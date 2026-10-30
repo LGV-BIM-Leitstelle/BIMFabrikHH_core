@@ -78,8 +78,10 @@ class Pset_Hyperlink(PropertySetTemplate):
         serialization_alias="_Hyperlink_001",
     )
     hyperlink_001_bemerkung: Optional[str] = Field(
-        default="LinkZurHomepageVonBIM.Hamburg",
-        validation_alias=AliasChoices("hyperlink_001_bemerkung", "_Hyperlink_001_Bemerkung", "hyperlink1bem"),
+        default="Link zur Homepage von BIM.Hamburg",
+        validation_alias=AliasChoices(
+            "hyperlink_001_bemerkung", "_Hyperlink_001_Bemerkung", "_Hyperlink_001_bemerkung", "hyperlink1bem"
+        ),
         serialization_alias="_Hyperlink_001_Bemerkung",
     )
 
@@ -92,15 +94,7 @@ class Nullpunktobjekt(PropertySetTemplate):
 
 
 def default_bim_hamburg_hyperlink() -> Pset_Hyperlink:
-    """Return the canonical BIM.Hamburg ``Pset_Hyperlink``.
-
-    The class-level default for :attr:`Pset_Hyperlink.hyperlink_001_bemerkung`
-    is the condensed string ``"LinkZurHomepageVonBIM.Hamburg"`` kept for
-    backwards-compatibility with ``BIMFabrikHH_intern``. The tree / terrain /
-    city apps instead use the human-readable
-    ``"Link zur Homepage von BIM.Hamburg"`` — factored out here so all three
-    apps share a single source of truth.
-    """
+    """Return the canonical BIM.Hamburg ``Pset_Hyperlink``."""
     return Pset_Hyperlink(
         hyperlink_001="www.bim.hamburg.de",
         hyperlink_001_bemerkung="Link zur Homepage von BIM.Hamburg",

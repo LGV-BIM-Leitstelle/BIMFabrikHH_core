@@ -59,7 +59,7 @@ class IfcModelMethods:
         file_name.organization = (_IFC_AUTHOR,)
         file_name.preprocessor_version = f"bimfabrikhh_core {app_version}"
         file_name.originating_system = _IFC_APPLICATION
-        model.header.file_description.description = ("ViewDefinition [Ifc4ReferenceView]",)
+        model.header.file_description.description = ("ViewDefinition [ReferenceView_V1.2]",)
 
         person = model.create_entity("IfcPerson", FamilyName=_IFC_AUTHOR)
         organisation = model.create_entity("IfcOrganization", Name=_IFC_AUTHOR)

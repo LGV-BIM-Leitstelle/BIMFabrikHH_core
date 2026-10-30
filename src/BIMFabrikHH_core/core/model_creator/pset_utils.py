@@ -1,7 +1,9 @@
 import inspect
-from typing import Any, Dict
+from typing import Any, Dict, Iterable
 
 import ifcopenshell
+import pint
+from ifcfactory import pint_to_ifc
 from ifcopenshell.api.pset import add_pset, edit_pset
 
 
@@ -53,3 +55,26 @@ def assign_psets_to_element(
     for pset_name, props in psets.items():
         pset_ifc = add_pset(model, product=element, name=pset_name)
         edit_pset(model, pset=pset_ifc, properties=props)
+
+
+def psets_to_wire(psets: Iterable[Any]) -> Dict[str, Dict[str, Any]]:
+    """Pset models → ``{pset_name: {property: value}}`` for the Rust writers.
+
+    Dumped and typed the way ifcfactory writes the same models: by alias,
+    without ``None``; ``str`` / ``int`` / ``float`` / ``bool`` keep their Python
+    type, dates become ISO text and pint quantities ``{"ifc_type", "value"}``
+    in SI base units (metre, m²), the units the Rust writer declares.
+    """
+    wire: Dict[str, Dict[str, Any]] = {}
+    for pset in psets:
+        dump = pset.model_dump(by_alias=True)
+        wire[pset.pset_name] = {key: _wire_value(value) for key, value in dump.items() if value is not None}
+    return wire
+
+
+def _wire_value(value: Any) -> Any:
+    if isinstance(value, pint.Quantity):
+        return {"ifc_type": pint_to_ifc[value.dimensionality], "value": float(value.to_base_units().magnitude)}
+    if hasattr(value, "isoformat"):
+        return value.isoformat()
+    return value

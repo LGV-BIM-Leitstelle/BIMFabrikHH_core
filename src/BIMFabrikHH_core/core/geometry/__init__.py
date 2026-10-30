@@ -42,7 +42,7 @@ from ifcfactory import (
 from .advanced_objects import ProjectBasePointNorthMesh, ProjectBasePointNorthQuad
 
 # Basepoint placement helper (depends on advanced_objects + georeferencing)
-from .basepoint import basepoint_xy, place_basepoint
+from .basepoint import basepoint_pset_values, basepoint_xy, place_basepoint
 
 __all__ = [
     "Box",
@@ -67,6 +67,7 @@ __all__ = [
     "BIMFactoryElement",
     "ProjectBasePointNorthMesh",
     "ProjectBasePointNorthQuad",
+    "basepoint_pset_values",
     "basepoint_xy",
     "place_basepoint",
 ]

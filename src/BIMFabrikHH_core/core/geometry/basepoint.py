@@ -23,15 +23,28 @@ placement matrix and a single batched ``build`` call.
 
 from __future__ import annotations
 
-from typing import Any, Optional, Tuple
+from typing import Any, Dict, Optional, Tuple
 
 from ifcfactory import BIMFactoryElement, Transform
 
 from BIMFabrikHH_core.core.georeferencing.coordinate_transformer import CoordinateTransformer
 from BIMFabrikHH_core.core.georeferencing.crs_transform import bbox_wgs84_to_epsg25832
+from BIMFabrikHH_core.core.model_creator.pset_utils import psets_to_wire
 from BIMFabrikHH_core.data_models.pydantic_georeferencing import BboxWgs84, horizontal_crs
 
-from .advanced_objects import create_basepoint_quad
+from .advanced_objects import convert_psets_from_dict, create_basepoint_quad
+
+
+def basepoint_pset_values(psets: Optional[Dict[str, Dict[str, Any]]]) -> Dict[str, Dict[str, Any]]:
+    """Nullpunktobjekt psets as ``{pset_name: {property: value}}`` for the Rust writers.
+
+    ``psets`` is the dict of :func:`extract_psets_basepoint`. The values go
+    through the same pset models (aliases, defaults) as the Python
+    Nullpunktobjekt of :func:`create_basepoint_quad` and are typed by
+    :func:`psets_to_wire` as ifcfactory would write them. Unknown psets are
+    dropped; ``None`` or ``{}`` gives ``{}``.
+    """
+    return psets_to_wire(convert_psets_from_dict(psets or {}))
 
 
 def basepoint_xy(
