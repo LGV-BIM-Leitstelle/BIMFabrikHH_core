@@ -94,16 +94,16 @@ pyflakes = ">=3.0.0"
 
 [[package]]
 name = "bimfabrikhh-core-rs"
-version = "0.1.2"
+version = "0.3.0"
 description = "Parse CityGML and write IFC4 STEP text from Rust, callable from Python"
 optional = false
 python-versions = ">=3.11"
 groups = ["main"]
 files = [
-    {file = "bimfabrikhh_core_rs-0.1.2-cp311-abi3-macosx_11_0_arm64.whl", hash = "sha256:b675d2e778c3a8eeba44c703945dbf099ac554392a0a50647df4c7a6820e212a"},
-    {file = "bimfabrikhh_core_rs-0.1.2-cp311-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:82e4518179a39b559ebed57c89ca9d53cfeb215d98909129a7f1dbdf02c36874"},
-    {file = "bimfabrikhh_core_rs-0.1.2-cp311-abi3-win_amd64.whl", hash = "sha256:88c8268202ddb6118d773c5f49610ee96d1d6c038c7528101ea4fdb6707f1add"},
-    {file = "bimfabrikhh_core_rs-0.1.2.tar.gz", hash = "sha256:3366852c579f13b56da3d842d77de8c98ad9d1b3cbaab42cb7c3f3547e696be4"},
+    {file = "bimfabrikhh_core_rs-0.3.0-cp311-abi3-macosx_11_0_arm64.whl", hash = "sha256:8d2a118d3b31554c1c0abc32e1fcba5719aa94a0a218b905d3f0cfa5f285d38c"},
+    {file = "bimfabrikhh_core_rs-0.3.0-cp311-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:b95d979425b44edfdfe6e44a23e7159135330cb73a9de36f3d1b585adaef9f9a"},
+    {file = "bimfabrikhh_core_rs-0.3.0-cp311-abi3-win_amd64.whl", hash = "sha256:4aa2739fe7bfe3976769db99b4e2a530d5f833812f8f110241910a0147a4a79b"},
+    {file = "bimfabrikhh_core_rs-0.3.0.tar.gz", hash = "sha256:87127545d36c1cdf812847542cad1ad43d1682aefb4b532a61dbe1bf176c3bc6"},
 ]
 
 [package.extras]
@@ -2492,4 +2492,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.11,<3.12"
-content-hash = "b3e0d95b853e5fb4435d5254044a7c4fb76f6c470eb452522f87e1477f1497b6"
+content-hash = "ee621240778ddaaff9fc6dcfa18c5a38088501a20bbda58eaff937912c2f2a91"
