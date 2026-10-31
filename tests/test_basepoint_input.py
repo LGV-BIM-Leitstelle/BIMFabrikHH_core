@@ -6,10 +6,12 @@ from pathlib import Path
 from typing import Tuple
 
 import ifcopenshell
+import ifcopenshell.util.element
 import pytest
 from ifcopenshell.util.placement import get_local_placement
 from pydantic import ValidationError
 
+from BIMFabrikHH_core.apps.basepoint.generic.app import BasepointGenericApp
 from BIMFabrikHH_core.apps.flurstuecke.generic.app import FlurstueckeGenericApp
 from BIMFabrikHH_core.apps.terrain.generic_rust.app import TerrainRustApp
 from BIMFabrikHH_core.apps.trees.generic.app import TreesGenericApp
@@ -18,7 +20,7 @@ from BIMFabrikHH_core.core.georeferencing import CoordinateTransformer
 from BIMFabrikHH_core.core.ogc_extractor import PolygonRings
 from BIMFabrikHH_core.data_models import BasepointParams, TreeRecord
 from BIMFabrikHH_core.data_models.flurstuecke import FlurstueckRecord
-from BIMFabrikHH_core.data_models.params_tree import BoundingBoxParams, RequestParams
+from BIMFabrikHH_core.data_models.params_tree import BoundingBoxParams, Component, Container, RequestParams
 
 HAMBURG_BBOX = BoundingBoxParams(min_x=9.98, min_y=53.54, max_x=10.00, max_y=53.56)
 POINT_25832 = (565100.0, 5933600.0)
@@ -190,3 +192,57 @@ def test_terrain_rust_uses_the_entered_point_and_else_height_zero() -> None:
     assert TerrainRustApp._basepoint(POINT_25832, params, None) == USER_25832
     without = RequestParams(bbox=HAMBURG_BBOX, source_epsg=25832)
     assert TerrainRustApp._basepoint(POINT_25832, without, None) == (*POINT_25832, 0.0)
+
+
+# ---------------------------------------------------------------------------
+# Mastermodell: IFC with only the Nullpunktobjekt
+# ---------------------------------------------------------------------------
+
+
+def _modellinformation_container() -> Container:
+    return Container(
+        containerTitle="Pset_Modellinformation",
+        containerId="Pset_Modellinformation",
+        components={
+            "projektname": Component(title="_Projektname", value="Musterprojekt"),
+            "projektnummer": Component(title="_Projektnummer", value="12345"),
+            "artfachmodell": Component(title="_ArtFachmodell", value="Ingenieurbau/Bauwerk"),
+            "artteilmodell": Component(title="_ArtTeilmodell", value="Bruecke"),
+            "auftraggeber": Component(title="_Auftraggeber", value="Musterfirma"),
+            "ersteller": Component(title="_Ersteller", value="Musterfirma"),
+            "erstelldatum": Component(title="_Erstelldatum", value="2026-10-30"),
+            "gemobjektkatalog": Component(title="_GemObjektkatalog", value="Allgemein/Master_V004"),
+        },
+    )
+
+
+def test_mastermodell_has_only_the_nullpunkt_at_the_entered_point(tmp_path: Path) -> None:
+    params = RequestParams(
+        bbox=HAMBURG_BBOX,
+        source_epsg=25832,
+        output_epsg=GK,
+        basepoint={"x": USER_GK[0], "y": USER_GK[1], "z": USER_GK[2]},
+        containers=[_modellinformation_container()],
+    )
+    path = BasepointGenericApp.build_ifc(request_params=params, output_path=tmp_path / "master.ifc")
+
+    model = ifcopenshell.open(str(path))
+    (proxy,) = model.by_type("IfcBuildingElementProxy")
+    assert proxy.Name == "Nullpunktobjekt"
+    assert _nullpunkt_xyz(path) == pytest.approx(USER_GK)
+    assert model.by_type("IfcProjectedCRS")[0].Name == f"EPSG:{GK}"
+    psets = ifcopenshell.util.element.get_psets(proxy)
+    assert psets["Pset_Modellinformation"]["_Projektname"] == "Musterprojekt"
+    assert psets["Pset_Objektinformation"]["_IDEbene1"] == "Nullpunktobjekt"
+    assert psets["Pset_Hyperlink"]["_Hyperlink_001"] == "www.bim.hamburg.de"
+
+
+def test_mastermodell_nullpunkt_matches_the_teilmodell_of_the_same_umring(tmp_path: Path) -> None:
+    params = RequestParams(bbox=HAMBURG_BBOX, source_epsg=25832)
+    master = BasepointGenericApp.build_ifc(request_params=params, output_path=tmp_path / "master.ifc")
+    teilmodell = FlurstueckeGenericApp.build_ifc([_flurstueck()], request_params=params, output_path=tmp_path / "f.ifc")
+    assert _nullpunkt_xyz(master) == pytest.approx(_nullpunkt_xyz(teilmodell))
+
+
+def test_mastermodell_without_nullpunkt_writes_nothing(tmp_path: Path) -> None:
+    assert BasepointGenericApp.build_ifc(request_params=RequestParams(), output_path=tmp_path / "m.ifc") is None
