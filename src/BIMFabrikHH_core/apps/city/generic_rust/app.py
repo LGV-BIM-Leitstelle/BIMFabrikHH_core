@@ -25,7 +25,7 @@ from typing import Optional, Sequence, Tuple, Union
 from BIMFabrikHH_core.apps.city.processing import bbox_in_source_crs, with_tile_crs
 from BIMFabrikHH_core.config.logging_config import get_logger
 from BIMFabrikHH_core.config.paths import PathConfig
-from BIMFabrikHH_core.core.geometry import basepoint_pset_values, basepoint_xy
+from BIMFabrikHH_core.core.geometry import basepoint_pset_values, basepoint_xyz
 from BIMFabrikHH_core.core.georeferencing import CoordinateTransformer
 from BIMFabrikHH_core.core.model_creator import output_coordinate_system
 from BIMFabrikHH_core.core.ogc_extractor.ogc_values_extractor import extract_project_info, extract_psets_basepoint
@@ -83,8 +83,9 @@ class CityRustApp:
         accepted for :class:`CityGenericApp` call-site compatibility and is unused.
 
         A ``request_params.bbox`` crops the tiles in ``source_epsg`` (it needs
-        one); the basepoint is ``basepoint_origin`` (in ``source_epsg``), else
-        the bbox lower-left, both in the output CRS; ``basepoint_size`` is its
+        one); the basepoint is ``request_params.basepoint`` (XYZ in the output
+        CRS), else ``basepoint_origin`` (in ``source_epsg``), else the bbox
+        lower-left, the last two at height 0; ``basepoint_size`` is its
         edge length, as in :class:`CityGenericApp`. Without ``source_epsg``
         the coordinates are written as they are, without georeferencing. An
         empty ``source_epsg`` / ``vertical_epsg`` is taken from the ``srsName``
@@ -184,7 +185,8 @@ def _export_kwargs(
     )
     bbox_wgs84 = request_params.bbox_as_wgs84_tuple
     bbox_epsg = bbox_in_source_crs(bbox_wgs84, request_params.source_epsg)
-    basepoint = basepoint_xy(
+    basepoint = basepoint_xyz(
+        basepoint=request_params.basepoint_xyz,
         basepoint_origin=basepoint_origin,
         bbox_wgs84=bbox_wgs84 if transformer is not None else None,
         transformer=transformer,

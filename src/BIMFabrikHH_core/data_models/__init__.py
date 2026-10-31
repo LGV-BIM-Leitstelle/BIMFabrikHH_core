@@ -6,6 +6,7 @@ management throughout the application.
 """
 
 # Core parameter models
+from .params_basepoint import BasepointParams
 from .params_bbox import BoundingBoxParams
 from .params_tree import Component, Container, RequestParams
 
@@ -59,6 +60,7 @@ from .tree_record import TreeRecord
 
 __all__ = [
     # Core parameter models
+    "BasepointParams",
     "BoundingBoxParams",
     "RequestParams",
     "Container",

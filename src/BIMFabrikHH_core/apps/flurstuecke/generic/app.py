@@ -197,6 +197,7 @@ class FlurstueckeGenericApp:
             place_basepoint(
                 model=model,
                 site=model_builder.site,
+                basepoint=request_params.basepoint_xyz,
                 basepoint_origin=basepoint_origin,
                 bbox_wgs84=request_params.bbox_as_wgs84_tuple if transformer is not None else None,
                 size=basepoint_size,

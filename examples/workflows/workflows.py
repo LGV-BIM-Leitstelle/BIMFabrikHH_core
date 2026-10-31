@@ -73,7 +73,7 @@ from BIMFabrikHH_core.apps.trees.generic_rust import TreesRustApp
 from BIMFabrikHH_core.apps.trees.processing import dataframe_to_records
 from BIMFabrikHH_core.config import get_logger, setup_logging
 from BIMFabrikHH_core.core.data_processing import DataProcessor
-from BIMFabrikHH_core.core.geometry import basepoint_pset_values, basepoint_xy, place_basepoint
+from BIMFabrikHH_core.core.geometry import basepoint_pset_values, basepoint_xyz, place_basepoint
 from BIMFabrikHH_core.core.georeferencing import DGM_TILE_VERTICAL_EPSG, CoordinateTransformer
 from BIMFabrikHH_core.core.model_creator import georeference_options, init_ifc_project, output_coordinate_system
 from BIMFabrikHH_core.core.ogc_extractor import extract_psets_basepoint
@@ -206,7 +206,7 @@ def run_nullpunkt(containers: List[Container], output: Path, rust: bool) -> Opti
             project_name="Nullpunkt_Project",
             site_name="Nullpunkt_Site",
             crs=output_coordinate_system(transformer),
-            basepoint=basepoint_xy(bbox_wgs84=bbox_wgs84, transformer=transformer),
+            basepoint=basepoint_xyz(bbox_wgs84=bbox_wgs84, transformer=transformer),
             basepoint_size=NULLPUNKT_SIZE,
             basepoint_psets=basepoint_pset_values(psets),
         )

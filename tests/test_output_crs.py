@@ -22,7 +22,7 @@ from BIMFabrikHH_core.apps.terrain.processing import resolve_guide_records, tran
 from BIMFabrikHH_core.apps.trees import check_positions_in_dgm_crs, transform_record_positions
 from BIMFabrikHH_core.apps.trees.generic.app import TreesGenericApp
 from BIMFabrikHH_core.apps.wasserschutzgebiete.generic.app import WasserschutzgebieteGenericApp
-from BIMFabrikHH_core.core.geometry import basepoint_xy
+from BIMFabrikHH_core.core.geometry import basepoint_xyz
 from BIMFabrikHH_core.core.georeferencing import CoordinateTransformer, warn_if_degree_coordinates
 from BIMFabrikHH_core.core.model_creator import georeference_options
 from BIMFabrikHH_core.core.ogc_extractor import PolygonRings
@@ -289,19 +289,20 @@ def test_warn_if_degree_coordinates_stays_quiet(caplog: pytest.LogCaptureFixture
     assert not [r for r in caplog.records if "longitude / latitude" in r.getMessage()]
 
 
-def test_basepoint_xy_transforms_explicit_origin() -> None:
+def test_basepoint_xyz_transforms_explicit_origin() -> None:
     transformer = CoordinateTransformer.from_source_to_output(25832, GK)
-    xy = basepoint_xy(basepoint_origin=POINT_25832, bbox_wgs84=None, transformer=transformer)
-    assert xy == pytest.approx(_to_gk(*POINT_25832), abs=1e-6)
+    xyz = basepoint_xyz(basepoint_origin=POINT_25832, bbox_wgs84=None, transformer=transformer)
+    assert xyz == pytest.approx((*_to_gk(*POINT_25832), 0.0), abs=1e-6)
 
 
-def test_basepoint_xy_bbox_lower_left_in_output_crs() -> None:
+def test_basepoint_xyz_bbox_lower_left_in_output_crs() -> None:
     transformer = CoordinateTransformer.from_source_to_output(25832, GK)
-    xy = basepoint_xy(basepoint_origin=None, bbox_wgs84=HAMBURG_BBOX_TUPLE, transformer=transformer)
+    xyz = basepoint_xyz(basepoint_origin=None, bbox_wgs84=HAMBURG_BBOX_TUPLE, transformer=transformer)
     ll = Transformer.from_crs(4326, GK, always_xy=True).transform(9.98, 53.54)
-    assert xy is not None
-    assert xy[0] == pytest.approx(ll[0], abs=200)
-    assert xy[1] == pytest.approx(ll[1], abs=200)
+    assert xyz is not None
+    assert xyz[0] == pytest.approx(ll[0], abs=200)
+    assert xyz[1] == pytest.approx(ll[1], abs=200)
+    assert xyz[2] == 0.0
 
 
 def test_transform_record_positions_keeps_height() -> None:

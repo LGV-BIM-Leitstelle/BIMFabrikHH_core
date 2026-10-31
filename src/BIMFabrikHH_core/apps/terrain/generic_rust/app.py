@@ -91,8 +91,9 @@ class TerrainRustApp:
 
         ``psets`` defaults to ``terrain_mapping.specs()``. Pass ``[]`` for none.
         ``basepoint_size`` is the Nullpunktobjekt edge length, as in :class:`TerrainGenericApp`.
-        Basepoint XY is ``basepoint_origin``, else ``mesh.nullpunkt``, else
-        the request bbox lower-left in EPSG:25832. ``epsg`` is the CRS of the
+        Basepoint is ``request_params.basepoint`` (XYZ in ``epsg``), else
+        ``basepoint_origin``, else ``mesh.nullpunkt``, else the request bbox
+        lower-left in EPSG:25832. ``epsg`` is the CRS of the
         mesh; the IFC header gets it with the DGM height system (DHHN2016).
         Omit ``color`` to use Rust ``TERRAIN_RGB`` (102, 204, 0).
         """
@@ -320,14 +321,17 @@ class TerrainRustApp:
         basepoint_origin: Optional[Tuple[float, float]],
         request_params: RequestParams,
         mesh: Optional[TerrainMesh],
-    ) -> Optional[Tuple[float, float]]:
-        """Basepoint XY: explicit origin, else ``mesh.nullpunkt``, else bbox LL."""
+    ) -> Optional[Tuple[float, float, float]]:
+        """Basepoint XYZ: ``request_params.basepoint``, else the explicit origin,
+        else ``mesh.nullpunkt``, else bbox LL; the last three at height 0."""
+        if request_params.basepoint_xyz is not None:
+            return request_params.basepoint_xyz
         basepoint = basepoint_origin or (mesh.nullpunkt if mesh is not None else None)
         if basepoint is None:
             bbox_utm = bbox_request_params_to_epsg25832(request_params)
             if bbox_utm is not None:
                 basepoint = (bbox_utm[0], bbox_utm[1])
-        return basepoint
+        return None if basepoint is None else (basepoint[0], basepoint[1], 0.0)
 
 
 __all__ = ["TerrainRustApp"]

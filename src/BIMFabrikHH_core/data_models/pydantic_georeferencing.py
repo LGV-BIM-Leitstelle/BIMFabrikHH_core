@@ -4,7 +4,7 @@ from functools import lru_cache
 from typing import Literal, Optional, Tuple
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
-from pyproj import CRS
+from pyproj import CRS, Transformer
 from pyproj.exceptions import CRSError
 
 BboxWgs84 = Tuple[float, float, float, float]
@@ -64,6 +64,23 @@ def check_projected_epsg(epsg: int, bbox_wgs84: Optional[BboxWgs84] = None) -> N
         min_lon, min_lat, max_lon, max_lat = bbox_wgs84
         if min_lon < area.west or min_lat < area.south or max_lon > area.east or max_lat > area.north:
             raise ValueError(f"The bbox lies outside the area of use of EPSG:{epsg} ({area.name})")
+
+
+def check_point_in_crs(epsg: int, x: float, y: float) -> None:
+    """Raise ``ValueError`` unless ``(x, y)`` lies in the area of use of ``epsg``.
+
+    Catches swapped axes or degrees instead of metres; whether it is the right
+    point is up to the caller.
+    """
+    horizontal = horizontal_crs(epsg)
+    area = horizontal.area_of_use
+    if area is None:
+        return
+    lon, lat = Transformer.from_crs(horizontal, _crs_from_epsg(4326), always_xy=True).transform(x, y)
+    if not (math.isfinite(lon) and math.isfinite(lat)) or not (
+        area.west <= lon <= area.east and area.south <= lat <= area.north
+    ):
+        raise ValueError(f"({x}, {y}) lies outside the area of use of EPSG:{epsg} ({area.name})")
 
 
 def check_source_epsg(

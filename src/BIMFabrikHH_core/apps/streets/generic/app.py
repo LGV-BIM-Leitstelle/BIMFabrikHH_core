@@ -36,7 +36,7 @@ from BIMFabrikHH_core.apps.streets.processing import (
     transformer_to_dgm,
 )
 from BIMFabrikHH_core.config.logging_config import get_logger
-from BIMFabrikHH_core.core.geometry import basepoint_xy, place_basepoint
+from BIMFabrikHH_core.core.geometry import basepoint_xyz, place_basepoint
 from BIMFabrikHH_core.core.model_creator import init_ifc_project, output_coordinate_system
 from BIMFabrikHH_core.core.ogc_extractor.ogc_values_extractor import extract_psets_basepoint
 from BIMFabrikHH_core.data_models.params_tree import RequestParams
@@ -142,10 +142,10 @@ class StreetsGenericApp:
         to_dgm = transformer_to_dgm(request_params.source_epsg)
         to_output = dgm_output_transformer(request_params.output_epsg)
         records = transform_record_rings(records, to_dgm)
-        basepoint_dgm = basepoint_xy(
+        basepoint_dgm = basepoint_xyz(
             basepoint_origin=basepoint_origin, bbox_wgs84=request_params.bbox_as_wgs84_tuple, transformer=to_dgm
         )
-        basepoint = to_output.transform_point(*basepoint_dgm)[:2] if basepoint_dgm is not None else None
+        basepoint = to_output.transform_point(*basepoint_dgm[:2])[:2] if basepoint_dgm is not None else None
 
         try:
             _t0 = time.perf_counter()
@@ -206,6 +206,7 @@ class StreetsGenericApp:
             place_basepoint(
                 model=model,
                 site=model_builder.site,
+                basepoint=request_params.basepoint_xyz,
                 basepoint_origin=basepoint,
                 size=basepoint_size,
                 psets=extract_psets_basepoint(request_params.containers or []),
