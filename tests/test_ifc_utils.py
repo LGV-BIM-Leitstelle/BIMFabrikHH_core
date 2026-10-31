@@ -6,6 +6,11 @@ import pytest
 from BIMFabrikHH_core.core.model_creator.ifc_utils import IfcModelMethods
 
 
+def test_create_model_declares_the_ifc4_reference_view() -> None:
+    model = IfcModelMethods.create_model("IFC4")
+    assert model.header.file_description.description == ("ViewDefinition [ReferenceView_V1.2]",)
+
+
 class TestIfcModelMethods:
     """Test cases for IfcModelMethods class."""
 

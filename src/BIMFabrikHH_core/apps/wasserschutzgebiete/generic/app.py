@@ -25,6 +25,7 @@ from BIMFabrikHH_core.core.geometry import place_basepoint
 from BIMFabrikHH_core.core.georeferencing import CoordinateTransformer, warn_if_degree_coordinates
 from BIMFabrikHH_core.core.model_creator import georeference_options, init_ifc_project
 from BIMFabrikHH_core.core.ogc_extractor import transform_ring_xy
+from BIMFabrikHH_core.core.ogc_extractor.ogc_values_extractor import extract_psets_basepoint
 from BIMFabrikHH_core.data_models.params_tree import RequestParams
 from BIMFabrikHH_core.data_models.pydantic_georeferencing import CoordinateOperation
 from BIMFabrikHH_core.data_models.pydantic_psets_BIMHH import (
@@ -191,9 +192,11 @@ class WasserschutzgebieteGenericApp:
             place_basepoint(
                 model=model,
                 site=model_builder.site,
+                basepoint=request_params.basepoint_xyz,
                 basepoint_origin=basepoint_origin,
                 bbox_wgs84=request_params.bbox_as_wgs84_tuple if transformer is not None else None,
                 size=basepoint_size,
+                psets=extract_psets_basepoint(request_params.containers or []),
                 transformer=transformer,
             )
 

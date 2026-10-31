@@ -146,6 +146,14 @@ class IfcModelBuilder:
         # Edit georeferencing with the provided coordinate system and operation
         self.ifc_creator.edit_georeference(self.model, coordinate_system, coordinate_operation)
 
+    def _ifc_bytes(self) -> bytes:
+        return self.model.to_string().encode("utf-8")
+
+    def _write_ifc(self, file_path: Path) -> None:
+        # ifcopenshell's model.write() issues many small writes, which is very slow on
+        # network or WSL-mounted drives (/mnt/c: ~40 s for 1 MB); one write is not.
+        file_path.write_bytes(self._ifc_bytes())
+
     def save_ifc_to_memory(self) -> Optional[bytes]:
         """
         Save the current IFC model to memory.
@@ -154,16 +162,7 @@ class IfcModelBuilder:
             Optional[bytes]: The IFC file as bytes, or None if saving fails.
         """
         try:
-            temp_dir = PathConfig.TEMP
-            temp_dir.mkdir(exist_ok=True)
-            temp_file = temp_dir / "temp.ifc"
-            self.model.write(str(temp_file))
-
-            with open(temp_file, "rb") as f:
-                ifc_bytes = f.read()
-
-            temp_file.unlink()
-            return ifc_bytes
+            return self._ifc_bytes()
 
         except Exception as e:
             self.logger.warning(f"Error saving IFC model to memory: {str(e)}")
@@ -211,7 +210,7 @@ class IfcModelBuilder:
         try:
             self.logger.info(f"Saving IFC file to {file_path}")
             self.model.header.file_name.name = file_path.name
-            self.model.write(str(file_path))
+            self._write_ifc(file_path)
             return file_path
         except Exception as e:
             self.logger.warning(f"Failed to save IFC file: {str(e)}")
@@ -230,7 +229,7 @@ class IfcModelBuilder:
         try:
             self.logger.info(f"Saving IFC file to {file_path}")
             self.model.header.file_name.name = file_path.name
-            self.model.write(str(file_path))
+            self._write_ifc(Path(file_path))
             return file_path
         except Exception as e:
             self.logger.warning(f"Failed to save IFC file to {file_path}: {str(e)}")

@@ -14,7 +14,7 @@ from .ifc_utils import IfcModelMethods, validate_ifc
 from .project_init import georeference_options, init_ifc_project, output_coordinate_system
 
 # Property set utilities
-from .pset_utils import assign_psets_to_element, extract_psets_from_row
+from .pset_utils import assign_psets_to_element, extract_psets_from_row, psets_to_wire
 
 # Export the main classes
 __all__ = [
@@ -27,6 +27,7 @@ __all__ = [
     # Property set utilities
     "assign_psets_to_element",
     "extract_psets_from_row",
+    "psets_to_wire",  # Pset models -> typed {pset: {property: value}} for the Rust writers
     # IFC utilities
     "root",
 ]

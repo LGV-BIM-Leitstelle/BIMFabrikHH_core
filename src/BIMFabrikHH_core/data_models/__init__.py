@@ -6,24 +6,9 @@ management throughout the application.
 """
 
 # Core parameter models
+from .params_basepoint import BasepointParams
 from .params_bbox import BoundingBoxParams
 from .params_tree import Component, Container, RequestParams
-
-# Default property set data and functions
-from .pydantic_default_pset_data import (
-    DefaultPsetData,
-    DefaultPsetGeoreferenzierungGK,
-    DefaultPsetGeoreferenzierungUTM,
-    DefaultPsetHyperlink,
-    DefaultPsetModellinformation,
-    DefaultPsetObjektinformation,
-    get_all_default_pset_data,
-    get_default_pset_geo_data_gk,
-    get_default_pset_geo_data_utm,
-    get_default_pset_hyperlinkdata,
-    get_default_pset_modellinfo_data,
-    get_default_pset_objektinfo_data,
-)
 
 # Georeferencing models
 from .pydantic_georeferencing import (
@@ -59,6 +44,7 @@ from .tree_record import TreeRecord
 
 __all__ = [
     # Core parameter models
+    "BasepointParams",
     "BoundingBoxParams",
     "RequestParams",
     "Container",
@@ -85,18 +71,4 @@ __all__ = [
     "Pset_Objektinformation_CityModel",
     "TypedCityBuilding",
     "city_attrs_to_pset",
-    # Default property set data
-    "DefaultPsetObjektinformation",
-    "DefaultPsetModellinformation",
-    "DefaultPsetGeoreferenzierungGK",
-    "DefaultPsetGeoreferenzierungUTM",
-    "DefaultPsetHyperlink",
-    "DefaultPsetData",
-    # Default property set functions
-    "get_default_pset_objektinfo_data",
-    "get_default_pset_modellinfo_data",
-    "get_default_pset_geo_data_gk",
-    "get_default_pset_geo_data_utm",
-    "get_default_pset_hyperlinkdata",
-    "get_all_default_pset_data",
 ]

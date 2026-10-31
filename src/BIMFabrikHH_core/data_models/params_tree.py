@@ -2,8 +2,9 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, model_validator
 
+from .params_basepoint import BasepointParams
 from .params_bbox import BoundingBoxParams
-from .pydantic_georeferencing import check_projected_epsg, check_source_epsg, check_vertical_epsg
+from .pydantic_georeferencing import check_point_in_crs, check_projected_epsg, check_source_epsg, check_vertical_epsg
 
 
 class ProjectInfos(BaseModel):
@@ -91,6 +92,15 @@ class RequestParams(BaseModel):
             "compound source_epsg, otherwise none."
         ),
     )
+    basepoint: Optional[BasepointParams] = Field(
+        default=None,
+        description=(
+            "Position of the Nullpunktobjekt in the CRS of the IFC (output_epsg, else source_epsg), "
+            "e.g. the Nullpunkt of a model you already have, so both models share it. x / y are "
+            "used as given, z is an absolute height (default 0). Empty: the lower-left corner of "
+            "bbox at height 0."
+        ),
+    )
 
     model_config = {
         "json_schema_extra": {
@@ -121,7 +131,15 @@ class RequestParams(BaseModel):
             check_projected_epsg(self.output_epsg, self.bbox_as_wgs84_tuple)
         if self.vertical_epsg is not None:
             check_vertical_epsg(self.vertical_epsg, self.source_epsg)
+        ifc_epsg = self.output_epsg or self.source_epsg
+        if self.basepoint is not None and ifc_epsg is not None:
+            check_point_in_crs(ifc_epsg, self.basepoint.x, self.basepoint.y)
         return self
+
+    @property
+    def basepoint_xyz(self) -> Optional[Tuple[float, float, float]]:
+        """``basepoint`` as ``(x, y, z)`` in the CRS of the IFC, or ``None``."""
+        return None if self.basepoint is None else self.basepoint.xyz
 
     @property
     def bbox_as_wgs84_tuple(self) -> Optional[Tuple[float, float, float, float]]:

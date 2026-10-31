@@ -1,14 +1,19 @@
 import datetime
+from typing import ClassVar, Optional
 
 import pytest
-from ifcfactory import ureg
-from pydantic import ValidationError
+from ifcfactory import PropertySetTemplate, ureg
+from ifcfactory._internal.pset_base import Length, Quantity
+from pydantic import Field, ValidationError
 
 # Import the data models to test
+from BIMFabrikHH_core.core.geometry import basepoint_pset_values
+from BIMFabrikHH_core.core.model_creator import psets_to_wire
 from BIMFabrikHH_core.data_models.params_bbox import BoundingBoxParams
 from BIMFabrikHH_core.data_models.params_tree import Component, Container, ModelParams, ProjectInfos, RequestParams
 from BIMFabrikHH_core.data_models.pydantic_georeferencing import CoordinateOperation, CoordinateSystem
 from BIMFabrikHH_core.data_models.pydantic_psets_BIMHH import (
+    Nullpunktobjekt,
     Pset_Georeferenzierung,
     Pset_Hyperlink,
     Pset_Modellinformation,
@@ -209,6 +214,37 @@ class TestPsetObjektinformation:
         assert pset.idebene3 == "Test Level 3"
         assert pset.pset_name == "Pset_Objektinformation"
 
+    def test_idebenen_are_required(self):
+        with pytest.raises(ValidationError):
+            Pset_Objektinformation()
+
+
+class TestNullpunktobjekt:
+    def test_objektinformation_and_hyperlink_are_fixed(self):
+        objektinformation, hyperlink = Nullpunktobjekt().psets()
+
+        assert (objektinformation.idebene1, objektinformation.idebene2, objektinformation.idebene3) == (
+            "Nullpunktobjekt",
+            "Nullpunktobjekt",
+            "Nullpunktobjekt",
+        )
+        assert (hyperlink.hyperlink_001, hyperlink.hyperlink_001_bemerkung) == (
+            "www.bim.hamburg.de",
+            "Link zur Homepage von BIM.Hamburg",
+        )
+
+    def test_psets_keep_the_ifc_order(self):
+        georeferenzierung = Pset_Georeferenzierung(
+            hoehenstatus="HS170", hoehensystem="DHHN2016", koordinatensystem="ETRS89-UTM32N", lagestatus="LS310"
+        )
+        psets = Nullpunktobjekt(pset_georeferenzierung=georeferenzierung).psets()
+
+        assert [pset.pset_name for pset in psets] == [
+            "Pset_Objektinformation",
+            "Pset_Georeferenzierung",
+            "Pset_Hyperlink",
+        ]
+
 
 class TestPsetModellinformation:
     """Test cases for Pset_Modellinformation model."""
@@ -275,6 +311,91 @@ class TestPsetHyperlink:
         assert pset.hyperlink_001 == "www.bim.hamburg.de"
         assert pset.hyperlink_001_bemerkung == "Link zur Homepage von BIM.Hamburg"
         assert pset.pset_name == "Pset_Hyperlink"
+
+    def test_default_bemerkung(self):
+        assert Pset_Hyperlink().hyperlink_001_bemerkung == "Link zur Homepage von BIM.Hamburg"
+
+    def test_accepts_lowercase_bemerkung_title(self):
+        pset = Pset_Hyperlink(**{"_Hyperlink_001_bemerkung": "Eigener Text"})
+
+        assert pset.hyperlink_001_bemerkung == "Eigener Text"
+        assert pset.model_dump(by_alias=True)["_Hyperlink_001_Bemerkung"] == "Eigener Text"
+
+
+NULLPUNKT_FIXED_PSETS = {
+    "Pset_Objektinformation": {
+        "_IDEbene1": "Nullpunktobjekt",
+        "_IDEbene2": "Nullpunktobjekt",
+        "_IDEbene3": "Nullpunktobjekt",
+    },
+    "Pset_Hyperlink": {
+        "_Hyperlink_001": "www.bim.hamburg.de",
+        "_Hyperlink_001_Bemerkung": "Link zur Homepage von BIM.Hamburg",
+    },
+}
+
+
+class TestBasepointPsetValues:
+    """``basepoint_pset_values`` gives the Rust writers the Python Nullpunktobjekt values."""
+
+    def test_none_and_empty_give_the_fixed_psets(self):
+        assert basepoint_pset_values(None) == NULLPUNKT_FIXED_PSETS
+        assert basepoint_pset_values({}) == NULLPUNKT_FIXED_PSETS
+
+    def test_sent_fixed_psets_are_ignored_and_unknown_psets_dropped(self):
+        values = basepoint_pset_values(
+            {
+                "Pset_Objektinformation": {"_IDEbene1": "A", "_IDEbene2": "B", "_IDEbene3": "C"},
+                "Pset_Hyperlink": {"_Hyperlink_001": "https://bim.hamburg.de", "_Hyperlink_001_bemerkung": "Text"},
+                "Pset_Unbekannt": {"a": 1},
+            }
+        )
+        assert values == NULLPUNKT_FIXED_PSETS
+
+    def test_sent_psets_are_taken_by_alias(self):
+        values = basepoint_pset_values(
+            {
+                "Pset_Georeferenzierung": {
+                    "hoehenstatus": "HS170",
+                    "_Hoehensystem": "DHHN2016",
+                    "_Koordinatensystem": "ETRS89-UTM32N",
+                    "lagestatus": "LS310",
+                }
+            }
+        )
+        assert values["Pset_Georeferenzierung"] == {
+            "_Hoehenstatus": "HS170",
+            "_Hoehensystem": "DHHN2016",
+            "_Koordinatensystem": "ETRS89-UTM32N",
+            "_Lagestatus": "LS310",
+        }
+
+
+class TestPsetsToWire:
+    """``psets_to_wire`` types values the way ifcfactory writes them."""
+
+    def test_python_types_dates_and_quantities(self):
+        class Pset_Test(PropertySetTemplate):
+            pset_name: ClassVar[str] = "Pset_Test"
+            jahr: int = Field(serialization_alias="_Jahr")
+            hoehe: float = Field(serialization_alias="_Hoehe")
+            durchmesser: Quantity[Length] = Field(serialization_alias="_Durchmesser")
+            datum: datetime.date = Field(serialization_alias="_Datum")
+            nummer: str = Field(serialization_alias="_Nummer")
+            leer: Optional[str] = Field(default=None, serialization_alias="_Leer")
+
+        pset = Pset_Test(
+            jahr=1990, hoehe=3.0, durchmesser=50 * ureg.centimeter, datum=datetime.date(2026, 9, 12), nummer="001"
+        )
+        assert psets_to_wire([pset]) == {
+            "Pset_Test": {
+                "_Jahr": 1990,
+                "_Hoehe": 3.0,
+                "_Durchmesser": {"ifc_type": "IfcLengthMeasure", "value": 0.5},
+                "_Datum": "2026-09-12",
+                "_Nummer": "001",
+            }
+        }
 
 
 class TestPsetObjektinformationTree:

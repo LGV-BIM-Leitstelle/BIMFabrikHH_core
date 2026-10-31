@@ -3,9 +3,12 @@
 import inspect
 from typing import get_type_hints
 
+import ifcopenshell
+import ifcopenshell.util.element
 import pytest
 
 from BIMFabrikHH_core.apps.city import CityBasicApp, parse_gml_files
+from BIMFabrikHH_core.apps.city.generic.app import CityGenericApp
 from BIMFabrikHH_core.apps.city.processing import _building_overlaps_bbox, resolve_file_path
 from BIMFabrikHH_core.data_models.params_bbox import BoundingBoxParams
 from BIMFabrikHH_core.data_models.params_tree import Component, Container, RequestParams
@@ -88,6 +91,41 @@ class TestCityBasicAppExecution:
         request_params = _make_request_params(with_bbox=True)
         result = CityBasicApp.build_ifc(buildings=[], request_params=request_params)
         assert result is None
+
+
+class TestCityGenericAppBasepoint:
+    def test_basepoint_carries_request_psets(self, tmp_path):
+        request_params = _make_request_params(with_bbox=True)
+        request_params.source_epsg = 25832
+        request_params.containers.append(
+            Container(
+                containerTitle="Pset_Modellinformation",
+                containerId="Pset_Modellinformation",
+                components={
+                    "_artfachmodell": Component(title="_ArtFachmodell", value="Umgebung"),
+                    "_artteilmodell": Component(title="_ArtTeilmodell", value="Bauwerkskubatur"),
+                    "auftraggeber": Component(title="_Auftraggeber", value="LGV"),
+                    "ersteller": Component(title="_Ersteller", value="LGV"),
+                    "erstelldatum": Component(title="_Erstelldatum", value="2026-10-30"),
+                    "gemobjektkatalog": Component(title="_GemObjektkatalog", value="Umgebung"),
+                    "projektname": Component(title="_Projektname", value="Test"),
+                    "projektnummer": Component(title="_Projektnummer", value="1"),
+                },
+            )
+        )
+        building = _make_building(
+            vertices=[(565000.0, 5935000.0, 0.0), (565010.0, 5935000.0, 0.0), (565005.0, 5935010.0, 0.0)],
+            faces=[[0, 1, 2]],
+        )
+
+        path = CityGenericApp.build_ifc([building], request_params=request_params, output_path=tmp_path / "city.ifc")
+
+        model = ifcopenshell.open(str(path))
+        (basepoint,) = [e for e in model.by_type("IfcBuildingElementProxy") if e.Name == "Nullpunktobjekt"]
+        modellinfo = ifcopenshell.util.element.get_psets(basepoint)["Pset_Modellinformation"]
+        assert modellinfo["_ArtFachmodell"] == "Umgebung"
+        assert modellinfo["_ArtTeilmodell"] == "Bauwerkskubatur"
+        assert modellinfo["_GemObjektkatalog"] == "Umgebung"
 
 
 def _make_building(vertices, faces) -> Building:

@@ -58,6 +58,7 @@ class TreesGenericApp:
         source_epsg: Optional[int] = None,
         output_epsg: Optional[int] = None,
         vertical_epsg: Optional[int] = None,
+        basepoint: Optional[Tuple[float, float, float]] = None,
         basepoint_origin: Optional[Tuple[float, float]] = None,
         basepoint_size: float = 1.0,
         basepoint_psets: Optional[Dict[str, Any]] = None,
@@ -92,6 +93,9 @@ class TreesGenericApp:
             vertical_epsg: Height system of the tree Z, written as IFC vertical
                 datum, e.g. 7837 (DHHN2016) for DGM-draped trees; needs
                 ``source_epsg``. ``None``: none, unless ``source_epsg`` is compound.
+            basepoint: Optional ``(x, y, z)`` of the Nullpunktobjekt in the IFC
+                output CRS (``output_epsg``, else ``source_epsg``), ``z`` an
+                absolute height. Wins over ``basepoint_origin`` and ``bbox_wgs84``.
             basepoint_origin: Optional ``(x, y)`` in ``source_epsg`` for the
                 Nullpunktobjekt quad. When ``None``, ``bbox_wgs84`` may supply
                 placement (lower-left reprojected, only with a known CRS); if
@@ -176,11 +180,16 @@ class TreesGenericApp:
         if phase_timings is not None:
             phase_timings["build_in_s"] = time.perf_counter() - _t0
 
-        if basepoint_origin is not None or (bbox_wgs84 is not None and transformer is not None):
+        if (
+            basepoint is not None
+            or basepoint_origin is not None
+            or (bbox_wgs84 is not None and transformer is not None)
+        ):
             _t_bp = time.perf_counter()
             place_basepoint(
                 model=model,
                 site=site,
+                basepoint=basepoint,
                 basepoint_origin=basepoint_origin,
                 bbox_wgs84=bbox_wgs84,
                 size=basepoint_size,

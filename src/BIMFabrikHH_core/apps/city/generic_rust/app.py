@@ -25,15 +25,17 @@ from typing import Optional, Sequence, Tuple, Union
 from BIMFabrikHH_core.apps.city.processing import bbox_in_source_crs, with_tile_crs
 from BIMFabrikHH_core.config.logging_config import get_logger
 from BIMFabrikHH_core.config.paths import PathConfig
-from BIMFabrikHH_core.core.geometry import basepoint_xy
+from BIMFabrikHH_core.core.geometry import basepoint_pset_values, basepoint_xyz
 from BIMFabrikHH_core.core.georeferencing import CoordinateTransformer
 from BIMFabrikHH_core.core.model_creator import output_coordinate_system
-from BIMFabrikHH_core.core.ogc_extractor.ogc_values_extractor import extract_project_info
+from BIMFabrikHH_core.core.ogc_extractor.ogc_values_extractor import extract_project_info, extract_psets_basepoint
 from BIMFabrikHH_core.data_models.params_tree import RequestParams
 
 logger = get_logger("city_rust_app")
 
 _DEFAULT_OUTPUT_NAME = "output_citymodel_rust.ifc"
+#: Same as CityGenericApp.
+_DEFAULT_BASEPOINT_SIZE: float = 8.0
 _MISSING_RS = (
     "CityRustApp needs bimfabrikhh_core_rs in this environment. "
     "From the rust repo: source the BIMFabrik venv, then "
@@ -67,6 +69,7 @@ class CityRustApp:
         color: Optional[Tuple[float, float, float]] = None,
         cad_layer: bool = True,
         basepoint_origin: Optional[Tuple[float, float]] = None,
+        basepoint_size: float = _DEFAULT_BASEPOINT_SIZE,
         psets=None,
         ifc_types=None,
         progress: bool = False,
@@ -80,8 +83,10 @@ class CityRustApp:
         accepted for :class:`CityGenericApp` call-site compatibility and is unused.
 
         A ``request_params.bbox`` crops the tiles in ``source_epsg`` (it needs
-        one); the basepoint is ``basepoint_origin`` (in ``source_epsg``), else
-        the bbox lower-left, both in the output CRS. Without ``source_epsg``
+        one); the basepoint is ``request_params.basepoint`` (XYZ in the output
+        CRS), else ``basepoint_origin`` (in ``source_epsg``), else the bbox
+        lower-left, the last two at height 0; ``basepoint_size`` is its
+        edge length, as in :class:`CityGenericApp`. Without ``source_epsg``
         the coordinates are written as they are, without georeferencing. An
         empty ``source_epsg`` / ``vertical_epsg`` is taken from the ``srsName``
         of the tiles, and a contradicting one raises (see :func:`with_tile_crs`).
@@ -104,6 +109,7 @@ class CityRustApp:
                 color=color,
                 cad_layer=cad_layer,
                 basepoint_origin=basepoint_origin,
+                basepoint_size=basepoint_size,
                 psets=psets,
                 ifc_types=ifc_types,
                 progress=progress,
@@ -124,6 +130,7 @@ class CityRustApp:
         color: Optional[Tuple[float, float, float]] = None,
         cad_layer: bool = True,
         basepoint_origin: Optional[Tuple[float, float]] = None,
+        basepoint_size: float = _DEFAULT_BASEPOINT_SIZE,
         psets=None,
         ifc_types=None,
         progress: bool = False,
@@ -144,6 +151,7 @@ class CityRustApp:
                 color=color,
                 cad_layer=cad_layer,
                 basepoint_origin=basepoint_origin,
+                basepoint_size=basepoint_size,
                 psets=psets,
                 ifc_types=ifc_types,
                 progress=progress,
@@ -166,6 +174,7 @@ def _export_kwargs(
     color: Optional[Tuple[float, float, float]],
     cad_layer: bool,
     basepoint_origin: Optional[Tuple[float, float]],
+    basepoint_size: float,
     psets,
     ifc_types,
     progress: bool,
@@ -176,7 +185,8 @@ def _export_kwargs(
     )
     bbox_wgs84 = request_params.bbox_as_wgs84_tuple
     bbox_epsg = bbox_in_source_crs(bbox_wgs84, request_params.source_epsg)
-    basepoint = basepoint_xy(
+    basepoint = basepoint_xyz(
+        basepoint=request_params.basepoint_xyz,
         basepoint_origin=basepoint_origin,
         bbox_wgs84=bbox_wgs84 if transformer is not None else None,
         transformer=transformer,
@@ -197,6 +207,8 @@ def _export_kwargs(
         "bbox_epsg": bbox_epsg,
         "transform": transform,
         "basepoint": basepoint,
+        "basepoint_size": basepoint_size,
+        "basepoint_psets": basepoint_pset_values(extract_psets_basepoint(request_params.containers or [])),
         "psets": psets,
         "ifc_types": ifc_types,
         "cad_layer": bool(cad_layer),

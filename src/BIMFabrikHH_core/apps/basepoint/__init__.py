@@ -7,5 +7,6 @@ like north arrows and custom positioning.
 """
 
 from .basic.app import BasepointBasicApp
+from .generic.app import BasepointGenericApp
 
-__all__ = ["BasepointBasicApp"]
+__all__ = ["BasepointBasicApp", "BasepointGenericApp"]

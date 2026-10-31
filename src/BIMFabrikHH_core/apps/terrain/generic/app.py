@@ -42,7 +42,7 @@ from BIMFabrikHH_core.apps.terrain.processing import (
     transform_mesh,
 )
 from BIMFabrikHH_core.config.logging_config import get_logger
-from BIMFabrikHH_core.core.geometry import basepoint_xy, place_basepoint
+from BIMFabrikHH_core.core.geometry import basepoint_xyz, place_basepoint
 from BIMFabrikHH_core.core.georeferencing import bbox_request_params_to_epsg25832
 from BIMFabrikHH_core.core.model_creator import init_ifc_project, output_coordinate_system
 from BIMFabrikHH_core.core.ogc_extractor.ogc_values_extractor import (
@@ -165,6 +165,7 @@ class TerrainGenericApp:
             place_basepoint(
                 model=model,
                 site=builder.site,
+                basepoint=request_params.basepoint_xyz,
                 basepoint_origin=basepoint_origin,
                 bbox_wgs84=(None if basepoint_origin is not None else request_params.bbox_as_wgs84_tuple),
                 size=basepoint_size,
@@ -292,6 +293,11 @@ class TerrainGenericApp:
             else None
         )
         mesh_s = time.perf_counter() - t0
+        origin = basepoint_xyz(
+            basepoint_origin=basepoint_origin,
+            bbox_wgs84=request_params.bbox_as_wgs84_tuple,
+            transformer=transformer,
+        )
         t1 = time.perf_counter()
         result = cls.build_ifc(
             mesh,
@@ -300,11 +306,7 @@ class TerrainGenericApp:
             output_path=output_path,
             output_name=output_name,
             basepoint_size=basepoint_size,
-            basepoint_origin=basepoint_xy(
-                basepoint_origin=basepoint_origin,
-                bbox_wgs84=request_params.bbox_as_wgs84_tuple,
-                transformer=transformer,
-            ),
+            basepoint_origin=None if origin is None else origin[:2],
             color=color,
             cad_layer=cad_layer,
             parts=parts,
