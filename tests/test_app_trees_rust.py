@@ -112,7 +112,11 @@ def test_trees_rust_nullpunkt_matches_generic(tmp_path: Path) -> None:
     rust_psets, rust_layers = _nullpunkt(rust)
     generic_psets, _ = _nullpunkt(generic)
     assert rust_psets == generic_psets
-    assert rust_psets["Pset_Hyperlink"]["_Hyperlink_001_Bemerkung"] == "Text"
+    # Pset_Hyperlink of the Nullpunktobjekt is fixed; sent values are ignored.
+    assert rust_psets["Pset_Hyperlink"] == {
+        "_Hyperlink_001": "www.bim.hamburg.de",
+        "_Hyperlink_001_Bemerkung": "Link zur Homepage von BIM.Hamburg",
+    }
     assert "_Projektnullpunkt" in rust_layers
 
 
@@ -179,10 +183,10 @@ def test_trees_rust_value_types_match_generic(tmp_path: Path) -> None:
     assert rust_types[("Pset_Objektinformation", "_Baumnummer")] == "IfcLabel"
 
 
-def test_trees_rust_nullpunkt_without_psets(tmp_path: Path) -> None:
+def test_trees_rust_nullpunkt_without_psets_gets_the_fixed_psets(tmp_path: Path) -> None:
     written = TreesRustApp.build_ifc(
         [_record()], output_path=tmp_path / "rust.ifc", source_epsg=25832, basepoint_origin=(565000.0, 5933500.0)
     )
     psets, layers = _nullpunkt(written)
-    assert psets == {}
+    assert set(psets) == {"Pset_Objektinformation", "Pset_Hyperlink"}
     assert "_Projektnullpunkt" in layers

@@ -146,7 +146,8 @@ class TreesRustApp:
         height 0, else none. ``basepoint_size`` is its edge length, as in
         :meth:`TreesGenericApp.build_ifc`. ``basepoint_psets`` is the
         :func:`extract_psets_basepoint` payload, as for
-        :meth:`TreesGenericApp.build_ifc`; omit it and the Nullpunktobjekt has no psets.
+        :meth:`TreesGenericApp.build_ifc`; omit it and the Nullpunktobjekt gets only the
+        fixed ``Pset_Objektinformation`` and ``Pset_Hyperlink``.
 
         ``source_epsg`` / ``output_epsg`` / ``vertical_epsg`` work as in
         :meth:`TreesGenericApp.build_ifc`: positions and ``basepoint_origin`` are

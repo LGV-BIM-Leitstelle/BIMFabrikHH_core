@@ -13,6 +13,7 @@ from BIMFabrikHH_core.data_models.params_bbox import BoundingBoxParams
 from BIMFabrikHH_core.data_models.params_tree import Component, Container, ModelParams, ProjectInfos, RequestParams
 from BIMFabrikHH_core.data_models.pydantic_georeferencing import CoordinateOperation, CoordinateSystem
 from BIMFabrikHH_core.data_models.pydantic_psets_BIMHH import (
+    Nullpunktobjekt,
     Pset_Georeferenzierung,
     Pset_Hyperlink,
     Pset_Modellinformation,
@@ -213,6 +214,37 @@ class TestPsetObjektinformation:
         assert pset.idebene3 == "Test Level 3"
         assert pset.pset_name == "Pset_Objektinformation"
 
+    def test_idebenen_are_required(self):
+        with pytest.raises(ValidationError):
+            Pset_Objektinformation()
+
+
+class TestNullpunktobjekt:
+    def test_objektinformation_and_hyperlink_are_fixed(self):
+        objektinformation, hyperlink = Nullpunktobjekt().psets()
+
+        assert (objektinformation.idebene1, objektinformation.idebene2, objektinformation.idebene3) == (
+            "Nullpunktobjekt",
+            "Nullpunktobjekt",
+            "Nullpunktobjekt",
+        )
+        assert (hyperlink.hyperlink_001, hyperlink.hyperlink_001_bemerkung) == (
+            "www.bim.hamburg.de",
+            "Link zur Homepage von BIM.Hamburg",
+        )
+
+    def test_psets_keep_the_ifc_order(self):
+        georeferenzierung = Pset_Georeferenzierung(
+            hoehenstatus="HS170", hoehensystem="DHHN2016", koordinatensystem="ETRS89-UTM32N", lagestatus="LS310"
+        )
+        psets = Nullpunktobjekt(pset_georeferenzierung=georeferenzierung).psets()
+
+        assert [pset.pset_name for pset in psets] == [
+            "Pset_Objektinformation",
+            "Pset_Georeferenzierung",
+            "Pset_Hyperlink",
+        ]
+
 
 class TestPsetModellinformation:
     """Test cases for Pset_Modellinformation model."""
@@ -290,27 +322,53 @@ class TestPsetHyperlink:
         assert pset.model_dump(by_alias=True)["_Hyperlink_001_Bemerkung"] == "Eigener Text"
 
 
+NULLPUNKT_FIXED_PSETS = {
+    "Pset_Objektinformation": {
+        "_IDEbene1": "Nullpunktobjekt",
+        "_IDEbene2": "Nullpunktobjekt",
+        "_IDEbene3": "Nullpunktobjekt",
+    },
+    "Pset_Hyperlink": {
+        "_Hyperlink_001": "www.bim.hamburg.de",
+        "_Hyperlink_001_Bemerkung": "Link zur Homepage von BIM.Hamburg",
+    },
+}
+
+
 class TestBasepointPsetValues:
     """``basepoint_pset_values`` gives the Rust writers the Python Nullpunktobjekt values."""
 
-    def test_none_and_empty_give_no_psets(self):
-        assert basepoint_pset_values(None) == {}
-        assert basepoint_pset_values({}) == {}
+    def test_none_and_empty_give_the_fixed_psets(self):
+        assert basepoint_pset_values(None) == NULLPUNKT_FIXED_PSETS
+        assert basepoint_pset_values({}) == NULLPUNKT_FIXED_PSETS
 
-    def test_aliases_defaults_and_unknown_psets(self):
+    def test_sent_fixed_psets_are_ignored_and_unknown_psets_dropped(self):
         values = basepoint_pset_values(
             {
+                "Pset_Objektinformation": {"_IDEbene1": "A", "_IDEbene2": "B", "_IDEbene3": "C"},
                 "Pset_Hyperlink": {"_Hyperlink_001": "https://bim.hamburg.de", "_Hyperlink_001_bemerkung": "Text"},
                 "Pset_Unbekannt": {"a": 1},
             }
         )
-        assert values == {
-            "Pset_Hyperlink": {"_Hyperlink_001": "https://bim.hamburg.de", "_Hyperlink_001_Bemerkung": "Text"}
-        }
+        assert values == NULLPUNKT_FIXED_PSETS
 
-    def test_defaults_are_filled(self):
-        values = basepoint_pset_values({"Pset_Hyperlink": {"_Hyperlink_001": "https://bim.hamburg.de"}})
-        assert values["Pset_Hyperlink"]["_Hyperlink_001_Bemerkung"] == "Link zur Homepage von BIM.Hamburg"
+    def test_sent_psets_are_taken_by_alias(self):
+        values = basepoint_pset_values(
+            {
+                "Pset_Georeferenzierung": {
+                    "hoehenstatus": "HS170",
+                    "_Hoehensystem": "DHHN2016",
+                    "_Koordinatensystem": "ETRS89-UTM32N",
+                    "lagestatus": "LS310",
+                }
+            }
+        )
+        assert values["Pset_Georeferenzierung"] == {
+            "_Hoehenstatus": "HS170",
+            "_Hoehensystem": "DHHN2016",
+            "_Koordinatensystem": "ETRS89-UTM32N",
+            "_Lagestatus": "LS310",
+        }
 
 
 class TestPsetsToWire:

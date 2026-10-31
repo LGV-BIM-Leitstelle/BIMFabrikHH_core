@@ -44,7 +44,8 @@ def basepoint_pset_values(psets: Optional[Dict[str, Dict[str, Any]]]) -> Dict[st
     through the same pset models (aliases, defaults) as the Python
     Nullpunktobjekt of :func:`create_basepoint_quad` and are typed by
     :func:`psets_to_wire` as ifcfactory would write them. Unknown psets are
-    dropped; ``None`` or ``{}`` gives ``{}``.
+    dropped; the fixed ``Pset_Objektinformation`` and ``Pset_Hyperlink`` are
+    always included (also for ``None`` or ``{}``).
     """
     return psets_to_wire(convert_psets_from_dict(psets or {}))
 

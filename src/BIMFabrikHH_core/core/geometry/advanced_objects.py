@@ -14,16 +14,18 @@ from ifcfactory import BIMFactoryElement, ElementInterface, MeshRepresentation, 
 from pydantic import BaseModel, Field
 
 from BIMFabrikHH_core.data_models.pydantic_psets_BIMHH import (
+    Nullpunktobjekt,
     Pset_Georeferenzierung,
-    Pset_Hyperlink,
     Pset_Modellinformation,
-    Pset_Objektinformation,
 )
 
 
 def convert_psets_from_dict(psets_dict):
     """
-    Convert dictionary of property sets to PropertySetTemplate objects.
+    Convert dictionary of property sets to the PropertySetTemplate objects of the Nullpunktobjekt.
+
+    ``Pset_Objektinformation`` and ``Pset_Hyperlink`` are fixed and always
+    written; values sent for them are ignored.
 
     Args:
         psets_dict: Dictionary with pset names as keys and pset data as values
@@ -31,13 +33,12 @@ def convert_psets_from_dict(psets_dict):
     Returns:
         List of PropertySetTemplate instances
     """
-    pset_map = {
-        "Pset_Objektinformation": Pset_Objektinformation,
-        "Pset_Modellinformation": Pset_Modellinformation,
-        "Pset_Georeferenzierung": Pset_Georeferenzierung,
-        "Pset_Hyperlink": Pset_Hyperlink,
-    }
-    return [pset_map[name](**data) for name, data in psets_dict.items() if name in pset_map]
+    modellinformation = psets_dict.get("Pset_Modellinformation")
+    georeferenzierung = psets_dict.get("Pset_Georeferenzierung")
+    return Nullpunktobjekt(
+        pset_modellinformation=None if modellinformation is None else Pset_Modellinformation(**modellinformation),
+        pset_georeferenzierung=None if georeferenzierung is None else Pset_Georeferenzierung(**georeferenzierung),
+    ).psets()
 
 
 class BaseProjectBasePointNorth(BaseModel):
@@ -277,10 +278,8 @@ def create_basepoint_quad(size: float, psets=None):
     temp_basepoint = BaseProjectBasePointNorth(size=size)
 
     # Handle psets conversion
-    if psets is not None and isinstance(psets, dict):
-        psets = convert_psets_from_dict(psets)
-    else:
-        psets = psets or []
+    if psets is None or isinstance(psets, dict):
+        psets = convert_psets_from_dict(psets or {})
 
     return BIMFactoryElement(
         type="IfcBuildingElementProxy",

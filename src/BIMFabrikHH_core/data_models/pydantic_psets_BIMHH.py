@@ -2,7 +2,7 @@ import datetime
 from typing import ClassVar, Optional
 
 from ifcfactory import PropertySetTemplate
-from pydantic import AliasChoices, Field
+from pydantic import AliasChoices, BaseModel, Field
 
 
 class Pset_Objektinformation(PropertySetTemplate):
@@ -86,16 +86,35 @@ class Pset_Hyperlink(PropertySetTemplate):
     )
 
 
-class Nullpunktobjekt(PropertySetTemplate):
-    pset_objektinformation: Optional[Pset_Objektinformation] = None
-    pset_modellinformation: Optional[Pset_Modellinformation] = None
-    pset_georeferenzierung: Optional[Pset_Georeferenzierung] = None
-    pset_hyperlink: Optional[Pset_Hyperlink] = None
-
-
 def default_bim_hamburg_hyperlink() -> Pset_Hyperlink:
     """Return the canonical BIM.Hamburg ``Pset_Hyperlink``."""
     return Pset_Hyperlink(
         hyperlink_001="www.bim.hamburg.de",
         hyperlink_001_bemerkung="Link zur Homepage von BIM.Hamburg",
     )
+
+
+class Nullpunktobjekt(BaseModel):
+    """Psets of the Nullpunktobjekt; Objektinformation and Hyperlink are fixed."""
+
+    pset_objektinformation: Pset_Objektinformation = Field(
+        default_factory=lambda: Pset_Objektinformation(
+            idebene1="Nullpunktobjekt", idebene2="Nullpunktobjekt", idebene3="Nullpunktobjekt"
+        )
+    )
+    pset_modellinformation: Optional[Pset_Modellinformation] = None
+    pset_georeferenzierung: Optional[Pset_Georeferenzierung] = None
+    pset_hyperlink: Pset_Hyperlink = Field(default_factory=default_bim_hamburg_hyperlink)
+
+    def psets(self) -> list[PropertySetTemplate]:
+        """The set psets in the order they are written to the IFC."""
+        return [
+            pset
+            for pset in (
+                self.pset_objektinformation,
+                self.pset_modellinformation,
+                self.pset_georeferenzierung,
+                self.pset_hyperlink,
+            )
+            if pset is not None
+        ]
