@@ -12,7 +12,7 @@
   "_pset_prefix_description": "Prefix for extract_psets_basepoint() to find property set containers",
   "PSET_CONTAINER_PREFIX": "Pset_",
   "_component_keys_description": "Component titles/keys to match in container.components",
-  "PROJECT_NAME_TITLE": "Projektname",
+  "PROJECT_NAME_TITLE": "IfcProject",
   "SITE_NAME_TITLE": "IfcSite",
   "BUILDING_NAME_TITLE": "IfcBuilding",
   "LEVEL_OF_GEOMETRY_COMPONENT_KEY": "level_of_geom"

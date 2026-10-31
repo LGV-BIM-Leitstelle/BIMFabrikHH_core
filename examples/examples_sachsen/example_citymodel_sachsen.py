@@ -50,7 +50,7 @@ def _build_project_container(project_name: str, site_name: str, building_name: s
         containerTitle="Projektinformationen",
         containerId="Projektinformationen",
         components={
-            "projectname": Component(title="Projektname", value=project_name),
+            "projectname": Component(title="IfcProject", value=project_name),
             "sitename": Component(title="IfcSite", value=site_name),
             "buildingname": Component(title="IfcBuilding", value=building_name),
         },
