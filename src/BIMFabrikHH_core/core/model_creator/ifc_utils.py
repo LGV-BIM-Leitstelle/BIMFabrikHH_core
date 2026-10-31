@@ -11,6 +11,7 @@ import ifcopenshell.api.georeference as georeference
 import ifcopenshell.api.root as root
 from ifcopenshell.api import run
 
+from BIMFabrikHH_core import __version__
 from BIMFabrikHH_core.data_models.pydantic_georeferencing import CoordinateOperation, CoordinateSystem
 
 # Provide direct alias to make patching in unit tests easier
@@ -42,18 +43,9 @@ class IfcModelMethods:
         return model
 
     @staticmethod
-    def _package_version() -> str:
-        try:
-            from importlib.metadata import version
-
-            return version("bimfabrikhh-core")
-        except Exception:
-            return "0.3.1"
-
-    @staticmethod
     def _stamp_file_identity(model: ifcopenshell.file) -> None:
         """Match Rust ``bimfabrikhh_core_rs`` author / application metadata."""
-        app_version = IfcModelMethods._package_version()
+        app_version = __version__
         file_name = model.header.file_name
         file_name.author = (_IFC_AUTHOR,)
         file_name.organization = (_IFC_AUTHOR,)
