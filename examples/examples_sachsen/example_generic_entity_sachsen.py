@@ -85,7 +85,7 @@ def main() -> None:
                 containerTitle="Projektinformationen",
                 containerId="Projektinformationen",
                 components={
-                    "projectname": Component(title="Projektname", value="Sachsen_GenericEntity"),
+                    "projectname": Component(title="IfcProject", value="Sachsen_GenericEntity"),
                     "sitename": Component(title="IfcSite", value="Sachsen_Site"),
                     "buildingname": Component(title="IfcBuilding", value="Sachsen_Tile"),
                 },

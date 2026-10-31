@@ -135,7 +135,7 @@ def form_containers(workflow: Workflow) -> List[Container]:
             containerTitle="Projektinformationen",
             containerId="Projektinformationen",
             components={
-                "projectname": Component(title="Projektname", value=f"Workflow {workflow.key}"),
+                "projectname": Component(title="IfcProject", value=f"Workflow {workflow.key}"),
                 "ifc_site": Component(title="IfcSite", value="Hamburg"),
                 "ifc_building": Component(title="IfcBuilding", value=workflow.art_teilmodell),
             },

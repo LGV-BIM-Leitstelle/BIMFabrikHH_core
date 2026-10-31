@@ -65,7 +65,7 @@ def main() -> None:
         containerTitle="Projektinformationen",
         containerId="Projektinformationen",
         components={
-            "project": Component(title="Projektname", value="Baugrundaufschluesse Hamburg"),
+            "project": Component(title="IfcProject", value="Baugrundaufschluesse Hamburg"),
             "site": Component(title="IfcSite", value="Hamburg"),
             "building": Component(title="IfcBuilding", value="Innenstadt"),
         },
