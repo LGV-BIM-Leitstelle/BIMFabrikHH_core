@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "bimfabrikhh-core"
-version = "0.4.0"
+version = "0.5.0"
 description = "Hamburg BIM Factory - Automated conversion of geospatial data to IFC format"
 authors = ["Ahmed Salem <ahmed.salem@gv.hamburg.de>"]
 readme = "README.md"
@@ -34,7 +34,7 @@ python = ">=3.11,<3.12"
 rasterio = ">=1.4.3"
 scipy = ">=1.16.0,<2.0.0"
 ifcfactory = "^0.4.0"
-bimfabrikhh-core-rs = ">=0.3.0"
+bimfabrikhh-core-rs = ">=0.4.0"
 requests = "^2.34.2"
 triangle = "^20250106"
 
