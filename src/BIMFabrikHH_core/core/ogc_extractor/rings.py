@@ -16,6 +16,19 @@ def strip_closing_duplicate_xy(ring: Ring) -> Ring:
     return ring
 
 
+# TODO: Combine with transform_polygon_rings or move to a common module, e.g. core.georeferencing.coordinate_transformer
+def transform_line_xy(line: Ring, transformer: Optional[CoordinateTransformer]) -> Ring:
+    """Return the line XY transformed by ``transformer``, or ``[]`` below 2 vertices.
+
+    ``None`` keeps the coordinates as they are.
+    """
+    if len(line) < 2:
+        return []
+    if transformer is None:
+        return list(line)
+    return transformer.transform_point(line)
+
+
 def transform_ring_xy(ring: Ring, transformer: Optional[CoordinateTransformer]) -> Ring:
     """Return the open ring XY transformed by ``transformer``, or ``[]`` below 3 vertices.
 
@@ -49,4 +62,5 @@ __all__ = [
     "strip_closing_duplicate_xy",
     "transform_polygon_rings",
     "transform_ring_xy",
+    "transform_line_xy",
 ]

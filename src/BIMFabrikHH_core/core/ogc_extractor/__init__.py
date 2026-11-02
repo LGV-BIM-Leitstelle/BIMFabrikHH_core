@@ -25,7 +25,7 @@ from .geojson import (
     positions_to_xy_ring,
 )
 from .ogc_values_extractor import extract_level_of_geometry, extract_project_info, extract_psets_basepoint
-from .rings import strip_closing_duplicate_xy, transform_polygon_rings, transform_ring_xy
+from .rings import strip_closing_duplicate_xy, transform_polygon_rings, transform_ring_xy, transform_line_xy
 
 __all__ = [
     "OGCExtractorSettings",
@@ -44,7 +44,7 @@ __all__ = [
     "positions_to_xy_ring",
     "strip_closing_duplicate_xy",
     "transform_ring_xy",
-    "Ring",
+    "transform_line_xy",
     "PolygonRings",
     "MultiPolygon",
     "feature_geometry_type",

@@ -60,8 +60,8 @@ def feature_identifier(feature: Dict[str, Any], *, fallback: str) -> Union[str, 
     return fid if fid is not None else fallback
 
 
-def feature_geometry_type(feature: Dict[str, Any]) -> str | None:
-    """Geometry type of a feature."""
+def feature_geometry_type(feature: Dict[str, Any]) -> Optional[str]:
+    """Return ``feature['geometry']`` or  ``None`` when missing."""
     geom = feature.get("geometry")
     if not isinstance(geom, dict):
         return None

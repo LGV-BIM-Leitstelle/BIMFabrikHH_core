@@ -1,0 +1,319 @@
+"""
+Generic Biotopes App
+=======================
+"""
+
+
+from __future__ import annotations
+
+import time
+from pathlib import Path
+from typing import Callable, List, Optional, Tuple, Union
+
+from ifcfactory import BIMFactoryElement, Box, Extrusion, Polygon, PolylineOffset, Style, Transform
+from pydantic import BaseModel
+
+from BIMFabrikHH_core.config.logging_config import get_logger
+from BIMFabrikHH_core.core.geometry import place_basepoint
+from BIMFabrikHH_core.core.georeferencing import CoordinateTransformer, warn_if_degree_coordinates
+from BIMFabrikHH_core.core.model_creator import georeference_options, init_ifc_project
+from BIMFabrikHH_core.core.ogc_extractor import MultiPolygon, transform_polygon_rings, transform_line_xy
+from BIMFabrikHH_core.core.ogc_extractor.ogc_values_extractor import extract_psets_basepoint
+from BIMFabrikHH_core.data_models.biotopes import (BiotopeRecord, BiotopeShape,
+                                                   collect_biotope_psets)
+from BIMFabrikHH_core.data_models.params_tree import RequestParams
+from BIMFabrikHH_core.data_models.pydantic_georeferencing import CoordinateOperation
+from BIMFabrikHH_core.data_models.pydantic_psets_BIMHH import (
+    Pset_Hyperlink, default_bim_hamburg_hyperlink)
+
+logger = get_logger("biotopes_generic_app")
+
+RgbTuple = Union[Tuple[float, float, float], Tuple[int, int, int]]
+PhaseTimings = dict
+
+_DEFAULT_LAYER: str = "_BIM_Biotop"
+_DEFAULT_OUTPUT_NAME: str = "output_biotopes_generic.ifc"
+_DEFAULT_BASEPOINT_SIZE: float = 5.0
+_DEFAULT_EXTRUSION_DEPTH_M: float = 30.0
+
+
+class BiotopesGenericApp:
+    """Record-builder: ``list[BiotopeRecord]`` → extruded ``IfcBuildingElementProxy`` elements (polygons, lines or points)."""
+
+    @staticmethod
+    def build_ifc(
+        records: List[BiotopeRecord],
+        *,
+        request_params: RequestParams,
+        output_path: Optional[Union[str, Path]] = None,
+        output_name: str = _DEFAULT_OUTPUT_NAME,
+        coordinate_operation: Optional[CoordinateOperation] = None,
+        color: Optional[RgbTuple] = None,
+        cad_layer: str = _DEFAULT_LAYER,
+        transparency: float = 0.5,
+        extrusion_depth_m: float = _DEFAULT_EXTRUSION_DEPTH_M,
+        include_property_sets: bool = True,
+        pset_hyperlink: Optional[Pset_Hyperlink] = None,
+        basepoint_origin: Optional[Tuple[float, float]] = None,
+        basepoint_size: float = _DEFAULT_BASEPOINT_SIZE,
+        on_progress: Optional[Callable[[], None]] = None,
+        phase_timings: Optional[PhaseTimings] = None,
+    ) -> Optional[Path]:
+        """Write one ``IfcBuildingElementProxy`` per record, extruded from ``z = 0``.
+
+        Colour is ``record.element_color`` unless ``color`` is set (one colour for all).
+
+        Psets come from ``record.psets``.
+
+        Coordinates and ``basepoint_origin`` are in ``request_params.source_epsg``
+        (25832 for the Hamburg OGC API) and are transformed into
+        ``request_params.output_epsg`` when given. Without ``source_epsg`` the
+        IFC gets no georeferencing and no bbox basepoint.
+
+        Raises:
+            ValueError: ``request_params.output_epsg`` without ``source_epsg``.
+        """
+        if not records:
+            logger.error("No biotope records to export.")
+            return None
+
+        transformer = CoordinateTransformer.from_source_to_output(
+            request_params.source_epsg, request_params.output_epsg, request_params.vertical_epsg
+        )
+        for rec in records:
+            if rec.polygons is not None:
+                warn_if_degree_coordinates(
+                    (p for polygon in rec.polygons for p in polygon.exterior), transformer
+                )
+            elif rec.lines is not None:
+                warn_if_degree_coordinates(
+                    (p for line in rec.lines for p in line), transformer
+                )
+            elif rec.point is not None:
+                warn_if_degree_coordinates([rec.point], transformer)
+
+        try:
+            _t0 = time.perf_counter()
+            model_builder = init_ifc_project(
+                request_params=request_params,
+                coordinate_operation=coordinate_operation,
+                **georeference_options(transformer),
+            )
+            model = model_builder.model
+            if model is None:
+                logger.error("Failed to create IFC model")
+                return None
+
+            if phase_timings is not None:
+                phase_timings["project_setup_s"] = time.perf_counter() - _t0
+
+            _t0 = time.perf_counter()
+            elements: List[BIMFactoryElement] = []
+            for rec in records:
+                if rec.shape_type == BiotopeShape.AREA:
+                    polygons: MultiPolygon = [
+                        transformed
+                        for polygon in rec.polygons
+                        if (transformed := transform_polygon_rings(polygon, transformer)) is not None
+                    ]
+                    if not polygons:
+                        logger.warning("Skipping feature %s: no ring with 3+ vertices", rec.feature_id)
+                        continue
+                    elements.append(
+                        _polygon_biotope_element_from_record(
+                            record=rec,
+                            multipolygon=polygons,
+                            extrusion_depth=extrusion_depth_m,
+                            color=color if color is not None else rec.element_color,
+                            cad_layer=cad_layer,
+                            transparency=transparency,
+                            overwrite_hyperlink=pset_hyperlink,
+                            include_property_sets=include_property_sets,
+                        )
+                    )
+                    if on_progress:
+                        on_progress()
+                elif rec.shape_type == BiotopeShape.LINES:
+                    xy_lines: List[List[Tuple]] = [
+                        transformed
+                        for line in rec.lines
+                        if (transformed := transform_line_xy(line, transformer)) is not None
+                    ]
+                    if not xy_lines or not any(xy_lines): 
+                        logger.warning("Skipping feature %s: no coordinates line with 2+ vertices", rec.feature_id)
+                        continue
+                    elements.append(
+                        _line_biotope_element_from_record(
+                            record=rec,
+                            lines=xy_lines,
+                            extrusion_depth=extrusion_depth_m,
+                            color=color if color is not None else rec.element_color,
+                            cad_layer=cad_layer,
+                            transparency=transparency,
+                            overwrite_hyperlink=pset_hyperlink,
+                            include_property_sets=include_property_sets,
+                        )
+                    )
+                    if on_progress:
+                        on_progress()
+                elif rec.shape_type == BiotopeShape.POINT:
+                    xy_point: Tuple[float, float] = transformer.transform_point(rec.point) if transformer else rec.point
+                    if not xy_point: 
+                        logger.warning("Skipping feature %s: no coordinates point", rec.feature_id)
+                        continue
+                    elements.append(
+                        _point_biotope_element_from_record(
+                            record=rec,
+                            point=xy_point,
+                            extrusion_depth=extrusion_depth_m,
+                            color=color if color is not None else rec.element_color,
+                            cad_layer=cad_layer,
+                            transparency=transparency,
+                            overwrite_hyperlink=pset_hyperlink,
+                            include_property_sets=include_property_sets,
+                        )
+                    )
+                    if on_progress:
+                        on_progress()
+
+            if phase_timings is not None:
+                phase_timings["prepare_elements_s"] = time.perf_counter() - _t0
+
+            if not elements:
+                logger.error("No valid BIMFactory elements could be prepared form biotope records.")
+                return None
+
+            _t0 = time.perf_counter()
+            BIMFactoryElement.build_in(
+                model,
+                inst=model_builder.building,
+                items=elements,
+                on_progress=None,
+            )
+            if phase_timings is not None:
+                phase_timings["build_in_s"] = time.perf_counter() - _t0
+
+            place_basepoint(
+                model=model,
+                site=model_builder.site,
+                basepoint=request_params.basepoint_xyz,
+                basepoint_origin=basepoint_origin,
+                bbox_wgs84=request_params.bbox_as_wgs84_tuple if transformer is not None else None,
+                size=basepoint_size,
+                psets=extract_psets_basepoint(request_params.containers or []),
+                transformer=transformer,
+            )
+
+            _t0 = time.perf_counter()
+            saved_path = model_builder.save_ifc_to_output(output_name, output_path=output_path)
+            if phase_timings is not None:
+                phase_timings["save_s"] = time.perf_counter() - _t0
+            if not saved_path:
+                raise RuntimeError("Failed to save IFC file")
+            return Path(str(saved_path))
+        except Exception as exc:
+            logger.error("Error creating IFC model: %s", exc)
+            import traceback
+
+            traceback.print_exc()
+            return None
+
+
+def _polygon_biotope_element_from_record(
+    *,
+    record: BiotopeRecord,
+    multipolygon: MultiPolygon,
+    extrusion_depth: float,
+    color: RgbTuple,
+    cad_layer: str,
+    transparency: float,
+    overwrite_hyperlink: Optional[Pset_Hyperlink],
+    include_property_sets: bool,
+) -> BIMFactoryElement:
+    """One ``IfcBuildingElementProxy`` per biotope, one extrusion per MultiPolygon part."""
+    styled_parts: List[Style] = []
+
+    for polygon in multipolygon:
+        if not polygon.exterior:
+            continue
+        profile = Polygon(points=polygon.exterior, voids=polygon.holes)
+        extruded = Extrusion(basis=profile, depth=extrusion_depth)
+        styled_parts.append(Style(item=extruded, rgb=color, transparency=transparency, cad_layer=cad_layer))
+
+    pset_models: List[BaseModel] = collect_biotope_psets(record, include_property_sets=include_property_sets)
+    element_psets: List[BaseModel] = [*pset_models, overwrite_hyperlink] if overwrite_hyperlink else pset_models
+
+    return BIMFactoryElement(
+        type="IfcBuildingElementProxy",
+        name=record.element_name,
+        qsets=False,
+        children=styled_parts,
+        psets=element_psets,
+    )
+
+
+def _line_biotope_element_from_record(
+    *,
+    record: BiotopeRecord,
+    lines: List[List[Tuple[float, float]]],
+    extrusion_depth: float,
+    color: RgbTuple,
+    cad_layer: str,
+    transparency: float,
+    overwrite_hyperlink: Optional[Pset_Hyperlink],
+    include_property_sets: bool,
+) -> BIMFactoryElement:
+    """One ``IfcBuildingElementProxy`` per biotope, one extrusion per line part.
+    Each line part is represented as an extruded polyline with thickness. 
+    The thickness is taken from ``record.breite_lineares_objekt`` or defaults to 2.0."""
+    styled_parts: List[Style] = []
+    for line in lines:
+        if not line:
+            continue
+
+        thickness = record.breite_lineares_objekt or 2.0
+        line_with_thickness = PolylineOffset(points=line, offset=thickness)
+        extrusion = Extrusion(basis=line_with_thickness, depth=extrusion_depth)
+
+        styled_parts.append(Style(item=extrusion, rgb=color, transparency=transparency, cad_layer=cad_layer))
+
+    pset_models: List[BaseModel] = collect_biotope_psets(record, include_property_sets=include_property_sets)
+    element_psets: List[BaseModel] = [*pset_models, overwrite_hyperlink] if overwrite_hyperlink else pset_models
+
+    return BIMFactoryElement(
+        type="IfcBuildingElementProxy",
+        name=record.element_name,
+        qsets=False,
+        children=styled_parts,
+        psets=element_psets,
+    )
+
+
+def _point_biotope_element_from_record(
+    *,
+    record: BiotopeRecord,
+    point: Tuple[float, float],
+    extrusion_depth: float,
+    color: RgbTuple,
+    cad_layer: str,
+    transparency: float,
+    overwrite_hyperlink: Optional[Pset_Hyperlink],
+    include_property_sets: bool,
+) -> BIMFactoryElement:
+    """One ``IfcBuildingElementProxy`` per biotope. The point biotope is represented as an extruded square box."""
+    length = 5.0
+    box = Box(width=length, depth=length, height=extrusion_depth)
+
+    styled = Style(item=box,rgb=color, transparency=transparency, cad_layer=cad_layer)
+    placed = Transform(item=styled, translation=(point[0], point[1], 0.0))
+
+    pset_models: List[BaseModel] = collect_biotope_psets(record, include_property_sets=include_property_sets)
+    element_psets: List[BaseModel] = [*pset_models, overwrite_hyperlink] if overwrite_hyperlink else pset_models
+
+    return BIMFactoryElement(
+        type="IfcBuildingElementProxy",
+        name=record.element_name,
+        qsets=False,
+        children=[placed],
+        psets=element_psets,
+    )
