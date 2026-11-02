@@ -9,6 +9,7 @@ from BIMFabrikHH_core.data_models.boreholes import (BoreholeLayer,
                                                     BoreholeRecord)
 
 from .generic.app import BoreholesGenericApp
+from .generic_rust import BoreholesRustApp
 from .mappings import BoreholeMappings
 from .processing import BoreholeMLProcessor
 
@@ -18,4 +19,5 @@ __all__ = [
     "BoreholeRecord",
     "BoreholeLayer",
     "BoreholesGenericApp",
+    "BoreholesRustApp",
 ]

@@ -11,13 +11,14 @@ Nullpunkt                ``place_basepoint``          ``write_ifc``
 002 Gelaendemodell       ``TerrainGenericApp``        ``TerrainRustApp``
 003 Stadtmodell          ``CityGenericApp``           ``CityRustApp``
 004 Flurstuecke          ``FlurstueckeGenericApp``    -
-005 Bohrungen            ``BoreholesGenericApp``      -
+005 Bohrungen            ``BoreholesGenericApp``      ``BoreholesRustApp``
 =======================  ===========================  ==========================
 
 The Gelaendemodell runs as Typ 1 and as Typ 2 (ALKIS Nutzung Bruchkanten).
 ``nullpunkt`` writes only the Nullpunktobjekt (no Fachdaten, no input files) at the
 ``UMRING`` lower-left, generic with ifcfactory and Rust with ``write_ifc``.
-The portal frontend calls the Rust variant for 001-003.
+The portal frontend calls the Rust variant for 001-003. 005 also runs here
+as ``BoreholesRustApp``; the portal process still uses the generic app.
 
 Each request carries the portal form containers (``Pset_Georeferenzierung``,
 ``Pset_Objektinformation``, ``Pset_Modellinformation``, ``Pset_Hyperlink``)
@@ -26,8 +27,9 @@ with the field titles the portal sends, including the lowercase
 ``_GemObjektkatalog`` follow the BIM.Hamburg Objektkatalog.
 
 After each build the Nullpunktobjekt is read back and its psets are compared
-with the request. The summary lists every deviation per run; the script exits
-with code 1 if there is one.
+with the request. The summary lists every deviation per run, then a table
+shows how many seconds each workflow took. The script exits with code 1 if
+there is a deviation.
 
 All runs use the same ~500 m x 500 m Umring (0.25 km²), so the IFCs overlay.
 Inputs are local, no network:
@@ -62,7 +64,7 @@ import ifcopenshell
 import ifcopenshell.util.element
 
 from BIMFabrikHH_core import BoundingBoxParams, Component, Container, PathConfig, RequestParams
-from BIMFabrikHH_core.apps.boreholes import BoreholeMLProcessor, BoreholesGenericApp
+from BIMFabrikHH_core.apps.boreholes import BoreholeMLProcessor, BoreholesGenericApp, BoreholesRustApp
 from BIMFabrikHH_core.apps.city import CityGenericApp, CityRustApp
 from BIMFabrikHH_core.apps.flurstuecke.generic import FlurstueckeGenericApp, load_flurstuecke_records
 from BIMFabrikHH_core.apps.terrain.generic import TerrainGenericApp
@@ -76,7 +78,7 @@ from BIMFabrikHH_core.core.data_processing import DataProcessor
 from BIMFabrikHH_core.core.geometry import basepoint_pset_values, basepoint_xyz, place_basepoint
 from BIMFabrikHH_core.core.georeferencing import DGM_TILE_VERTICAL_EPSG, CoordinateTransformer
 from BIMFabrikHH_core.core.model_creator import georeference_options, init_ifc_project, output_coordinate_system
-from BIMFabrikHH_core.core.ogc_extractor import extract_psets_basepoint
+from BIMFabrikHH_core.core.ogc_extractor import extract_project_info, extract_psets_basepoint
 from BIMFabrikHH_core.data_models.streets import GUIDE_NUTZARTEN, records_from_geojson_feature_collection
 
 _HERE = Path(__file__).resolve().parent
@@ -272,11 +274,23 @@ def run_flurstuecke(containers: List[Container], output: Path) -> Optional[Path]
     return FlurstueckeGenericApp.build_ifc(records, request_params=_request(containers), output_path=output)
 
 
-def run_boreholes(containers: List[Container], output: Path) -> Optional[Path]:
+def run_boreholes(containers: List[Container], output: Path, rust: bool) -> Optional[Path]:
     records = BoreholeMLProcessor().parse(gzip.decompress((DATA_DIR / BOREHOLES_FILE).read_bytes()))
     logger.info("  %d borehole(s)", len(records))
-    return BoreholesGenericApp.build_ifc(
-        records, request_params=_request(containers, BOREHOLES_VERTICAL_EPSG), output_path=output
+    request = _request(containers, BOREHOLES_VERTICAL_EPSG)
+    if not rust:
+        return BoreholesGenericApp.build_ifc(records, request_params=request, output_path=output)
+    project_name, site_name, _ = extract_project_info(containers)
+    return BoreholesRustApp.build_ifc(
+        records,
+        output_path=output,
+        project_name=project_name,
+        site_name=site_name,
+        bbox_wgs84=request.bbox_as_wgs84_tuple,
+        source_epsg=request.source_epsg,
+        vertical_epsg=request.vertical_epsg,
+        basepoint=request.basepoint_xyz,
+        basepoint_psets=extract_psets_basepoint(containers) or None,
     )
 
 
@@ -296,7 +310,20 @@ WORKFLOWS = [
     Workflow("003_stadtmodell_generic", *_CITY, partial(run_city, rust=False)),
     Workflow("003_stadtmodell_rust", *_CITY, partial(run_city, rust=True)),
     Workflow("004_flurstuecke_generic", "Umgebung", "Flurstueck", "Umgebung", run_flurstuecke),
-    Workflow("005_bohrungen_generic", "GeotechnikBaugrund", "Baugrundaufschluss", "GeotechnikBaugrund", run_boreholes),
+    Workflow(
+        "005_bohrungen_generic",
+        "GeotechnikBaugrund",
+        "Baugrundaufschluss",
+        "GeotechnikBaugrund",
+        partial(run_boreholes, rust=False),
+    ),
+    Workflow(
+        "005_bohrungen_rust",
+        "GeotechnikBaugrund",
+        "Baugrundaufschluss",
+        "GeotechnikBaugrund",
+        partial(run_boreholes, rust=True),
+    ),
 ]
 
 
@@ -354,6 +381,19 @@ def _parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def _print_durations(durations: Dict[str, float]) -> None:
+    """Aligned table of seconds per workflow, in run order."""
+    key_width = max(len("Workflow"), *(len(key) for key in durations))
+    rule = f"{'-' * key_width}  --------"
+    print()
+    print(f"{'Workflow':<{key_width}}  Sekunden")
+    print(rule)
+    for key, seconds in durations.items():
+        print(f"{key:<{key_width}}  {seconds:8.1f}")
+    print(rule)
+    print(f"{'Summe':<{key_width}}  {sum(durations.values()):8.1f}")
+
+
 def main() -> None:
     args = _parse_args()
     if args.list:
@@ -365,15 +405,18 @@ def main() -> None:
         sys.exit(f"No workflow matches {args.workflows}; see --list")
 
     results: Dict[str, List[str]] = {}
+    durations: Dict[str, float] = {}
     for workflow in selected:
         logger.info("=== %s ===", workflow.key)
         start = time.perf_counter()
         ifc_path = workflow.run(form_containers(workflow), workflow.output)
         if not ifc_path:
+            durations[workflow.key] = time.perf_counter() - start
             results[workflow.key] = ["IFC build failed"]
             continue
-        logger.info("  %s (%.1f s)", Path(ifc_path).name, time.perf_counter() - start)
         results[workflow.key] = check_nullpunkt(workflow, Path(ifc_path))
+        durations[workflow.key] = time.perf_counter() - start
+        logger.info("  %s (%.1f s)", Path(ifc_path).name, durations[workflow.key])
 
     logger.info("=== Nullpunktobjekt summary ===")
     for key, deviations in results.items():
@@ -384,6 +427,7 @@ def main() -> None:
         for deviation in deviations:
             logger.warning("              - %s", deviation)
 
+    _print_durations(durations)
     if any(results.values()):
         sys.exit(1)
 
