@@ -271,7 +271,7 @@ def _line_biotope_element_from_record(
         if not line:
             continue
 
-        thickness = record.breite_lineares_objekt or 2.0
+        thickness = _get_line_thickness(record=record)
         line_with_thickness = PolylineOffset(points=line, offset=thickness)
         extrusion = Extrusion(basis=line_with_thickness, depth=extrusion_depth)
 
@@ -287,6 +287,13 @@ def _line_biotope_element_from_record(
         children=styled_parts,
         psets=element_psets,
     )
+
+
+def _get_line_thickness(record: BiotopeRecord) -> float:
+    if record.breite_lineares_objekt is None:
+        return 2.0
+
+    return record.breite_lineares_objekt
 
 
 def _point_biotope_element_from_record(

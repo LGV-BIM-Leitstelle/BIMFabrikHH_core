@@ -1,5 +1,5 @@
 """
-Data models for biotope records. 
+Data models for biotope records.
 
 Parsed from GeoJSON FeatureCollection from the Biotopkataster Hamburg API, with additional properties and optional psets for IFC export.
 
@@ -13,12 +13,12 @@ Each record carries IFC pset templates under ``psets``.
 
 from __future__ import annotations
 
-from datetime import datetime
-from enum import Enum
 import colorsys
 import hashlib
 import json
 import logging
+from datetime import datetime
+from enum import Enum
 from functools import lru_cache
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
@@ -28,13 +28,15 @@ from pydantic import BaseModel, ConfigDict, Field
 from BIMFabrikHH_core.apps.boreholes.helper import _clean
 from BIMFabrikHH_core.core.ogc_extractor import (
     MultiPolygon,
-    ensure_feature_collection, 
+    ensure_feature_collection,
+    feature_geometry_type,
     feature_identifier,
-    geojson_feature_properties, iter_geojson_features,
+    geojson_feature_properties,
+    iter_geojson_features,
     parse_feature_for_all_polygon_rings,
     parse_feature_multilinestring_paths,
     parse_feature_point,
-    feature_geometry_type)
+)
 from BIMFabrikHH_core.data_models.pydantic_psets_BIMHH import Pset_Hyperlink
 
 logger = logging.getLogger(__name__)
@@ -48,11 +50,13 @@ _BIOTOP_BEWERTUNG_HH = "Biotopbewertung für die Biotopkartierung Hamburg"
 
 UNDEFINED = "undefiniert"
 
+
 class BiotopeShape(Enum):
     NONE = 0
     POINT = 1
     LINES = 2
     AREA = 3
+
 
 class BiotopeRecord(BaseModel):
     """One Biotopkataster biotope: geometry (polygon/lines/point) + API attributes + optional psets."""
@@ -62,85 +66,104 @@ class BiotopeRecord(BaseModel):
     feature_id: Union[int, str] = Field(description="``feature.id`` from GeoJSON")
 
     shape_type: BiotopeShape = Field(
-        description="Indicates whether the biotope geometry is a polygon, line or point."
+        default=BiotopeShape.NONE, description="Indicates whether the biotope geometry is a polygon, line or point."
     )
 
     polygons: MultiPolygon | None = Field(
-        description="Multipolygon geometry: Exterior ring and holes per MultiPolygon part; (easting, northing) if EPSG:25832 else (lon, lat)"
+        default=None,
+        description="Multipolygon geometry: Exterior ring and holes per MultiPolygon part; (easting, northing) if EPSG:25832 else (lon, lat)",
     )
     lines: List[List[Tuple[float, float]]] | None = Field(
-        description="Line geometry: list of (multiple) lines of coordinate tuples; (easting, northing) if EPSG:25832 else (lon, lat)"
+        default=None,
+        description="Line geometry: list of (multiple) lines of coordinate tuples; (easting, northing) if EPSG:25832 else (lon, lat)",
     )
     point: Tuple | None = Field(
-        description="Point geometry: Coordinate tuple; (easting, northing) if EPSG:25832 else (lon, lat)"
+        default=None, description="Point geometry: Coordinate tuple; (easting, northing) if EPSG:25832 else (lon, lat)"
     )
 
-    # TODO: Add descriptions
     objectid: int = Field(description="Biotopkataster Objekt-ID")
-    id_biotop: int = Field(description="ID-Biotop: Unique number under which the biotope is listed.",)
-    dk5: int = Field(description="DK5: Tile number of the 1:5,000 digital map.",)
-    biotop_nr: int = Field(description="Biotop-Nr.: Biotope number. Each biotope number is unique within a DK5 tile.",)
-    abschnitt: Optional[int] = Field(description="Abschnitt: A biotope may consist of several sections. This is the number of the respective section.",)
-
-    biotop_erfasst_am: str = Field(description="Biotop erfasst am: Date the biotope was mapped.",
-        default="",
+    id_biotop: int = Field(
+        description="ID-Biotop: Unique number under which the biotope is listed.",
     )
-    is_protected: bool = Field(description="Indicates whether the biotope is protected by law.")
-
-    hauptbiotoptyp: str = Field(description="Hauptbiotoptyp: Primary biotope type of the biotope.",
-        default="",
+    dk5: int = Field(
+        description="DK5: Tile number of the 1:5,000 digital map.",
     )
-    nebenbiotoptypen: str = Field(description="Nebenbiotoptypen: A biotope may consist of several biotope types. In these cases, the additional biotope types are listed here.",
-        default="",
+    biotop_nr: int = Field(description="Biotop-Nr.: Biotope number. Each biotope number is unique within a DK5 tile.")
+    abschnitt: Optional[int] = Field(
+        default=1,
+        description="Abschnitt: A biotope may consist of several sections. This is the number of the respective section.",
     )
 
-    paragraf: str = Field(description="gesetzl. Schutz: The paragraph based on which this biotope is protected by law.",
+    biotop_erfasst_am: str = Field(default="", description="Biotop erfasst am: Date the biotope was mapped.")
+    is_protected: bool = Field(default="", description="Indicates whether the biotope is protected by law.")
+
+    hauptbiotoptyp: str = Field(default="", description="Hauptbiotoptyp: Primary biotope type of the biotope.")
+    nebenbiotoptypen: str = Field(
         default="",
+        description="Nebenbiotoptypen: A biotope may consist of several biotope types. In these cases, the additional biotope types are listed here.",
     )
-    schutzstatus_teilweise: Optional[str] = Field(description="Schutzstatus anteilig: This field indicates if the biotope is only partially protected by law.",
+
+    paragraf: str = Field(
+        default="", description="gesetzl. Schutz: The paragraph based on which this biotope is protected by law."
+    )
+    schutzstatus_teilweise: Optional[str] = Field(
         default=None,
+        description="Schutzstatus anteilig: This field indicates if the biotope is only partially protected by law.",
     )
-    gesamtbewertung: Optional[int] = Field(description="Gesamtbewertung: The evaluation of the biotope according to the methodology of the statewide biotope mapping, from 1 to 9.", default=None)
+    gesamtbewertung: Optional[int] = Field(
+        default=None,
+        description="Gesamtbewertung: The evaluation of the biotope according to the methodology of the statewide biotope mapping, from 1 to 9.",
+    )
 
-    code_ffh_lebensraumtyp_bfn: Optional[str] = Field(description="Code des FFH-Lebensraumtyps: Habitat type as defined by the Fauna-Flora-Habitatrichtlinie, provided that the biotope meets the criteria.", default=None)
+    code_ffh_lebensraumtyp_bfn: Optional[str] = Field(
+        default=None,
+        description="Code des FFH-Lebensraumtyps: Habitat type as defined by the Fauna-Flora-Habitatrichtlinie, provided that the biotope meets the criteria.",
+    )
 
-    erhaltungszustand_bfn: Optional[str] = Field(description="Erhaltungsgrad: Assessment of the conservation status of the FFH habitat type.", default=None)
+    erhaltungszustand_bfn: Optional[str] = Field(
+        default=None, description="Erhaltungsgrad: Assessment of the conservation status of the FFH habitat type."
+    )
 
-    erhaltungszustand_bfn_abw: Optional[str] = Field(description="Erhaltungsgrad abweichend: Assessment of the conservation status of the FFH habitat type, if it differs from the standard assessment.", default=None)
+    erhaltungszustand_bfn_abw: Optional[str] = Field(
+        default=None,
+        description="Erhaltungsgrad abweichend: Assessment of the conservation status of the FFH habitat type, if it differs from the standard assessment.",
+    )
 
-    ffh_entwicklungspotential: Optional[str] = Field(description="FFH-Entwicklungspotenzial: A habitat type under the Fauna-Flora-Habitatrichtlinie, provided that the biotope has the potential to meet the criteria in the future.", default=None)
+    ffh_entwicklungspotential: Optional[str] = Field(
+        default=None,
+        description="FFH-Entwicklungspotenzial: A habitat type under the Fauna-Flora-Habitatrichtlinie, provided that the biotope has the potential to meet the criteria in the future.",
+    )
 
-    flaeche_oder_laenge: Optional[float] = Field(description="Fläche oder Länge: Area (m²) or Length (m)", default=None)
-    breite_lineares_objekt: Optional[float] = Field(description="Breite lineares Objekt: Width (m) of the linear biotope", default=None)
+    flaeche_oder_laenge: Optional[float] = Field(default=None, description="Fläche oder Länge: Area (m²) or Length (m)")
+    breite_lineares_objekt: Optional[float] = Field(
+        default=None, description="Breite lineares Objekt: Width (m) of the linear biotope"
+    )
 
-    biotopbogen: str = Field(description="Link to the Biotopbogen (biotope profile) for the respective biotope.",
+    biotopbogen: str = Field(
+        default="", description="Link to the Biotopbogen (biotope profile) for the respective biotope."
+    )
+
+    aktualitaet: str = Field(default="", description="Aktualität: Status of biotope mapping for the entire layer.")
+    naechste_kartierung: Optional[int] = Field(
         default="",
+        description="nächste Kartierung voraussichtlich: The year in which the biotope is expected to be mapped next.",
     )
+    aufnahmetyp: str = Field(default="", description="Aufnahmetyp: Recording type of the selected object.")
+    gruppe: str = Field(default="", description="Main group of biotope types to which this biotope belongs.")
 
-    aktualitaet: str = Field(description="Aktualität: Status of biotope mapping for the entire layer.",
-        default="",
-    )
-    naechste_kartierung: Optional[int] = Field(description="nächste Kartierung voraussichtlich: The year in which the biotope is expected to be mapped next.",)
-    aufnahmetyp: str = Field(description="Aufnahmetyp: Recording type of the selected object.",
-        default="",
-    )
-    gruppe: str = Field(description="Main group of biotope types to which this biotope belongs.",
-        default="",
-    )
-
-    psets: Dict[str, BaseModel] = Field(description="TODO", default_factory=dict)
+    psets: Dict[str, BaseModel] = Field(default_factory=dict)
 
     @property
     def element_name(self) -> str:
         """IFC element name: ``Biotop_{id_biotop}``, else ``Biotop_{dk5}_{biotop_nr}``, else ``Biotop_{feature_id}``."""
-        shape = (self.shape_type.name.lower() if self.shape_type is not None else "biotope")
+        shape = self.shape_type.name.lower() if self.shape_type is not None else "biotope"
 
-        if self.id_biotop:
+        if self.id_biotop is not None:
             return f"Biotop_{shape}_{self.id_biotop}"[:120]
-        elif self.dk5 and self.biotop_nr:
+        elif self.dk5 is not None and self.biotop_nr is not None:
             return f"Biotop_{shape}_{self.dk5}_{self.biotop_nr}"[:120]
         else:
-            return f"Biotop_{shape}_{self.feature_id}"[:120]  
+            return f"Biotop_{shape}_{self.feature_id}"[:120]
 
     @property
     def element_color(self) -> Tuple[int, int, int]:
@@ -202,7 +225,7 @@ def load_biotope_hh_to_bkompv_mapping() -> Dict[str, str]:
 
 @lru_cache(maxsize=1)
 def load_biotope_hh_descriptions_mapping() -> Dict[str, str]:
-    """Load the table mapping Hamburg biotope type codes to their descriptions, based on 
+    """Load the table mapping Hamburg biotope type codes to their descriptions, based on
     (https://www.bfn.de/eingriffsregelung-und-bundeskompensationsverordnung,
     "Übersetzungsschlüssel der Biotoptypen und -werte der Länder und deren Erläuterungen");
     empty dict when the file is missing.
@@ -212,7 +235,7 @@ def load_biotope_hh_descriptions_mapping() -> Dict[str, str]:
 
 @lru_cache(maxsize=1)
 def load_biotope_bkompv_descriptions_mapping() -> Dict[str, str]:
-    """Load the table mapping BKompV biotope type codes to their descriptions, based on 
+    """Load the table mapping BKompV biotope type codes to their descriptions, based on
     (https://www.bfn.de/eingriffsregelung-und-bundeskompensationsverordnung,
     "Liste der Biotoptypen und -werte nach Anlage 2 BKompV im Excel-Format");
     empty dict when the file is missing.
@@ -287,39 +310,56 @@ def build_biotope_hyperlink(url: str, id_biotop: int) -> Pset_Hyperlink:
 
 
 def _combine_haupt_and_neben_biotopes(haupt: str, neben: list[str] = []):
+    """Build a combined string of primary and secondary bioptopes in the format ``Hauptbiotop (Nebenbiotop1; Nebenbiotop2; ...)``."""
     if not haupt:
         return ""
     if not neben or not any(neben):
         return str(haupt)
     else:
         neben_unique = list(dict.fromkeys(neben))
-        neben_str = '; '.join(map(str, neben_unique))
+        neben_str = "; ".join(map(str, neben_unique))
         return f"{str(haupt)} ({neben_str})"
 
 
 def _record_with_psets_from_payload(payload: Dict[str, Any], biotope_name_mapping: Dict[str, str]) -> BiotopeRecord:
     record = BiotopeRecord.model_validate(payload)
-    from BIMFabrikHH_core.data_models.pydantic_psets_biotopes import \
-        Pset_Objektinformation_Biotop
+    from BIMFabrikHH_core.data_models.pydantic_psets_biotopes import Pset_Objektinformation_Biotop
 
     hauptbiotoptyp_land_code = record.hauptbiotoptyp
     hauptbiotoptyp_land_name = map_biotope_type_hh_descriptions(hauptbiotoptyp_land_code, biotope_name_mapping)
-    nebenbiotoptyp_land_codes: List[str] = [nebenbiotoptyp.strip() for nebenbiotoptyp in record.nebenbiotoptypen.split(",")]
-    nebenbiotoptyp_land_names: List[str] = [map_biotope_type_hh_descriptions(nebenbiotoptyp_code, biotope_name_mapping) for nebenbiotoptyp_code in nebenbiotoptyp_land_codes]
+    nebenbiotoptyp_land_codes: List[str] = [
+        nebenbiotoptyp.strip() for nebenbiotoptyp in record.nebenbiotoptypen.split(",")
+    ]
+    nebenbiotoptyp_land_names: List[str] = [
+        map_biotope_type_hh_descriptions(nebenbiotoptyp_code, biotope_name_mapping)
+        for nebenbiotoptyp_code in nebenbiotoptyp_land_codes
+    ]
 
-    biotoptyp_land_code_combined = _combine_haupt_and_neben_biotopes(hauptbiotoptyp_land_code,  nebenbiotoptyp_land_codes)
-    biotoptyp_land_name_combined = _combine_haupt_and_neben_biotopes(hauptbiotoptyp_land_name, nebenbiotoptyp_land_names)
+    biotoptyp_land_code_combined = _combine_haupt_and_neben_biotopes(
+        hauptbiotoptyp_land_code, nebenbiotoptyp_land_codes
+    )
+    biotoptyp_land_name_combined = _combine_haupt_and_neben_biotopes(
+        hauptbiotoptyp_land_name, nebenbiotoptyp_land_names
+    )
 
     hauptbiotoptyp_bkompv_code = map_biotope_type_bkompv_codes(hauptbiotoptyp_land_code)
     hauptbiotoptyp_bkompv_name = map_biotope_type_bkompv_descriptions(hauptbiotoptyp_bkompv_code)
-    nebenbiotoptyp_bkompv_codes: List[str] = [map_biotope_type_bkompv_codes(land_code) for land_code in nebenbiotoptyp_land_codes]
-    nebenbiotoptyp_bkompv_names: List[str] = [map_biotope_type_bkompv_descriptions(bkompv_code) for bkompv_code in nebenbiotoptyp_bkompv_codes]
+    nebenbiotoptyp_bkompv_codes: List[str] = [
+        map_biotope_type_bkompv_codes(land_code) for land_code in nebenbiotoptyp_land_codes
+    ]
+    nebenbiotoptyp_bkompv_names: List[str] = [
+        map_biotope_type_bkompv_descriptions(bkompv_code) for bkompv_code in nebenbiotoptyp_bkompv_codes
+    ]
 
-    biotoptyp_bkompv_code_combined = _combine_haupt_and_neben_biotopes(hauptbiotoptyp_bkompv_code,  nebenbiotoptyp_bkompv_codes)
-    biotoptyp_bkompv_name_combined = _combine_haupt_and_neben_biotopes(hauptbiotoptyp_bkompv_name, nebenbiotoptyp_bkompv_names)
+    biotoptyp_bkompv_code_combined = _combine_haupt_and_neben_biotopes(
+        hauptbiotoptyp_bkompv_code, nebenbiotoptyp_bkompv_codes
+    )
+    biotoptyp_bkompv_name_combined = _combine_haupt_and_neben_biotopes(
+        hauptbiotoptyp_bkompv_name, nebenbiotoptyp_bkompv_names
+    )
 
-    # Source: https://www.hamburg.de/resource/blob/1079968/2b87716c8f78cfc971df24d34d837b7e/biotopbewertung-juli-2025-data.pdf 
-    # TODO: load and store somewhere 
+    # Source: https://www.hamburg.de/resource/blob/1079968/2b87716c8f78cfc971df24d34d837b7e/biotopbewertung-juli-2025-data.pdf
+    # TODO: load and store somewhere
     bewertung_dict = {
         "1": "weitgehend unbelebt",
         "2": "extrem verarmt",
@@ -335,33 +375,43 @@ def _record_with_psets_from_payload(payload: Dict[str, Any], biotope_name_mappin
     protection_status_landesrecht = (
         "nicht geschützt"
         if not record.is_protected
-        else "teilweise geschützt" if record.schutzstatus_teilweise else " vollständig geschützt"
+        else (
+            "teilweise geschützt"
+            if record.schutzstatus_teilweise.strip().lower() == "ja"
+            else (
+                " vollständig geschützt"
+                if record.schutzstatus_teilweise is None or record.schutzstatus_teilweise.strip().lower() == "nein"
+                else str(record.schutzstatus_teilweise)
+            )
+        )
     )
 
     try:
-        kartierung_jahr = str(datetime.strptime(record.biotop_erfasst_am, '%d.%m.%Y').year)
+        kartierung_jahr = str(datetime.strptime(record.biotop_erfasst_am, "%d.%m.%Y").year)
     except ValueError:
         kartierung_jahr = UNDEFINED
 
     pset_objektinfo = Pset_Objektinformation_Biotop(
-        kartierung_jahr = kartierung_jahr,
+        kartierung_jahr=kartierung_jahr,
         biotopnummer=record.id_biotop,  # id_biotop is unique, in contrast to biotop_nr.
-        abschnitt_nr=record.abschnitt,  #  TODO: is "abschnitt" the number of sections or the number of the section?
+        abschnitt_nr=record.abschnitt,
         biotoptyp_bkompv_code=biotoptyp_bkompv_code_combined or UNDEFINED,
         biotoptyp_bkompv_name=biotoptyp_bkompv_name_combined or UNDEFINED,
         biotoptyp_land_code=biotoptyp_land_code_combined or UNDEFINED,
         biotoptyp_land_name=biotoptyp_land_name_combined or UNDEFINED,
         biotop_gesamtwert=str(record.gesamtbewertung),
         biotop_gesamtwert_bedeutung=bewertung_dict.get(str(record.gesamtbewertung), UNDEFINED),
-        biotop_gesamtwert_liste=str(_BIOTOP_BEWERTUNG_HH),  # TODO Bezeichnung bzw. Referenz des verwendeten Bewertungsverfahrens für den Biotopgesamtwert.
-        gefaehrdung_status=record.erhaltungszustand_bfn or record.erhaltungszustand_bfn_abw or UNDEFINED,  # TODO find status info
+        biotop_gesamtwert_liste=str(
+            _BIOTOP_BEWERTUNG_HH
+        ),  # TODO Bezeichnung bzw. Referenz des verwendeten Bewertungsverfahrens für den Biotopgesamtwert.
+        gefaehrdung_status=record.erhaltungszustand_bfn
+        or record.erhaltungszustand_bfn_abw
+        or UNDEFINED,  # TODO find status info
         ist_gesetzl_gesch_biotop=record.is_protected,
         ist_gesetzl_gesch_biotop_landesrecht=protection_status_landesrecht,
         # TODO: writing "ha", it gets converted to m**2. -> Find out how to display in ha.
-        biotop_groesse_ha=(
-            (record.flaeche_oder_laenge, "m**2") if record.flaeche_oder_laenge is not None else None
-        ),
-        ist_ffh_lebensraum=record.code_ffh_lebensraumtyp_bfn is not None
+        biotop_groesse_ha=((record.flaeche_oder_laenge, "m**2") if record.flaeche_oder_laenge is not None else None),
+        ist_ffh_lebensraum=record.code_ffh_lebensraumtyp_bfn is not None,
     )
 
     pset_hyperlink = build_biotope_hyperlink(url=record.biotopbogen, id_biotop=record.id_biotop)
@@ -433,9 +483,7 @@ def records_from_geojson_feature_collection(
     return out
 
 
-def load_biotope_records(
-    path: Union[str, Path], *, is_protected: bool
-) -> List[BiotopeRecord]:
+def load_biotope_records(path: Union[str, Path], *, is_protected: bool) -> List[BiotopeRecord]:
     """Load and parse a ``.json`` FeatureCollection from disk."""
     p = Path(path)
     with p.open(encoding="utf-8") as f:

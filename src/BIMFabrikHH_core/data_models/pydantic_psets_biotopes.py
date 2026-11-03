@@ -1,6 +1,6 @@
 """``Pset_Objektinformation`` templates for Biotopkataster biotope IFC elements.
 
-The classes Pset_Objektinformation_Lebensraum and Pset_Objektinformation_Biotop mirror the Merkmalsgruppen 
+The classes Pset_Objektinformation_Lebensraum and Pset_Objektinformation_Biotop mirror the Merkmalsgruppen
 *Klasse Lebensraum* and *Domäne Biotop* from the (work in progress) Objektkatalog Umwelt und Landschaftsbau V001*.
 """
 
@@ -36,7 +36,7 @@ class Pset_Objektinformation_Lebensraum(PropertySetTemplate):
         validation_alias=AliasChoices("loi", "_LoI"),
         serialization_alias="_LoI",
         default=300,
-    )    
+    )
     kartierung_jahr: str = Field(
         validation_alias=AliasChoices("kartierung_jahr", "_KartierungJahr"),
         serialization_alias="_KartierungJahr",
