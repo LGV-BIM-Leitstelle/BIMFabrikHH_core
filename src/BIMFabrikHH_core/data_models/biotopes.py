@@ -51,6 +51,20 @@ _BIOTOP_BEWERTUNG_HH = "Biotopbewertung für die Biotopkartierung Hamburg"
 UNDEFINED = "undefiniert"
 
 
+# Source: https://www.hamburg.de/resource/blob/1079968/2b87716c8f78cfc971df24d34d837b7e/biotopbewertung-juli-2025-data.pdf
+BEWERTUNG_DICT = {
+    "1": "weitgehend unbelebt",
+    "2": "extrem verarmt",
+    "3": "stark verarmt",
+    "4": "verarmt",
+    "5": "noch wertvoll",
+    "6": "wertvoll",
+    "7": "besonders wertvoll",
+    "8": "hochgradig wertvoll",
+    "9": "herausragend",
+}
+
+
 class BiotopeShape(Enum):
     NONE = 0
     POINT = 1
@@ -358,20 +372,6 @@ def _record_with_psets_from_payload(payload: Dict[str, Any], biotope_name_mappin
         hauptbiotoptyp_bkompv_name, nebenbiotoptyp_bkompv_names
     )
 
-    # Source: https://www.hamburg.de/resource/blob/1079968/2b87716c8f78cfc971df24d34d837b7e/biotopbewertung-juli-2025-data.pdf
-    # TODO: load and store somewhere
-    bewertung_dict = {
-        "1": "weitgehend unbelebt",
-        "2": "extrem verarmt",
-        "3": "stark verarmt",
-        "4": "verarmt",
-        "5": "noch wertvoll",
-        "6": "wertvoll",
-        "7": "besonders wertvoll",
-        "8": "hochgradig wertvoll",
-        "9": "herausragend",
-    }
-
     protection_status_landesrecht = (
         "nicht geschützt"
         if not record.is_protected
@@ -400,13 +400,9 @@ def _record_with_psets_from_payload(payload: Dict[str, Any], biotope_name_mappin
         biotoptyp_land_code=biotoptyp_land_code_combined or UNDEFINED,
         biotoptyp_land_name=biotoptyp_land_name_combined or UNDEFINED,
         biotop_gesamtwert=str(record.gesamtbewertung),
-        biotop_gesamtwert_bedeutung=bewertung_dict.get(str(record.gesamtbewertung), UNDEFINED),
-        biotop_gesamtwert_liste=str(
-            _BIOTOP_BEWERTUNG_HH
-        ),  # TODO Bezeichnung bzw. Referenz des verwendeten Bewertungsverfahrens für den Biotopgesamtwert.
-        gefaehrdung_status=record.erhaltungszustand_bfn
-        or record.erhaltungszustand_bfn_abw
-        or UNDEFINED,  # TODO find status info
+        biotop_gesamtwert_bedeutung=BEWERTUNG_DICT.get(str(record.gesamtbewertung), UNDEFINED),
+        biotop_gesamtwert_liste=str(_BIOTOP_BEWERTUNG_HH),
+        gefaehrdung_status=record.erhaltungszustand_bfn or record.erhaltungszustand_bfn_abw or UNDEFINED,
         ist_gesetzl_gesch_biotop=record.is_protected,
         ist_gesetzl_gesch_biotop_landesrecht=protection_status_landesrecht,
         # TODO: writing "ha", it gets converted to m**2. -> Find out how to display in ha.
