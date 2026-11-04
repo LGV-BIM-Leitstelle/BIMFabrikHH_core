@@ -410,6 +410,17 @@ def _record_with_psets_from_payload(payload: Dict[str, Any], biotope_name_mappin
         ist_ffh_lebensraum=record.code_ffh_lebensraumtyp_bfn is not None,
     )
 
+    if record.code_ffh_lebensraumtyp_bfn is not None:
+        pset_objektinfo.ffh_lebensraum_eu_code = record.code_ffh_lebensraumtyp_bfn
+        pset_objektinfo.ffh_lebensraum_typ = UNDEFINED  # TODO: Map FFH code to description, if available.
+        pset_objektinfo.vollstaendigkeit_arteninventar = UNDEFINED
+        pset_objektinfo.vollstaendigkeit_habitatstruktur = UNDEFINED
+        pset_objektinfo.bewertung_beeintraechtigungen = UNDEFINED
+        pset_objektinfo.erhaltungszustand = (
+            record.erhaltungszustand_bfn or record.erhaltungszustand_bfn_abw or UNDEFINED
+        )
+        pset_objektinfo.ist_prioritaerer_lebensraumtyp = UNDEFINED
+
     pset_hyperlink = build_biotope_hyperlink(url=record.biotopbogen, id_biotop=record.id_biotop)
 
     return record.model_copy(

@@ -63,6 +63,44 @@ class Pset_Objektinformation_Lebensraum(PropertySetTemplate):
         default=False,
     )
 
+    # if _IstPrioritaererLebensraumtyp is True:
+
+    ffh_lebensraum_eu_code: Optional[str] = Field(
+        validation_alias=AliasChoices("ffh_lebensraum_eu_code", "_FFHLebensraumEUCode"),
+        serialization_alias="_FFHLebensraumEUCode",
+        default=None,
+    )
+    ffh_lebensraum_typ: Optional[str] = Field(
+        validation_alias=AliasChoices("ffh_lebensraum_typ", "_FFHLebensraumTyp"),
+        serialization_alias="_FFHLebensraumTyp",
+        default=None,
+    )
+    vollstaendigkeit_arteninventar: Optional[str] = Field(
+        validation_alias=AliasChoices("vollstaendigkeit_arteninventar", "_VollstaendigkeitArteninventar"),
+        serialization_alias="_VollstaendigkeitArteninventar",
+        default=None,
+    )
+    vollstaendigkeit_habitatstruktur: Optional[str] = Field(
+        validation_alias=AliasChoices("vollstaendigkeit_habitatstruktur", "_VollstaendigkeitHabitatstruktur"),
+        serialization_alias="_VollstaendigkeitHabitatstruktur",
+        default=None,
+    )
+    bewertung_beeintraechtigungen: Optional[str] = Field(
+        validation_alias=AliasChoices("bewertung_beeintraechtigungen", "_BewertungBeeintraechtigungen"),
+        serialization_alias="_BewertungBeeintraechtigungen",
+        default=None,
+    )
+    erhaltungszustand: Optional[str] = Field(
+        validation_alias=AliasChoices("erhaltungszustand", "_Erhaltungszustand"),
+        serialization_alias="_Erhaltungszustand",
+        default=None,
+    )
+    ist_prioritaerer_lebensraumtyp: Optional[str] = Field(
+        validation_alias=AliasChoices("ist_prioritaerer_lebensraumtyp", "_IstPrioritaererLebensraumtyp"),
+        serialization_alias="_IstPrioritaererLebensraumtyp",
+        default=None,
+    )
+
 
 class Pset_Objektinformation_Biotop(Pset_Objektinformation_Lebensraum):
     """Property set for one Biotopkataster biotope."""
