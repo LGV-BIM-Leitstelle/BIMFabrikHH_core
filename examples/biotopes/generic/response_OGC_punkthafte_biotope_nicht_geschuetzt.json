@@ -1,0 +1,277 @@
+{
+    "type": "FeatureCollection",
+    "numberReturned": 10,
+    "numberMatched": 3951,
+    "timeStamp": "2026-10-22T05:24:57Z",
+    "features": [
+        {
+            "type": "Feature",
+            "id": 3969,
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    584262.7654999997,
+                    5922112.7863
+                ]
+            },
+            "properties": {
+                "objectid": 228341,
+                "dk5": 8422,
+                "biotop_nr": 364,
+                "abschnitt": 1,
+                "biotop_erfasst_am": "22.09.2021",
+                "hauptbiotoptyp": "HEE",
+                "gesamtbewertung": 0,
+                "aktualitaet": "Biotopkartierung Hamburg Jahrgänge 2014 bis 2022",
+                "naechste_kartierung": 2026,
+                "aufnahmetyp": "Baumstandort",
+                "gruppe": "H",
+                "id_biotop": 152733
+            }
+        },
+        {
+            "type": "Feature",
+            "id": 3970,
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    576603.8322999999,
+                    5944978.2828
+                ]
+            },
+            "properties": {
+                "objectid": 213838,
+                "dk5": 7644,
+                "biotop_nr": 260,
+                "abschnitt": 1,
+                "biotop_erfasst_am": "15.06.2020",
+                "hauptbiotoptyp": "HEE",
+                "gesamtbewertung": 0,
+                "aktualitaet": "Biotopkartierung Hamburg Jahrgänge 2014 bis 2022",
+                "naechste_kartierung": 2025,
+                "aufnahmetyp": "Baumstandort",
+                "gruppe": "H",
+                "id_biotop": 146244
+            }
+        },
+        {
+            "type": "Feature",
+            "id": 3971,
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    574326.9220000003,
+                    5947402.2425
+                ]
+            },
+            "properties": {
+                "objectid": 214154,
+                "dk5": 7446,
+                "biotop_nr": 292,
+                "abschnitt": 1,
+                "biotop_erfasst_am": "15.10.2020",
+                "hauptbiotoptyp": "HEE",
+                "gesamtbewertung": 0,
+                "aktualitaet": "Biotopkartierung Hamburg Jahrgänge 2014 bis 2022",
+                "naechste_kartierung": 2025,
+                "aufnahmetyp": "Baumstandort",
+                "gruppe": "H",
+                "id_biotop": 146473
+            }
+        },
+        {
+            "type": "Feature",
+            "id": 3972,
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    565800.2906,
+                    5936896.8901
+                ]
+            },
+            "properties": {
+                "objectid": 169681,
+                "dk5": 6436,
+                "biotop_nr": 224,
+                "abschnitt": 1,
+                "biotop_erfasst_am": "21.07.2017",
+                "hauptbiotoptyp": "HEE",
+                "gesamtbewertung": 0,
+                "aktualitaet": "Biotopkartierung Hamburg Jahrgänge 2014 bis 2022",
+                "naechste_kartierung": 2028,
+                "aufnahmetyp": "Baumstandort",
+                "gruppe": "H",
+                "id_biotop": 114286
+            }
+        },
+        {
+            "type": "Feature",
+            "id": 3973,
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    574275.9352000002,
+                    5942418.596899999
+                ]
+            },
+            "properties": {
+                "objectid": 217701,
+                "dk5": 7442,
+                "biotop_nr": 192,
+                "abschnitt": 1,
+                "biotop_erfasst_am": "16.06.2020",
+                "hauptbiotoptyp": "HEE",
+                "gesamtbewertung": 0,
+                "aktualitaet": "Biotopkartierung Hamburg Jahrgänge 2014 bis 2022",
+                "naechste_kartierung": 2025,
+                "aufnahmetyp": "Baumstandort",
+                "gruppe": "H",
+                "id_biotop": 143434
+            }
+        },
+        {
+            "type": "Feature",
+            "id": 3974,
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    567016.8898,
+                    5935098.749500001
+                ]
+            },
+            "properties": {
+                "objectid": 167995,
+                "dk5": 6634,
+                "biotop_nr": 379,
+                "abschnitt": 1,
+                "biotop_erfasst_am": "03.08.2017",
+                "hauptbiotoptyp": "HEE",
+                "gesamtbewertung": 0,
+                "aktualitaet": "Biotopkartierung Hamburg Jahrgänge 2014 bis 2022",
+                "naechste_kartierung": 2028,
+                "aufnahmetyp": "Baumstandort",
+                "gruppe": "H",
+                "id_biotop": 112819
+            }
+        },
+        {
+            "type": "Feature",
+            "id": 3975,
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    562474.0888,
+                    5942427.673
+                ]
+            },
+            "properties": {
+                "objectid": 208437,
+                "dk5": 6242,
+                "biotop_nr": 208,
+                "abschnitt": 1,
+                "biotop_erfasst_am": "15.06.2020",
+                "hauptbiotoptyp": "HEE",
+                "gesamtbewertung": 0,
+                "aktualitaet": "Biotopkartierung Hamburg Jahrgänge 2014 bis 2022",
+                "naechste_kartierung": 2025,
+                "aufnahmetyp": "Baumstandort",
+                "gruppe": "H",
+                "id_biotop": 142003
+            }
+        },
+        {
+            "type": "Feature",
+            "id": 3976,
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    560249.5362999998,
+                    5940076.111400001
+                ]
+            },
+            "properties": {
+                "objectid": 132026,
+                "dk5": 6040,
+                "biotop_nr": 493,
+                "abschnitt": 1,
+                "biotop_erfasst_am": "10.10.2014",
+                "hauptbiotoptyp": "HEE",
+                "aktualitaet": "Biotopkartierung Hamburg Jahrgänge 2014 bis 2022",
+                "naechste_kartierung": 2028,
+                "aufnahmetyp": "Baumstandort",
+                "gruppe": "H",
+                "id_biotop": 83889
+            }
+        },
+        {
+            "type": "Feature",
+            "id": 3977,
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    561657.6761999996,
+                    5929437.565199999
+                ]
+            },
+            "properties": {
+                "objectid": 205929,
+                "dk5": 6028,
+                "biotop_nr": 258,
+                "abschnitt": 1,
+                "biotop_erfasst_am": "07.07.2019",
+                "hauptbiotoptyp": "HEE",
+                "gesamtbewertung": 0,
+                "aktualitaet": "Biotopkartierung Hamburg Jahrgänge 2014 bis 2022",
+                "naechste_kartierung": 2029,
+                "aufnahmetyp": "Baumstandort",
+                "gruppe": "H",
+                "id_biotop": 139743
+            }
+        },
+        {
+            "type": "Feature",
+            "id": 3978,
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    554110.7412999999,
+                    5937609.827099999
+                ]
+            },
+            "properties": {
+                "objectid": 174072,
+                "dk5": 5436,
+                "biotop_nr": 254,
+                "abschnitt": 1,
+                "biotop_erfasst_am": "06.10.2017",
+                "hauptbiotoptyp": "HEE",
+                "gesamtbewertung": 4,
+                "aktualitaet": "Biotopkartierung Hamburg Jahrgänge 2014 bis 2022",
+                "naechste_kartierung": 2028,
+                "aufnahmetyp": "Baumstandort",
+                "gruppe": "H",
+                "id_biotop": 117880
+            }
+        }
+    ],
+    "links": [
+        {
+            "href": "https://api.hamburg.de/datasets/v1/biotopkataster/collections/punkthafte_biotope_nicht_geschuetzt/items?crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F25832&f=json",
+            "rel": "self",
+            "type": "application/geo+json",
+            "title": "Dieses Dokument"
+        },
+        {
+            "href": "https://api.hamburg.de/datasets/v1/biotopkataster/collections/punkthafte_biotope_nicht_geschuetzt/items?crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F25832&f=html",
+            "rel": "alternate",
+            "type": "text/html",
+            "title": "Dieses Dokument als HTML"
+        },
+        {
+            "href": "https://api.hamburg.de/datasets/v1/biotopkataster/collections/punkthafte_biotope_nicht_geschuetzt/items?f=json&crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F25832&offset=10",
+            "rel": "next",
+            "type": "application/geo+json",
+            "title": "Nächste Seite"
+        }
+    ]
+}

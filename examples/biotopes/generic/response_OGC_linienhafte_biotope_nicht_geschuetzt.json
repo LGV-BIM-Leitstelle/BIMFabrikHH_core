@@ -1,0 +1,838 @@
+{
+    "type": "FeatureCollection",
+    "numberReturned": 10,
+    "numberMatched": 16764,
+    "timeStamp": "2026-10-22T05:22:14Z",
+    "features": [
+        {
+            "type": "Feature",
+            "id": 23599,
+            "geometry": {
+                "type": "MultiLineString",
+                "coordinates": [
+                    [
+                        [
+                            551788.4907999998,
+                            5939806.7184
+                        ],
+                        [
+                            551739.3585000001,
+                            5939848.2223000005
+                        ],
+                        [
+                            551739.1550000003,
+                            5939848.394200001
+                        ],
+                        [
+                            551720.9990999997,
+                            5939846.516799999
+                        ],
+                        [
+                            551712.2342999997,
+                            5939852.7776
+                        ],
+                        [
+                            551683.0259999996,
+                            5939885.704600001
+                        ],
+                        [
+                            551679.6468000002,
+                            5939889.514
+                        ],
+                        [
+                            551677.8014000002,
+                            5939891.5943
+                        ],
+                        [
+                            551674.6714000003,
+                            5939901.611199999
+                        ],
+                        [
+                            551674.6290999996,
+                            5939904.2486000005
+                        ],
+                        [
+                            551674.1846000003,
+                            5939931.9552
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "objectid": 105875,
+                "dk5": 5038,
+                "biotop_nr": 249,
+                "abschnitt": 2,
+                "biotop_erfasst_am": "13.04.2014",
+                "hauptbiotoptyp": "FGR",
+                "nebenbiotoptypen": "FGV",
+                "gesamtbewertung": 5,
+                "flaeche_oder_laenge": "1.292",
+                "breite_lineares_objekt": "3",
+                "biotopbogen": "https://daten-hamburg.de/umwelt_klima/biotopkataster/erhebungsbogen_hh/B_5038_249_130414.PDF",
+                "aktualitaet": "Biotopkartierung Hamburg Jahrgänge 2014 bis 2022",
+                "naechste_kartierung": 2025,
+                "aufnahmetyp": "Biotop",
+                "gruppe": "F",
+                "id_biotop": 76419
+            }
+        },
+        {
+            "type": "Feature",
+            "id": 23600,
+            "geometry": {
+                "type": "MultiLineString",
+                "coordinates": [
+                    [
+                        [
+                            558475.4073000001,
+                            5927568.6413
+                        ],
+                        [
+                            558497.6489000004,
+                            5927642.3539
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "objectid": 141981,
+                "dk5": 5826,
+                "biotop_nr": 341,
+                "abschnitt": 4,
+                "biotop_erfasst_am": "13.06.2015",
+                "hauptbiotoptyp": "FGV",
+                "nebenbiotoptypen": "NH",
+                "gesamtbewertung": 6,
+                "flaeche_oder_laenge": "1.679",
+                "breite_lineares_objekt": "3",
+                "biotopbogen": "https://daten-hamburg.de/umwelt_klima/biotopkataster/erhebungsbogen_hh/B_5826_341_130615.PDF",
+                "aktualitaet": "Biotopkartierung Hamburg Jahrgänge 2014 bis 2022",
+                "naechste_kartierung": 2027,
+                "aufnahmetyp": "Biotop",
+                "gruppe": "F",
+                "id_biotop": 92216
+            }
+        },
+        {
+            "type": "Feature",
+            "id": 23601,
+            "geometry": {
+                "type": "MultiLineString",
+                "coordinates": [
+                    [
+                        [
+                            558699.3638000004,
+                            5927549.511
+                        ],
+                        [
+                            558719.5746999998,
+                            5927633.6203000005
+                        ],
+                        [
+                            558727.7160999998,
+                            5927667.501599999
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "objectid": 141979,
+                "dk5": 5826,
+                "biotop_nr": 341,
+                "abschnitt": 2,
+                "biotop_erfasst_am": "13.06.2015",
+                "hauptbiotoptyp": "FGV",
+                "nebenbiotoptypen": "NH",
+                "gesamtbewertung": 6,
+                "flaeche_oder_laenge": "1.679",
+                "breite_lineares_objekt": "3",
+                "biotopbogen": "https://daten-hamburg.de/umwelt_klima/biotopkataster/erhebungsbogen_hh/B_5826_341_130615.PDF",
+                "aktualitaet": "Biotopkartierung Hamburg Jahrgänge 2014 bis 2022",
+                "naechste_kartierung": 2027,
+                "aufnahmetyp": "Biotop",
+                "gruppe": "F",
+                "id_biotop": 92216
+            }
+        },
+        {
+            "type": "Feature",
+            "id": 23602,
+            "geometry": {
+                "type": "MultiLineString",
+                "coordinates": [
+                    [
+                        [
+                            558665.3809000002,
+                            5927552.0482
+                        ],
+                        [
+                            558688.6266000001,
+                            5927643.6218
+                        ],
+                        [
+                            558692.9937000005,
+                            5927660.8256
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "objectid": 141978,
+                "dk5": 5826,
+                "biotop_nr": 341,
+                "abschnitt": 1,
+                "biotop_erfasst_am": "13.06.2015",
+                "hauptbiotoptyp": "FGV",
+                "nebenbiotoptypen": "NH",
+                "gesamtbewertung": 6,
+                "flaeche_oder_laenge": "1.679",
+                "breite_lineares_objekt": "3",
+                "biotopbogen": "https://daten-hamburg.de/umwelt_klima/biotopkataster/erhebungsbogen_hh/B_5826_341_130615.PDF",
+                "aktualitaet": "Biotopkartierung Hamburg Jahrgänge 2014 bis 2022",
+                "naechste_kartierung": 2027,
+                "aufnahmetyp": "Biotop",
+                "gruppe": "F",
+                "id_biotop": 92216
+            }
+        },
+        {
+            "type": "Feature",
+            "id": 23603,
+            "geometry": {
+                "type": "MultiLineString",
+                "coordinates": [
+                    [
+                        [
+                            558743.4143000003,
+                            5927545.671700001
+                        ],
+                        [
+                            558764.3838,
+                            5927629.557499999
+                        ],
+                        [
+                            558777.4754999997,
+                            5927681.929300001
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "objectid": 141980,
+                "dk5": 5826,
+                "biotop_nr": 341,
+                "abschnitt": 3,
+                "biotop_erfasst_am": "13.06.2015",
+                "hauptbiotoptyp": "FGV",
+                "nebenbiotoptypen": "NH",
+                "gesamtbewertung": 6,
+                "flaeche_oder_laenge": "1.679",
+                "breite_lineares_objekt": "3",
+                "biotopbogen": "https://daten-hamburg.de/umwelt_klima/biotopkataster/erhebungsbogen_hh/B_5826_341_130615.PDF",
+                "aktualitaet": "Biotopkartierung Hamburg Jahrgänge 2014 bis 2022",
+                "naechste_kartierung": 2027,
+                "aufnahmetyp": "Biotop",
+                "gruppe": "F",
+                "id_biotop": 92216
+            }
+        },
+        {
+            "type": "Feature",
+            "id": 23604,
+            "geometry": {
+                "type": "MultiLineString",
+                "coordinates": [
+                    [
+                        [
+                            575834.4879999999,
+                            5938352.099300001
+                        ],
+                        [
+                            575685.9025999997,
+                            5938299.1646
+                        ],
+                        [
+                            575648.7468999997,
+                            5938286.440300001
+                        ],
+                        [
+                            575572.1468000002,
+                            5938258.8441
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "objectid": 144735,
+                "dk5": 7438,
+                "biotop_nr": 115,
+                "abschnitt": 2,
+                "biotop_erfasst_am": "10.07.2015",
+                "hauptbiotoptyp": "HWD",
+                "nebenbiotoptypen": "HWB",
+                "gesamtbewertung": 6,
+                "flaeche_oder_laenge": "558",
+                "breite_lineares_objekt": "5",
+                "biotopbogen": "https://daten-hamburg.de/umwelt_klima/biotopkataster/erhebungsbogen_hh/B_7438_115_100715.PDF",
+                "aktualitaet": "Biotopkartierung Hamburg Jahrgänge 2014 bis 2022",
+                "naechste_kartierung": 2029,
+                "aufnahmetyp": "Biotop",
+                "gruppe": "H",
+                "id_biotop": 94564
+            }
+        },
+        {
+            "type": "Feature",
+            "id": 23605,
+            "geometry": {
+                "type": "MultiLineString",
+                "coordinates": [
+                    [
+                        [
+                            575826.1860999996,
+                            5938642.2465
+                        ],
+                        [
+                            575831.5822000001,
+                            5938569.1916000005
+                        ],
+                        [
+                            575835.7330999998,
+                            5938499.8725000005
+                        ],
+                        [
+                            575840.2989999996,
+                            5938435.9485
+                        ],
+                        [
+                            575844.8649000004,
+                            5938362.8913
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "objectid": 144734,
+                "dk5": 7438,
+                "biotop_nr": 115,
+                "abschnitt": 1,
+                "biotop_erfasst_am": "10.07.2015",
+                "hauptbiotoptyp": "HWD",
+                "nebenbiotoptypen": "HWB",
+                "gesamtbewertung": 6,
+                "flaeche_oder_laenge": "558",
+                "breite_lineares_objekt": "5",
+                "biotopbogen": "https://daten-hamburg.de/umwelt_klima/biotopkataster/erhebungsbogen_hh/B_7438_115_100715.PDF",
+                "aktualitaet": "Biotopkartierung Hamburg Jahrgänge 2014 bis 2022",
+                "naechste_kartierung": 2029,
+                "aufnahmetyp": "Biotop",
+                "gruppe": "H",
+                "id_biotop": 94564
+            }
+        },
+        {
+            "type": "Feature",
+            "id": 23606,
+            "geometry": {
+                "type": "MultiLineString",
+                "coordinates": [
+                    [
+                        [
+                            574070.6591999996,
+                            5939047.920600001
+                        ],
+                        [
+                            574073.3672000002,
+                            5938991.6746
+                        ],
+                        [
+                            574038.1151999999,
+                            5938864.254799999
+                        ],
+                        [
+                            574003.4458999997,
+                            5938827.961999999
+                        ],
+                        [
+                            573953.7242,
+                            5938824.427300001
+                        ],
+                        [
+                            573923.7841999996,
+                            5938817.7743999995
+                        ],
+                        [
+                            573891.6235999996,
+                            5938778.9628
+                        ],
+                        [
+                            573860.7781999996,
+                            5938762.385299999
+                        ],
+                        [
+                            573850.1936999997,
+                            5938753.85
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "objectid": 144742,
+                "dk5": 7438,
+                "biotop_nr": 122,
+                "abschnitt": 1,
+                "biotop_erfasst_am": "13.07.2015",
+                "hauptbiotoptyp": "FBM",
+                "nebenbiotoptypen": "NU, HUE",
+                "gesamtbewertung": 6,
+                "flaeche_oder_laenge": "418",
+                "breite_lineares_objekt": "3",
+                "biotopbogen": "https://daten-hamburg.de/umwelt_klima/biotopkataster/erhebungsbogen_hh/B_7438_122_130715.PDF",
+                "aktualitaet": "Biotopkartierung Hamburg Jahrgänge 2014 bis 2022",
+                "naechste_kartierung": 2029,
+                "aufnahmetyp": "Biotop",
+                "gruppe": "F",
+                "id_biotop": 94571
+            }
+        },
+        {
+            "type": "Feature",
+            "id": 23607,
+            "geometry": {
+                "type": "MultiLineString",
+                "coordinates": [
+                    [
+                        [
+                            575312.5736999996,
+                            5938431.562999999
+                        ],
+                        [
+                            575305.6562000001,
+                            5938502.1511
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "objectid": 144743,
+                "dk5": 7438,
+                "biotop_nr": 123,
+                "abschnitt": 1,
+                "biotop_erfasst_am": "07.07.2015",
+                "hauptbiotoptyp": "FGR",
+                "nebenbiotoptypen": "NRZ",
+                "gesamtbewertung": 6,
+                "flaeche_oder_laenge": "71",
+                "breite_lineares_objekt": "2",
+                "biotopbogen": "https://daten-hamburg.de/umwelt_klima/biotopkataster/erhebungsbogen_hh/B_7438_123_070715.PDF",
+                "aktualitaet": "Biotopkartierung Hamburg Jahrgänge 2014 bis 2022",
+                "naechste_kartierung": 2029,
+                "aufnahmetyp": "Biotop",
+                "gruppe": "F",
+                "id_biotop": 94572
+            }
+        },
+        {
+            "type": "Feature",
+            "id": 23608,
+            "geometry": {
+                "type": "MultiLineString",
+                "coordinates": [
+                    [
+                        [
+                            577839.0110999998,
+                            5939182.460999999
+                        ],
+                        [
+                            577823.8036000002,
+                            5939191.585999999
+                        ],
+                        [
+                            577794.7109000003,
+                            5939211.158600001
+                        ],
+                        [
+                            577758.3455999997,
+                            5939234.566500001
+                        ],
+                        [
+                            577732.6919,
+                            5939253.0802
+                        ],
+                        [
+                            577709.1545000002,
+                            5939278.2051
+                        ],
+                        [
+                            577704.5263999999,
+                            5939283.626700001
+                        ],
+                        [
+                            577697.9149000002,
+                            5939293.4121
+                        ],
+                        [
+                            577692.0966999996,
+                            5939298.9661
+                        ],
+                        [
+                            577684.4271,
+                            5939304.52
+                        ],
+                        [
+                            577677.8154999996,
+                            5939311.131899999
+                        ],
+                        [
+                            577668.9559000004,
+                            5939320.256100001
+                        ],
+                        [
+                            577650.1788999997,
+                            5939336.9179
+                        ],
+                        [
+                            577642.5093999999,
+                            5939344.5876
+                        ],
+                        [
+                            577632.1953999996,
+                            5939355.1665
+                        ],
+                        [
+                            577628.0961999996,
+                            5939360.588099999
+                        ],
+                        [
+                            577614.8733000001,
+                            5939379.629899999
+                        ],
+                        [
+                            577596.3608999997,
+                            5939398.6719
+                        ],
+                        [
+                            577583.7989999996,
+                            5939411.7632
+                        ],
+                        [
+                            577568.1957999999,
+                            5939429.747199999
+                        ],
+                        [
+                            577560.7906999998,
+                            5939435.8299
+                        ],
+                        [
+                            577553.9143000003,
+                            5939439.532400001
+                        ],
+                        [
+                            577547.3024000004,
+                            5939441.119200001
+                        ],
+                        [
+                            577515.8293000003,
+                            5939444.2927
+                        ],
+                        [
+                            577496.5225,
+                            5939450.639900001
+                        ],
+                        [
+                            577479.9929,
+                            5939460.2928
+                        ],
+                        [
+                            577456.4550000001,
+                            5939476.4252
+                        ],
+                        [
+                            577446.1405999996,
+                            5939484.359099999
+                        ],
+                        [
+                            577441.3800999997,
+                            5939487.268300001
+                        ],
+                        [
+                            577419.0323000001,
+                            5939505.648700001
+                        ],
+                        [
+                            577395.4944000002,
+                            5939526.012700001
+                        ],
+                        [
+                            577379.6262999997,
+                            5939542.6742
+                        ],
+                        [
+                            577369.7088000001,
+                            5939553.1207
+                        ],
+                        [
+                            577361.2462999998,
+                            5939571.369000001
+                        ],
+                        [
+                            577351.1968999999,
+                            5939588.823999999
+                        ],
+                        [
+                            577348.0232999995,
+                            5939593.3199000005
+                        ],
+                        [
+                            577344.8497000001,
+                            5939595.700200001
+                        ],
+                        [
+                            577332.2863999996,
+                            5939600.328500001
+                        ],
+                        [
+                            577289.4386,
+                            5939611.701199999
+                        ],
+                        [
+                            577262.9894000003,
+                            5939618.313200001
+                        ],
+                        [
+                            577255.3191999998,
+                            5939620.1646
+                        ],
+                        [
+                            577249.5003000004,
+                            5939620.9581
+                        ],
+                        [
+                            577234.2922,
+                            5939627.1733
+                        ],
+                        [
+                            577219.7452999996,
+                            5939631.933800001
+                        ],
+                        [
+                            577210.4880999997,
+                            5939633.7852
+                        ],
+                        [
+                            577196.2056999998,
+                            5939637.7524
+                        ],
+                        [
+                            577172.1371999998,
+                            5939644.893300001
+                        ],
+                        [
+                            577153.8874000004,
+                            5939649.918400001
+                        ],
+                        [
+                            577131.5378,
+                            5939651.373299999
+                        ],
+                        [
+                            577110.6426999997,
+                            5939653.2249
+                        ],
+                        [
+                            577100.3272000002,
+                            5939654.0185
+                        ],
+                        [
+                            577073.8778999997,
+                            5939662.7464000005
+                        ],
+                        [
+                            577052.1889000004,
+                            5939661.953400001
+                        ],
+                        [
+                            577037.2445999999,
+                            5939661.557
+                        ],
+                        [
+                            576983.5514000002,
+                            5939665.2607
+                        ],
+                        [
+                            576967.1524999999,
+                            5939666.3189
+                        ],
+                        [
+                            576944.0091000004,
+                            5939669.889699999
+                        ],
+                        [
+                            576921.7914000005,
+                            5939673.592800001
+                        ],
+                        [
+                            576906.7145999996,
+                            5939670.154999999
+                        ],
+                        [
+                            576896.9282,
+                            5939668.568299999
+                        ],
+                        [
+                            576883.9687000001,
+                            5939671.477499999
+                        ],
+                        [
+                            576873.6540999999,
+                            5939674.6512
+                        ],
+                        [
+                            576851.9665000001,
+                            5939676.2381
+                        ],
+                        [
+                            576843.2385999998,
+                            5939677.824999999
+                        ],
+                        [
+                            576835.9653000003,
+                            5939678.486199999
+                        ],
+                        [
+                            576807.1365,
+                            5939679.0153
+                        ],
+                        [
+                            576799.9956999999,
+                            5939681.131200001
+                        ],
+                        [
+                            576788.8870999999,
+                            5939679.544399999
+                        ],
+                        [
+                            576766.9353,
+                            5939683.247199999
+                        ],
+                        [
+                            576728.4533000002,
+                            5939688.4047
+                        ],
+                        [
+                            576710.2041999996,
+                            5939691.8431
+                        ],
+                        [
+                            576683.4918,
+                            5939697.397399999
+                        ],
+                        [
+                            576642.2347999997,
+                            5939704.2717
+                        ],
+                        [
+                            576634.8296999997,
+                            5939704.8002
+                        ],
+                        [
+                            576619.3581999997,
+                            5939705.4605
+                        ],
+                        [
+                            576596.0859000003,
+                            5939717.625
+                        ],
+                        [
+                            576584.4491999997,
+                            5939718.1533
+                        ],
+                        [
+                            576573.0768999998,
+                            5939716.8302
+                        ],
+                        [
+                            576549.2747,
+                            5939719.4735
+                        ],
+                        [
+                            576531.0263999999,
+                            5939722.3817
+                        ],
+                        [
+                            576509.0751999998,
+                            5939722.115900001
+                        ],
+                        [
+                            576500.3476999998,
+                            5939722.644300001
+                        ],
+                        [
+                            576489.7688999996,
+                            5939722.9081
+                        ],
+                        [
+                            576482.3638000004,
+                            5939724.23
+                        ],
+                        [
+                            576477.0745999999,
+                            5939727.138900001
+                        ],
+                        [
+                            576470.9922000002,
+                            5939732.957
+                        ],
+                        [
+                            576467.0252,
+                            5939733.2213
+                        ],
+                        [
+                            576457.2395000001,
+                            5939729.517999999
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "objectid": 144804,
+                "dk5": 7638,
+                "biotop_nr": 98,
+                "abschnitt": 1,
+                "biotop_erfasst_am": "29.06.2015",
+                "hauptbiotoptyp": "FBM",
+                "nebenbiotoptypen": "HUZ, NUB",
+                "gesamtbewertung": 6,
+                "flaeche_oder_laenge": "1.569",
+                "breite_lineares_objekt": "3",
+                "biotopbogen": "https://daten-hamburg.de/umwelt_klima/biotopkataster/erhebungsbogen_hh/B_7638_98_290615.PDF",
+                "aktualitaet": "Biotopkartierung Hamburg Jahrgänge 2014 bis 2022",
+                "naechste_kartierung": 2028,
+                "aufnahmetyp": "Biotop",
+                "gruppe": "F",
+                "id_biotop": 94600
+            }
+        }
+    ],
+    "links": [
+        {
+            "href": "https://api.hamburg.de/datasets/v1/biotopkataster/collections/linenhafte_biotope_nicht_geschuetzt/items?crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F25832&f=json",
+            "rel": "self",
+            "type": "application/geo+json",
+            "title": "Dieses Dokument"
+        },
+        {
+            "href": "https://api.hamburg.de/datasets/v1/biotopkataster/collections/linenhafte_biotope_nicht_geschuetzt/items?crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F25832&f=html",
+            "rel": "alternate",
+            "type": "text/html",
+            "title": "Dieses Dokument als HTML"
+        },
+        {
+            "href": "https://api.hamburg.de/datasets/v1/biotopkataster/collections/linenhafte_biotope_nicht_geschuetzt/items?f=json&crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F25832&offset=10",
+            "rel": "next",
+            "type": "application/geo+json",
+            "title": "Nächste Seite"
+        }
+    ]
+}

@@ -377,7 +377,7 @@ def _record_with_psets_from_payload(payload: Dict[str, Any], biotope_name_mappin
         if not record.is_protected
         else (
             "teilweise geschützt"
-            if record.schutzstatus_teilweise.strip().lower() == "ja"
+            if record.schutzstatus_teilweise is not None and record.schutzstatus_teilweise.strip().lower() == "ja"
             else (
                 " vollständig geschützt"
                 if record.schutzstatus_teilweise is None or record.schutzstatus_teilweise.strip().lower() == "nein"

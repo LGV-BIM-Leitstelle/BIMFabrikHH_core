@@ -3,7 +3,6 @@ Generic Biotopes App
 =======================
 """
 
-
 from __future__ import annotations
 
 import time
@@ -17,14 +16,12 @@ from BIMFabrikHH_core.config.logging_config import get_logger
 from BIMFabrikHH_core.core.geometry import place_basepoint
 from BIMFabrikHH_core.core.georeferencing import CoordinateTransformer, warn_if_degree_coordinates
 from BIMFabrikHH_core.core.model_creator import georeference_options, init_ifc_project
-from BIMFabrikHH_core.core.ogc_extractor import MultiPolygon, transform_polygon_rings, transform_line_xy
+from BIMFabrikHH_core.core.ogc_extractor import MultiPolygon, transform_line_xy, transform_polygon_rings
 from BIMFabrikHH_core.core.ogc_extractor.ogc_values_extractor import extract_psets_basepoint
-from BIMFabrikHH_core.data_models.biotopes import (BiotopeRecord, BiotopeShape,
-                                                   collect_biotope_psets)
+from BIMFabrikHH_core.data_models.biotopes import BiotopeRecord, BiotopeShape, collect_biotope_psets
 from BIMFabrikHH_core.data_models.params_tree import RequestParams
 from BIMFabrikHH_core.data_models.pydantic_georeferencing import CoordinateOperation
-from BIMFabrikHH_core.data_models.pydantic_psets_BIMHH import (
-    Pset_Hyperlink, default_bim_hamburg_hyperlink)
+from BIMFabrikHH_core.data_models.pydantic_psets_BIMHH import Pset_Hyperlink, default_bim_hamburg_hyperlink
 
 logger = get_logger("biotopes_generic_app")
 
@@ -82,13 +79,9 @@ class BiotopesGenericApp:
         )
         for rec in records:
             if rec.polygons is not None:
-                warn_if_degree_coordinates(
-                    (p for polygon in rec.polygons for p in polygon.exterior), transformer
-                )
+                warn_if_degree_coordinates((p for polygon in rec.polygons for p in polygon.exterior), transformer)
             elif rec.lines is not None:
-                warn_if_degree_coordinates(
-                    (p for line in rec.lines for p in line), transformer
-                )
+                warn_if_degree_coordinates((p for line in rec.lines for p in line), transformer)
             elif rec.point is not None:
                 warn_if_degree_coordinates([rec.point], transformer)
 
@@ -139,7 +132,7 @@ class BiotopesGenericApp:
                         for line in rec.lines
                         if (transformed := transform_line_xy(line, transformer)) is not None
                     ]
-                    if not xy_lines or not any(xy_lines): 
+                    if not xy_lines or not any(xy_lines):
                         logger.warning("Skipping feature %s: no coordinates line with 2+ vertices", rec.feature_id)
                         continue
                     elements.append(
@@ -157,8 +150,10 @@ class BiotopesGenericApp:
                     if on_progress:
                         on_progress()
                 elif rec.shape_type == BiotopeShape.POINT:
-                    xy_point: Tuple[float, float] = transformer.transform_point(rec.point) if transformer else rec.point
-                    if not xy_point: 
+                    xy_point: Tuple[float, float] = (
+                        transformer.transform_point(*rec.point) if transformer else rec.point
+                    )
+                    if not xy_point:
                         logger.warning("Skipping feature %s: no coordinates point", rec.feature_id)
                         continue
                     elements.append(
@@ -264,7 +259,7 @@ def _line_biotope_element_from_record(
     include_property_sets: bool,
 ) -> BIMFactoryElement:
     """One ``IfcBuildingElementProxy`` per biotope, one extrusion per line part.
-    Each line part is represented as an extruded polyline with thickness. 
+    Each line part is represented as an extruded polyline with thickness.
     The thickness is taken from ``record.breite_lineares_objekt`` or defaults to 2.0."""
     styled_parts: List[Style] = []
     for line in lines:
@@ -311,7 +306,7 @@ def _point_biotope_element_from_record(
     length = 5.0
     box = Box(width=length, depth=length, height=extrusion_depth)
 
-    styled = Style(item=box,rgb=color, transparency=transparency, cad_layer=cad_layer)
+    styled = Style(item=box, rgb=color, transparency=transparency, cad_layer=cad_layer)
     placed = Transform(item=styled, translation=(point[0], point[1], 0.0))
 
     pset_models: List[BaseModel] = collect_biotope_psets(record, include_property_sets=include_property_sets)

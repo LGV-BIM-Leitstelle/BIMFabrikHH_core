@@ -26,7 +26,7 @@ def transform_line_xy(line: Ring, transformer: Optional[CoordinateTransformer]) 
         return []
     if transformer is None:
         return list(line)
-    return transformer.transform_point(line)
+    return transformer.transform_ring(line)
 
 
 def transform_ring_xy(ring: Ring, transformer: Optional[CoordinateTransformer]) -> Ring:

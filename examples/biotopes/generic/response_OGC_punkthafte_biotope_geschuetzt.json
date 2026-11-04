@@ -1,0 +1,299 @@
+{
+    "type": "FeatureCollection",
+    "numberReturned": 10,
+    "numberMatched": 17,
+    "timeStamp": "2026-10-22T05:23:47Z",
+    "features": [
+        {
+            "type": "Feature",
+            "id": 7920,
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    569613.4363000002,
+                    5926113.5265
+                ]
+            },
+            "properties": {
+                "objectid": 150286,
+                "dk5": 6826,
+                "biotop_nr": 1572,
+                "abschnitt": 1,
+                "biotop_erfasst_am": "27.07.2014",
+                "hauptbiotoptyp": "SEG",
+                "paragraf": "§ 30 (2) 1.2 Natürliche oder naturnahe stehende Gewässer",
+                "gesamtbewertung": 5,
+                "biotopbogen": "https://daten-hamburg.de/umwelt_klima/biotopkataster/erhebungsbogen_hh/B_6826_1572_270714.PDF",
+                "aktualitaet": "Biotopkartierung Hamburg Jahrgänge 2014 bis 2022",
+                "naechste_kartierung": 2027,
+                "aufnahmetyp": "Biotop",
+                "gruppe": "S",
+                "id_biotop": 98664
+            }
+        },
+        {
+            "type": "Feature",
+            "id": 7921,
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    575745.3246999998,
+                    5948759.593800001
+                ]
+            },
+            "properties": {
+                "objectid": 214195,
+                "dk5": 7448,
+                "biotop_nr": 334,
+                "abschnitt": 1,
+                "biotop_erfasst_am": "30.07.2020",
+                "hauptbiotoptyp": "STG",
+                "paragraf": "§ 30 (2) 1.2 Natürliche oder naturnahe stehende Gewässer",
+                "gesamtbewertung": 5,
+                "biotopbogen": "https://daten-hamburg.de/umwelt_klima/biotopkataster/erhebungsbogen_hh/B_7448_334_300720.PDF",
+                "aktualitaet": "Biotopkartierung Hamburg Jahrgänge 2014 bis 2022",
+                "naechste_kartierung": 2025,
+                "aufnahmetyp": "Biotop",
+                "gruppe": "S",
+                "id_biotop": 145205
+            }
+        },
+        {
+            "type": "Feature",
+            "id": 7922,
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    572147.7400000002,
+                    5947637.099300001
+                ]
+            },
+            "properties": {
+                "objectid": 209445,
+                "dk5": 7246,
+                "biotop_nr": 414,
+                "abschnitt": 1,
+                "biotop_erfasst_am": "27.07.2020",
+                "hauptbiotoptyp": "FQS",
+                "nebenbiotoptypen": "FBR",
+                "paragraf": "§ 30 (2) 2.6 Quellbereiche",
+                "gesamtbewertung": 8,
+                "biotopbogen": "https://daten-hamburg.de/umwelt_klima/biotopkataster/erhebungsbogen_hh/B_7246_414_270720.PDF",
+                "aktualitaet": "Biotopkartierung Hamburg Jahrgänge 2014 bis 2022",
+                "naechste_kartierung": 2025,
+                "aufnahmetyp": "Biotop",
+                "gruppe": "F",
+                "id_biotop": 142780
+            }
+        },
+        {
+            "type": "Feature",
+            "id": 7923,
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    573098.1617999999,
+                    5947621.8202
+                ]
+            },
+            "properties": {
+                "objectid": 209446,
+                "dk5": 7246,
+                "biotop_nr": 416,
+                "abschnitt": 1,
+                "biotop_erfasst_am": "10.08.2020",
+                "hauptbiotoptyp": "FQS",
+                "paragraf": "§ 30 (2) 2.6 Quellbereiche",
+                "gesamtbewertung": 6,
+                "biotopbogen": "https://daten-hamburg.de/umwelt_klima/biotopkataster/erhebungsbogen_hh/B_7246_416_100820.PDF",
+                "aktualitaet": "Biotopkartierung Hamburg Jahrgänge 2014 bis 2022",
+                "naechste_kartierung": 2025,
+                "aufnahmetyp": "Biotop",
+                "gruppe": "F",
+                "id_biotop": 142781
+            }
+        },
+        {
+            "type": "Feature",
+            "id": 7924,
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    573093.9346000003,
+                    5947567.2698
+                ]
+            },
+            "properties": {
+                "objectid": 209447,
+                "dk5": 7246,
+                "biotop_nr": 415,
+                "abschnitt": 1,
+                "biotop_erfasst_am": "10.08.2020",
+                "hauptbiotoptyp": "FQS",
+                "paragraf": "§ 30 (2) 2.6 Quellbereiche",
+                "gesamtbewertung": 6,
+                "biotopbogen": "https://daten-hamburg.de/umwelt_klima/biotopkataster/erhebungsbogen_hh/B_7246_415_100820.PDF",
+                "aktualitaet": "Biotopkartierung Hamburg Jahrgänge 2014 bis 2022",
+                "naechste_kartierung": 2025,
+                "aufnahmetyp": "Biotop",
+                "gruppe": "F",
+                "id_biotop": 142782
+            }
+        },
+        {
+            "type": "Feature",
+            "id": 7925,
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    570009.6677000001,
+                    5943697.291300001
+                ]
+            },
+            "properties": {
+                "objectid": 217523,
+                "dk5": 7042,
+                "biotop_nr": 248,
+                "abschnitt": 1,
+                "biotop_erfasst_am": "05.06.2020",
+                "hauptbiotoptyp": "FQS",
+                "paragraf": "§ 30 (2) 2.6 Quellbereiche",
+                "gesamtbewertung": 6,
+                "biotopbogen": "https://daten-hamburg.de/umwelt_klima/biotopkataster/erhebungsbogen_hh/B_7042_248_050620.PDF",
+                "aktualitaet": "Biotopkartierung Hamburg Jahrgänge 2014 bis 2022",
+                "naechste_kartierung": 2025,
+                "aufnahmetyp": "Biotop",
+                "gruppe": "F",
+                "id_biotop": 143107
+            }
+        },
+        {
+            "type": "Feature",
+            "id": 7926,
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    570000.7465000004,
+                    5943698.2016
+                ]
+            },
+            "properties": {
+                "objectid": 217524,
+                "dk5": 7042,
+                "biotop_nr": 248,
+                "abschnitt": 2,
+                "biotop_erfasst_am": "05.06.2020",
+                "hauptbiotoptyp": "FQS",
+                "paragraf": "§ 30 (2) 2.6 Quellbereiche",
+                "gesamtbewertung": 6,
+                "biotopbogen": "https://daten-hamburg.de/umwelt_klima/biotopkataster/erhebungsbogen_hh/B_7042_248_050620.PDF",
+                "aktualitaet": "Biotopkartierung Hamburg Jahrgänge 2014 bis 2022",
+                "naechste_kartierung": 2025,
+                "aufnahmetyp": "Biotop",
+                "gruppe": "F",
+                "id_biotop": 143107
+            }
+        },
+        {
+            "type": "Feature",
+            "id": 7927,
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    563063.7597000003,
+                    5921262.130899999
+                ]
+            },
+            "properties": {
+                "objectid": 263681,
+                "dk5": 6220,
+                "biotop_nr": 615,
+                "abschnitt": 1,
+                "biotop_erfasst_am": "03.05.2022",
+                "hauptbiotoptyp": "FQS",
+                "paragraf": "§ 30 (2) 2.6 Quellbereiche",
+                "gesamtbewertung": 7,
+                "biotopbogen": "https://daten-hamburg.de/umwelt_klima/biotopkataster/erhebungsbogen_hh/B_6220_615_030522.PDF",
+                "aktualitaet": "Biotopkartierung Hamburg Jahrgänge 2014 bis 2022",
+                "naechste_kartierung": 2027,
+                "aufnahmetyp": "Biotop",
+                "gruppe": "F",
+                "id_biotop": 174956
+            }
+        },
+        {
+            "type": "Feature",
+            "id": 7928,
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    559501.2821000004,
+                    5924185.433499999
+                ]
+            },
+            "properties": {
+                "objectid": 249319,
+                "dk5": 5824,
+                "biotop_nr": 246,
+                "abschnitt": 1,
+                "biotop_erfasst_am": "13.07.2022",
+                "hauptbiotoptyp": "FQS",
+                "paragraf": "§ 30 (2) 2.6 Quellbereiche",
+                "gesamtbewertung": 7,
+                "biotopbogen": "https://daten-hamburg.de/umwelt_klima/biotopkataster/erhebungsbogen_hh/B_5824_246_130722.PDF",
+                "aktualitaet": "Biotopkartierung Hamburg Jahrgänge 2014 bis 2022",
+                "naechste_kartierung": 2027,
+                "aufnahmetyp": "Biotop",
+                "gruppe": "F",
+                "id_biotop": 165510
+            }
+        },
+        {
+            "type": "Feature",
+            "id": 7929,
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    564873.2492000004,
+                    5922673.505799999
+                ]
+            },
+            "properties": {
+                "objectid": 265523,
+                "dk5": 6422,
+                "biotop_nr": 263,
+                "abschnitt": 1,
+                "biotop_erfasst_am": "03.07.2022",
+                "hauptbiotoptyp": "FQB",
+                "paragraf": "§ 30 (2) 2.6 Quellbereiche",
+                "gesamtbewertung": 5,
+                "biotopbogen": "https://daten-hamburg.de/umwelt_klima/biotopkataster/erhebungsbogen_hh/B_6422_263_030722.PDF",
+                "aktualitaet": "Biotopkartierung Hamburg Jahrgänge 2014 bis 2022",
+                "naechste_kartierung": 2027,
+                "aufnahmetyp": "Biotop",
+                "gruppe": "F",
+                "id_biotop": 177312
+            }
+        }
+    ],
+    "links": [
+        {
+            "href": "https://api.hamburg.de/datasets/v1/biotopkataster/collections/punkthafte_biotope_geschuetzt/items?crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F25832&f=json",
+            "rel": "self",
+            "type": "application/geo+json",
+            "title": "Dieses Dokument"
+        },
+        {
+            "href": "https://api.hamburg.de/datasets/v1/biotopkataster/collections/punkthafte_biotope_geschuetzt/items?crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F25832&f=html",
+            "rel": "alternate",
+            "type": "text/html",
+            "title": "Dieses Dokument als HTML"
+        },
+        {
+            "href": "https://api.hamburg.de/datasets/v1/biotopkataster/collections/punkthafte_biotope_geschuetzt/items?f=json&crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F25832&offset=10",
+            "rel": "next",
+            "type": "application/geo+json",
+            "title": "Nächste Seite"
+        }
+    ]
+}
