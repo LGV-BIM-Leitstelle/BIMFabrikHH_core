@@ -26,6 +26,7 @@ import subprocess
 import sys
 import time
 from pathlib import Path
+from typing import Optional
 
 from BIMFabrikHH_core import BoundingBoxParams, Component, Container, RequestParams
 from BIMFabrikHH_core.apps.biotopes.generic import BiotopesGenericApp, load_biotope_records
@@ -40,6 +41,7 @@ OUTPUT_EPSGS = (25832, 10285)
 
 
 EXAMPLES = [
+    ("response_OGC_ffh_lebensraum_typen.json", None, (9.9276, 53.5788, 9.9460, 53.6162)),
     ("response_OGC_flaechenhafte_biotope_nicht_geschuetzt.json", False, (9.9309, 53.5609, 9.9460, 53.6162)),
     ("response_OGC_flaechenhafte_biotope_geschuetzt.json", True, (9.8775, 53.6050, 9.9273, 53.6237)),
     ("response_OGC_linienhafte_biotope_nicht_geschuetzt.json", False, (9.7809, 53.4938, 9.8861, 53.6055)),
@@ -81,7 +83,7 @@ def main() -> None:
         generate_ifc_from_biotope_json(input_file, bbox_params, is_protected)
 
 
-def generate_ifc_from_biotope_json(input_file: Path, bbox: BoundingBoxParams, is_protected: bool) -> None:
+def generate_ifc_from_biotope_json(input_file: Path, bbox: BoundingBoxParams, is_protected: Optional[bool]) -> None:
 
     records = load_biotope_records(input_file, is_protected=is_protected)
     logger.info("Loaded %d biotope feature(s) from %s", len(records), input_file)

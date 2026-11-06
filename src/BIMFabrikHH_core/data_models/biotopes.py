@@ -436,14 +436,15 @@ def _record_with_psets_from_payload(payload: Dict[str, Any], biotope_name_mappin
 def records_from_geojson_feature_collection(
     data: Dict[str, Any],
     *,
-    is_protected: bool,
+    is_protected: Optional[bool],
 ) -> List[BiotopeRecord]:
     """Parse a GeoJSON FeatureCollection into :class:`BiotopeRecord` list.
 
-    Skips features without polygon geometry or with empty rings.
+    Skips features without polygon/lines/points geometry, or with coordinate lists too short for the respective geometry.
 
     Args:
         data: GeoJSON FeatureCollection object.
+        is_protected: Set True/False if all biotopes are protected/unprotected, None if mixed or unknown.
     """
     ensure_feature_collection(data)
     out: List[BiotopeRecord] = []
@@ -481,7 +482,7 @@ def records_from_geojson_feature_collection(
             "polygons": polygons,
             "lines": lines,
             "point": point,
-            "is_protected": is_protected,
+            "is_protected": is_protected if is_protected is not None else "paragraf" in props_raw,
             "shape_type": shape_type,
         }
 
@@ -490,7 +491,7 @@ def records_from_geojson_feature_collection(
     return out
 
 
-def load_biotope_records(path: Union[str, Path], *, is_protected: bool) -> List[BiotopeRecord]:
+def load_biotope_records(path: Union[str, Path], *, is_protected: Optional[bool]) -> List[BiotopeRecord]:
     """Load and parse a ``.json`` FeatureCollection from disk."""
     p = Path(path)
     with p.open(encoding="utf-8") as f:
