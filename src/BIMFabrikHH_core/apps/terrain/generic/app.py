@@ -231,7 +231,9 @@ class TerrainGenericApp:
         ALKIS attributes go on each part as ``Pset_Objektinformation``.
 
         ``guide_from_oaf`` pulls ALKIS ``Nutzung`` from the Hamburg OAF for
-        the request bbox. ``write_geojson`` (default ``False``) optionally
+        the request bbox.
+
+        ``write_geojson`` (default ``False``) optionally
         writes ``alkis_nutzung_verkehr.geojson`` and
         ``alkis_nutzung_weitere.geojson`` next to ``output_path``.
 

@@ -22,6 +22,7 @@ from typing import Any, Dict, FrozenSet, Iterable, List, Optional, Sequence, Tup
 import numpy as np
 from scipy.spatial import Delaunay
 
+from BIMFabrikHH_core.apps.streets.processing import transform_record_rings, transformer_to_dgm
 from BIMFabrikHH_core.config.logging_config import get_logger
 from BIMFabrikHH_core.core.georeferencing.coordinate_transformer import CoordinateTransformer
 from BIMFabrikHH_core.core.georeferencing.extract_elevation import (
@@ -30,11 +31,10 @@ from BIMFabrikHH_core.core.georeferencing.extract_elevation import (
     open_geotiff,
     sample_elevations_from_raster,
 )
-from BIMFabrikHH_core.apps.streets.processing import transform_record_rings, transformer_to_dgm
 from BIMFabrikHH_core.core.ogc_extractor import strip_closing_duplicate_xy
 from BIMFabrikHH_core.data_models.streets import (
-    PARCELS_LABEL,
     PARCEL_NUTZARTEN,
+    PARCELS_LABEL,
     load_guide_records_from_oaf,
     nutzung_split_label,
 )
@@ -154,8 +154,11 @@ def adaptive_sampling(
     if not np.any(valid):
         return np.array([]), np.array([]), np.array([])
 
+    # Fill invalid cells temporarily to avoid NaN propagation in the terrain analysis.
     filled = elevation.copy()
     filled[~valid] = float(np.median(elevation[valid]))
+
+    # Compute and normalize terrain importance
     importance = analyze_terrain_features(filled)
     importance[~valid] = 0.0
 
@@ -166,11 +169,13 @@ def adaptive_sampling(
         importance = np.ones_like(importance)
         importance[~valid] = 0.0
 
+    # Build xy grid for the raster
     height, width = elevation.shape
     x = np.linspace(transform[2], transform[2] + transform[0] * width, width)
     y = np.linspace(transform[5], transform[5] + transform[4] * height, height)
     x_grid, y_grid = np.meshgrid(x, y)
 
+    # Build importance mask. If too few points remain, keep the top-N by importance instead.
     mask = (importance > importance_threshold) & valid
 
     if int(np.sum(mask)) < min_points:
@@ -448,12 +453,7 @@ def _point_on_crop_frame(
 ) -> bool:
     """True when ``(x, y)`` lies on the umring rectangle (clip artefact)."""
     min_x, min_y, max_x, max_y = bbox_utm
-    return (
-        abs(x - min_x) <= eps
-        or abs(x - max_x) <= eps
-        or abs(y - min_y) <= eps
-        or abs(y - max_y) <= eps
-    )
+    return abs(x - min_x) <= eps or abs(x - max_x) <= eps or abs(y - min_y) <= eps or abs(y - max_y) <= eps
 
 
 def filter_bruchkante_segments(
@@ -496,6 +496,30 @@ def filter_bruchkante_segments(
                 continue
         kept.append([key[0], key[1]])
     return kept, n_duplicate, n_frame
+
+
+def filter_duplicate_segments(segments: Sequence[Sequence[int]]) -> Tuple[List[List[int]], int, int]:
+    """Deduplicate ring segments while preserving clipped crop-frame boundaries.
+
+    Segments are treated as undirected, so ``[a, b]`` and ``[b, a]`` count as one.
+
+    Returns ``(kept, n_duplicate)``.
+    """
+
+    seen: set[Tuple[int, int]] = set()
+    kept: List[List[int]] = []
+    n_duplicate = 0
+    for raw in segments:
+        a, b = int(raw[0]), int(raw[1])
+        if a == b:
+            continue
+        key = (a, b) if a < b else (b, a)
+        if key in seen:
+            n_duplicate += 1
+            continue
+        seen.add(key)
+        kept.append([key[0], key[1]])
+    return kept, n_duplicate
 
 
 def _point_in_any_triangle(
@@ -606,17 +630,17 @@ def generate_constrained_mesh(
 
     Terrain points and breakline vertices are snapped in XY, then Shewchuk
     Triangle honours consecutive ring edges whose both endpoints have a
-    valid DGM height (``p`` PSLG, not conforming ``pc``). Duplicate and
-    crop-frame segments are dropped so Triangle stays fast; holes are
-    then filled from unconstrained Delaunay. Requires the ``triangle``
-    package.
+    valid DGM height (``p`` PSLG, not conforming ``pc``). Missing ring Z values
+    are repaired cyclically along the ring, duplicate segments are removed,
+    but clipped crop-frame ring segments remain constraints. Holes in the mesh are
+    then filled from unconstrained Delaunay.
+    Requires the ``triangle`` package.
     """
     try:
         import triangle as tr
     except ImportError as exc:
         raise ImportError(
-            "Hard Bruchkanten need the 'triangle' package (Shewchuk Triangle). "
-            "Install it with: pip install triangle"
+            "Hard Bruchkanten need the 'triangle' package (Shewchuk Triangle). " "Install it with: pip install triangle"
         ) from exc
 
     index_of: dict[Tuple[float, float], int] = {}
@@ -640,9 +664,29 @@ def generate_constrained_mesh(
         _add(px, py, pz)
 
     segments: List[List[int]] = []
+    repaired_ring_vertices = 0
     for ring_xy, ring_z in zip(rings_xy, rings_z):
-        if len(ring_xy) < 2:
+        if len(ring_xy) < 3:
             continue
+        ring_z_original = np.asarray(ring_z, dtype=float)
+        ring_z = _fill_missing_ring_z_cyclic(np.asarray(ring_xy, dtype=float), ring_z_original)
+        original_missing = int(np.isnan(ring_z_original).sum())
+        remaining_missing = int(np.isnan(ring_z).sum())
+        repaired_count = original_missing - remaining_missing
+        if repaired_count:
+            repaired_ring_vertices += repaired_count
+            logger.info(
+                "Repaired %d missing Z value(s) cyclically on ring with %d vertices",
+                repaired_count,
+                len(ring_xy),
+            )
+        if remaining_missing > 0:
+            logger.warning(
+                "Ring with %d vertices remains without Z at %d vertices; its missing edges stay open",
+                len(ring_xy),
+                remaining_missing,
+            )
+
         idxs: List[Optional[int]] = []
         for (px, py), pz in zip(ring_xy, ring_z):
             if np.isnan(pz):
@@ -650,24 +694,29 @@ def generate_constrained_mesh(
             else:
                 idxs.append(_add(px, py, pz))
         n = len(idxs)
+        ring_expected = n
+        ring_added = 0
         for i in range(n):
             a, b = idxs[i], idxs[(i + 1) % n]
             if a is not None and b is not None and a != b:
                 segments.append([a, b])
+                ring_added += 1
+        logger.info(
+            "Ring closure: %d/%d edge(s) added (%d missing-Z edge(s))",
+            ring_added,
+            ring_expected,
+            ring_expected - ring_added,
+        )
 
     if len(points_xy) < 3:
         logger.error("Not enough points for constrained triangulation")
         return [], []
 
-    frame_eps = 10.0 ** (-snap_decimals)
-    segments, n_duplicate, n_frame = filter_bruchkante_segments(
-        points_xy, segments, bbox_utm=bbox_utm, eps=frame_eps
-    )
-    if n_duplicate or n_frame:
+    segments, n_duplicate = filter_duplicate_segments(segments)
+    if n_duplicate:
         logger.info(
-            "Dropped %d duplicate and %d crop-frame Bruchkante segment(s); %d kept",
+            "Dropped %d duplicate segment(s); %d kept",
             n_duplicate,
-            n_frame,
             len(segments),
         )
 
@@ -970,9 +1019,7 @@ def _triangulate_polygon_xy(xy: np.ndarray) -> Tuple[np.ndarray, List[List[int]]
         return np.asarray(xy, dtype=float), []
     pts = np.asarray(xy, dtype=float)
     n = len(pts)
-    segments = np.column_stack(
-        (np.arange(n, dtype=np.int32), np.roll(np.arange(n, dtype=np.int32), -1))
-    )
+    segments = np.column_stack((np.arange(n, dtype=np.int32), np.roll(np.arange(n, dtype=np.int32), -1)))
     try:
         import triangle as tr
 
@@ -1501,6 +1548,7 @@ def extract_mesh_adaptive(
                 if guide_rings:
                     bounds = src.bounds
                     sampled_n = 0
+                    invalid_n = 0
                     for ring, ring_z in zip(guide_rings, guide_rings_z):
                         ring_xy = ring.xy
                         todo = np.isnan(ring_z)
@@ -1516,8 +1564,9 @@ def extract_mesh_adaptive(
                         sampled_z = sample_elevations_from_raster(src, ring_xy[in_raster, 0], ring_xy[in_raster, 1])
                         ring_z[in_raster] = sampled_z
                         sampled_n += int(np.sum(in_raster))
+                        invalid_n += int(np.sum(np.isnan(ring_z[in_raster])))
                     if sampled_n:
-                        logger.info("Sampled %d Bruchkante elevations from GeoTIFF", sampled_n)
+                        logger.info("Sampled %d Bruchkante elevations from GeoTIFF, %d invalid", sampled_n, invalid_n)
 
         except Exception as e:
             logger.error(f"Error processing {path}: {e}")
@@ -1539,11 +1588,10 @@ def extract_mesh_adaptive(
     if guide_rings:
         water_rings = [r for r in guide_rings if r.nutzart in WATER_EMPTY_INTERIOR]
         if water_rings:
-            x_coords, y_coords, z_values = drop_points_inside_rings(
-                x_coords, y_coords, z_values, water_rings
-            )
+            x_coords, y_coords, z_values = drop_points_inside_rings(x_coords, y_coords, z_values, water_rings)
         flatten_planar_water_z(guide_rings, guide_rings_z)
-        smooth_flowing_water_z(guide_rings, guide_rings_z)
+        # Currently not used, Fließgewässer are already smoothed in flatten_planar_water_z:
+        # smooth_flowing_water_z(guide_rings, guide_rings_z)
         if water_meshes is not None:
             shift = (bbox_utm[0], bbox_utm[1]) if (move_to_origin and bbox_utm is not None) else None
             water_meshes.update(build_water_polygon_meshes(guide_rings, guide_rings_z, origin_shift=shift))
@@ -1598,6 +1646,92 @@ def extract_mesh_adaptive(
     return TerrainMesh(vertices=arr.tolist(), faces=faces, nullpunkt=nullpunkt)
 
 
+def _fill_missing_ring_z_cyclic(xy: np.ndarray, z: np.ndarray) -> np.ndarray:
+    """Fill missing ring elevations by cyclic linear interpolation along the ring.
+
+    Missing values are interpolated between the two nearest valid vertices,
+    measured along the ring perimeter instead of by vertex index. Repeating
+    valid positions one perimeter before and after the ring lets an edge gap
+    cross the closing vertex (index 0) naturally.
+
+    If no elevation is valid, the ring remains unchanged. If exactly one
+    elevation is valid, it is reused for every vertex.
+    """
+    xy = np.asarray(xy, dtype=float)
+    z_out = np.asarray(z, dtype=float).copy()
+    ring_size = len(z_out)
+    if ring_size == 0:
+        return z_out
+
+    valid_mask = np.isfinite(z_out)
+    valid_count = int(valid_mask.sum())
+    if np.all(valid_mask):
+        return z_out
+    if valid_count == 0:
+        return z_out
+    if valid_count == 1:
+        z_out[:] = float(z_out[valid_mask][0])
+        return z_out
+
+    if len(xy) != ring_size:
+        return z_out
+
+    # Measure cumulative perimeter distance for each ring vertex, including
+    # the implicit closing edge back to vertex zero.
+    dx = np.diff(xy[:, 0], append=xy[0, 0])
+    dy = np.diff(xy[:, 1], append=xy[0, 1])
+    edge_lengths = np.hypot(dx, dy)
+    perimeter = float(edge_lengths.sum())
+    if perimeter <= 0.0:
+        # All vertices are coincident; use the mean of valid Z values.
+        z_out[~valid_mask] = float(np.mean(z_out[valid_mask]))
+        return z_out
+
+    cumulative_distance = np.empty(ring_size, dtype=float)
+    cumulative_distance[0] = 0.0
+    if ring_size > 1:
+        cumulative_distance[1:] = np.cumsum(edge_lengths[:-1])
+
+    # Three copies make the valid vertices appear before, within, and after
+    # the ring's perimeter. This represents the ring as a continuous loop.
+    valid_positions = np.concatenate(
+        [
+            cumulative_distance[valid_mask] - perimeter,
+            cumulative_distance[valid_mask],
+            cumulative_distance[valid_mask] + perimeter,
+        ]
+    )
+    valid_values = np.concatenate([z_out[valid_mask], z_out[valid_mask], z_out[valid_mask]])
+    cyclic_order = np.argsort(valid_positions)
+    valid_positions = valid_positions[cyclic_order]
+    valid_values = valid_values[cyclic_order]
+
+    # Interpolate each missing vertex by its two nearest valid neighbors along the ring.
+    for missing_index in np.flatnonzero(~valid_mask):
+        missing_distance = cumulative_distance[missing_index]
+
+        # Bracket the missing vertex by the nearest valid vertex on each side
+        # of the ring. The cyclic copies ensure these neighbors wrap correctly.
+        next_valid_index = int(np.searchsorted(valid_positions, missing_distance, side="left"))
+        previous_valid_index = next_valid_index - 1
+        if next_valid_index >= len(valid_positions):
+            next_valid_index = len(valid_positions) - 1
+            previous_valid_index = next_valid_index - 1
+
+        previous_distance = valid_positions[previous_valid_index]
+        next_distance = valid_positions[next_valid_index]
+        if next_distance == previous_distance:
+            z_out[missing_index] = float(valid_values[previous_valid_index])
+            continue
+
+        interpolation_weight = (missing_distance - previous_distance) / (next_distance - previous_distance)
+        previous_z = valid_values[previous_valid_index]
+        next_z = valid_values[next_valid_index]
+        z_out[missing_index] = float(previous_z + interpolation_weight * (next_z - previous_z))
+
+    return z_out
+
+
 __all__ = [
     "DEFAULT_GUIDE_EDGE_SPACING_M",
     "GuideRing",
@@ -1621,7 +1755,7 @@ __all__ = [
     "analyze_terrain_features",
     "collect_guide_rings",
     "collect_guide_xy",
-    "filter_bruchkante_segments",
+    "filter_duplicate_segments",
     "generate_constrained_mesh",
     "split_mesh_by_nutzart",
     "subtract_rings_from_mesh",
@@ -1632,4 +1766,5 @@ __all__ = [
     "generate_delaunay_mesh",
     "is_url",
     "sample_elevations_from_raster",
+    "_fill_missing_ring_z_cyclic",
 ]

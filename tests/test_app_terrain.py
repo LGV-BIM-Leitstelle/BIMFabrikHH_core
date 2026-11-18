@@ -6,13 +6,12 @@ Delaunay mesh generator, and the record-builder guard for empty input.
 """
 
 from pathlib import Path
-
-import numpy as np
-import pytest
+from xml.etree import ElementTree as ET
 
 import ifcopenshell
-
-from xml.etree import ElementTree as ET
+import numpy as np
+import pytest
+from scipy.spatial import Delaunay
 
 from BIMFabrikHH_core.apps.terrain import (
     GuideRing,
@@ -21,7 +20,7 @@ from BIMFabrikHH_core.apps.terrain import (
     TerrainMesh,
     collect_guide_rings,
     cut_water_from_parts,
-    filter_bruchkante_segments,
+    filter_duplicate_segments,
     generate_constrained_mesh,
     generate_delaunay_mesh,
     merge_parcel_meshes,
@@ -36,6 +35,8 @@ from BIMFabrikHH_core.apps.terrain.processing import (
     smooth_flowing_water_z,
     snap_vertices_to_planar_water_z,
 )
+from BIMFabrikHH_core.data_models import RequestParams
+from BIMFabrikHH_core.data_models.params_bbox import BoundingBoxParams
 from BIMFabrikHH_core.data_models.streets import (
     ALKIS_NUTZUNG_WEITERE_GEOJSON,
     DEFAULT_NUTZARTEN,
@@ -45,8 +46,6 @@ from BIMFabrikHH_core.data_models.streets import (
     pset_for_parcel_group,
     write_nutzung_geojson,
 )
-from BIMFabrikHH_core.data_models import RequestParams
-from BIMFabrikHH_core.data_models.params_bbox import BoundingBoxParams
 
 # ---------------------------------------------------------------------------
 # TerrainMesh
@@ -134,10 +133,9 @@ def test_generate_delaunay_mesh_returns_expected_shapes() -> None:
             assert 0 <= idx < len(vertices)
 
 
-def test_filter_bruchkante_segments_dedupes_and_drops_crop_frame() -> None:
-    """Undirected dups and umring-rectangle edges are not sent to Triangle."""
-    points = [[0.0, 0.0], [10.0, 0.0], [10.0, 10.0], [5.0, 5.0]]
-    bbox = (0.0, 0.0, 10.0, 10.0)
+def test_filter_duplicate_segments_dedupes_but_keeps_crop_frame() -> None:
+    """Clipped ring boundaries on the crop frame remain PSLG constraints."""
+
     segments = [
         [0, 1],
         [1, 0],
@@ -145,12 +143,9 @@ def test_filter_bruchkante_segments_dedupes_and_drops_crop_frame() -> None:
         [3, 1],
         [1, 2],
     ]
-    kept, n_duplicate, n_frame = filter_bruchkante_segments(
-        points, segments, bbox_utm=bbox, eps=1e-3
-    )
+    kept, n_duplicate = filter_duplicate_segments(segments)
     assert n_duplicate == 2
-    assert n_frame == 2
-    assert kept == [[1, 3]]
+    assert kept == [[0, 1], [1, 3], [1, 2]]
 
 
 def test_fill_mesh_holes_adds_missing_triangle() -> None:
@@ -172,6 +167,29 @@ def test_fill_mesh_holes_adds_missing_triangle() -> None:
     assert any(tuple(sorted(face)) == (0, 1, 2) for face in out_f)
 
 
+def test_split_mesh_by_nutzart_keeps_border_face_when_centroid_is_inside_ring() -> None:
+    """A triangle with a centroid inside a ring should remain assigned even if one corner sits near the border."""
+    mesh = TerrainMesh(
+        vertices=[
+            [0.0, 0.0, 0.0],
+            [2.0, 0.0, 0.0],
+            [1.0, 1.5, 0.0],
+            [3.0, 0.0, 0.0],
+            [4.0, 0.0, 0.0],
+            [3.5, 1.5, 0.0],
+        ],
+        faces=[[0, 1, 2], [1, 3, 2], [3, 4, 5], [1, 3, 5]],
+    )
+    ring = GuideRing(
+        xy=np.array([[0.0, 0.0], [2.0, 0.0], [2.0, 2.0], [0.0, 2.0]]),
+        nutzart="Wohnbauflaeche",
+        label="Wohnbauflaeche",
+    )
+    parts = split_mesh_by_nutzart(mesh, [ring])
+    assert "Wohnbauflaeche" in parts
+    assert len(parts["Wohnbauflaeche"].faces) >= 1
+
+
 def test_generate_constrained_mesh_uses_pslg_not_conforming(monkeypatch: pytest.MonkeyPatch) -> None:
     """Typ 2 must call Triangle with ``p`` (PSLG), not conforming ``pc``."""
     flags: list[str] = []
@@ -181,8 +199,8 @@ def test_generate_constrained_mesh_uses_pslg_not_conforming(monkeypatch: pytest.
         verts = np.asarray(data["vertices"], dtype=float)
         return {"vertices": verts, "triangles": np.array([[0, 1, 2]], dtype=int)}
 
-    import types
     import sys
+    import types
 
     fake_mod = types.ModuleType("triangle")
     fake_mod.triangulate = fake_triangulate
@@ -236,7 +254,14 @@ def test_collect_guide_rings_drops_rings_outside_bbox() -> None:
 
 def test_split_mesh_by_nutzart_keeps_unknown_types() -> None:
     mesh = TerrainMesh(
-        vertices=[[0.0, 0.0, 0.0], [2.0, 0.0, 0.0], [1.0, 2.0, 0.0], [10.0, 10.0, 0.0], [12.0, 10.0, 0.0], [11.0, 12.0, 0.0]],
+        vertices=[
+            [0.0, 0.0, 0.0],
+            [2.0, 0.0, 0.0],
+            [1.0, 2.0, 0.0],
+            [10.0, 10.0, 0.0],
+            [12.0, 10.0, 0.0],
+            [11.0, 12.0, 0.0],
+        ],
         faces=[[0, 1, 2], [3, 4, 5]],
     )
     park = GuideRing(
@@ -652,3 +677,18 @@ def test_build_ifc_places_nullpunkt_from_request_bbox(tmp_path: Path) -> None:
     ifc = ifcopenshell.open(str(result))
     names = [e.Name for e in ifc.by_type("IfcBuildingElementProxy")]
     assert "Nullpunktobjekt" in names
+
+
+def test_fill_missing_ring_z_cyclic() -> None:
+    """Isolated ring elevations are repaired cyclically along the polygon."""
+    from BIMFabrikHH_core.apps.terrain.processing import _fill_missing_ring_z_cyclic
+
+    xy = np.array([[0.0, 0.0], [1.0, 0.0], [1.0, 1.0], [0.0, 1.0]])
+    z = np.array([1.0, np.nan, np.nan, 3.0])
+    filled = _fill_missing_ring_z_cyclic(xy, z)
+
+    assert np.all(np.isfinite(filled))
+    assert filled[0] == 1.0
+    assert filled[3] == 3.0
+    assert filled[1] == pytest.approx(5.0 / 3.0)
+    assert filled[2] == pytest.approx(7.0 / 3.0)
