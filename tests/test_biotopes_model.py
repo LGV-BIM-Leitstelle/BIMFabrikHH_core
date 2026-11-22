@@ -385,6 +385,12 @@ def test_map_biotope_description_unknown_code():
 
 
 @pytest.mark.unit
+@pytest.mark.parametrize(("code", "expected"), [(" NRT ", "Schilf-Röhricht"), (None, "")])
+def test_map_hh_biotope_description_trims_code(code, expected):
+    assert map_biotope_type_hh_descriptions(code, {"NRT": "Schilf-Röhricht"}) == expected
+
+
+@pytest.mark.unit
 def test_map_bkompv_code():
     assert (
         map_biotope_type_bkompv_codes(

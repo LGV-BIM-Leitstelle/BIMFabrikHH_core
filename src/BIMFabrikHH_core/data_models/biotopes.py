@@ -25,7 +25,6 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-from BIMFabrikHH_core.apps.boreholes.helper import _clean
 from BIMFabrikHH_core.core.ogc_extractor import (
     MultiPolygon,
     ensure_feature_collection,
@@ -280,7 +279,7 @@ def map_biotope_type_hh_descriptions(biotope_code: str, biotope_mapping: Optiona
     Returns:
         Biotope description string.
     """
-    text = _clean(biotope_code)
+    text = (biotope_code or "").strip()
     mapping = biotope_mapping if biotope_mapping is not None else load_biotope_hh_descriptions_mapping()
 
     return mapping.get(text, "")
@@ -296,7 +295,7 @@ def map_biotope_type_bkompv_descriptions(biotope_code: str, biotope_mapping: Opt
     Returns:
         Biotope description string.
     """
-    text = _clean(biotope_code)
+    text = (biotope_code or "").strip()
     mapping = biotope_mapping if biotope_mapping is not None else load_biotope_bkompv_descriptions_mapping()
 
     return mapping.get(text, "")
@@ -312,7 +311,7 @@ def map_biotope_type_bkompv_codes(biotope_code: str, biotope_mapping: Optional[D
     Returns:
         Biotope code used in the BKompV.
     """
-    text = _clean(biotope_code)
+    text = (biotope_code or "").strip()
     mapping = biotope_mapping if biotope_mapping is not None else load_biotope_hh_to_bkompv_mapping()
 
     return mapping.get(text, "")

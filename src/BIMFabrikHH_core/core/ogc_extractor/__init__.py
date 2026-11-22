@@ -45,6 +45,7 @@ __all__ = [
     "strip_closing_duplicate_xy",
     "transform_ring_xy",
     "transform_line_xy",
+    "Ring",
     "PolygonRings",
     "MultiPolygon",
     "feature_geometry_type",
