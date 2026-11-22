@@ -355,7 +355,7 @@ def _record_with_psets_from_payload(payload: Dict[str, Any], biotope_name_mappin
     hauptbiotoptyp_land_code = record.hauptbiotoptyp
     hauptbiotoptyp_land_name = map_biotope_type_hh_descriptions(hauptbiotoptyp_land_code, biotope_name_mapping)
     nebenbiotoptyp_land_codes: List[str] = [
-        nebenbiotoptyp.strip() for nebenbiotoptyp in record.nebenbiotoptypen.split(",")
+        nebenbiotoptyp.strip() for nebenbiotoptyp in record.nebenbiotoptypen.split(",") if nebenbiotoptyp.strip()
     ]
     nebenbiotoptyp_land_names: List[str] = [
         map_biotope_type_hh_descriptions(nebenbiotoptyp_code, biotope_name_mapping)

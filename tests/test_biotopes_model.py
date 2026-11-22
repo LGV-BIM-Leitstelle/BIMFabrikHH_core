@@ -9,6 +9,7 @@ from BIMFabrikHH_core.data_models.biotopes import (
     _record_with_psets_from_payload,
     build_biotope_hyperlink,
     collect_biotope_psets,
+    load_biotope_hh_descriptions_mapping,
     map_biotope_type_bkompv_codes,
     map_biotope_type_hh_descriptions,
 )
@@ -249,6 +250,31 @@ def test_combine_biotopes_without_secondary_types():
 @pytest.mark.unit
 def test_combine_biotopes_without_primary_type():
     assert _combine_haupt_and_neben_biotopes("", ["NRT"]) == ""
+
+
+@pytest.mark.unit
+@pytest.mark.parametrize(
+    ("nebenbiotoptypen", "expected_code", "expected_name"),
+    [
+        ("", "NRT", "Schilf-Röhricht der Tide-Elbe"),
+        ("SEN, ", "NRT (SEN)", "Schilf-Röhricht der Tide-Elbe (Natürliches, nährstoffreiches Stillgewässer)"),
+    ],
+)
+def test_empty_nebenbiotoptyp_codes_are_dropped(
+    biotope_record: BiotopeRecord, nebenbiotoptypen, expected_code, expected_name
+):
+    payload = {**biotope_record.model_dump(exclude={"psets"}), "nebenbiotoptypen": nebenbiotoptypen}
+    pset = _record_with_psets_from_payload(payload, load_biotope_hh_descriptions_mapping()).psets[
+        Pset_Objektinformation_Biotop.pset_name
+    ]
+
+    assert pset.biotoptyp_land_code == expected_code
+    assert pset.biotoptyp_land_name == expected_name
+
+
+@pytest.mark.unit
+def test_hh_descriptions_have_no_empty_code():
+    assert "" not in load_biotope_hh_descriptions_mapping()
 
 
 @pytest.mark.unit
