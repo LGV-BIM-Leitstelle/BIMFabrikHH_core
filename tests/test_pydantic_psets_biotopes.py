@@ -38,7 +38,7 @@ def test_lebensraum_pset_aliases():
     assert pset.kartierung_jahr == "2023"
     assert pset.erhebungsmethode == "Drohne"
     assert pset.bemerkung == "test"
-    assert pset.ist_ffh_lebensraum == True
+    assert pset.ist_ffh_lebensraum is True
 
 
 def test_biotop_pset_required_fields():

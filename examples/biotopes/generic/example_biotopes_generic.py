@@ -40,7 +40,6 @@ OUTPUT_EPSGS = (25832, 10285)
 
 
 EXAMPLES = [
-    ("response_OGC_ffh_lebensraum_typen.json", None, (9.9276, 53.5788, 9.9460, 53.6162)),
     ("response_OGC_flaechenhafte_biotope_nicht_geschuetzt.json", False, (9.9309, 53.5609, 9.9460, 53.6162)),
     ("response_OGC_flaechenhafte_biotope_geschuetzt.json", True, (9.8775, 53.6050, 9.9273, 53.6237)),
     ("response_OGC_linienhafte_biotope_nicht_geschuetzt.json", False, (9.7809, 53.4938, 9.8861, 53.6055)),
