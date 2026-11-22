@@ -1,0 +1,183 @@
+"""``Pset_Objektinformation`` templates for Biotopkataster biotope IFC elements.
+
+The classes Pset_Objektinformation_Lebensraum and Pset_Objektinformation_Biotop mirror the Merkmalsgruppen
+*Klasse Lebensraum* and *Domäne Biotop* from the (work in progress) Objektkatalog Umwelt und Landschaftsbau V001*.
+"""
+
+from __future__ import annotations
+
+from typing import ClassVar, Optional
+
+from ifcfactory import PropertySetTemplate
+from pydantic import AliasChoices, Field
+
+UNDEFINED = "undefiniert"
+
+
+class Pset_Objektinformation_Lebensraum(PropertySetTemplate):
+    """Property set for one Lebensraum."""
+
+    pset_name: ClassVar[str] = "Pset_Objektinformation"
+    idebene1: str = Field(
+        validation_alias=AliasChoices("idebene1", "_IDEbene1"),
+        serialization_alias="_IDEbene1",
+        default="Lebensraum",
+    )
+    log: int = Field(
+        validation_alias=AliasChoices("log", "_LoG"),
+        serialization_alias="_LoG",
+        default=100,
+    )
+    loi: int = Field(
+        validation_alias=AliasChoices("loi", "_LoI"),
+        serialization_alias="_LoI",
+        default=300,
+    )
+    kartierung_jahr: str = Field(
+        validation_alias=AliasChoices("kartierung_jahr", "_KartierungJahr"),
+        serialization_alias="_KartierungJahr",
+        default=UNDEFINED,
+    )
+    kartierer: str = Field(
+        validation_alias=AliasChoices("kartierer", "_Kartierer"),
+        serialization_alias="_Kartierer",
+        default=UNDEFINED,
+    )
+    erhebungsmethode: str = Field(
+        validation_alias=AliasChoices("erhebungsmethode", "_Erhebungsmethode"),
+        serialization_alias="_Erhebungsmethode",
+        default=UNDEFINED,
+    )
+    bemerkung: str = Field(
+        validation_alias=AliasChoices("bemerkung", "_Bemerkung"),
+        serialization_alias="_Bemerkung",
+        default=UNDEFINED,
+    )
+    ist_ffh_lebensraum: bool = Field(
+        validation_alias=AliasChoices("is_ffh_lebensraum", "ist_ffh_lebensraum", "_IstFFHLebensraum"),
+        serialization_alias="_IstFFHLebensraum",
+        default=False,
+    )
+
+    # if _IstPrioritaererLebensraumtyp is True:
+
+    ffh_lebensraum_eu_code: Optional[str] = Field(
+        validation_alias=AliasChoices("ffh_lebensraum_eu_code", "_FFHLebensraumEUCode"),
+        serialization_alias="_FFHLebensraumEUCode",
+        default=None,
+    )
+    ffh_lebensraum_typ: Optional[str] = Field(
+        validation_alias=AliasChoices("ffh_lebensraum_typ", "_FFHLebensraumTyp"),
+        serialization_alias="_FFHLebensraumTyp",
+        default=None,
+    )
+    vollstaendigkeit_arteninventar: Optional[str] = Field(
+        validation_alias=AliasChoices("vollstaendigkeit_arteninventar", "_VollstaendigkeitArteninventar"),
+        serialization_alias="_VollstaendigkeitArteninventar",
+        default=None,
+    )
+    vollstaendigkeit_habitatstruktur: Optional[str] = Field(
+        validation_alias=AliasChoices("vollstaendigkeit_habitatstruktur", "_VollstaendigkeitHabitatstruktur"),
+        serialization_alias="_VollstaendigkeitHabitatstruktur",
+        default=None,
+    )
+    bewertung_beeintraechtigungen: Optional[str] = Field(
+        validation_alias=AliasChoices("bewertung_beeintraechtigungen", "_BewertungBeeintraechtigungen"),
+        serialization_alias="_BewertungBeeintraechtigungen",
+        default=None,
+    )
+    erhaltungszustand: Optional[str] = Field(
+        validation_alias=AliasChoices("erhaltungszustand", "_Erhaltungszustand"),
+        serialization_alias="_Erhaltungszustand",
+        default=None,
+    )
+    ist_prioritaerer_lebensraumtyp: Optional[str] = Field(
+        validation_alias=AliasChoices("ist_prioritaerer_lebensraumtyp", "_IstPrioritaererLebensraumtyp"),
+        serialization_alias="_IstPrioritaererLebensraumtyp",
+        default=None,
+    )
+
+
+class Pset_Objektinformation_Biotop(Pset_Objektinformation_Lebensraum):
+    """Property set for one Biotopkataster biotope."""
+
+    idebene2: str = Field(
+        validation_alias=AliasChoices("idebene2", "_IDEbene2"),
+        serialization_alias="_IDEbene2",
+        default="Biotop",
+    )
+    idebene3: str = Field(
+        validation_alias=AliasChoices("idebene3", "_IDEbene3"),
+        serialization_alias="_IDEbene3",
+        default="Biotop",
+    )
+
+    biotop_nr: int = Field(
+        validation_alias=AliasChoices("biotop_nr", "biotopnummer", "_Biotopnummer", "_BiotopNummer"),
+        serialization_alias="_Biotopnummer",
+    )
+    abschnitt_nr: int = Field(
+        validation_alias=AliasChoices("abschnitt_nr", "biotopabschnittnummer", "_BiotopAbschnittnummer"),
+        serialization_alias="_BiotopAbschnittnummer",
+        default=1,
+    )
+    biotoptyp_bkompv_code: str = Field(
+        validation_alias=AliasChoices("biotoptyp_bkompv_code", "_BiotoptypBKompVCode"),
+        serialization_alias="_BiotoptypBKompVCode",
+        default=UNDEFINED,
+    )
+    biotoptyp_bkompv_name: str = Field(
+        validation_alias=AliasChoices("biotoptyp_bkompv_name", "_BiotoptypBKompVName"),
+        serialization_alias="_BiotoptypBKompVName",
+        default=UNDEFINED,
+    )
+    biotoptyp_land_code: str = Field(
+        validation_alias=AliasChoices("biotoptyp_land_code", "_BiotoptypLandCode"),
+        serialization_alias="_BiotoptypLandCode",
+        default=UNDEFINED,
+    )
+    biotoptyp_land_name: str = Field(
+        validation_alias=AliasChoices("biotoptyp_land_name", "_BiotoptypLandName"),
+        serialization_alias="_BiotoptypLandName",
+        default=UNDEFINED,
+    )
+    biotop_gesamtwert: str = Field(
+        validation_alias=AliasChoices("biotop_gesamtwert", "_Biotopgesamtwert"),
+        serialization_alias="_Biotopgesamtwert",
+        default=UNDEFINED,
+    )
+    biotop_gesamtwert_liste: str = Field(
+        validation_alias=AliasChoices("biotop_gesamtwert_liste", "_BiotopgesamtwertListe"),
+        serialization_alias="_BiotopgesamtwertListe",
+        default=UNDEFINED,
+    )
+    biotop_gesamtwert_bedeutung: str = Field(
+        validation_alias=AliasChoices("biotop_gesamtwert_bedeutung", "_BiotopgesamtwertBedeutung"),
+        serialization_alias="_BiotopgesamtwertBedeutung",
+        default=UNDEFINED,
+    )
+    gefaehrdung_status: str = Field(
+        validation_alias=AliasChoices("gefaehrdung_status", "gefaerdung_status", "_GefaehrdungStatus"),
+        serialization_alias="_GefaehrdungStatus",
+        default=UNDEFINED,
+    )
+    ist_gesetzl_gesch_biotop: bool = Field(
+        validation_alias=AliasChoices("ist_gesetzl_gesch_biotop", "_IstGesetzlgeschBiotop"),
+        serialization_alias="_IstGesetzlgeschBiotop",
+    )
+    ist_gesetzl_gesch_biotop_landesrecht: str = Field(
+        validation_alias=AliasChoices("ist_gesetzl_gesch_biotop_landesrecht", "_IstGesetzlgeschBiotopLandesrecht"),
+        serialization_alias="_IstGesetzlgeschBiotopLandesrecht",
+        default=UNDEFINED,
+    )
+    # A plain number in hectares: a pint quantity would be written in m² (SI) under this ``_ha`` name.
+    biotop_groesse_ha: Optional[float] = Field(
+        validation_alias=AliasChoices("biotop_groesse_ha", "_BiotopGroesse_ha"),
+        serialization_alias="_BiotopGroesse_ha",
+        default=None,
+    )
+
+
+__all__ = [
+    "Pset_Objektinformation_Biotop",
+]

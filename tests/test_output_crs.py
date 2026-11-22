@@ -14,6 +14,7 @@ import pytest
 from ifcopenshell.util.placement import get_local_placement
 from pyproj import Transformer
 
+from BIMFabrikHH_core.apps.biotopes.generic.app import BiotopesGenericApp
 from BIMFabrikHH_core.apps.boreholes.generic.app import BoreholesGenericApp
 from BIMFabrikHH_core.apps.city.processing import citygml_crs, with_tile_crs
 from BIMFabrikHH_core.apps.flurstuecke.generic.app import FlurstueckeGenericApp
@@ -27,6 +28,7 @@ from BIMFabrikHH_core.core.georeferencing import CoordinateTransformer, warn_if_
 from BIMFabrikHH_core.core.model_creator import georeference_options
 from BIMFabrikHH_core.core.ogc_extractor import PolygonRings
 from BIMFabrikHH_core.data_models import TreeRecord, check_projected_epsg, check_source_epsg, check_vertical_epsg
+from BIMFabrikHH_core.data_models.biotopes import BiotopeRecord, BiotopeShape
 from BIMFabrikHH_core.data_models.boreholes import BoreholeLayer, BoreholeRecord
 from BIMFabrikHH_core.data_models.flurstuecke import FlurstueckRecord
 from BIMFabrikHH_core.data_models.params_tree import BoundingBoxParams, RequestParams
@@ -444,7 +446,7 @@ def test_trees_rust_without_source_writes_no_georeferencing(tmp_path: Path) -> N
 
 
 # ---------------------------------------------------------------------------
-# Flurstücke / Wasserschutzgebiete / streets / terrain rings
+# Flurstücke / Wasserschutzgebiete / biotopes / streets / terrain rings
 # ---------------------------------------------------------------------------
 
 
@@ -507,6 +509,49 @@ def test_wasserschutzgebiete_writes_output_epsg(tmp_path: Path) -> None:
     )
     assert _crs_name(path) == "EPSG:10285"
     assert _nearest(path, _to_gk(*POINT_25832)) < 0.01
+
+
+def _biotope(shape: BiotopeShape) -> BiotopeRecord:
+    x, y = POINT_25832
+    geometry = {
+        BiotopeShape.AREA: {"polygons": [PolygonRings(exterior=_square(x, y), holes=[])]},
+        BiotopeShape.LINES: {"lines": [[(x, y), (x + 20.0, y)]]},
+        BiotopeShape.POINT: {"point": (x, y)},
+    }[shape]
+    return BiotopeRecord(
+        feature_id=1, shape_type=shape, objectid=1, id_biotop=1001, dk5=1, biotop_nr=1, is_protected=False, **geometry
+    )
+
+
+# Nearest IFC vertex to POINT_25832 + offset: the area corner, the 2 m default line width
+# (1 m to each side) and the corner of the 5 m point box centred on the point.
+_BIOTOPE_SHAPES = pytest.mark.parametrize(
+    ("shape", "offset", "distance"),
+    [
+        (BiotopeShape.AREA, (0.0, 0.0), 0.0),
+        (BiotopeShape.LINES, (0.0, 0.0), 1.0),
+        (BiotopeShape.POINT, (-2.5, -2.5), 0.0),
+    ],
+)
+
+
+@_BIOTOPE_SHAPES
+def test_biotopes_without_epsg_has_no_crs(shape, offset, distance, tmp_path: Path) -> None:
+    path = BiotopesGenericApp.build_ifc([_biotope(shape)], request_params=_request(), output_path=tmp_path / "b.ifc")
+    x, y = POINT_25832
+    assert not _has_georeferencing(path)
+    assert not _has_basepoint(path)
+    assert _nearest(path, (x + offset[0], y + offset[1])) == pytest.approx(distance, abs=0.01)
+
+
+@_BIOTOPE_SHAPES
+def test_biotopes_transforms_source_to_output(shape, offset, distance, tmp_path: Path) -> None:
+    path = BiotopesGenericApp.build_ifc(
+        [_biotope(shape)], request_params=_request(source_epsg=25832, output_epsg=GK), output_path=tmp_path / "b.ifc"
+    )
+    x, y = _to_gk(*POINT_25832)
+    assert _crs_name(path) == "EPSG:10285"
+    assert _nearest(path, (x + offset[0], y + offset[1])) == pytest.approx(distance, abs=0.01)
 
 
 def _street(rings) -> StreetRecord:
@@ -598,6 +643,7 @@ def test_boreholes_transforms_source_to_output(tmp_path: Path) -> None:
 @pytest.mark.parametrize(
     ("app", "make_record"),
     [
+        (BiotopesGenericApp, lambda: _biotope(BiotopeShape.POINT)),
         (BoreholesGenericApp, lambda: _borehole()),
         (FlurstueckeGenericApp, lambda: _flurstueck()),
         (

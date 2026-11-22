@@ -1,5 +1,6 @@
 import pytest
 
+from BIMFabrikHH_core.core import ogc_extractor
 from BIMFabrikHH_core.core.ogc_extractor import (
     ensure_feature_collection,
     feature_identifier,
@@ -113,6 +114,12 @@ def test_feature_collection_rejects_wrong_root_type():
 @pytest.mark.unit
 def test_feature_identifier_uses_fallback_when_missing():
     assert feature_identifier({"type": "Feature"}, fallback="feature_0") == "feature_0"
+
+
+@pytest.mark.unit
+@pytest.mark.parametrize("name", ["Ring", "transform_line_xy"])
+def test_ogc_extractor_exports(name):
+    assert name in ogc_extractor.__all__
 
 
 @pytest.mark.unit

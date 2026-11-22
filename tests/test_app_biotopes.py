@@ -1,0 +1,203 @@
+import pytest
+
+from BIMFabrikHH_core import BoundingBoxParams, RequestParams
+from BIMFabrikHH_core.apps.biotopes.generic import app
+from BIMFabrikHH_core.apps.biotopes.generic.app import (
+    _get_line_thickness,
+    _line_biotope_element_from_record,
+    _point_biotope_element_from_record,
+    _polygon_biotope_element_from_record,
+)
+from BIMFabrikHH_core.core.ogc_extractor.geojson import PolygonRings
+from BIMFabrikHH_core.data_models.biotopes import BiotopeRecord, BiotopeShape
+
+
+@pytest.fixture
+def biotope_record():
+    return BiotopeRecord(
+        feature_id=123,
+        shape_type=BiotopeShape.AREA,
+        polygons=[PolygonRings(exterior=[(0, 0), (10, 0), (10, 10), (0, 10), (0, 0)], holes=[])],
+        lines=None,
+        point=None,
+        objectid=1,
+        id_biotop=1001,
+        dk5=1234,
+        biotop_nr=5,
+        abschnitt=1,
+        is_protected=True,
+        hauptbiotoptyp="NRT",
+        nebenbiotoptypen="",
+        naechste_kartierung=None,
+    )
+
+
+@pytest.fixture
+def element_options(biotope_record):
+    return {
+        "record": biotope_record,
+        "extrusion_depth": 30.0,
+        "color": (100, 150, 200),
+        "cad_layer": "_BIM_Biotop",
+        "transparency": 0.5,
+        "overwrite_hyperlink": None,
+        "include_property_sets": True,
+    }
+
+
+def test_polygon_element_creation(element_options):
+    result = _polygon_biotope_element_from_record(
+        multipolygon=[PolygonRings(exterior=[(0, 0), (10, 0), (10, 10), (0, 10), (0, 0)], holes=[])],
+        **element_options,
+    )
+
+    assert result.type == "IfcBuildingElementProxy"
+    assert result.name == "Biotop_Flaeche_1001_Abschnitt_1"
+    assert len(result.children) == 1
+
+
+def test_polygon_element_with_hole(element_options):
+    result = _polygon_biotope_element_from_record(
+        multipolygon=[
+            PolygonRings(
+                exterior=[(0, 0), (10, 0), (10, 10), (0, 10), (0, 0)],
+                holes=[[(2, 2), (2, 4), (4, 4), (4, 2), (2, 2)]],
+            )
+        ],
+        **element_options,
+    )
+
+    assert len(result.children) == 1
+
+
+def test_line_element_creation(element_options):
+    element_options["record"].shape_type = app.BiotopeShape.LINES
+
+    result = _line_biotope_element_from_record(
+        lines=[[(0, 0), (10, 10)]],
+        **element_options,
+    )
+
+    assert result.type == "IfcBuildingElementProxy"
+    assert result.name == "Biotop_Linie_1001_Abschnitt_1"
+    assert len(result.children) == 1
+
+
+@pytest.mark.parametrize(
+    ("width", "expected"),
+    [
+        (None, 2.0),
+        (0.0, 2.0),
+        (-1.0, 2.0),
+        (4.5, 4.5),
+        (10.0, 10.0),
+    ],
+)
+def test_line_thickness(width, expected, biotope_record):
+    biotope_record.breite_lineares_objekt = width
+
+    assert _get_line_thickness(biotope_record) == expected
+
+
+def test_line_element_offset_is_half_the_thickness(element_options):
+    element_options["record"].shape_type = app.BiotopeShape.LINES
+    element_options["record"].breite_lineares_objekt = 4.0
+
+    result = _line_biotope_element_from_record(
+        lines=[[(0, 0), (10, 0)], [(20, 0), (30, 0)]],
+        **element_options,
+    )
+
+    assert [part.item.basis.offset for part in result.children] == [2.0, 2.0]
+
+
+def test_build_ifc_drops_line_parts_below_two_vertices(biotope_record, tmp_path, monkeypatch, caplog):
+    passed_lines = []
+    build_line_element = app._line_biotope_element_from_record
+
+    def spy(*, lines, **kwargs):
+        passed_lines.append(lines)
+        return build_line_element(lines=lines, **kwargs)
+
+    monkeypatch.setattr(app, "_line_biotope_element_from_record", spy)
+    partly_short = biotope_record.model_copy(
+        update={"shape_type": BiotopeShape.LINES, "polygons": None, "lines": [[(0.0, 0.0)], [(0.0, 0.0), (10.0, 0.0)]]}
+    )
+    all_short = partly_short.model_copy(update={"feature_id": 456, "lines": [[(5.0, 5.0)]]})
+
+    path = app.BiotopesGenericApp.build_ifc(
+        [partly_short, all_short],
+        request_params=RequestParams(bbox=BoundingBoxParams(min_x=9.9, min_y=53.5, max_x=10.0, max_y=53.6)),
+        output_path=tmp_path / "biotopes.ifc",
+    )
+
+    assert path is not None
+    assert passed_lines == [[[(0.0, 0.0), (10.0, 0.0)]]]
+    assert "Skipping feature 456" in caplog.text
+
+
+def test_point_element_creation(element_options):
+    element_options["record"].shape_type = app.BiotopeShape.POINT
+
+    result = _point_biotope_element_from_record(
+        point=(100, 200),
+        **element_options,
+    )
+
+    assert result.type == "IfcBuildingElementProxy"
+    assert result.name == "Biotop_Punkt_1001_Abschnitt_1"
+    assert len(result.children) == 1
+
+
+def test_point_element_box_is_centred_on_point(element_options):
+    element_options["record"].shape_type = app.BiotopeShape.POINT
+
+    result = _point_biotope_element_from_record(
+        point=(100, 200),
+        **element_options,
+    )
+
+    placed = result.children[0]
+    box = placed.item.item
+    x, y, _ = placed.translation
+    assert (x + box.width / 2, y + box.depth / 2) == (100, 200)
+
+
+def test_element_creation_without_property_sets(element_options):
+    element_options["include_property_sets"] = False
+
+    result = _polygon_biotope_element_from_record(
+        multipolygon=[
+            PolygonRings(
+                exterior=[(0, 0), (10, 0), (10, 10), (0, 10), (0, 0)],
+                holes=[],
+            )
+        ],
+        **element_options,
+    )
+
+    assert result.psets == []
+
+
+def test_element_creation_with_hyperlink(element_options):
+    from BIMFabrikHH_core.data_models.biotopes import build_biotope_hyperlink
+
+    hyperlink = build_biotope_hyperlink(
+        "https://example.com/1001",
+        1001,
+    )
+
+    result = _polygon_biotope_element_from_record(
+        multipolygon=[
+            PolygonRings(
+                exterior=[(0, 0), (10, 0), (10, 10), (0, 10), (0, 0)],
+                holes=[],
+            )
+        ],
+        **{
+            **element_options,
+            "overwrite_hyperlink": hyperlink,
+        },
+    )
+
+    assert hyperlink in result.psets
