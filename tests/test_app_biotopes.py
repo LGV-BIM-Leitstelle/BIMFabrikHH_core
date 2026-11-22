@@ -1,5 +1,6 @@
 import pytest
 
+from BIMFabrikHH_core import BoundingBoxParams, RequestParams
 from BIMFabrikHH_core.apps.biotopes.generic import app
 from BIMFabrikHH_core.apps.biotopes.generic.app import (
     _get_line_thickness,
@@ -108,6 +109,31 @@ def test_line_element_offset_is_half_the_thickness(element_options):
     )
 
     assert [part.item.basis.offset for part in result.children] == [2.0, 2.0]
+
+
+def test_build_ifc_drops_line_parts_below_two_vertices(biotope_record, tmp_path, monkeypatch, caplog):
+    passed_lines = []
+    build_line_element = app._line_biotope_element_from_record
+
+    def spy(*, lines, **kwargs):
+        passed_lines.append(lines)
+        return build_line_element(lines=lines, **kwargs)
+
+    monkeypatch.setattr(app, "_line_biotope_element_from_record", spy)
+    partly_short = biotope_record.model_copy(
+        update={"shape_type": BiotopeShape.LINES, "polygons": None, "lines": [[(0.0, 0.0)], [(0.0, 0.0), (10.0, 0.0)]]}
+    )
+    all_short = partly_short.model_copy(update={"feature_id": 456, "lines": [[(5.0, 5.0)]]})
+
+    path = app.BiotopesGenericApp.build_ifc(
+        [partly_short, all_short],
+        request_params=RequestParams(bbox=BoundingBoxParams(min_x=9.9, min_y=53.5, max_x=10.0, max_y=53.6)),
+        output_path=tmp_path / "biotopes.ifc",
+    )
+
+    assert path is not None
+    assert passed_lines == [[[(0.0, 0.0), (10.0, 0.0)]]]
+    assert "Skipping feature 456" in caplog.text
 
 
 def test_point_element_creation(element_options):

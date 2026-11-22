@@ -104,7 +104,15 @@ class BiotopesGenericApp:
 
             _t0 = time.perf_counter()
             elements: List[BIMFactoryElement] = []
+            element_options = {
+                "extrusion_depth": extrusion_depth_m,
+                "cad_layer": cad_layer,
+                "transparency": transparency,
+                "overwrite_hyperlink": pset_hyperlink,
+                "include_property_sets": include_property_sets,
+            }
             for rec in records:
+                element_color = color if color is not None else rec.element_color
                 if rec.shape_type == BiotopeShape.AREA:
                     polygons: MultiPolygon = [
                         transformed
@@ -114,64 +122,27 @@ class BiotopesGenericApp:
                     if not polygons:
                         logger.warning("Skipping feature %s: no ring with 3+ vertices", rec.feature_id)
                         continue
-                    elements.append(
-                        _polygon_biotope_element_from_record(
-                            record=rec,
-                            multipolygon=polygons,
-                            extrusion_depth=extrusion_depth_m,
-                            color=color if color is not None else rec.element_color,
-                            cad_layer=cad_layer,
-                            transparency=transparency,
-                            overwrite_hyperlink=pset_hyperlink,
-                            include_property_sets=include_property_sets,
-                        )
+                    element = _polygon_biotope_element_from_record(
+                        record=rec, multipolygon=polygons, color=element_color, **element_options
                     )
-                    if on_progress:
-                        on_progress()
                 elif rec.shape_type == BiotopeShape.LINES:
-                    xy_lines: List[List[Tuple]] = [
-                        transformed
-                        for line in rec.lines
-                        if (transformed := transform_line_xy(line, transformer)) is not None
+                    xy_lines: List[List[Tuple[float, float]]] = [
+                        transformed for line in rec.lines if (transformed := transform_line_xy(line, transformer))
                     ]
-                    if not xy_lines or not any(xy_lines):
+                    if not xy_lines:
                         logger.warning("Skipping feature %s: no coordinates line with 2+ vertices", rec.feature_id)
                         continue
-                    elements.append(
-                        _line_biotope_element_from_record(
-                            record=rec,
-                            lines=xy_lines,
-                            extrusion_depth=extrusion_depth_m,
-                            color=color if color is not None else rec.element_color,
-                            cad_layer=cad_layer,
-                            transparency=transparency,
-                            overwrite_hyperlink=pset_hyperlink,
-                            include_property_sets=include_property_sets,
-                        )
+                    element = _line_biotope_element_from_record(
+                        record=rec, lines=xy_lines, color=element_color, **element_options
                     )
-                    if on_progress:
-                        on_progress()
-                elif rec.shape_type == BiotopeShape.POINT:
-                    xy_point: Tuple[float, float] = (
-                        transformer.transform_point(*rec.point) if transformer else rec.point
+                else:
+                    xy_point = transformer.transform_point(*rec.point) if transformer else rec.point
+                    element = _point_biotope_element_from_record(
+                        record=rec, point=xy_point, color=element_color, **element_options
                     )
-                    if not xy_point:
-                        logger.warning("Skipping feature %s: no coordinates point", rec.feature_id)
-                        continue
-                    elements.append(
-                        _point_biotope_element_from_record(
-                            record=rec,
-                            point=xy_point,
-                            extrusion_depth=extrusion_depth_m,
-                            color=color if color is not None else rec.element_color,
-                            cad_layer=cad_layer,
-                            transparency=transparency,
-                            overwrite_hyperlink=pset_hyperlink,
-                            include_property_sets=include_property_sets,
-                        )
-                    )
-                    if on_progress:
-                        on_progress()
+                elements.append(element)
+                if on_progress:
+                    on_progress()
 
             if phase_timings is not None:
                 phase_timings["prepare_elements_s"] = time.perf_counter() - _t0
@@ -231,21 +202,15 @@ def _polygon_biotope_element_from_record(
     styled_parts: List[Style] = []
 
     for polygon in multipolygon:
-        if not polygon.exterior:
-            continue
         profile = Polygon(points=polygon.exterior, voids=polygon.holes)
         extruded = Extrusion(basis=profile, depth=extrusion_depth)
         styled_parts.append(Style(item=extruded, rgb=color, transparency=transparency, cad_layer=cad_layer))
 
-    pset_models: List[BaseModel] = collect_biotope_psets(record, include_property_sets=include_property_sets)
-    element_psets: List[BaseModel] = [*pset_models, overwrite_hyperlink] if overwrite_hyperlink else pset_models
-
-    return BIMFactoryElement(
-        type="IfcBuildingElementProxy",
-        name=record.element_name,
-        qsets=False,
+    return _biotope_element(
+        record=record,
         children=styled_parts,
-        psets=element_psets,
+        overwrite_hyperlink=overwrite_hyperlink,
+        include_property_sets=include_property_sets,
     )
 
 
@@ -267,23 +232,16 @@ def _line_biotope_element_from_record(
     half_thickness = _get_line_thickness(record=record) / 2
     styled_parts: List[Style] = []
     for line in lines:
-        if not line:
-            continue
-
         line_with_thickness = PolylineOffset(points=line, offset=half_thickness)
         extrusion = Extrusion(basis=line_with_thickness, depth=extrusion_depth)
 
         styled_parts.append(Style(item=extrusion, rgb=color, transparency=transparency, cad_layer=cad_layer))
 
-    pset_models: List[BaseModel] = collect_biotope_psets(record, include_property_sets=include_property_sets)
-    element_psets: List[BaseModel] = [*pset_models, overwrite_hyperlink] if overwrite_hyperlink else pset_models
-
-    return BIMFactoryElement(
-        type="IfcBuildingElementProxy",
-        name=record.element_name,
-        qsets=False,
+    return _biotope_element(
+        record=record,
         children=styled_parts,
-        psets=element_psets,
+        overwrite_hyperlink=overwrite_hyperlink,
+        include_property_sets=include_property_sets,
     )
 
 
@@ -322,6 +280,22 @@ def _point_biotope_element_from_record(
     styled = Style(item=box, rgb=color, transparency=transparency, cad_layer=cad_layer)
     placed = Transform(item=styled, translation=(point[0] - half_size, point[1] - half_size, 0.0))
 
+    return _biotope_element(
+        record=record,
+        children=[placed],
+        overwrite_hyperlink=overwrite_hyperlink,
+        include_property_sets=include_property_sets,
+    )
+
+
+def _biotope_element(
+    *,
+    record: BiotopeRecord,
+    children: List[Union[Style, Transform]],
+    overwrite_hyperlink: Optional[Pset_Hyperlink],
+    include_property_sets: bool,
+) -> BIMFactoryElement:
+    """``IfcBuildingElementProxy`` with the record's name and psets; ``overwrite_hyperlink`` replaces its hyperlink."""
     pset_models: List[BaseModel] = collect_biotope_psets(record, include_property_sets=include_property_sets)
     element_psets: List[BaseModel] = [*pset_models, overwrite_hyperlink] if overwrite_hyperlink else pset_models
 
@@ -329,6 +303,6 @@ def _point_biotope_element_from_record(
         type="IfcBuildingElementProxy",
         name=record.element_name,
         qsets=False,
-        children=[placed],
+        children=children,
         psets=element_psets,
     )

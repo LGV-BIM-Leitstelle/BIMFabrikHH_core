@@ -335,11 +335,11 @@ def build_biotope_hyperlink(url: str, id_biotop: int) -> Pset_Hyperlink:
     return Pset_Hyperlink(hyperlink_001=url, hyperlink_001_bemerkung=bemerkung)
 
 
-def _combine_haupt_and_neben_biotopes(haupt: str, neben: list[str] = []):
-    """Build a combined string of primary and secondary bioptopes in the format ``Hauptbiotop (Nebenbiotop1; Nebenbiotop2; ...)``."""
+def _combine_haupt_and_neben_biotopes(haupt: str, neben: List[str]) -> str:
+    """Build a combined string of primary and secondary biotopes in the format ``Hauptbiotop (Nebenbiotop1; Nebenbiotop2; ...)``."""
     if not haupt:
         return ""
-    if not neben or not any(neben):
+    if not any(neben):
         return str(haupt)
     else:
         neben_unique = list(dict.fromkeys(neben))
@@ -462,6 +462,7 @@ def records_from_geojson_feature_collection(
         is_protected: Set True/False if all biotopes are protected/unprotected, None if mixed or unknown.
     """
     ensure_feature_collection(data)
+    biotope_types = load_biotope_hh_descriptions_mapping()
     out: List[BiotopeRecord] = []
     for feat in iter_geojson_features(data):
         geom_type = feature_geometry_type(feat)
@@ -498,8 +499,6 @@ def records_from_geojson_feature_collection(
             "is_protected": is_protected if is_protected is not None else bool(props_raw.get("paragraf")),
             "shape_type": shape_type,
         }
-
-        biotope_types = load_biotope_hh_descriptions_mapping()
         out.append(_record_with_psets_from_payload(payload, biotope_name_mapping=biotope_types))
     return out
 
