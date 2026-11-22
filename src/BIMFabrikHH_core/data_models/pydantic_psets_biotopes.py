@@ -6,14 +6,10 @@ The classes Pset_Objektinformation_Lebensraum and Pset_Objektinformation_Biotop 
 
 from __future__ import annotations
 
-from typing import ClassVar, Literal, Optional
+from typing import ClassVar, Optional
 
 from ifcfactory import PropertySetTemplate
-from ifcfactory._internal.pset_base import Quantity
 from pydantic import AliasChoices, Field
-
-# TODO: ha instead of m²? (pint_to_ifc[Dim("[length]") ** 2] is IfcAreaMeasure)
-Area = Literal["[length]**2"]
 
 UNDEFINED = "undefiniert"
 
@@ -174,7 +170,8 @@ class Pset_Objektinformation_Biotop(Pset_Objektinformation_Lebensraum):
         serialization_alias="_IstGesetzlgeschBiotopLandesrecht",
         default=UNDEFINED,
     )
-    biotop_groesse_ha: Optional[Quantity[Area]] = Field(
+    # A plain number in hectares: a pint quantity would be written in m² (SI) under this ``_ha`` name.
+    biotop_groesse_ha: Optional[float] = Field(
         validation_alias=AliasChoices("biotop_groesse_ha", "_BiotopGroesse_ha"),
         serialization_alias="_BiotopGroesse_ha",
         default=None,
@@ -182,6 +179,5 @@ class Pset_Objektinformation_Biotop(Pset_Objektinformation_Lebensraum):
 
 
 __all__ = [
-    "Area",
     "Pset_Objektinformation_Biotop",
 ]

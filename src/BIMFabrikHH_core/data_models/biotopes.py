@@ -23,7 +23,7 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from BIMFabrikHH_core.apps.boreholes.helper import _clean
 from BIMFabrikHH_core.core.ogc_extractor import (
@@ -152,7 +152,10 @@ class BiotopeRecord(BaseModel):
         description="FFH-Entwicklungspotenzial: A habitat type under the Fauna-Flora-Habitatrichtlinie, provided that the biotope has the potential to meet the criteria in the future.",
     )
 
-    flaeche_oder_laenge: Optional[float] = Field(default=None, description="Fläche oder Länge: Area (m²) or Length (m)")
+    flaeche_oder_laenge: Optional[float] = Field(
+        default=None,
+        description="Fläche oder Länge: Area (m²) or Length (m) of the whole biotope, the same on every Abschnitt",
+    )
     breite_lineares_objekt: Optional[float] = Field(
         default=None, description="Breite lineares Objekt: Width (m) of the linear biotope"
     )
@@ -170,6 +173,14 @@ class BiotopeRecord(BaseModel):
     gruppe: str = Field(default="", description="Main group of biotope types to which this biotope belongs.")
 
     psets: Dict[str, BaseModel] = Field(default_factory=dict)
+
+    @field_validator("flaeche_oder_laenge", mode="before")
+    @classmethod
+    def _parse_german_thousands(cls, value: Any) -> Any:
+        """The API sends whole numbers as text with ``.`` as thousands separator (``"97.505"`` is 97505 m²)."""
+        if isinstance(value, str):
+            return value.replace(".", "")
+        return value
 
     @property
     def element_name(self) -> str:
@@ -407,8 +418,11 @@ def _record_with_psets_from_payload(payload: Dict[str, Any], biotope_name_mappin
         gefaehrdung_status=record.erhaltungszustand_bfn or record.erhaltungszustand_bfn_abw or UNDEFINED,
         ist_gesetzl_gesch_biotop=record.is_protected,
         ist_gesetzl_gesch_biotop_landesrecht=protection_status_landesrecht,
-        # TODO: writing "ha", it gets converted to m**2. -> Find out how to display in ha.
-        biotop_groesse_ha=((record.flaeche_oder_laenge, "m**2") if record.flaeche_oder_laenge is not None else None),
+        biotop_groesse_ha=(
+            record.flaeche_oder_laenge / 10_000
+            if record.shape_type == BiotopeShape.AREA and record.flaeche_oder_laenge is not None
+            else None
+        ),
         ist_ffh_lebensraum=record.code_ffh_lebensraumtyp_bfn is not None,
     )
 

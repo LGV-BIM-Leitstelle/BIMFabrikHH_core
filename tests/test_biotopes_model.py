@@ -205,6 +205,38 @@ def test_gesamtwert_without_gesamtbewertung_is_undefined(biotope_record: Biotope
 
 
 @pytest.mark.unit
+@pytest.mark.parametrize(
+    ("raw", "expected"),
+    [
+        ("97.505", 97505.0),
+        ("137.832", 137832.0),
+        ("953", 953.0),
+        (953, 953.0),
+        (None, None),
+    ],
+)
+def test_flaeche_oder_laenge_parses_german_thousands(biotope_record: BiotopeRecord, raw, expected):
+    payload = {**biotope_record.model_dump(exclude={"psets"}), "flaeche_oder_laenge": raw}
+
+    assert BiotopeRecord.model_validate(payload).flaeche_oder_laenge == expected
+
+
+@pytest.mark.unit
+def test_groesse_ha_for_area_biotope(biotope_record: BiotopeRecord):
+    pset = _objektinfo_pset(biotope_record, flaeche_oder_laenge=97505.0)
+
+    assert pset.biotop_groesse_ha == pytest.approx(9.7505)
+
+
+@pytest.mark.unit
+@pytest.mark.parametrize("shape", [BiotopeShape.LINES, BiotopeShape.POINT])
+def test_groesse_ha_only_for_area_biotopes(biotope_record: BiotopeRecord, shape):
+    pset = _objektinfo_pset(biotope_record, shape_type=shape, flaeche_oder_laenge=953.0)
+
+    assert pset.biotop_groesse_ha is None
+
+
+@pytest.mark.unit
 def test_combine_haupt_and_neben_biotopes():
     assert _combine_haupt_and_neben_biotopes("NRT", ["NRT", "WRT", "WRT"]) == "NRT (NRT; WRT)"
 
