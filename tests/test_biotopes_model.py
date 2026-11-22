@@ -59,12 +59,25 @@ def test_biotope_record_requires_feature_id():
 
 
 @pytest.mark.unit
+def test_biotope_record_requires_shape_type():
+    with pytest.raises(ValidationError):
+        BiotopeRecord(
+            feature_id=123,
+            polygons=[],
+            objectid=1,
+            id_biotop=1001,
+            dk5=1234,
+            biotop_nr=5,
+        )
+
+
+@pytest.mark.unit
 @pytest.mark.parametrize(
     ("shape", "expected"),
     [
-        (BiotopeShape.AREA, "Biotop_area_1001"),
-        (BiotopeShape.LINES, "Biotop_lines_1001"),
-        (BiotopeShape.POINT, "Biotop_point_1001"),
+        (BiotopeShape.AREA, "Biotop_Flaeche_1001_Abschnitt_1"),
+        (BiotopeShape.LINES, "Biotop_Linie_1001_Abschnitt_1"),
+        (BiotopeShape.POINT, "Biotop_Punkt_1001_Abschnitt_1"),
     ],
 )
 def test_element_name(biotope_record: BiotopeRecord, shape, expected):
@@ -73,28 +86,18 @@ def test_element_name(biotope_record: BiotopeRecord, shape, expected):
 
 
 @pytest.mark.unit
-def test_element_name_fallback_to_dk5_and_biotop_nr(biotope_record: BiotopeRecord):
-    biotope_record.id_biotop = None
+def test_element_name_differs_per_abschnitt(biotope_record: BiotopeRecord):
+    second_section = biotope_record.model_copy(update={"abschnitt": 2})
 
-    assert biotope_record.element_name == "Biotop_area_1234_5"
-
-
-@pytest.mark.unit
-def test_element_name_fallback_to_feature_id(biotope_record: BiotopeRecord):
-    biotope_record.id_biotop = None
-    biotope_record.dk5 = None
-
-    assert biotope_record.element_name == "Biotop_area_123"
+    assert biotope_record.element_name == "Biotop_Flaeche_1001_Abschnitt_1"
+    assert second_section.element_name == "Biotop_Flaeche_1001_Abschnitt_2"
 
 
 @pytest.mark.unit
-def test_element_name_max_length(biotope_record: BiotopeRecord):
-    biotope_record.id_biotop = None
-    biotope_record.dk5 = None
-    biotope_record.feature_id = "x" * 200
+def test_element_name_without_abschnitt(biotope_record: BiotopeRecord):
+    biotope_record.abschnitt = None
 
-    assert len(biotope_record.element_name) <= 120
-    assert biotope_record.element_name[-1] == "x"
+    assert biotope_record.element_name == "Biotop_Flaeche_1001"
 
 
 def test_element_color_is_stable_and_rgb(biotope_record: BiotopeRecord):

@@ -51,7 +51,7 @@ def test_polygon_element_creation(element_options):
     )
 
     assert result.type == "IfcBuildingElementProxy"
-    assert result.name == "Biotop_area_1001"
+    assert result.name == "Biotop_Flaeche_1001_Abschnitt_1"
     assert len(result.children) == 1
 
 
@@ -78,7 +78,7 @@ def test_line_element_creation(element_options):
     )
 
     assert result.type == "IfcBuildingElementProxy"
-    assert result.name == "Biotop_lines_1001"
+    assert result.name == "Biotop_Linie_1001_Abschnitt_1"
     assert len(result.children) == 1
 
 
@@ -119,7 +119,7 @@ def test_point_element_creation(element_options):
     )
 
     assert result.type == "IfcBuildingElementProxy"
-    assert result.name == "Biotop_point_1001"
+    assert result.name == "Biotop_Punkt_1001_Abschnitt_1"
     assert len(result.children) == 1
 
 

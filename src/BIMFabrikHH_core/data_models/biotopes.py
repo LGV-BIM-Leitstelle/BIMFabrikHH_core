@@ -66,10 +66,16 @@ BEWERTUNG_DICT = {
 
 
 class BiotopeShape(Enum):
-    NONE = 0
     POINT = 1
     LINES = 2
     AREA = 3
+
+
+_SHAPE_NAMES: Dict[BiotopeShape, str] = {
+    BiotopeShape.AREA: "Flaeche",
+    BiotopeShape.LINES: "Linie",
+    BiotopeShape.POINT: "Punkt",
+}
 
 
 class BiotopeRecord(BaseModel):
@@ -79,9 +85,7 @@ class BiotopeRecord(BaseModel):
 
     feature_id: Union[int, str] = Field(description="``feature.id`` from GeoJSON")
 
-    shape_type: BiotopeShape = Field(
-        default=BiotopeShape.NONE, description="Indicates whether the biotope geometry is a polygon, line or point."
-    )
+    shape_type: BiotopeShape = Field(description="Indicates whether the biotope geometry is a polygon, line or point.")
 
     polygons: MultiPolygon | None = Field(
         default=None,
@@ -169,15 +173,13 @@ class BiotopeRecord(BaseModel):
 
     @property
     def element_name(self) -> str:
-        """IFC element name: ``Biotop_{id_biotop}``, else ``Biotop_{dk5}_{biotop_nr}``, else ``Biotop_{feature_id}``."""
-        shape = self.shape_type.name.lower() if self.shape_type is not None else "biotope"
+        """IFC element name: ``Biotop_{Flaeche|Linie|Punkt}_{id_biotop}_Abschnitt_{abschnitt}``.
 
-        if self.id_biotop is not None:
-            return f"Biotop_{shape}_{self.id_biotop}"[:120]
-        elif self.dk5 is not None and self.biotop_nr is not None:
-            return f"Biotop_{shape}_{self.dk5}_{self.biotop_nr}"[:120]
-        else:
-            return f"Biotop_{shape}_{self.feature_id}"[:120]
+        ``_Abschnitt_{abschnitt}`` is left out when ``abschnitt`` is not set.
+        """
+        shape = _SHAPE_NAMES[self.shape_type]
+        section = f"_Abschnitt_{self.abschnitt}" if self.abschnitt is not None else ""
+        return f"Biotop_{shape}_{self.id_biotop}{section}"
 
     @property
     def element_color(self) -> Tuple[int, int, int]:
@@ -453,7 +455,6 @@ def records_from_geojson_feature_collection(
         polygons = lines = point = None
         if not geom_type:
             continue
-        shape_type = BiotopeShape.NONE
         if geom_type in ["MultiPolygon", "Polygon"]:
             shape_type = BiotopeShape.AREA
             polygons = parse_feature_for_all_polygon_rings(feat)
