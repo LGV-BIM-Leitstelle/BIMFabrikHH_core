@@ -21,7 +21,7 @@ from BIMFabrikHH_core.core.ogc_extractor.ogc_values_extractor import extract_pse
 from BIMFabrikHH_core.data_models.biotopes import BiotopeRecord, BiotopeShape, collect_biotope_psets
 from BIMFabrikHH_core.data_models.params_tree import RequestParams
 from BIMFabrikHH_core.data_models.pydantic_georeferencing import CoordinateOperation
-from BIMFabrikHH_core.data_models.pydantic_psets_BIMHH import Pset_Hyperlink, default_bim_hamburg_hyperlink
+from BIMFabrikHH_core.data_models.pydantic_psets_BIMHH import Pset_Hyperlink
 
 logger = get_logger("biotopes_generic_app")
 
@@ -32,6 +32,8 @@ _DEFAULT_LAYER: str = "_BIM_Biotop"
 _DEFAULT_OUTPUT_NAME: str = "output_biotopes_generic.ifc"
 _DEFAULT_BASEPOINT_SIZE: float = 5.0
 _DEFAULT_EXTRUSION_DEPTH_M: float = 30.0
+_DEFAULT_LINE_THICKNESS_M: float = 2.0
+_POINT_BOX_SIZE_M: float = 5.0
 
 
 class BiotopesGenericApp:
@@ -261,13 +263,14 @@ def _line_biotope_element_from_record(
     """One ``IfcBuildingElementProxy`` per biotope, one extrusion per line part.
     Each line part is represented as an extruded polyline with thickness.
     The thickness is taken from ``record.breite_lineares_objekt`` or defaults to 2.0."""
+    # PolylineOffset.offset is the distance to each side of the line, i.e. half the thickness.
+    half_thickness = _get_line_thickness(record=record) / 2
     styled_parts: List[Style] = []
     for line in lines:
         if not line:
             continue
 
-        thickness = _get_line_thickness(record=record)
-        line_with_thickness = PolylineOffset(points=line, offset=thickness)
+        line_with_thickness = PolylineOffset(points=line, offset=half_thickness)
         extrusion = Extrusion(basis=line_with_thickness, depth=extrusion_depth)
 
         styled_parts.append(Style(item=extrusion, rgb=color, transparency=transparency, cad_layer=cad_layer))
@@ -286,7 +289,15 @@ def _line_biotope_element_from_record(
 
 def _get_line_thickness(record: BiotopeRecord) -> float:
     if record.breite_lineares_objekt is None:
-        return 2.0
+        return _DEFAULT_LINE_THICKNESS_M
+    if record.breite_lineares_objekt <= 0:
+        logger.warning(
+            "Biotope %s has breite_lineares_objekt %s; using %s m instead.",
+            record.feature_id,
+            record.breite_lineares_objekt,
+            _DEFAULT_LINE_THICKNESS_M,
+        )
+        return _DEFAULT_LINE_THICKNESS_M
 
     return record.breite_lineares_objekt
 
@@ -302,12 +313,14 @@ def _point_biotope_element_from_record(
     overwrite_hyperlink: Optional[Pset_Hyperlink],
     include_property_sets: bool,
 ) -> BIMFactoryElement:
-    """One ``IfcBuildingElementProxy`` per biotope. The point biotope is represented as an extruded square box."""
-    length = 5.0
-    box = Box(width=length, depth=length, height=extrusion_depth)
+    """One ``IfcBuildingElementProxy`` per biotope. The point biotope is represented as an extruded square box
+    centred on the point."""
+    box = Box(width=_POINT_BOX_SIZE_M, depth=_POINT_BOX_SIZE_M, height=extrusion_depth)
 
+    # Box spans (0, 0) to (size, size), so it is shifted by half its size to centre it.
+    half_size = _POINT_BOX_SIZE_M / 2
     styled = Style(item=box, rgb=color, transparency=transparency, cad_layer=cad_layer)
-    placed = Transform(item=styled, translation=(point[0], point[1], 0.0))
+    placed = Transform(item=styled, translation=(point[0] - half_size, point[1] - half_size, 0.0))
 
     pset_models: List[BaseModel] = collect_biotope_psets(record, include_property_sets=include_property_sets)
     element_psets: List[BaseModel] = [*pset_models, overwrite_hyperlink] if overwrite_hyperlink else pset_models

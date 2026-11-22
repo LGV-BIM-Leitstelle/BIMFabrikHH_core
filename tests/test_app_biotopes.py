@@ -1,10 +1,7 @@
-from unittest.mock import MagicMock, Mock
-
 import pytest
 
 from BIMFabrikHH_core.apps.biotopes.generic import app
 from BIMFabrikHH_core.apps.biotopes.generic.app import (
-    BiotopesGenericApp,
     _get_line_thickness,
     _line_biotope_element_from_record,
     _point_biotope_element_from_record,
@@ -89,7 +86,8 @@ def test_line_element_creation(element_options):
     ("width", "expected"),
     [
         (None, 2.0),
-        (0.0, 0.0),
+        (0.0, 2.0),
+        (-1.0, 2.0),
         (4.5, 4.5),
         (10.0, 10.0),
     ],
@@ -98,6 +96,18 @@ def test_line_thickness(width, expected, biotope_record):
     biotope_record.breite_lineares_objekt = width
 
     assert _get_line_thickness(biotope_record) == expected
+
+
+def test_line_element_offset_is_half_the_thickness(element_options):
+    element_options["record"].shape_type = app.BiotopeShape.LINES
+    element_options["record"].breite_lineares_objekt = 4.0
+
+    result = _line_biotope_element_from_record(
+        lines=[[(0, 0), (10, 0)], [(20, 0), (30, 0)]],
+        **element_options,
+    )
+
+    assert [part.item.basis.offset for part in result.children] == [2.0, 2.0]
 
 
 def test_point_element_creation(element_options):
@@ -111,6 +121,20 @@ def test_point_element_creation(element_options):
     assert result.type == "IfcBuildingElementProxy"
     assert result.name == "Biotop_point_1001"
     assert len(result.children) == 1
+
+
+def test_point_element_box_is_centred_on_point(element_options):
+    element_options["record"].shape_type = app.BiotopeShape.POINT
+
+    result = _point_biotope_element_from_record(
+        point=(100, 200),
+        **element_options,
+    )
+
+    placed = result.children[0]
+    box = placed.item.item
+    x, y, _ = placed.translation
+    assert (x + box.width / 2, y + box.depth / 2) == (100, 200)
 
 
 def test_element_creation_without_property_sets(element_options):

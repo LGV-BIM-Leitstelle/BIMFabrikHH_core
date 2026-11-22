@@ -12,8 +12,8 @@ Loads the Hamburg OGC API FeatureCollections with **EPSG:25832**
 (files have to be placed next to this script) and writes ``<input file name>_<epsg>.ifc`` per code in ``OUTPUT_EPSGS``
 with biotopes as 30 m ``IfcBuildingElementProxy`` volumes standing on ``z = 0``.
 In the IFC results, area biotopes are represented as filled polygones,
-line biotopes have a thickness of record.breite_lineares_objekt (or 1 m if None)
-and point biotopes are represented as 5m x 5m boxes, all with
+line biotopes have a thickness of record.breite_lineares_objekt (or 2 m if None)
+and point biotopes are represented as 5m x 5m boxes centred on the point, all with
 geometry in map metres of that CRS.
 
 API references:
