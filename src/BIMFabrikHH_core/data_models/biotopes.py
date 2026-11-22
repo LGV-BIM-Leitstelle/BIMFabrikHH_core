@@ -381,7 +381,7 @@ def _record_with_psets_from_payload(payload: Dict[str, Any], biotope_name_mappin
             "teilweise geschützt"
             if record.schutzstatus_teilweise is not None and record.schutzstatus_teilweise.strip().lower() == "ja"
             else (
-                " vollständig geschützt"
+                "vollständig geschützt"
                 if record.schutzstatus_teilweise is None or record.schutzstatus_teilweise.strip().lower() == "nein"
                 else str(record.schutzstatus_teilweise)
             )
@@ -401,7 +401,7 @@ def _record_with_psets_from_payload(payload: Dict[str, Any], biotope_name_mappin
         biotoptyp_bkompv_name=biotoptyp_bkompv_name_combined or UNDEFINED,
         biotoptyp_land_code=biotoptyp_land_code_combined or UNDEFINED,
         biotoptyp_land_name=biotoptyp_land_name_combined or UNDEFINED,
-        biotop_gesamtwert=str(record.gesamtbewertung),
+        biotop_gesamtwert=str(record.gesamtbewertung) if record.gesamtbewertung is not None else UNDEFINED,
         biotop_gesamtwert_bedeutung=BEWERTUNG_DICT.get(str(record.gesamtbewertung), UNDEFINED),
         biotop_gesamtwert_liste=str(_BIOTOP_BEWERTUNG_HH),
         gefaehrdung_status=record.erhaltungszustand_bfn or record.erhaltungszustand_bfn_abw or UNDEFINED,

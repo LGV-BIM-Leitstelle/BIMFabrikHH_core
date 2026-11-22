@@ -6,11 +6,13 @@ from BIMFabrikHH_core.data_models.biotopes import (
     BiotopeRecord,
     BiotopeShape,
     _combine_haupt_and_neben_biotopes,
+    _record_with_psets_from_payload,
     build_biotope_hyperlink,
     collect_biotope_psets,
     map_biotope_type_bkompv_codes,
     map_biotope_type_hh_descriptions,
 )
+from BIMFabrikHH_core.data_models.pydantic_psets_biotopes import Pset_Objektinformation_Biotop
 
 
 @pytest.fixture
@@ -162,6 +164,44 @@ def test_collect_biotope_psets_skips_invalid_values(biotope_record: BiotopeRecor
 
     assert len(result) == 1
     assert isinstance(result[0], DummyPset)
+
+
+def _objektinfo_pset(record: BiotopeRecord, **changes):
+    payload = {**record.model_dump(exclude={"psets"}), **changes}
+    return _record_with_psets_from_payload(payload, biotope_name_mapping={}).psets[
+        Pset_Objektinformation_Biotop.pset_name
+    ]
+
+
+@pytest.mark.unit
+@pytest.mark.parametrize(
+    ("is_protected", "schutzstatus_teilweise", "expected"),
+    [
+        (False, None, "nicht geschützt"),
+        (True, "Ja", "teilweise geschützt"),
+        (True, None, "vollständig geschützt"),
+    ],
+)
+def test_protection_status_landesrecht(biotope_record: BiotopeRecord, is_protected, schutzstatus_teilweise, expected):
+    pset = _objektinfo_pset(biotope_record, is_protected=is_protected, schutzstatus_teilweise=schutzstatus_teilweise)
+
+    assert pset.ist_gesetzl_gesch_biotop_landesrecht == expected
+
+
+@pytest.mark.unit
+def test_gesamtwert_from_gesamtbewertung(biotope_record: BiotopeRecord):
+    pset = _objektinfo_pset(biotope_record, gesamtbewertung=6)
+
+    assert pset.biotop_gesamtwert == "6"
+    assert pset.biotop_gesamtwert_bedeutung == "wertvoll"
+
+
+@pytest.mark.unit
+def test_gesamtwert_without_gesamtbewertung_is_undefined(biotope_record: BiotopeRecord):
+    pset = _objektinfo_pset(biotope_record, gesamtbewertung=None)
+
+    assert pset.biotop_gesamtwert == "undefiniert"
+    assert pset.biotop_gesamtwert_bedeutung == "undefiniert"
 
 
 @pytest.mark.unit
