@@ -12,6 +12,7 @@ from BIMFabrikHH_core.data_models.biotopes import (
     load_biotope_hh_descriptions_mapping,
     map_biotope_type_bkompv_codes,
     map_biotope_type_hh_descriptions,
+    records_from_geojson_feature_collection,
 )
 from BIMFabrikHH_core.data_models.pydantic_psets_biotopes import Pset_Objektinformation_Biotop
 
@@ -71,7 +72,74 @@ def test_biotope_record_requires_shape_type():
             id_biotop=1001,
             dk5=1234,
             biotop_nr=5,
+            is_protected=True,
         )
+
+
+@pytest.mark.unit
+def test_biotope_record_requires_is_protected(biotope_record: BiotopeRecord):
+    with pytest.raises(ValidationError):
+        BiotopeRecord.model_validate(biotope_record.model_dump(exclude={"psets", "is_protected"}))
+
+
+@pytest.mark.unit
+def test_naechste_kartierung_defaults_to_none(biotope_record: BiotopeRecord):
+    record = BiotopeRecord.model_validate(biotope_record.model_dump(exclude={"psets", "naechste_kartierung"}))
+
+    assert record.naechste_kartierung is None
+
+
+@pytest.mark.unit
+@pytest.mark.parametrize("point", [(), (1.0,), ("a", "b")])
+def test_point_must_be_two_coordinates(biotope_record: BiotopeRecord, point):
+    payload = {**biotope_record.model_dump(exclude={"psets"}), "shape_type": BiotopeShape.POINT, "point": point}
+
+    with pytest.raises(ValidationError):
+        BiotopeRecord.model_validate(payload)
+
+
+def _feature_collection(geometry, **properties):
+    feature = {
+        "type": "Feature",
+        "id": 7,
+        "geometry": geometry,
+        "properties": {"objectid": 1, "id_biotop": 1001, "dk5": 1234, "biotop_nr": 5, **properties},
+    }
+    return {"type": "FeatureCollection", "features": [feature]}
+
+
+_POINT = {"type": "Point", "coordinates": [565000.0, 5935000.0]}
+
+
+@pytest.mark.unit
+@pytest.mark.parametrize(
+    "geometry",
+    [
+        {"type": "LineString", "coordinates": [[0.0, 0.0], [1.0, 1.0]]},
+        {"type": "MultiPoint", "coordinates": [[0.0, 0.0]]},
+        None,
+    ],
+)
+def test_unsupported_geometry_is_skipped_with_warning(geometry, caplog):
+    records = records_from_geojson_feature_collection(_feature_collection(geometry), is_protected=True)
+
+    assert records == []
+    assert "Skipping biotope feature 7" in caplog.text
+
+
+@pytest.mark.unit
+@pytest.mark.parametrize(
+    ("properties", "expected"),
+    [
+        ({"paragraf": "§ 30 (2) 1.2 Natürliche Stillgewässer"}, True),
+        ({"paragraf": ""}, False),
+        ({}, False),
+    ],
+)
+def test_is_protected_from_paragraf_value(properties, expected):
+    (record,) = records_from_geojson_feature_collection(_feature_collection(_POINT, **properties), is_protected=None)
+
+    assert record.is_protected is expected
 
 
 @pytest.mark.unit

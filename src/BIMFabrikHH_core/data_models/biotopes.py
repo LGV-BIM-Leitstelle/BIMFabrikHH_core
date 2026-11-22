@@ -3,7 +3,7 @@ Data models for biotope records.
 
 Parsed from GeoJSON FeatureCollection from the Biotopkataster Hamburg API, with additional properties and optional psets for IFC export.
 
-Geometry is stored as MultiPolygon, LineString or Point, depending on the biotope's shape type.
+Geometry is stored as MultiPolygon, MultiLineString or Point, depending on the biotope's shape type.
 Vertex coordinates are kept as delivered; their CRS is declared by the caller via ``RequestParams.source_epsg``.
 
 Biotope codes and descriptions are mapped from the Biotopkataster Hamburg API and the Bundeskompensationsverordnung (BKompV) using JSON mapping files in ``assets/``.
@@ -95,7 +95,7 @@ class BiotopeRecord(BaseModel):
         default=None,
         description="Line geometry: list of (multiple) lines of coordinate tuples; (easting, northing) if EPSG:25832 else (lon, lat)",
     )
-    point: Tuple | None = Field(
+    point: Tuple[float, float] | None = Field(
         default=None, description="Point geometry: Coordinate tuple; (easting, northing) if EPSG:25832 else (lon, lat)"
     )
 
@@ -113,7 +113,7 @@ class BiotopeRecord(BaseModel):
     )
 
     biotop_erfasst_am: str = Field(default="", description="Biotop erfasst am: Date the biotope was mapped.")
-    is_protected: bool = Field(default="", description="Indicates whether the biotope is protected by law.")
+    is_protected: bool = Field(description="Indicates whether the biotope is protected by law.")
 
     hauptbiotoptyp: str = Field(default="", description="Hauptbiotoptyp: Primary biotope type of the biotope.")
     nebenbiotoptypen: str = Field(
@@ -166,7 +166,7 @@ class BiotopeRecord(BaseModel):
 
     aktualitaet: str = Field(default="", description="Aktualität: Status of biotope mapping for the entire layer.")
     naechste_kartierung: Optional[int] = Field(
-        default="",
+        default=None,
         description="nächste Kartierung voraussichtlich: The year in which the biotope is expected to be mapped next.",
     )
     aufnahmetyp: str = Field(default="", description="Aufnahmetyp: Recording type of the selected object.")
@@ -456,7 +456,7 @@ def records_from_geojson_feature_collection(
 ) -> List[BiotopeRecord]:
     """Parse a GeoJSON FeatureCollection into :class:`BiotopeRecord` list.
 
-    Skips features without polygon/lines/points geometry, or with coordinate lists too short for the respective geometry.
+    Skips features without polygon/lines/points geometry (with a warning), or with coordinate lists too short for the respective geometry.
 
     Args:
         data: GeoJSON FeatureCollection object.
@@ -467,8 +467,6 @@ def records_from_geojson_feature_collection(
     for feat in iter_geojson_features(data):
         geom_type = feature_geometry_type(feat)
         polygons = lines = point = None
-        if not geom_type:
-            continue
         if geom_type in ["MultiPolygon", "Polygon"]:
             shape_type = BiotopeShape.AREA
             polygons = parse_feature_for_all_polygon_rings(feat)
@@ -485,6 +483,7 @@ def records_from_geojson_feature_collection(
             if not point:
                 continue
         else:
+            logger.warning("Skipping biotope feature %s: unsupported geometry type %s", feat.get("id"), geom_type)
             continue
 
         props_raw = geojson_feature_properties(feat)
@@ -497,7 +496,7 @@ def records_from_geojson_feature_collection(
             "polygons": polygons,
             "lines": lines,
             "point": point,
-            "is_protected": is_protected if is_protected is not None else "paragraf" in props_raw,
+            "is_protected": is_protected if is_protected is not None else bool(props_raw.get("paragraf")),
             "shape_type": shape_type,
         }
 
