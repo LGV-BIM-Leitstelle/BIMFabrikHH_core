@@ -274,7 +274,7 @@ def map_biotope_type_hh_descriptions(biotope_code: str, biotope_mapping: Optiona
 
     Args:
         biotope_code: biotope code used by the Biotopkataster Hamburg.
-        biotope_mapping: Table from :func:`load_biotope_hh_to_bkompv_mapping`
+        biotope_mapping: Table from :func:`load_biotope_hh_descriptions_mapping`
 
     Returns:
         Biotope description string.
@@ -318,7 +318,7 @@ def map_biotope_type_bkompv_codes(biotope_code: str, biotope_mapping: Optional[D
 
 
 def build_biotope_hyperlink(url: str, id_biotop: int) -> Pset_Hyperlink:
-    """Build the  link to a biotope's Biotopkataster Erhebungsbogen.
+    """Build the link to a biotope's Biotopkataster Erhebungsbogen.
 
     Args:
         url: "biotopbogen" link from the biotope dataset
@@ -459,7 +459,8 @@ def records_from_geojson_feature_collection(
 
     Args:
         data: GeoJSON FeatureCollection object.
-        is_protected: Set True/False if all biotopes are protected/unprotected, None if mixed or unknown.
+        is_protected: Set True/False if all biotopes are protected/unprotected, None to derive it per biotope
+            from a non-empty ``paragraf``.
     """
     ensure_feature_collection(data)
     biotope_types = load_biotope_hh_descriptions_mapping()
@@ -504,7 +505,13 @@ def records_from_geojson_feature_collection(
 
 
 def load_biotope_records(path: Union[str, Path], *, is_protected: Optional[bool]) -> List[BiotopeRecord]:
-    """Load and parse a ``.json`` FeatureCollection from disk."""
+    """Load and parse a ``.json`` FeatureCollection from disk.
+
+    Args:
+        path: Path to the GeoJSON FeatureCollection file.
+        is_protected: Set True/False if all biotopes are protected/unprotected, None to derive it per biotope
+            from a non-empty ``paragraf``.
+    """
     p = Path(path)
     with p.open(encoding="utf-8") as f:
         data = json.load(f)

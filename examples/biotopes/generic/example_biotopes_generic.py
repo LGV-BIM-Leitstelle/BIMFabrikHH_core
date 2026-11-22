@@ -1,7 +1,5 @@
 """Generic Biotopes example (offline GeoJSON fixtures).
 
-TODO complete the docstring.
-
 Loads the Hamburg OGC API FeatureCollections with **EPSG:25832**
 ``response_OGC_flaechenhafte_biotope_nicht_geschuetzt.json``,
 ``response_OGC_flaechenhafte_biotope_geschuetzt.json``,
@@ -11,7 +9,7 @@ Loads the Hamburg OGC API FeatureCollections with **EPSG:25832**
 ``response_OGC_punkthafte_biotope_geschuetzt.json``
 (files have to be placed next to this script) and writes ``<input file name>_<epsg>.ifc`` per code in ``OUTPUT_EPSGS``
 with biotopes as 30 m ``IfcBuildingElementProxy`` volumes standing on ``z = 0``.
-In the IFC results, area biotopes are represented as filled polygones,
+In the IFC results, area biotopes are represented as filled polygons,
 line biotopes have a thickness of record.breite_lineares_objekt (or 2 m if None)
 and point biotopes are represented as 5m x 5m boxes centred on the point, all with
 geometry in map metres of that CRS.
@@ -31,6 +29,7 @@ from typing import Optional
 from BIMFabrikHH_core import BoundingBoxParams, Component, Container, RequestParams
 from BIMFabrikHH_core.apps.biotopes.generic import BiotopesGenericApp, load_biotope_records
 from BIMFabrikHH_core.config import get_logger, setup_logging
+from BIMFabrikHH_core.data_models.biotopes import BiotopeShape
 
 logger = get_logger()
 
@@ -97,8 +96,12 @@ def generate_ifc_from_biotope_json(input_file: Path, bbox: BoundingBoxParams, is
 
     logger.info("Bounding box: min_x=%s, min_y=%s, max_x=%s, max_y=%s", bbox.min_x, bbox.min_y, bbox.max_x, bbox.max_y)
 
-    total_area = sum(rec.flaeche_oder_laenge or 0.0 for rec in records)
-    logger.info("Amtliche Fläche total: %.0f m²", total_area)
+    # flaeche_oder_laenge is the size of the whole biotope and repeats on every Abschnitt.
+    area_per_biotope = {
+        rec.id_biotop: rec.flaeche_oder_laenge or 0.0 for rec in records if rec.shape_type == BiotopeShape.AREA
+    }
+    if area_per_biotope:
+        logger.info("Biotopfläche gesamt: %.0f m²", sum(area_per_biotope.values()))
 
     container = Container(
         containerTitle="Biotope_Container",
