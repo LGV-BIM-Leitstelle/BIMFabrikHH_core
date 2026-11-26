@@ -1,9 +1,13 @@
-"""DGM1 tiles for the generic terrain examples.
+"""DGM1 tiles and ALKIS Nutzung for the generic terrain examples.
 
 Looks in ``examples/assets/dgm1_hh_2022-04-30`` first. Missing tiles are
 taken from ``BIMFABRIKHH_DGM_TIF_DIR`` or the local
 ``___BIMFabrikHH_Datensaetze/dgm1_hh_2022-04-30`` archive (Windows + WSL)
 and copied into assets.
+
+The Nutzung for ``EXAMPLE_BBOX`` is read from
+``examples/assets/alkis_nutzung_example.geojson``. If that file is missing,
+it is downloaded once from the Hamburg OAF.
 """
 
 from __future__ import annotations
@@ -16,6 +20,13 @@ from pathlib import Path
 from pyproj import Transformer
 
 from BIMFabrikHH_core.data_models.params_bbox import BoundingBoxParams
+from BIMFabrikHH_core.data_models.streets import (
+    GUIDE_NUTZARTEN,
+    StreetRecord,
+    fetch_nutzung_feature_collection,
+    load_streets_records,
+    write_nutzung_geojson,
+)
 
 # WGS84 crop: Innenstadt / Binnenalster–Außenalster (same as terrain README OAF example).
 # Innenstadt / Alster, 950 m × 950 m (~0.90 km²) so the API 1 km² cap accepts it.
@@ -25,6 +36,7 @@ _TILE_NAME = "dgm1_32_{easting}_{northing}_1_hh_2022.tif"
 # Same default as ``extract_mesh_adaptive(..., buffer_meters=100)``.
 _BBOX_BUFFER_M = 100.0
 _ASSETS = Path(__file__).resolve().parents[2] / "assets" / "dgm1_hh_2022-04-30"
+_NUTZUNG = _ASSETS.parent / "alkis_nutzung_example.geojson"
 
 _ARCHIVE_WIN = r"C:\_Lokale_Daten_ungesichert\___BIMFabrikHH_Datensaetze\dgm1_hh_2022-04-30"
 _ARCHIVE_MNT = "/mnt/c/_Lokale_Daten_ungesichert/___BIMFabrikHH_Datensaetze/dgm1_hh_2022-04-30"
@@ -147,3 +159,15 @@ def dgm_tile_paths(bbox: BoundingBoxParams | None = None) -> list[str]:
             + str(assets)
         )
     return [str(p) for p in files]
+
+
+def example_guide_records() -> list[StreetRecord]:
+    """Return the ALKIS Nutzung guide records for ``EXAMPLE_BBOX`` (EPSG:25832).
+
+    Reads ``examples/assets/alkis_nutzung_example.geojson``; downloads it once
+    from the Hamburg OAF when missing. Delete the file to fetch a fresh one.
+    """
+    if not _NUTZUNG.is_file():
+        bbox = (EXAMPLE_BBOX.min_x, EXAMPLE_BBOX.min_y, EXAMPLE_BBOX.max_x, EXAMPLE_BBOX.max_y)
+        write_nutzung_geojson(fetch_nutzung_feature_collection(bbox), _NUTZUNG, nutzarten=GUIDE_NUTZARTEN)
+    return load_streets_records(_NUTZUNG, nutzarten=GUIDE_NUTZARTEN)

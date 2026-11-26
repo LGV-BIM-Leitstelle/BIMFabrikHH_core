@@ -37,7 +37,6 @@ from BIMFabrikHH_core.core.ogc_extractor import strip_closing_duplicate_xy
 from BIMFabrikHH_core.data_models.streets import (
     PARCELS_LABEL,
     PARCEL_NUTZARTEN,
-    load_guide_records_from_oaf,
     nutzung_split_label,
 )
 from BIMFabrikHH_core.data_models.terrain_mesh import TerrainMesh
@@ -1411,36 +1410,17 @@ def merge_parcel_meshes(parts: Dict[str, TerrainMesh]) -> Dict[str, TerrainMesh]
 
 def resolve_guide_records(
     guide_records: Optional[Sequence[Any]],
-    bbox_wgs84: Optional[Tuple[float, float, float, float]],
     *,
-    guide_from_oaf: bool,
     source_epsg: Optional[int] = None,
-    write_geojson: bool = False,
-    output_dir: Optional[Union[str, Path]] = None,
 ) -> Optional[Sequence[Any]]:
-    """Return the guide records to use in the DGM tile CRS, fetching from the Hamburg OAF if asked.
+    """Return the given guide records in the DGM tile CRS.
 
     Writer-neutral: both :class:`TerrainGenericApp` and :class:`TerrainRustApp`
-    call this. Provided ``guide_records`` are in ``source_epsg`` and are
-    transformed into the DGM tile CRS (``None`` keeps them as they are).
-    ``guide_from_oaf=True`` with no records pulls ALKIS ``Nutzung`` for
-    ``bbox_wgs84``, already in the DGM tile CRS; ``write_geojson`` then
-    persists the response next to ``output_dir``.
+    call this. ``guide_records`` are in ``source_epsg`` and are transformed
+    into the DGM tile CRS (``None`` keeps them as they are). Loading the
+    ALKIS ``Nutzung`` is the caller's job, e.g.
+    :func:`~BIMFabrikHH_core.data_models.streets.load_guide_records_from_oaf`.
     """
-    if guide_from_oaf and guide_records is None:
-        if bbox_wgs84 is None:
-            logger.warning("guide_from_oaf=True needs RequestParams.bbox")
-            return guide_records
-        out_dir = Path(output_dir) if output_dir is not None else None
-        if write_geojson and out_dir is None:
-            logger.warning("write_geojson=True needs output_path to know where to save")
-        return load_guide_records_from_oaf(
-            bbox_wgs84,
-            write_geojson=bool(write_geojson and out_dir is not None),
-            output_dir=out_dir,
-        )
-    if write_geojson:
-        logger.warning("write_geojson=True is ignored unless guide_from_oaf fetches Nutzung")
     if guide_records is None:
         return None
     return transform_record_rings(guide_records, transformer_to_dgm(source_epsg))

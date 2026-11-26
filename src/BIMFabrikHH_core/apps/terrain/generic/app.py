@@ -203,8 +203,6 @@ class TerrainGenericApp:
         guide_edge_spacing_m: float = DEFAULT_GUIDE_EDGE_SPACING_M,
         merge_parcels: bool = True,
         split_by_landuse: bool = False,
-        guide_from_oaf: bool = False,
-        write_geojson: bool = False,
         export_landxml: bool = False,
         landxml_path: Optional[Union[str, Path]] = None,
     ) -> Optional[Path]:
@@ -230,11 +228,6 @@ class TerrainGenericApp:
         Nutzung type plus leftover DGM and wins over ``merge_parcels``.
         ALKIS attributes go on each part as ``Pset_Objektinformation``.
 
-        ``guide_from_oaf`` pulls ALKIS ``Nutzung`` from the Hamburg OAF for
-        the request bbox. ``write_geojson`` (default ``False``) optionally
-        writes ``alkis_nutzung_verkehr.geojson`` and
-        ``alkis_nutzung_weitere.geojson`` next to ``output_path``.
-
         ``export_landxml`` (default ``False``) additionally writes a LandXML
         1.2 TIN with one ``<Surface>`` per part (DGM + each Nutzung type),
         the exact same triangles as the IFC. ``landxml_path`` overrides the
@@ -250,14 +243,7 @@ class TerrainGenericApp:
         DGM tile CRS.
         """
         transformer = dgm_output_transformer(request_params.output_epsg, move_to_origin=move_to_origin)
-        guide_records = resolve_guide_records(
-            guide_records,
-            request_params.bbox_as_wgs84_tuple,
-            guide_from_oaf=guide_from_oaf,
-            source_epsg=request_params.source_epsg,
-            write_geojson=write_geojson,
-            output_dir=(Path(output_path).parent if output_path is not None else None),
-        )
+        guide_records = resolve_guide_records(guide_records, source_epsg=request_params.source_epsg)
 
         bbox_utm = bbox_request_params_to_epsg25832(request_params)
         t0 = time.perf_counter()
