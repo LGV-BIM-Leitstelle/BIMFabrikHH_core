@@ -34,7 +34,7 @@ from BIMFabrikHH_core.core.georeferencing.extract_elevation import (
     sample_elevations_from_raster,
 )
 from BIMFabrikHH_core.core.ogc_extractor import strip_closing_duplicate_xy
-from BIMFabrikHH_core.data_models.streets import (
+from BIMFabrikHH_core.data_models.nutzung import (
     PARCELS_LABEL,
     PARCEL_NUTZARTEN,
     nutzung_split_label,
@@ -312,7 +312,7 @@ def collect_guide_rings(
 ) -> List[GuideRing]:
     """Densify ALKIS Nutzung exterior rings to ``(N, 2)`` arrays in EPSG:25832.
 
-    ``records`` are :class:`StreetRecord`-like objects (``rings``) in the DGM
+    ``records`` are :class:`NutzungRecord`-like objects (``rings``) in the DGM
     tile CRS (see :func:`resolve_guide_records`). When ``bbox_utm`` is set, each
     ring is clipped to that rectangle so Bruchkanten cannot extend the TIN past
     the same crop used for the unguided DGM.
@@ -1458,7 +1458,7 @@ def resolve_guide_records(
     call this. ``guide_records`` are in ``source_epsg`` and are transformed
     into the DGM tile CRS (``None`` keeps them as they are). Loading the
     ALKIS ``Nutzung`` is the caller's job, e.g.
-    :func:`~BIMFabrikHH_core.data_models.streets.load_guide_records_from_oaf`.
+    :func:`~BIMFabrikHH_core.data_models.nutzung.load_guide_records_from_oaf`.
     """
     if guide_records is None:
         return None

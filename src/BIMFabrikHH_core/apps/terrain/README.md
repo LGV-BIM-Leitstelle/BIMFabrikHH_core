@@ -20,7 +20,7 @@ https://api.hamburg.de/datasets/v1/alkis_vereinfacht/collections/Nutzung/items?f
 The terrain apps do not load it themselves: pass the records as `guide_records`.
 The guided examples read `examples/assets/alkis_nutzung_example.geojson`, downloaded
 once for the example bbox (delete it to fetch a fresh one). Other callers can use
-`load_guide_records_from_oaf(bbox)` from `data_models/streets.py`; with
+`load_guide_records_from_oaf(bbox)` from `data_models/nutzung.py`; with
 `write_geojson=True, output_dir=...` it also persists:
 
 - `alkis_nutzung_verkehr.geojson` — traffic types
@@ -30,7 +30,7 @@ once for the example bbox (delete it to fetch a fresh one). Other callers can us
 
 ## Typen (`nutzart`)
 
-The guided DGM uses `GUIDE_NUTZARTEN` in `data_models/streets.py`.
+The guided DGM uses `GUIDE_NUTZARTEN` in `data_models/nutzung.py`.
 
 **Verkehr**
 

@@ -68,18 +68,18 @@ from .data_models.flurstuecke import (
 from .data_models.flurstuecke import (
     records_from_geojson_feature_collection as flurstuecke_records_from_geojson_feature_collection,
 )
-from .data_models.params_bbox import BoundingBoxParams
-from .data_models.params_tree import Component, Container, RequestParams
-from .data_models.streets import (
+from .data_models.nutzung import (
     DEFAULT_NUTZARTEN,
     GUIDE_NUTZARTEN,
-    StreetRecord,
+    NutzungRecord,
     collect_street_psets,
-    load_streets_records,
+    load_nutzung_records,
 )
-from .data_models.streets import (
-    records_from_geojson_feature_collection as streets_records_from_geojson_feature_collection,
+from .data_models.nutzung import (
+    records_from_geojson_feature_collection as nutzung_records_from_geojson_feature_collection,
 )
+from .data_models.params_bbox import BoundingBoxParams
+from .data_models.params_tree import Component, Container, RequestParams
 from .data_models.terrain_mesh import TerrainMesh
 from .data_models.tree_record import TreeRecord
 from .data_models.wasserschutzgebiete import (
@@ -123,10 +123,10 @@ __all__ = [
     "records_from_geojson_feature_collection",
     "DEFAULT_NUTZARTEN",
     "GUIDE_NUTZARTEN",
-    "StreetRecord",
+    "NutzungRecord",
     "collect_street_psets",
-    "load_streets_records",
-    "streets_records_from_geojson_feature_collection",
+    "load_nutzung_records",
+    "nutzung_records_from_geojson_feature_collection",
     "FlurstueckRecord",
     "collect_flurstueck_psets",
     "load_flurstuecke_records",

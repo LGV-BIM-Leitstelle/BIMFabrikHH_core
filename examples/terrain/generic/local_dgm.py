@@ -20,11 +20,11 @@ from pathlib import Path
 from pyproj import Transformer
 
 from BIMFabrikHH_core.data_models.params_bbox import BoundingBoxParams
-from BIMFabrikHH_core.data_models.streets import (
+from BIMFabrikHH_core.data_models.nutzung import (
     GUIDE_NUTZARTEN,
-    StreetRecord,
+    NutzungRecord,
     fetch_nutzung_feature_collection,
-    load_streets_records,
+    load_nutzung_records,
     write_nutzung_geojson,
 )
 
@@ -161,7 +161,7 @@ def dgm_tile_paths(bbox: BoundingBoxParams | None = None) -> list[str]:
     return [str(p) for p in files]
 
 
-def example_guide_records() -> list[StreetRecord]:
+def example_guide_records() -> list[NutzungRecord]:
     """Return the ALKIS Nutzung guide records for ``EXAMPLE_BBOX`` (EPSG:25832).
 
     Reads ``examples/assets/alkis_nutzung_example.geojson``; downloads it once
@@ -170,4 +170,4 @@ def example_guide_records() -> list[StreetRecord]:
     if not _NUTZUNG.is_file():
         bbox = (EXAMPLE_BBOX.min_x, EXAMPLE_BBOX.min_y, EXAMPLE_BBOX.max_x, EXAMPLE_BBOX.max_y)
         write_nutzung_geojson(fetch_nutzung_feature_collection(bbox), _NUTZUNG, nutzarten=GUIDE_NUTZARTEN)
-    return load_streets_records(_NUTZUNG, nutzarten=GUIDE_NUTZARTEN)
+    return load_nutzung_records(_NUTZUNG, nutzarten=GUIDE_NUTZARTEN)

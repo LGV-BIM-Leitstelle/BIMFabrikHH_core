@@ -37,7 +37,7 @@ from BIMFabrikHH_core.data_models.boreholes import BoreholeLayer, BoreholeRecord
 from BIMFabrikHH_core.data_models.flurstuecke import FlurstueckRecord
 from BIMFabrikHH_core.data_models.params_tree import BoundingBoxParams, RequestParams
 from BIMFabrikHH_core.data_models.pydantic_georeferencing import CoordinateSystem, CoordinateSystemTemplates
-from BIMFabrikHH_core.data_models.streets import StreetRecord
+from BIMFabrikHH_core.data_models.nutzung import NutzungRecord
 from BIMFabrikHH_core.data_models.terrain_mesh import TerrainMesh
 from BIMFabrikHH_core.data_models.wasserschutzgebiete import WasserschutzgebietRecord
 
@@ -558,8 +558,8 @@ def test_biotopes_transforms_source_to_output(shape, offset, distance, tmp_path:
     assert _nearest(path, (x + offset[0], y + offset[1])) == pytest.approx(distance, abs=0.01)
 
 
-def _street(rings) -> StreetRecord:
-    return StreetRecord(feature_id=1, rings=rings, nutzart="Weg")
+def _street(rings) -> NutzungRecord:
+    return NutzungRecord(feature_id=1, rings=rings, nutzart="Weg")
 
 
 def test_resolve_guide_records_transforms_source_into_dgm_crs() -> None:

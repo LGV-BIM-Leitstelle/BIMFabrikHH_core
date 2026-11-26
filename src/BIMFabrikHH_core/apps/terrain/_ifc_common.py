@@ -20,7 +20,7 @@ from pydantic import BaseModel
 
 from BIMFabrikHH_core.data_models.pydantic_psets_BIMHH import default_bim_hamburg_hyperlink
 from BIMFabrikHH_core.data_models.pydantic_psets_terrain import Pset_Objektinformation_DGM
-from BIMFabrikHH_core.data_models.streets import PARCELS_LABEL
+from BIMFabrikHH_core.data_models.nutzung import PARCELS_LABEL
 
 RgbTuple = Union[Tuple[float, float, float], Tuple[int, int, int]]
 
@@ -136,7 +136,7 @@ def terrain_part_psets(
     models directly; :class:`TerrainRustApp` serializes them for Rust, so the
     written psets are identical.
     """
-    from BIMFabrikHH_core.data_models.streets import (
+    from BIMFabrikHH_core.data_models.nutzung import (
         PARCELS_LABEL,
         pset_for_nutzung_group,
         pset_for_parcel_group,

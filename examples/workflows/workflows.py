@@ -79,7 +79,7 @@ from BIMFabrikHH_core.core.geometry import basepoint_pset_values, basepoint_xyz,
 from BIMFabrikHH_core.core.georeferencing import DGM_TILE_VERTICAL_EPSG, CoordinateTransformer
 from BIMFabrikHH_core.core.model_creator import georeference_options, init_ifc_project, output_coordinate_system
 from BIMFabrikHH_core.core.ogc_extractor import extract_project_info, extract_psets_basepoint
-from BIMFabrikHH_core.data_models.streets import GUIDE_NUTZARTEN, records_from_geojson_feature_collection
+from BIMFabrikHH_core.data_models.nutzung import GUIDE_NUTZARTEN, records_from_geojson_feature_collection
 
 _HERE = Path(__file__).resolve().parent
 

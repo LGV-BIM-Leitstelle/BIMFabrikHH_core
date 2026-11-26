@@ -14,7 +14,7 @@ every Hamburg parcel (Hamburg keeps no Fluren), and ``land`` / ``landschl`` /
 ``regbezirk`` / ``kreis`` / ``gemeinde`` and their ``*schl`` counterparts are
 constant for the whole city — none of them are modelled here.
 
-Like :class:`StreetRecord` / :class:`WasserschutzgebietRecord`, each record
+Like :class:`NutzungRecord` / :class:`WasserschutzgebietRecord`, each record
 carries IFC pset templates under ``psets``.
 """
 
