@@ -747,8 +747,10 @@ def generate_constrained_mesh(
     values are first filled along the ring so the ring stays closed.
     Duplicate and crop-frame segments are dropped, and with ``bbox_utm`` the
     umring is added as one clean line per side so clipped rings stay closed.
-    Holes that remain, for example without ``bbox_utm``, are filled from
-    unconstrained Delaunay. Requires the ``triangle`` package.
+    Triangle ``p`` only removes triangles from the outside in, so the closed
+    umring leaves no holes. Without ``bbox_utm``, the area outside closed
+    rings is filled from unconstrained Delaunay. Requires the ``triangle``
+    package.
     """
     try:
         import triangle as tr
@@ -856,7 +858,8 @@ def generate_constrained_mesh(
             vertices.append([float(x), float(y), float(z if z is not None else 0.0)])
         valid = (faces_arr >= 0) & (faces_arr < len(vertices))
         faces = faces_arr[valid.all(axis=1)].tolist() if faces_arr.size else []
-        vertices, faces = _fill_mesh_holes(vertices, faces)
+        if bbox_utm is None:
+            vertices, faces = _fill_mesh_holes(vertices, faces)
         logger.info(
             "CDT mesh: %d vertices, %d faces, %d Bruchkante segments",
             len(vertices),

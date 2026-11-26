@@ -238,7 +238,8 @@ def test_generate_constrained_mesh_closes_clipped_ring(monkeypatch: pytest.Monke
     z = np.ones(4)
     ring_xy = np.array([[0.0, 0.0], [4.0, 0.0], [4.0, 4.0], [0.0, 4.0]])
     ring_z = np.array([1.0, 1.0, np.nan, 1.0])
-    vertices, _ = generate_constrained_mesh(x, y, z, [ring_xy], [ring_z], bbox_utm=(0.0, 0.0, 10.0, 10.0))
+    vertices, faces = generate_constrained_mesh(x, y, z, [ring_xy], [ring_z], bbox_utm=(0.0, 0.0, 10.0, 10.0))
+    assert faces == [[0, 1, 2]], "with bbox_utm the Delaunay refill must not run"
 
     xy = [tuple(v[:2]) for v in vertices]
     got = {frozenset((xy[a], xy[b])) for a, b in sent[0]}
