@@ -30,7 +30,7 @@ once for the example bbox (delete it to fetch a fresh one). Other callers can us
 
 ## Typen (`nutzart`)
 
-The guided DGM uses `GUIDE_NUTZARTEN` in `data_models/streets.py`. The standalone streets example is in `__local_dev/streets` (not part of the DGM app).
+The guided DGM uses `GUIDE_NUTZARTEN` in `data_models/streets.py`.
 
 **Verkehr**
 

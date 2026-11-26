@@ -114,7 +114,7 @@ class FlurstueckeGenericApp:
         Colour is ``record.element_color`` unless ``color`` is set (one colour for all).
 
         Psets come from ``record.psets`` (plus default hyperlink), same pattern as
-        :class:`WasserschutzgebieteGenericApp` / :class:`StreetsGenericApp`.
+        :class:`WasserschutzgebieteGenericApp`.
 
         Rings and ``basepoint_origin`` are in ``request_params.source_epsg``
         (25832 for the Hamburg OGC API) and are transformed into

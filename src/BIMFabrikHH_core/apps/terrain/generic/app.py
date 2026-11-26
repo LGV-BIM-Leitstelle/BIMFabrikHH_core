@@ -24,7 +24,6 @@ from ifcfactory import BIMFactoryElement, MeshRepresentation, Style
 from ifcopenshell.util.shape_builder import ShapeBuilder
 from pydantic import BaseModel
 
-from BIMFabrikHH_core.apps.streets.processing import dgm_output_transformer
 from BIMFabrikHH_core.apps.terrain._ifc_common import (
     DEFAULT_TERRAIN_LAYER,
     DEFAULT_TERRAIN_RGB,
@@ -37,6 +36,7 @@ from BIMFabrikHH_core.apps.terrain.landxml import export_terrain_landxml
 from BIMFabrikHH_core.apps.terrain.processing import (
     DEFAULT_GUIDE_EDGE_SPACING_M,
     build_landuse_parts,
+    dgm_output_transformer,
     extract_mesh_adaptive,
     resolve_guide_records,
     transform_mesh,

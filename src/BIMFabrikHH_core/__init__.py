@@ -49,7 +49,6 @@ from .apps.flurstuecke.generic.app import FlurstueckeGenericApp
 from .apps.terrain.basic.app import TerrainBasicApp
 from .apps.terrain.generic.app import TerrainGenericApp
 from .apps.terrain.generic_rust import TerrainRustApp
-from .apps.streets.generic.app import StreetsGenericApp
 from .apps.trees.basic.app import TreesBasicApp
 from .apps.trees.generic.app import TreesGenericApp
 from .apps.trees.generic_rust import TreesRustApp
@@ -107,7 +106,6 @@ __all__ = [
     "TreesGenericApp",
     "TreesRustApp",
     "WasserschutzgebieteGenericApp",
-    "StreetsGenericApp",
     "FlurstueckeGenericApp",
     # Data models
     "BoreholeLayer",

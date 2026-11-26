@@ -25,6 +25,7 @@ from scipy.sparse.csgraph import connected_components
 from scipy.spatial import Delaunay, cKDTree
 
 from BIMFabrikHH_core.config.logging_config import get_logger
+from BIMFabrikHH_core.core.georeferencing import DGM_TILE_EPSG, DGM_TILE_VERTICAL_EPSG
 from BIMFabrikHH_core.core.georeferencing.coordinate_transformer import CoordinateTransformer
 from BIMFabrikHH_core.core.georeferencing.extract_elevation import (
     invalid_z,
@@ -32,7 +33,6 @@ from BIMFabrikHH_core.core.georeferencing.extract_elevation import (
     open_geotiff,
     sample_elevations_from_raster,
 )
-from BIMFabrikHH_core.apps.streets.processing import transform_record_rings, transformer_to_dgm
 from BIMFabrikHH_core.core.ogc_extractor import strip_closing_duplicate_xy
 from BIMFabrikHH_core.data_models.streets import (
     PARCELS_LABEL,
@@ -1406,6 +1406,45 @@ def merge_parcel_meshes(parts: Dict[str, TerrainMesh]) -> Dict[str, TerrainMesh]
     if not combined.is_empty():
         out[PARCELS_LABEL] = combined
     return out
+
+
+def transformer_to_dgm(source_epsg: Optional[int]) -> Optional[CoordinateTransformer]:
+    """Transformer from ``source_epsg`` into the DGM tile CRS, or ``None`` without a source.
+
+    ``None`` means the coordinates are used as they are; the caller vouches
+    they match the DGM.
+    """
+    if source_epsg is None:
+        return None
+    return CoordinateTransformer.from_source_to_output(source_epsg, DGM_TILE_EPSG)
+
+
+def dgm_output_transformer(output_epsg: Optional[int], *, move_to_origin: bool = False) -> CoordinateTransformer:
+    """Transformer from the DGM tile CRS (heights DHHN2016) into ``output_epsg``.
+
+    Identity when ``output_epsg`` is ``None``. Its target is the CRS the IFC
+    header, basepoint and LandXML are written in.
+
+    Raises:
+        ValueError: ``move_to_origin`` together with a different ``output_epsg``;
+            the shifted vertices are local and cannot be transformed.
+    """
+    transformer = CoordinateTransformer.from_source_to_output(DGM_TILE_EPSG, output_epsg, DGM_TILE_VERTICAL_EPSG)
+    if move_to_origin and not transformer.is_identity:
+        raise ValueError(f"move_to_origin cannot be combined with output_epsg EPSG:{output_epsg}")
+    return transformer
+
+
+def transform_record_rings(records: Sequence[Any], transformer: Optional[CoordinateTransformer]) -> List[Any]:
+    """Return copies of ``records`` with every ``rings`` entry transformed by ``transformer``.
+
+    ``None`` or an identity transformer keep the records as they are.
+    """
+    if transformer is None or transformer.is_identity:
+        return list(records)
+    return [
+        rec.model_copy(update={"rings": [transformer.transform_ring(ring) for ring in rec.rings]}) for rec in records
+    ]
 
 
 def resolve_guide_records(

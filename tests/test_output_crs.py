@@ -18,8 +18,12 @@ from BIMFabrikHH_core.apps.biotopes.generic.app import BiotopesGenericApp
 from BIMFabrikHH_core.apps.boreholes.generic.app import BoreholesGenericApp
 from BIMFabrikHH_core.apps.city.processing import citygml_crs, with_tile_crs
 from BIMFabrikHH_core.apps.flurstuecke.generic.app import FlurstueckeGenericApp
-from BIMFabrikHH_core.apps.streets.processing import dgm_output_transformer, transformer_to_dgm
-from BIMFabrikHH_core.apps.terrain.processing import resolve_guide_records, transform_mesh
+from BIMFabrikHH_core.apps.terrain.processing import (
+    dgm_output_transformer,
+    resolve_guide_records,
+    transform_mesh,
+    transformer_to_dgm,
+)
 from BIMFabrikHH_core.apps.trees import check_positions_in_dgm_crs, transform_record_positions
 from BIMFabrikHH_core.apps.trees.generic.app import TreesGenericApp
 from BIMFabrikHH_core.apps.wasserschutzgebiete.generic.app import WasserschutzgebieteGenericApp
@@ -556,18 +560,6 @@ def test_biotopes_transforms_source_to_output(shape, offset, distance, tmp_path:
 
 def _street(rings) -> StreetRecord:
     return StreetRecord(feature_id=1, rings=rings, nutzart="Weg")
-
-
-def test_streets_drape_in_dgm_crs_then_write_output_epsg(tmp_path: Path) -> None:
-    from BIMFabrikHH_core.apps.streets.generic.app import StreetsGenericApp
-
-    request = RequestParams(bbox=HAMBURG_BBOX, source_epsg=25832, output_epsg=GK)
-    path = StreetsGenericApp.build_ifc(
-        [_street([_square(*POINT_25832)])], request_params=request, output_path=tmp_path / "streets.ifc"
-    )
-    assert _crs_header(path)[::3] == ("EPSG:10285", "EPSG:7837")
-    corner = _world_points(path).min(axis=0)
-    assert math.dist(corner[:2], _to_gk(*POINT_25832)) < 0.5
 
 
 def test_resolve_guide_records_transforms_source_into_dgm_crs() -> None:
