@@ -20,7 +20,9 @@ from pathlib import Path
 from typing import Any, Dict, FrozenSet, Iterable, List, Optional, Sequence, Tuple, Union
 
 import numpy as np
-from scipy.spatial import Delaunay
+from scipy.sparse import coo_matrix
+from scipy.sparse.csgraph import connected_components
+from scipy.spatial import Delaunay, cKDTree
 
 from BIMFabrikHH_core.config.logging_config import get_logger
 from BIMFabrikHH_core.core.georeferencing.coordinate_transformer import CoordinateTransformer
@@ -95,7 +97,8 @@ class GuideRing:
 # Terrain-feature analysis + adaptive sampling
 # ---------------------------------------------------------------------------
 
-_MIN_FACE_AREA_XY = 1e-3
+_MIN_FACE_AREA_XY = 1e-9
+_WELD_DISTANCE_XY = 1e-6
 
 
 def analyze_terrain_features(elevation_data: np.ndarray) -> np.ndarray:
@@ -357,13 +360,33 @@ def drop_sliver_faces(
     *,
     min_area_xy: float = _MIN_FACE_AREA_XY,
 ) -> Tuple[List[List[float]], List[List[int]]]:
-    """Remove triangles with near-zero XY area (collinear frame slivers)."""
+    """Remove degenerate triangles without opening holes in the mesh.
+
+    Vertices at the same XY position are welded first. A triangle with two
+    such corners then collapses to an edge, and its neighbours share that
+    edge, so the mesh stays closed. Triangles whose three distinct corners
+    are still collinear in XY are dropped. Small but valid triangles stay:
+    between ALKIS outlines a few centimetres apart they are real mesh faces.
+    """
     if not vertices or not faces:
         return vertices, faces
     verts = np.asarray(vertices, dtype=float)
     tris = np.asarray(faces, dtype=int)
     if tris.ndim != 2 or tris.shape[1] < 3:
         return vertices, faces
+    pairs = cKDTree(verts[:, :2]).query_pairs(r=_WELD_DISTANCE_XY, output_type="ndarray")
+    if len(pairs):
+        n = len(verts)
+        graph = coo_matrix((np.ones(len(pairs)), (pairs[:, 0], pairs[:, 1])), shape=(n, n))
+        n_groups, group = connected_components(graph, directed=False)
+        first = np.full(n_groups, n)
+        np.minimum.at(first, group, np.arange(n))
+        target = first[group]
+        welded = int((target != np.arange(n)).sum())
+        tris = target[tris]
+        collapsed = (tris[:, 0] == tris[:, 1]) | (tris[:, 1] == tris[:, 2]) | (tris[:, 0] == tris[:, 2])
+        tris = tris[~collapsed]
+        logger.info("Welded %d duplicate vertices; %d collapsed face(s) removed", welded, int(collapsed.sum()))
     a, b, c = verts[tris[:, 0]], verts[tris[:, 1]], verts[tris[:, 2]]
     area = 0.5 * np.abs((b[:, 0] - a[:, 0]) * (c[:, 1] - a[:, 1]) - (b[:, 1] - a[:, 1]) * (c[:, 0] - a[:, 0]))
     keep = area >= min_area_xy

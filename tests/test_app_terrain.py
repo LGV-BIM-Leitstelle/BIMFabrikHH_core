@@ -264,10 +264,7 @@ UMRING_HANG_BBOX = BoundingBoxParams(
 
 
 def _umring_hang_hole_vertices() -> int:
-    """Build the DGM for ``UMRING_HANG_BBOX`` and count border vertices off the umring.
-
-    Sliver removal is switched off, so only the constrained triangulation is checked.
-    """
+    """Build the DGM for ``UMRING_HANG_BBOX`` and count border vertices off the umring."""
     import json
 
     from BIMFabrikHH_core.apps.terrain import processing
@@ -278,7 +275,6 @@ def _umring_hang_hole_vertices() -> int:
     nutzung = json.loads((data_dir / "alkis_nutzung_umring_hang.geojson").read_text(encoding="utf-8"))
     records = records_from_geojson_feature_collection(nutzung, nutzarten=GUIDE_NUTZARTEN)
     bbox_utm = bbox_request_params_to_epsg25832(RequestParams(bbox=UMRING_HANG_BBOX, containers=[]))
-    processing.drop_sliver_faces = lambda vertices, faces: (vertices, faces)
     mesh = processing.extract_mesh_adaptive(
         [data_dir / "dgm1_umring_hang.tif"],
         bbox_utm=bbox_utm,
@@ -338,6 +334,33 @@ def test_drop_sliver_faces_removes_collinear_frame_triangle() -> None:
     assert len(tris) == 1
     assert all(len(face) == 3 for face in tris)
     assert len(verts) == 3
+
+
+def test_drop_sliver_faces_keeps_small_valid_triangle() -> None:
+    """A 5 cm x 2 cm triangle between close ALKIS outlines is a real face, not a sliver."""
+    vertices = [[0.0, 0.0, 1.0], [0.05, 0.0, 1.0], [0.0, 0.02, 1.0]]
+    faces = [[0, 1, 2]]
+    verts, tris = drop_sliver_faces(vertices, faces)
+    assert tris == faces
+    assert verts == vertices
+
+
+def test_drop_sliver_faces_welds_duplicate_vertex_without_hole() -> None:
+    """A zero-area face from a duplicate vertex collapses; its neighbours share the edge."""
+    vertices = [
+        [0.0, 0.0, 1.0],
+        [1.0, 0.0, 1.0],
+        [1.0, 1.0, 1.0],
+        [2.0, 0.0, 1.0],
+        [1.0, 1e-8, 1.0],
+    ]
+    faces = [[0, 1, 2], [1, 4, 2], [4, 3, 2]]
+    verts, tris = drop_sliver_faces(vertices, faces)
+    assert len(verts) == 4
+    assert len(tris) == 2
+    edges = [tuple(sorted((tri[i], tri[(i + 1) % 3]))) for tri in tris for i in range(3)]
+    shared = [edge for edge in set(edges) if edges.count(edge) == 2]
+    assert len(shared) == 1
 
 
 def test_collect_guide_rings_clips_to_bbox() -> None:
