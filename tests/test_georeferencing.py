@@ -5,9 +5,13 @@ import pytest
 
 # Import the functions to test
 from BIMFabrikHH_core.core.georeferencing.crs_transform import bbox_wgs84_to_epsg25832
+from affine import Affine
+from rasterio.io import MemoryFile
+
 from BIMFabrikHH_core.core.georeferencing.extract_elevation import (
     invalid_z,
     sample_elevations_for_points,
+    sample_elevations_from_raster,
 )
 
 
@@ -78,28 +82,49 @@ class TestCrsTransform:
             bbox_wgs84_to_epsg25832(bbox)
 
 
+def _memory_raster(z: np.ndarray | float, *, size: int):
+    """Open a ``size`` x ``size`` m GeoTIFF in memory with origin (0, 0) and 1 m pixels."""
+    grid = np.broadcast_to(np.asarray(z, dtype="float32"), (size, size))
+    memfile = MemoryFile()
+    with memfile.open(
+        driver="GTiff",
+        width=size,
+        height=size,
+        count=1,
+        dtype="float32",
+        crs="EPSG:25832",
+        transform=Affine(1.0, 0.0, 0.0, 0.0, -1.0, float(size)),
+    ) as dst:
+        dst.write(grid, 1)
+    src = memfile.open()
+    src.memfile = memfile
+    return src
+
+
+class TestSampleElevationsFromRaster:
+    def test_nearest_pixel_outside_and_fill_values(self) -> None:
+        grid = np.array([[1.0, 2.0, 3.0], [4.0, 0.0, 6.0], [7.0, 8.0, 9.0]])
+        with _memory_raster(grid, size=3) as src:
+            x = np.array([0.5, 2.9, 1.5, 3.5, -0.1, 0.0])
+            y = np.array([2.5, 0.1, 1.5, 1.0, 1.0, 0.0])
+            out = sample_elevations_from_raster(src, x, y)
+        assert out[:2].tolist() == [1.0, 9.0]
+        assert np.isnan(out[2]), "0.0 DGM fill is missing"
+        assert np.isnan(out[3]) and np.isnan(out[4]), "outside the raster is missing"
+        assert np.isnan(out[5]), "the bottom edge lies below the last pixel row"
+
+    def test_empty_input(self) -> None:
+        with _memory_raster(1.0, size=2) as src:
+            assert sample_elevations_from_raster(src, np.array([]), np.array([])).shape == (0,)
+
+
 class TestSampleElevationsForPoints:
     def test_empty_points_returns_empty(self) -> None:
         out = sample_elevations_for_points(np.empty((0, 2)), ["a.tif"])
         assert out.shape == (0,)
 
     def test_first_valid_tile_wins(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        class _Src:
-            def __init__(self, z: float) -> None:
-                self.bounds = MagicMock(left=0, right=10, bottom=0, top=10)
-                self.nodata = None
-                self._z = z
-
-            def sample(self, coords):
-                return [[self._z] for _ in coords]
-
-            def __enter__(self):
-                return self
-
-            def __exit__(self, *args):
-                return False
-
-        files = iter([_Src(12.5), _Src(99.0)])
+        files = iter([_memory_raster(12.5, size=10), _memory_raster(99.0, size=10)])
 
         def _open(_path):
             return next(files)
@@ -113,22 +138,9 @@ class TestSampleElevationsForPoints:
         assert out.tolist() == [12.5, 12.5]
 
     def test_uncovered_points_use_default(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        class _Src:
-            bounds = MagicMock(left=0, right=1, bottom=0, top=1)
-            nodata = None
-
-            def sample(self, coords):
-                return [[5.0] for _ in coords]
-
-            def __enter__(self):
-                return self
-
-            def __exit__(self, *args):
-                return False
-
         monkeypatch.setattr(
             "BIMFabrikHH_core.core.georeferencing.extract_elevation.open_geotiff",
-            lambda _path: _Src(),
+            lambda _path: _memory_raster(5.0, size=1),
         )
         points = np.array([[100.0, 200.0]])
         out = sample_elevations_for_points(points, ["a.tif"], default_elevation=-1.0)
