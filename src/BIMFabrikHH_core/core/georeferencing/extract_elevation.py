@@ -15,6 +15,8 @@ from typing import Iterable, Optional, Union
 import numpy as np
 import rasterio
 from rasterio.io import MemoryFile
+from rasterio.transform import rowcol
+from rasterio.windows import Window
 
 from BIMFabrikHH_core.config.logging_config import get_logger
 
@@ -104,9 +106,20 @@ def sample_elevations_from_raster(src, x_coords: np.ndarray, y_coords: np.ndarra
 
     Points outside the raster, GDAL nodata, and the ``0.0`` DGM fill return ``NaN``.
     """
-    coords = list(zip(x_coords, y_coords))
-    samples = list(src.sample(coords))
-    values = np.array([s[0] if len(s) > 0 else np.nan for s in samples], dtype=float)
+    x = np.asarray(x_coords, dtype=float)
+    y = np.asarray(y_coords, dtype=float)
+    values = np.full(len(x), np.nan)
+    if len(x) == 0:
+        return values
+    rows, cols = rowcol(src.transform, x, y)
+    rows = np.asarray(rows, dtype=int)
+    cols = np.asarray(cols, dtype=int)
+    inside = (rows >= 0) & (rows < src.height) & (cols >= 0) & (cols < src.width)
+    if np.any(inside):
+        r0, c0 = int(rows[inside].min()), int(cols[inside].min())
+        r1, c1 = int(rows[inside].max()) + 1, int(cols[inside].max()) + 1
+        block = src.read(1, window=Window(c0, r0, c1 - c0, r1 - r0))
+        values[inside] = block[rows[inside] - r0, cols[inside] - c0]
     values[invalid_z(values, getattr(src, "nodata", None))] = np.nan
     return values
 

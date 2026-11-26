@@ -20,7 +20,9 @@ from pathlib import Path
 from typing import Any, Dict, FrozenSet, Iterable, List, Optional, Sequence, Tuple, Union
 
 import numpy as np
-from scipy.spatial import Delaunay
+from scipy.sparse import coo_matrix
+from scipy.sparse.csgraph import connected_components
+from scipy.spatial import Delaunay, cKDTree
 
 from BIMFabrikHH_core.config.logging_config import get_logger
 from BIMFabrikHH_core.core.georeferencing.coordinate_transformer import CoordinateTransformer
@@ -95,7 +97,8 @@ class GuideRing:
 # Terrain-feature analysis + adaptive sampling
 # ---------------------------------------------------------------------------
 
-_MIN_FACE_AREA_XY = 1e-3
+_MIN_FACE_AREA_XY = 1e-9
+_WELD_DISTANCE_XY = 1e-6
 
 
 def analyze_terrain_features(elevation_data: np.ndarray) -> np.ndarray:
@@ -357,13 +360,33 @@ def drop_sliver_faces(
     *,
     min_area_xy: float = _MIN_FACE_AREA_XY,
 ) -> Tuple[List[List[float]], List[List[int]]]:
-    """Remove triangles with near-zero XY area (collinear frame slivers)."""
+    """Remove degenerate triangles without opening holes in the mesh.
+
+    Vertices at the same XY position are welded first. A triangle with two
+    such corners then collapses to an edge, and its neighbours share that
+    edge, so the mesh stays closed. Triangles whose three distinct corners
+    are still collinear in XY are dropped. Small but valid triangles stay:
+    between ALKIS outlines a few centimetres apart they are real mesh faces.
+    """
     if not vertices or not faces:
         return vertices, faces
     verts = np.asarray(vertices, dtype=float)
     tris = np.asarray(faces, dtype=int)
     if tris.ndim != 2 or tris.shape[1] < 3:
         return vertices, faces
+    pairs = cKDTree(verts[:, :2]).query_pairs(r=_WELD_DISTANCE_XY, output_type="ndarray")
+    if len(pairs):
+        n = len(verts)
+        graph = coo_matrix((np.ones(len(pairs)), (pairs[:, 0], pairs[:, 1])), shape=(n, n))
+        n_groups, group = connected_components(graph, directed=False)
+        first = np.full(n_groups, n)
+        np.minimum.at(first, group, np.arange(n))
+        target = first[group]
+        welded = int((target != np.arange(n)).sum())
+        tris = target[tris]
+        collapsed = (tris[:, 0] == tris[:, 1]) | (tris[:, 1] == tris[:, 2]) | (tris[:, 0] == tris[:, 2])
+        tris = tris[~collapsed]
+        logger.info("Welded %d duplicate vertices; %d collapsed face(s) removed", welded, int(collapsed.sum()))
     a, b, c = verts[tris[:, 0]], verts[tris[:, 1]], verts[tris[:, 2]]
     area = 0.5 * np.abs((b[:, 0] - a[:, 0]) * (c[:, 1] - a[:, 1]) - (b[:, 1] - a[:, 1]) * (c[:, 0] - a[:, 0]))
     keep = area >= min_area_xy
@@ -467,9 +490,10 @@ def filter_bruchkante_segments(
 
     Frame edges (both endpoints on the umring rectangle) come from clipping
     ALKIS rings to the bbox. They are not cadastral Bruchkanten, and sending
-    them to Triangle ``p`` can hang. Clipped rings are then open; hole
-    triangles are filled afterwards by :func:`_fill_mesh_holes`. Segments
-    are treated as undirected, so ``[a, b]`` and ``[b, a]`` count as one.
+    them to Triangle ``p`` can hang, because the clipped edges of many rings
+    overlap on the same umring line. :func:`_umring_segments` closes the
+    clipped rings again with one clean line per side. Segments are treated
+    as undirected, so ``[a, b]`` and ``[b, a]`` count as one.
 
     Returns ``(kept, n_duplicate, n_frame)``.
     """
@@ -496,6 +520,32 @@ def filter_bruchkante_segments(
                 continue
         kept.append([key[0], key[1]])
     return kept, n_duplicate, n_frame
+
+
+def _umring_segments(
+    points_xy: Sequence[Sequence[float]],
+    bbox_utm: Tuple[float, float, float, float],
+    eps: float,
+) -> List[List[int]]:
+    """Connect all points on the umring rectangle, side by side, in order.
+
+    Gives one non-overlapping line per side through the DGM boundary points
+    and the clip points of the ALKIS rings. This closes every clipped ring,
+    and Triangle ``p`` has no open area to remove from the outside.
+    """
+    pts = np.asarray(points_xy, dtype=float)
+    min_x, min_y, max_x, max_y = bbox_utm
+    segments: List[List[int]] = []
+    for on_side, along in (
+        (np.abs(pts[:, 0] - min_x) <= eps, 1),
+        (np.abs(pts[:, 0] - max_x) <= eps, 1),
+        (np.abs(pts[:, 1] - min_y) <= eps, 0),
+        (np.abs(pts[:, 1] - max_y) <= eps, 0),
+    ):
+        idx = np.flatnonzero(on_side)
+        idx = idx[np.argsort(pts[idx, along])]
+        segments.extend([int(a), int(b)] for a, b in zip(idx[:-1], idx[1:]))
+    return segments
 
 
 def _point_in_any_triangle(
@@ -564,8 +614,9 @@ def _fill_mesh_holes(
 ) -> Tuple[List[List[float]], List[List[int]]]:
     """Fill CDT gaps with unconstrained Delaunay faces.
 
-    Triangle ``p`` only triangulates closed PSLG cycles. After crop-frame
-    segments are dropped, leftover DGM and clipped Flächen are empty.
+    Triangle ``p`` removes triangles from the outside in until it meets a
+    segment. Without the umring line (no ``bbox_utm``), areas outside closed
+    rings are therefore empty.
     Faces whose centroid already lies in the CDT are skipped so
     Bruchkanten stay as CDT edges.
     """
@@ -592,6 +643,92 @@ def _fill_mesh_holes(
     return vertices, faces + new
 
 
+def _fill_missing_ring_z_cyclic(xy: np.ndarray, z: np.ndarray) -> np.ndarray:
+    """Fill missing ring elevations by cyclic linear interpolation along the ring.
+
+    Missing values are interpolated between the two nearest valid vertices,
+    measured along the ring perimeter instead of by vertex index. Repeating
+    valid positions one perimeter before and after the ring lets an edge gap
+    cross the closing vertex (index 0) naturally.
+
+    If no elevation is valid, the ring remains unchanged. If exactly one
+    elevation is valid, it is reused for every vertex.
+    """
+    xy = np.asarray(xy, dtype=float)
+    z_out = np.asarray(z, dtype=float).copy()
+    ring_size = len(z_out)
+    if ring_size == 0:
+        return z_out
+
+    valid_mask = np.isfinite(z_out)
+    valid_count = int(valid_mask.sum())
+    if np.all(valid_mask):
+        return z_out
+    if valid_count == 0:
+        return z_out
+    if valid_count == 1:
+        z_out[:] = float(z_out[valid_mask][0])
+        return z_out
+
+    if len(xy) != ring_size:
+        return z_out
+
+    # Measure cumulative perimeter distance for each ring vertex, including
+    # the implicit closing edge back to vertex zero.
+    dx = np.diff(xy[:, 0], append=xy[0, 0])
+    dy = np.diff(xy[:, 1], append=xy[0, 1])
+    edge_lengths = np.hypot(dx, dy)
+    perimeter = float(edge_lengths.sum())
+    if perimeter <= 0.0:
+        # All vertices are coincident; use the mean of valid Z values.
+        z_out[~valid_mask] = float(np.mean(z_out[valid_mask]))
+        return z_out
+
+    cumulative_distance = np.empty(ring_size, dtype=float)
+    cumulative_distance[0] = 0.0
+    if ring_size > 1:
+        cumulative_distance[1:] = np.cumsum(edge_lengths[:-1])
+
+    # Three copies make the valid vertices appear before, within, and after
+    # the ring's perimeter. This represents the ring as a continuous loop.
+    valid_positions = np.concatenate(
+        [
+            cumulative_distance[valid_mask] - perimeter,
+            cumulative_distance[valid_mask],
+            cumulative_distance[valid_mask] + perimeter,
+        ]
+    )
+    valid_values = np.concatenate([z_out[valid_mask], z_out[valid_mask], z_out[valid_mask]])
+    cyclic_order = np.argsort(valid_positions)
+    valid_positions = valid_positions[cyclic_order]
+    valid_values = valid_values[cyclic_order]
+
+    # Interpolate each missing vertex by its two nearest valid neighbors along the ring.
+    for missing_index in np.flatnonzero(~valid_mask):
+        missing_distance = cumulative_distance[missing_index]
+
+        # Bracket the missing vertex by the nearest valid vertex on each side
+        # of the ring. The cyclic copies ensure these neighbors wrap correctly.
+        next_valid_index = int(np.searchsorted(valid_positions, missing_distance, side="left"))
+        previous_valid_index = next_valid_index - 1
+        if next_valid_index >= len(valid_positions):
+            next_valid_index = len(valid_positions) - 1
+            previous_valid_index = next_valid_index - 1
+
+        previous_distance = valid_positions[previous_valid_index]
+        next_distance = valid_positions[next_valid_index]
+        if next_distance == previous_distance:
+            z_out[missing_index] = float(valid_values[previous_valid_index])
+            continue
+
+        interpolation_weight = (missing_distance - previous_distance) / (next_distance - previous_distance)
+        previous_z = valid_values[previous_valid_index]
+        next_z = valid_values[next_valid_index]
+        z_out[missing_index] = float(previous_z + interpolation_weight * (next_z - previous_z))
+
+    return z_out
+
+
 def generate_constrained_mesh(
     x_coords: np.ndarray,
     y_coords: np.ndarray,
@@ -606,9 +743,13 @@ def generate_constrained_mesh(
 
     Terrain points and breakline vertices are snapped in XY, then Shewchuk
     Triangle honours consecutive ring edges whose both endpoints have a
-    valid DGM height (``p`` PSLG, not conforming ``pc``). Duplicate and
-    crop-frame segments are dropped so Triangle stays fast; holes are
-    then filled from unconstrained Delaunay. Requires the ``triangle``
+    valid DGM height (``p`` PSLG, not conforming ``pc``). Missing ring Z
+    values are first filled along the ring so the ring stays closed.
+    Duplicate and crop-frame segments are dropped, and with ``bbox_utm`` the
+    umring is added as one clean line per side so clipped rings stay closed.
+    Triangle ``p`` only removes triangles from the outside in, so the closed
+    umring leaves no holes. Without ``bbox_utm``, the area outside closed
+    rings is filled from unconstrained Delaunay. Requires the ``triangle``
     package.
     """
     try:
@@ -640,9 +781,17 @@ def generate_constrained_mesh(
         _add(px, py, pz)
 
     segments: List[List[int]] = []
+    filled_z = 0
+    open_rings = 0
     for ring_xy, ring_z in zip(rings_xy, rings_z):
         if len(ring_xy) < 2:
             continue
+        missing_before = int(np.isnan(ring_z).sum())
+        if missing_before:
+            ring_z = _fill_missing_ring_z_cyclic(ring_xy, ring_z)
+            missing_after = int(np.isnan(ring_z).sum())
+            filled_z += missing_before - missing_after
+            open_rings += int(missing_after > 0)
         idxs: List[Optional[int]] = []
         for (px, py), pz in zip(ring_xy, ring_z):
             if np.isnan(pz):
@@ -654,6 +803,10 @@ def generate_constrained_mesh(
             a, b = idxs[i], idxs[(i + 1) % n]
             if a is not None and b is not None and a != b:
                 segments.append([a, b])
+    if filled_z:
+        logger.info("Filled %d missing Bruchkante Z value(s) along their rings", filled_z)
+    if open_rings:
+        logger.warning("%d Bruchkante ring(s) have no valid Z at all and stay open", open_rings)
 
     if len(points_xy) < 3:
         logger.error("Not enough points for constrained triangulation")
@@ -670,6 +823,10 @@ def generate_constrained_mesh(
             n_frame,
             len(segments),
         )
+    if bbox_utm is not None:
+        umring = _umring_segments(points_xy, bbox_utm, frame_eps)
+        segments.extend(umring)
+        logger.info("Added %d umring segment(s) to close clipped rings", len(umring))
 
     if not segments:
         logger.warning("No valid Bruchkante segments; falling back to unconstrained Delaunay")
@@ -701,7 +858,8 @@ def generate_constrained_mesh(
             vertices.append([float(x), float(y), float(z if z is not None else 0.0)])
         valid = (faces_arr >= 0) & (faces_arr < len(vertices))
         faces = faces_arr[valid.all(axis=1)].tolist() if faces_arr.size else []
-        vertices, faces = _fill_mesh_holes(vertices, faces)
+        if bbox_utm is None:
+            vertices, faces = _fill_mesh_holes(vertices, faces)
         logger.info(
             "CDT mesh: %d vertices, %d faces, %d Bruchkante segments",
             len(vertices),
@@ -1501,6 +1659,7 @@ def extract_mesh_adaptive(
                 if guide_rings:
                     bounds = src.bounds
                     sampled_n = 0
+                    invalid_n = 0
                     for ring, ring_z in zip(guide_rings, guide_rings_z):
                         ring_xy = ring.xy
                         todo = np.isnan(ring_z)
@@ -1516,8 +1675,9 @@ def extract_mesh_adaptive(
                         sampled_z = sample_elevations_from_raster(src, ring_xy[in_raster, 0], ring_xy[in_raster, 1])
                         ring_z[in_raster] = sampled_z
                         sampled_n += int(np.sum(in_raster))
+                        invalid_n += int(np.sum(np.isnan(ring_z[in_raster])))
                     if sampled_n:
-                        logger.info("Sampled %d Bruchkante elevations from GeoTIFF", sampled_n)
+                        logger.info("Sampled %d Bruchkante elevations from GeoTIFF, %d invalid", sampled_n, invalid_n)
 
         except Exception as e:
             logger.error(f"Error processing {path}: {e}")

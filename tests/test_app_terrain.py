@@ -29,6 +29,8 @@ from BIMFabrikHH_core.apps.terrain import (
     terrain_mesh_to_landxml,
 )
 from BIMFabrikHH_core.apps.terrain.processing import (
+    _fill_missing_ring_z_cyclic,
+    _umring_segments,
     build_water_polygon_meshes,
     drop_points_inside_rings,
     drop_sliver_faces,
@@ -199,6 +201,133 @@ def test_generate_constrained_mesh_uses_pslg_not_conforming(monkeypatch: pytest.
     assert faces
 
 
+def test_umring_segments_one_line_per_side() -> None:
+    """Corners, DGM boundary points and ring clip points form one line per side."""
+    points = [
+        [0.0, 0.0],
+        [10.0, 0.0],
+        [10.0, 10.0],
+        [0.0, 10.0],
+        [4.0, 0.0],
+        [7.0, 0.0],
+        [0.0, 5.0],
+        [5.0, 5.0],
+    ]
+    segments = _umring_segments(points, (0.0, 0.0, 10.0, 10.0), 1e-3)
+    assert segments == [[0, 6], [6, 3], [1, 2], [0, 4], [4, 5], [5, 1], [3, 2]]
+
+
+def test_generate_constrained_mesh_closes_clipped_ring(monkeypatch: pytest.MonkeyPatch) -> None:
+    """A clipped ring with a missing Z is closed by the filled Z and the umring line."""
+    sent: list[np.ndarray] = []
+
+    def fake_triangulate(data, opts):
+        sent.append(np.asarray(data["segments"]))
+        verts = np.asarray(data["vertices"], dtype=float)
+        return {"vertices": verts, "triangles": np.array([[0, 1, 2]], dtype=int)}
+
+    import sys
+    import types
+
+    fake_mod = types.ModuleType("triangle")
+    fake_mod.triangulate = fake_triangulate
+    monkeypatch.setitem(sys.modules, "triangle", fake_mod)
+
+    x = np.array([0.0, 10.0, 10.0, 0.0])
+    y = np.array([0.0, 0.0, 10.0, 10.0])
+    z = np.ones(4)
+    ring_xy = np.array([[0.0, 0.0], [4.0, 0.0], [4.0, 4.0], [0.0, 4.0]])
+    ring_z = np.array([1.0, 1.0, np.nan, 1.0])
+    vertices, faces = generate_constrained_mesh(x, y, z, [ring_xy], [ring_z], bbox_utm=(0.0, 0.0, 10.0, 10.0))
+    assert faces == [[0, 1, 2]], "with bbox_utm the Delaunay refill must not run"
+
+    xy = [tuple(v[:2]) for v in vertices]
+    got = {frozenset((xy[a], xy[b])) for a, b in sent[0]}
+    expected = {
+        frozenset(pair)
+        for pair in [
+            ((4.0, 0.0), (4.0, 4.0)),
+            ((4.0, 4.0), (0.0, 4.0)),
+            ((0.0, 0.0), (4.0, 0.0)),
+            ((4.0, 0.0), (10.0, 0.0)),
+            ((10.0, 0.0), (10.0, 10.0)),
+            ((0.0, 10.0), (10.0, 10.0)),
+            ((0.0, 0.0), (0.0, 4.0)),
+            ((0.0, 4.0), (0.0, 10.0)),
+        ]
+    }
+    assert got == expected
+
+
+UMRING_HANG_BBOX = BoundingBoxParams(
+    min_x=9.978365813444057, min_y=53.568518537093276, max_x=9.988874079070033, max_y=53.57282014235683
+)
+
+
+def _umring_hang_hole_vertices() -> int:
+    """Build the DGM for ``UMRING_HANG_BBOX`` and count border vertices off the umring."""
+    import json
+
+    from BIMFabrikHH_core.apps.terrain import processing
+    from BIMFabrikHH_core.core.georeferencing.crs_transform import bbox_request_params_to_epsg25832
+    from BIMFabrikHH_core.data_models.streets import GUIDE_NUTZARTEN, records_from_geojson_feature_collection
+
+    data_dir = Path(__file__).parent / "data"
+    nutzung = json.loads((data_dir / "alkis_nutzung_umring_hang.geojson").read_text(encoding="utf-8"))
+    records = records_from_geojson_feature_collection(nutzung, nutzarten=GUIDE_NUTZARTEN)
+    bbox_utm = bbox_request_params_to_epsg25832(RequestParams(bbox=UMRING_HANG_BBOX, containers=[]))
+    mesh = processing.extract_mesh_adaptive(
+        [data_dir / "dgm1_umring_hang.tif"],
+        bbox_utm=bbox_utm,
+        guide_records=records,
+        water_meshes={},
+    )
+    if not mesh.faces:
+        return -1
+
+    edge_count: dict[tuple[int, int], int] = {}
+    for face in mesh.faces:
+        for i in range(3):
+            a, b = face[i], face[(i + 1) % 3]
+            key = (min(a, b), max(a, b))
+            edge_count[key] = edge_count.get(key, 0) + 1
+    border = {i for edge, n in edge_count.items() if n == 1 for i in edge}
+    xy = np.asarray(mesh.vertices)[sorted(border), :2]
+    min_x, min_y, max_x, max_y = bbox_utm
+    on_umring = (
+        np.isclose(xy[:, 0], min_x, atol=1e-2)
+        | np.isclose(xy[:, 0], max_x, atol=1e-2)
+        | np.isclose(xy[:, 1], min_y, atol=1e-2)
+        | np.isclose(xy[:, 1], max_y, atol=1e-2)
+    )
+    return int((~on_umring).sum())
+
+
+def test_dgm_umring_hang_box_finishes_without_holes() -> None:
+    """Dense streets cut by the umring once made Triangle hang; the DGM must finish closed.
+
+    ``tests/data`` holds a DGM1 excerpt (bbox + 105 m) and the ALKIS Nutzung of this
+    bbox. Triangle holds the GIL, so the time limit needs a separate process.
+    """
+    pytest.importorskip("triangle")
+    import os
+    import subprocess
+    import sys
+
+    root = Path(__file__).resolve().parents[1]
+    env = {**os.environ, "PYTHONPATH": os.pathsep.join([str(root / "src"), os.environ.get("PYTHONPATH", "")])}
+    code = "from tests.test_app_terrain import _umring_hang_hole_vertices; print(_umring_hang_hole_vertices())"
+    try:
+        proc = subprocess.run(
+            [sys.executable, "-c", code], cwd=root, env=env, capture_output=True, text=True, timeout=60
+        )
+    except subprocess.TimeoutExpired:
+        pytest.fail("constrained triangulation did not finish within 60 s")
+    assert proc.returncode == 0, proc.stderr[-2000:]
+    holes = int(proc.stdout.strip().splitlines()[-1])
+    assert holes == 0, f"{holes} hole vertices inside the umring"
+
+
 def test_drop_sliver_faces_removes_collinear_frame_triangle() -> None:
     vertices = [[0.0, 0.0, 1.0], [1.0, 0.0, 1.0], [2.0, 0.0, 1.0], [1.0, 1.0, 1.0]]
     faces = [[0, 1, 2], [0, 1, 3]]
@@ -206,6 +335,33 @@ def test_drop_sliver_faces_removes_collinear_frame_triangle() -> None:
     assert len(tris) == 1
     assert all(len(face) == 3 for face in tris)
     assert len(verts) == 3
+
+
+def test_drop_sliver_faces_keeps_small_valid_triangle() -> None:
+    """A 5 cm x 2 cm triangle between close ALKIS outlines is a real face, not a sliver."""
+    vertices = [[0.0, 0.0, 1.0], [0.05, 0.0, 1.0], [0.0, 0.02, 1.0]]
+    faces = [[0, 1, 2]]
+    verts, tris = drop_sliver_faces(vertices, faces)
+    assert tris == faces
+    assert verts == vertices
+
+
+def test_drop_sliver_faces_welds_duplicate_vertex_without_hole() -> None:
+    """A zero-area face from a duplicate vertex collapses; its neighbours share the edge."""
+    vertices = [
+        [0.0, 0.0, 1.0],
+        [1.0, 0.0, 1.0],
+        [1.0, 1.0, 1.0],
+        [2.0, 0.0, 1.0],
+        [1.0, 1e-8, 1.0],
+    ]
+    faces = [[0, 1, 2], [1, 4, 2], [4, 3, 2]]
+    verts, tris = drop_sliver_faces(vertices, faces)
+    assert len(verts) == 4
+    assert len(tris) == 2
+    edges = [tuple(sorted((tri[i], tri[(i + 1) % 3]))) for tri in tris for i in range(3)]
+    shared = [edge for edge in set(edges) if edges.count(edge) == 2]
+    assert len(shared) == 1
 
 
 def test_collect_guide_rings_clips_to_bbox() -> None:
@@ -652,3 +808,16 @@ def test_build_ifc_places_nullpunkt_from_request_bbox(tmp_path: Path) -> None:
     ifc = ifcopenshell.open(str(result))
     names = [e.Name for e in ifc.by_type("IfcBuildingElementProxy")]
     assert "Nullpunktobjekt" in names
+
+
+def test_fill_missing_ring_z_cyclic() -> None:
+    """Isolated ring elevations are repaired cyclically along the polygon."""
+    xy = np.array([[0.0, 0.0], [1.0, 0.0], [1.0, 1.0], [0.0, 1.0]])
+    z = np.array([1.0, np.nan, np.nan, 3.0])
+    filled = _fill_missing_ring_z_cyclic(xy, z)
+
+    assert np.all(np.isfinite(filled))
+    assert filled[0] == 1.0
+    assert filled[3] == 3.0
+    assert filled[1] == pytest.approx(5.0 / 3.0)
+    assert filled[2] == pytest.approx(7.0 / 3.0)
