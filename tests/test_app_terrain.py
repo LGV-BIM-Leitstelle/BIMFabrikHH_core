@@ -328,6 +328,43 @@ def test_dgm_umring_hang_box_finishes_without_holes() -> None:
     assert holes == 0, f"{holes} hole vertices inside the umring"
 
 
+@pytest.mark.parametrize(
+    "width_x, width_y",
+    [(1.0, 300.0), (300.0, 1.0), (5.0, 300.0), (300.0, 5.0)],
+    ids=["1m_north_south", "1m_east_west", "5m_north_south", "5m_east_west"],
+)
+def test_dgm_narrow_umring_strip_covers_whole_strip(width_x: float, width_y: float) -> None:
+    """A narrow umring cuts almost every ALKIS ring; the DGM must still fill the strip.
+
+    Before the umring was closed, Triangle ate the open rings from outside and the
+    guided DGM came back empty (``no non-empty parts``).
+    """
+    pytest.importorskip("triangle")
+    import json
+
+    from BIMFabrikHH_core.apps.terrain import processing
+    from BIMFabrikHH_core.core.georeferencing.crs_transform import bbox_request_params_to_epsg25832
+    from BIMFabrikHH_core.data_models.nutzung import GUIDE_NUTZARTEN, records_from_geojson_feature_collection
+
+    data_dir = Path(__file__).parent / "data"
+    nutzung = json.loads((data_dir / "alkis_nutzung_umring_hang.geojson").read_text(encoding="utf-8"))
+    records = records_from_geojson_feature_collection(nutzung, nutzarten=GUIDE_NUTZARTEN)
+    min_x, min_y, max_x, max_y = bbox_request_params_to_epsg25832(RequestParams(bbox=UMRING_HANG_BBOX, containers=[]))
+    cx, cy = (min_x + max_x) / 2, (min_y + max_y) / 2
+    bbox_utm = (cx - width_x / 2, cy - width_y / 2, cx + width_x / 2, cy + width_y / 2)
+
+    mesh = processing.extract_mesh_adaptive(
+        [data_dir / "dgm1_umring_hang.tif"], bbox_utm=bbox_utm, guide_records=records, water_meshes={}
+    )
+    assert mesh.faces, "guided DGM is empty"
+    xy = np.asarray(mesh.vertices)[:, :2]
+    tri = xy[np.asarray(mesh.faces)]
+    area = 0.5 * np.abs(np.cross(tri[:, 1] - tri[:, 0], tri[:, 2] - tri[:, 0])).sum()
+    assert area == pytest.approx(width_x * width_y, rel=1e-3)
+    parts = processing.build_landuse_parts(mesh, records, bbox_utm=bbox_utm, water_meshes={})
+    assert parts, "no land-use parts"
+
+
 def test_drop_sliver_faces_removes_collinear_frame_triangle() -> None:
     vertices = [[0.0, 0.0, 1.0], [1.0, 0.0, 1.0], [2.0, 0.0, 1.0], [1.0, 1.0, 1.0]]
     faces = [[0, 1, 2], [0, 1, 3]]
