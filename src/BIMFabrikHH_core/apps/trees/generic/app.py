@@ -111,7 +111,7 @@ class TreesGenericApp:
                 The tiles are EPSG:25832, so ``source_epsg`` must be 25832 or
                 ``None`` (the caller then vouches the positions match).
             dgm_folder: Optional directory or URL prefix joined with
-                ``tif_files`` (same contract as streets drape).
+                ``tif_files``.
             default_elevation: Z used when a tree XY misses every tile.
             validate: When ``True``, run ``ifcopenshell.validate --rules`` on
                 the written file.

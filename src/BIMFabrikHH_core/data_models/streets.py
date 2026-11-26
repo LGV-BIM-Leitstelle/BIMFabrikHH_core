@@ -1,4 +1,4 @@
-"""ALKIS Tatsächliche Nutzung — traffic surfaces for the streets app.
+"""ALKIS Tatsächliche Nutzung — Bruchkanten and land-use parts for the guided terrain DGM.
 
 Parsed from GeoJSON ``FeatureCollection`` responses such as
 ``/datasets/v1/alkis_vereinfacht/collections/Nutzung/items``.
@@ -22,7 +22,7 @@ from __future__ import annotations
 import json
 import logging
 from pathlib import Path
-from typing import Any, Dict, FrozenSet, List, Optional, Sequence, Tuple, Union
+from typing import TYPE_CHECKING, Any, Dict, FrozenSet, List, Optional, Sequence, Tuple, Union
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -33,6 +33,9 @@ from BIMFabrikHH_core.core.ogc_extractor import (
     iter_geojson_features,
     parse_feature_polygon_exterior_rings,
 )
+
+if TYPE_CHECKING:
+    from BIMFabrikHH_core.data_models.pydantic_psets_streets import Pset_Objektinformation_Strasse
 
 logger = logging.getLogger(__name__)
 
