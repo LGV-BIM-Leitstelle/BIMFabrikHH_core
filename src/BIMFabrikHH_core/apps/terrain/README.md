@@ -17,9 +17,11 @@ Query the collection with a WGS84 `bbox` and ask for coordinates in **EPSG:25832
 https://api.hamburg.de/datasets/v1/alkis_vereinfacht/collections/Nutzung/items?f=json&bbox=9.9769,53.5478,9.991435,53.55622&crs=http://www.opengis.net/def/crs/EPSG/0/25832
 ```
 
-The guided example fetches this live (`guide_from_oaf=True`). Writing the
-OAF response as GeoJSON is **off by default** (`write_geojson=False`).
-Set `write_geojson=True` to persist:
+The terrain apps do not load it themselves: pass the records as `guide_records`.
+The guided examples read `examples/assets/alkis_nutzung_example.geojson`, downloaded
+once for the example bbox (delete it to fetch a fresh one). Other callers can use
+`load_guide_records_from_oaf(bbox)` from `data_models/nutzung.py`; with
+`write_geojson=True, output_dir=...` it also persists:
 
 - `alkis_nutzung_verkehr.geojson` — traffic types
 - `alkis_nutzung_weitere.geojson` — all other types below
@@ -28,7 +30,7 @@ Set `write_geojson=True` to persist:
 
 ## Typen (`nutzart`)
 
-The guided DGM uses `GUIDE_NUTZARTEN` in `data_models/streets.py`. The standalone streets example is in `__local_dev/streets` (not part of the DGM app).
+The guided DGM uses `GUIDE_NUTZARTEN` in `data_models/nutzung.py`.
 
 **Verkehr**
 

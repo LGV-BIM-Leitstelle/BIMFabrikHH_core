@@ -11,7 +11,7 @@ from BIMFabrikHH_core.config.logging_config import get_logger, setup_logging
 from BIMFabrikHH_core.data_models.params_tree import Component, Container, RequestParams
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from local_dgm import EXAMPLE_BBOX, dgm_tile_paths
+from local_dgm import EXAMPLE_BBOX, dgm_tile_paths, example_guide_records
 
 logger = get_logger()
 
@@ -31,9 +31,10 @@ def _request(container_id: str, description: str) -> RequestParams:
     )
 
 
-def _run(label: str, output_name: str, *, guide_from_oaf: bool) -> tuple[float, Path]:
+def _run(label: str, output_name: str, *, guided: bool) -> tuple[float, Path]:
     tif_files = dgm_tile_paths(EXAMPLE_BBOX)
     output_path = _HERE / output_name
+    guide_records = example_guide_records() if guided else None
     t0 = time.perf_counter()
     result = TerrainGenericApp.from_geotiffs(
         tif_files=tif_files,
@@ -42,8 +43,7 @@ def _run(label: str, output_name: str, *, guide_from_oaf: bool) -> tuple[float, 
         importance_threshold=0.05,
         move_to_origin=False,
         output_path=output_path,
-        guide_from_oaf=guide_from_oaf,
-        write_geojson=False,
+        guide_records=guide_records,
     )
     elapsed = time.perf_counter() - t0
     if result is None:
@@ -52,8 +52,8 @@ def _run(label: str, output_name: str, *, guide_from_oaf: bool) -> tuple[float, 
 
 
 def main() -> None:
-    unguided_s, unguided_path = _run("unguided", "example_dgm_generic.ifc", guide_from_oaf=False)
-    guided_s, guided_path = _run("guided", "example_dgm_generic_guided.ifc", guide_from_oaf=True)
+    unguided_s, unguided_path = _run("unguided", "example_dgm_generic.ifc", guided=False)
+    guided_s, guided_path = _run("guided", "example_dgm_generic_guided.ifc", guided=True)
 
     rows = [
         ("unguided (Delaunay)", unguided_s, unguided_path),

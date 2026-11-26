@@ -21,7 +21,6 @@ from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple, Union
 
 from pydantic import BaseModel
 
-from BIMFabrikHH_core.apps.streets.processing import dgm_output_transformer
 from BIMFabrikHH_core.apps.terrain._ifc_common import (
     DEFAULT_TERRAIN_LAYER,
     RgbTuple,
@@ -32,6 +31,7 @@ from BIMFabrikHH_core.apps.terrain.landxml import export_terrain_landxml
 from BIMFabrikHH_core.apps.terrain.processing import (
     DEFAULT_GUIDE_EDGE_SPACING_M,
     build_landuse_parts,
+    dgm_output_transformer,
     extract_mesh_adaptive,
     resolve_guide_records,
     transform_mesh,
@@ -221,15 +221,13 @@ class TerrainRustApp:
         guide_edge_spacing_m: float = DEFAULT_GUIDE_EDGE_SPACING_M,
         merge_parcels: bool = True,
         split_by_landuse: bool = False,
-        guide_from_oaf: bool = False,
-        write_geojson: bool = False,
         export_landxml: bool = False,
         landxml_path: Optional[Union[str, Path]] = None,
     ) -> Optional[Path]:
         """One-shot: mesh GeoTIFFs, split by land use, then write IFC in Rust.
 
         Mirrors :meth:`TerrainGenericApp.from_geotiffs`. When ``guide_records``
-        (or ``guide_from_oaf``) yield ALKIS ``Nutzung`` and ``merge_parcels`` /
+        hold ALKIS ``Nutzung`` and ``merge_parcels`` /
         ``split_by_landuse`` is set, the guided TIN is split into land-use
         parts written as separate proxies; otherwise a single DGM mesh is
         written. ``export_landxml`` additionally writes a LandXML 1.2 TIN with
@@ -243,14 +241,7 @@ class TerrainRustApp:
         DGM tile CRS.
         """
         transformer = dgm_output_transformer(request_params.output_epsg, move_to_origin=move_to_origin)
-        guide_records = resolve_guide_records(
-            guide_records,
-            request_params.bbox_as_wgs84_tuple,
-            guide_from_oaf=guide_from_oaf,
-            source_epsg=request_params.source_epsg,
-            write_geojson=write_geojson,
-            output_dir=(Path(output_path).parent if output_path is not None else None),
-        )
+        guide_records = resolve_guide_records(guide_records, source_epsg=request_params.source_epsg)
 
         bbox_utm = bbox_request_params_to_epsg25832(request_params)
         water_meshes: Dict[str, TerrainMesh] = {}

@@ -1,9 +1,9 @@
 """Generic terrain example with ALKIS Nutzung Bruchkanten.
 
 DGM1 tiles from ``examples/assets/dgm1_hh_2022-04-30`` for bbox
-``9.9769,53.5478–9.991435,53.55622`` (Innenstadt / Alster, ~0.90 km²). Nutzung outlines come from the Hamburg
-OAF (``guide_from_oaf=True``). Writing ``alkis_nutzung_weitere.geojson`` is
-optional and off by default (``write_geojson=False``).
+``9.9769,53.5478–9.991435,53.55622`` (Innenstadt / Alster, ~0.90 km²). Nutzung outlines come from
+``examples/assets/alkis_nutzung_example.geojson`` (downloaded once from the Hamburg
+OAF, see ``local_dgm.example_guide_records``) and are passed as ``guide_records``.
 
 ``merge_parcels=True`` (default) writes Siedlung and Unland as one
 dark-sand object. Leftover DGM stays separate. Traffic, Grünfläche, and
@@ -25,13 +25,9 @@ from BIMFabrikHH_core.config.logging_config import get_logger, setup_logging
 from BIMFabrikHH_core.data_models.params_tree import Component, Container, RequestParams
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from local_dgm import EXAMPLE_BBOX, dgm_tile_paths
+from local_dgm import EXAMPLE_BBOX, dgm_tile_paths, example_guide_records
 
 logger = get_logger()
-
-# Persist OAF responses as GeoJSON next to the IFC. Off by default.
-WRITE_GEOJSON = False
-
 
 def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Guided DGM example (IFC, optional LandXML).")
@@ -85,8 +81,7 @@ def main() -> None:
         importance_threshold=0.05,
         move_to_origin=False,
         output_path=output_file,
-        guide_from_oaf=True,
-        write_geojson=WRITE_GEOJSON,
+        guide_records=example_guide_records(),
         export_landxml=args.xml,
         merge_parcels=args.merge_parcels,
         split_by_landuse=args.split_by_landuse,

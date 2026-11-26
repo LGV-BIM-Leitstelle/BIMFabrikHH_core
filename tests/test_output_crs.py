@@ -18,8 +18,12 @@ from BIMFabrikHH_core.apps.biotopes.generic.app import BiotopesGenericApp
 from BIMFabrikHH_core.apps.boreholes.generic.app import BoreholesGenericApp
 from BIMFabrikHH_core.apps.city.processing import citygml_crs, with_tile_crs
 from BIMFabrikHH_core.apps.flurstuecke.generic.app import FlurstueckeGenericApp
-from BIMFabrikHH_core.apps.streets.processing import dgm_output_transformer, transformer_to_dgm
-from BIMFabrikHH_core.apps.terrain.processing import resolve_guide_records, transform_mesh
+from BIMFabrikHH_core.apps.terrain.processing import (
+    dgm_output_transformer,
+    resolve_guide_records,
+    transform_mesh,
+    transformer_to_dgm,
+)
 from BIMFabrikHH_core.apps.trees import check_positions_in_dgm_crs, transform_record_positions
 from BIMFabrikHH_core.apps.trees.generic.app import TreesGenericApp
 from BIMFabrikHH_core.apps.wasserschutzgebiete.generic.app import WasserschutzgebieteGenericApp
@@ -33,7 +37,7 @@ from BIMFabrikHH_core.data_models.boreholes import BoreholeLayer, BoreholeRecord
 from BIMFabrikHH_core.data_models.flurstuecke import FlurstueckRecord
 from BIMFabrikHH_core.data_models.params_tree import BoundingBoxParams, RequestParams
 from BIMFabrikHH_core.data_models.pydantic_georeferencing import CoordinateSystem, CoordinateSystemTemplates
-from BIMFabrikHH_core.data_models.streets import StreetRecord
+from BIMFabrikHH_core.data_models.nutzung import NutzungRecord
 from BIMFabrikHH_core.data_models.terrain_mesh import TerrainMesh
 from BIMFabrikHH_core.data_models.wasserschutzgebiete import WasserschutzgebietRecord
 
@@ -554,32 +558,20 @@ def test_biotopes_transforms_source_to_output(shape, offset, distance, tmp_path:
     assert _nearest(path, (x + offset[0], y + offset[1])) == pytest.approx(distance, abs=0.01)
 
 
-def _street(rings) -> StreetRecord:
-    return StreetRecord(feature_id=1, rings=rings, nutzart="Weg")
-
-
-def test_streets_drape_in_dgm_crs_then_write_output_epsg(tmp_path: Path) -> None:
-    from BIMFabrikHH_core.apps.streets.generic.app import StreetsGenericApp
-
-    request = RequestParams(bbox=HAMBURG_BBOX, source_epsg=25832, output_epsg=GK)
-    path = StreetsGenericApp.build_ifc(
-        [_street([_square(*POINT_25832)])], request_params=request, output_path=tmp_path / "streets.ifc"
-    )
-    assert _crs_header(path)[::3] == ("EPSG:10285", "EPSG:7837")
-    corner = _world_points(path).min(axis=0)
-    assert math.dist(corner[:2], _to_gk(*POINT_25832)) < 0.5
+def _street(rings) -> NutzungRecord:
+    return NutzungRecord(feature_id=1, rings=rings, nutzart="Weg")
 
 
 def test_resolve_guide_records_transforms_source_into_dgm_crs() -> None:
     to_wgs84 = Transformer.from_crs(25832, 4326, always_xy=True)
     ring = [to_wgs84.transform(x, y) for x, y in _square(*POINT_25832)]
-    (record,) = resolve_guide_records([_street([ring])], None, guide_from_oaf=False, source_epsg=4326)
+    (record,) = resolve_guide_records([_street([ring])], source_epsg=4326)
     assert record.rings[0][0] == pytest.approx(POINT_25832, abs=1e-3)
 
 
 def test_resolve_guide_records_without_source_keeps_rings() -> None:
     ring = _square(*POINT_25832)
-    (record,) = resolve_guide_records([_street([ring])], None, guide_from_oaf=False)
+    (record,) = resolve_guide_records([_street([ring])])
     assert record.rings[0] == ring
 
 

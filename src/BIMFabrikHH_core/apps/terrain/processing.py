@@ -25,6 +25,7 @@ from scipy.sparse.csgraph import connected_components
 from scipy.spatial import Delaunay, cKDTree
 
 from BIMFabrikHH_core.config.logging_config import get_logger
+from BIMFabrikHH_core.core.georeferencing import DGM_TILE_EPSG, DGM_TILE_VERTICAL_EPSG
 from BIMFabrikHH_core.core.georeferencing.coordinate_transformer import CoordinateTransformer
 from BIMFabrikHH_core.core.georeferencing.extract_elevation import (
     invalid_z,
@@ -32,12 +33,10 @@ from BIMFabrikHH_core.core.georeferencing.extract_elevation import (
     open_geotiff,
     sample_elevations_from_raster,
 )
-from BIMFabrikHH_core.apps.streets.processing import transform_record_rings, transformer_to_dgm
 from BIMFabrikHH_core.core.ogc_extractor import strip_closing_duplicate_xy
-from BIMFabrikHH_core.data_models.streets import (
+from BIMFabrikHH_core.data_models.nutzung import (
     PARCELS_LABEL,
     PARCEL_NUTZARTEN,
-    load_guide_records_from_oaf,
     nutzung_split_label,
 )
 from BIMFabrikHH_core.data_models.terrain_mesh import TerrainMesh
@@ -313,7 +312,7 @@ def collect_guide_rings(
 ) -> List[GuideRing]:
     """Densify ALKIS Nutzung exterior rings to ``(N, 2)`` arrays in EPSG:25832.
 
-    ``records`` are :class:`StreetRecord`-like objects (``rings``) in the DGM
+    ``records`` are :class:`NutzungRecord`-like objects (``rings``) in the DGM
     tile CRS (see :func:`resolve_guide_records`). When ``bbox_utm`` is set, each
     ring is clipped to that rectangle so Bruchkanten cannot extend the TIN past
     the same crop used for the unguided DGM.
@@ -1409,38 +1408,58 @@ def merge_parcel_meshes(parts: Dict[str, TerrainMesh]) -> Dict[str, TerrainMesh]
     return out
 
 
+def transformer_to_dgm(source_epsg: Optional[int]) -> Optional[CoordinateTransformer]:
+    """Transformer from ``source_epsg`` into the DGM tile CRS, or ``None`` without a source.
+
+    ``None`` means the coordinates are used as they are; the caller vouches
+    they match the DGM.
+    """
+    if source_epsg is None:
+        return None
+    return CoordinateTransformer.from_source_to_output(source_epsg, DGM_TILE_EPSG)
+
+
+def dgm_output_transformer(output_epsg: Optional[int], *, move_to_origin: bool = False) -> CoordinateTransformer:
+    """Transformer from the DGM tile CRS (heights DHHN2016) into ``output_epsg``.
+
+    Identity when ``output_epsg`` is ``None``. Its target is the CRS the IFC
+    header, basepoint and LandXML are written in.
+
+    Raises:
+        ValueError: ``move_to_origin`` together with a different ``output_epsg``;
+            the shifted vertices are local and cannot be transformed.
+    """
+    transformer = CoordinateTransformer.from_source_to_output(DGM_TILE_EPSG, output_epsg, DGM_TILE_VERTICAL_EPSG)
+    if move_to_origin and not transformer.is_identity:
+        raise ValueError(f"move_to_origin cannot be combined with output_epsg EPSG:{output_epsg}")
+    return transformer
+
+
+def transform_record_rings(records: Sequence[Any], transformer: Optional[CoordinateTransformer]) -> List[Any]:
+    """Return copies of ``records`` with every ``rings`` entry transformed by ``transformer``.
+
+    ``None`` or an identity transformer keep the records as they are.
+    """
+    if transformer is None or transformer.is_identity:
+        return list(records)
+    return [
+        rec.model_copy(update={"rings": [transformer.transform_ring(ring) for ring in rec.rings]}) for rec in records
+    ]
+
+
 def resolve_guide_records(
     guide_records: Optional[Sequence[Any]],
-    bbox_wgs84: Optional[Tuple[float, float, float, float]],
     *,
-    guide_from_oaf: bool,
     source_epsg: Optional[int] = None,
-    write_geojson: bool = False,
-    output_dir: Optional[Union[str, Path]] = None,
 ) -> Optional[Sequence[Any]]:
-    """Return the guide records to use in the DGM tile CRS, fetching from the Hamburg OAF if asked.
+    """Return the given guide records in the DGM tile CRS.
 
     Writer-neutral: both :class:`TerrainGenericApp` and :class:`TerrainRustApp`
-    call this. Provided ``guide_records`` are in ``source_epsg`` and are
-    transformed into the DGM tile CRS (``None`` keeps them as they are).
-    ``guide_from_oaf=True`` with no records pulls ALKIS ``Nutzung`` for
-    ``bbox_wgs84``, already in the DGM tile CRS; ``write_geojson`` then
-    persists the response next to ``output_dir``.
+    call this. ``guide_records`` are in ``source_epsg`` and are transformed
+    into the DGM tile CRS (``None`` keeps them as they are). Loading the
+    ALKIS ``Nutzung`` is the caller's job, e.g.
+    :func:`~BIMFabrikHH_core.data_models.nutzung.load_guide_records_from_oaf`.
     """
-    if guide_from_oaf and guide_records is None:
-        if bbox_wgs84 is None:
-            logger.warning("guide_from_oaf=True needs RequestParams.bbox")
-            return guide_records
-        out_dir = Path(output_dir) if output_dir is not None else None
-        if write_geojson and out_dir is None:
-            logger.warning("write_geojson=True needs output_path to know where to save")
-        return load_guide_records_from_oaf(
-            bbox_wgs84,
-            write_geojson=bool(write_geojson and out_dir is not None),
-            output_dir=out_dir,
-        )
-    if write_geojson:
-        logger.warning("write_geojson=True is ignored unless guide_from_oaf fetches Nutzung")
     if guide_records is None:
         return None
     return transform_record_rings(guide_records, transformer_to_dgm(source_epsg))

@@ -1,4 +1,4 @@
-"""ALKIS Tatsächliche Nutzung — traffic surfaces for the streets app.
+"""ALKIS Tatsächliche Nutzung — Bruchkanten and land-use parts for the guided terrain DGM.
 
 Parsed from GeoJSON ``FeatureCollection`` responses such as
 ``/datasets/v1/alkis_vereinfacht/collections/Nutzung/items``.
@@ -22,7 +22,7 @@ from __future__ import annotations
 import json
 import logging
 from pathlib import Path
-from typing import Any, Dict, FrozenSet, List, Optional, Sequence, Tuple, Union
+from typing import TYPE_CHECKING, Any, Dict, FrozenSet, List, Optional, Sequence, Tuple, Union
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -33,6 +33,9 @@ from BIMFabrikHH_core.core.ogc_extractor import (
     iter_geojson_features,
     parse_feature_polygon_exterior_rings,
 )
+
+if TYPE_CHECKING:
+    from BIMFabrikHH_core.data_models.pydantic_psets_streets import Pset_Objektinformation_Strasse
 
 logger = logging.getLogger(__name__)
 
@@ -99,7 +102,7 @@ def nutzung_idebene1(nutzart: str) -> str:
     return "Siedlung"
 
 
-class StreetRecord(BaseModel):
+class NutzungRecord(BaseModel):
     """One ALKIS Nutzung traffic surface: exterior rings + attributes + optional psets."""
 
     model_config = ConfigDict(arbitrary_types_allowed=True, extra="ignore")
@@ -117,11 +120,11 @@ class StreetRecord(BaseModel):
 
 
 def collect_street_psets(
-    record: StreetRecord,
+    record: NutzungRecord,
     *,
     include_property_sets: bool = True,
 ) -> List[BaseModel]:
-    """Extract Pydantic pset templates stored on :class:`StreetRecord` (cf. wasserschutzgebiete)."""
+    """Extract Pydantic pset templates stored on :class:`NutzungRecord` (cf. wasserschutzgebiete)."""
     if not include_property_sets or not record.psets:
         return []
     out: List[BaseModel] = []
@@ -138,8 +141,8 @@ def collect_street_psets(
     return out
 
 
-def _record_with_psets_from_payload(payload: Dict[str, Any]) -> StreetRecord:
-    record = StreetRecord.model_validate(payload)
+def _record_with_psets_from_payload(payload: Dict[str, Any]) -> NutzungRecord:
+    record = NutzungRecord.model_validate(payload)
     from BIMFabrikHH_core.data_models.pydantic_psets_streets import (
         Pset_Objektinformation_Strasse,
     )
@@ -158,7 +161,7 @@ def _record_with_psets_from_payload(payload: Dict[str, Any]) -> StreetRecord:
     return record.model_copy(update={"psets": {Pset_Objektinformation_Strasse.pset_name: pset}})
 
 
-def pset_for_nutzung_group(records: Sequence[StreetRecord], *, label: str) -> "Pset_Objektinformation_Strasse":
+def pset_for_nutzung_group(records: Sequence[NutzungRecord], *, label: str) -> "Pset_Objektinformation_Strasse":
     """One ``Pset_Objektinformation`` summarizing all features that share ``label``."""
     from BIMFabrikHH_core.data_models.pydantic_psets_streets import (
         Pset_Objektinformation_Strasse,
@@ -186,7 +189,7 @@ def pset_for_nutzung_group(records: Sequence[StreetRecord], *, label: str) -> "P
     )
 
 
-def pset_for_parcel_group(records: Sequence[StreetRecord]) -> "Pset_Objektinformation_Strasse":
+def pset_for_parcel_group(records: Sequence[NutzungRecord]) -> "Pset_Objektinformation_Strasse":
     """One ``Pset_Objektinformation`` for all Siedlung / Unland Flächen."""
     from BIMFabrikHH_core.data_models.pydantic_psets_streets import (
         Pset_Objektinformation_Strasse,
@@ -213,8 +216,8 @@ def records_from_geojson_feature_collection(
     data: Dict[str, Any],
     *,
     nutzarten: Optional[FrozenSet[str]] = DEFAULT_NUTZARTEN,
-) -> List[StreetRecord]:
-    """Parse a GeoJSON FeatureCollection into :class:`StreetRecord` list.
+) -> List[NutzungRecord]:
+    """Parse a GeoJSON FeatureCollection into :class:`NutzungRecord` list.
 
     Skips features without polygon geometry, empty rings, or (when ``nutzarten``
     is set) a ``nutzart`` outside the allowed set.
@@ -224,7 +227,7 @@ def records_from_geojson_feature_collection(
         nutzarten: Allowed ``nutzart`` values. ``None`` keeps every Nutzung class.
     """
     ensure_feature_collection(data)
-    out: List[StreetRecord] = []
+    out: List[NutzungRecord] = []
     for feat in iter_geojson_features(data):
         rings = parse_feature_polygon_exterior_rings(feat)
         if not rings:
@@ -245,11 +248,11 @@ def records_from_geojson_feature_collection(
     return out
 
 
-def load_streets_records(
+def load_nutzung_records(
     path: Union[str, Path],
     *,
     nutzarten: Optional[FrozenSet[str]] = DEFAULT_NUTZARTEN,
-) -> List[StreetRecord]:
+) -> List[NutzungRecord]:
     """Load and parse a ``.json`` FeatureCollection from disk."""
     p = Path(path)
     with p.open(encoding="utf-8") as f:
@@ -327,7 +330,7 @@ def load_guide_records_from_oaf(
     *,
     write_geojson: bool = False,
     output_dir: Optional[Union[str, Path]] = None,
-) -> List[StreetRecord]:
+) -> List[NutzungRecord]:
     """Fetch Nutzung for ``bbox_wgs84`` and parse ``GUIDE_NUTZARTEN``.
 
     ``write_geojson`` is off by default. When ``True``, writes
@@ -353,11 +356,11 @@ __all__ = [
     "PARCELS_LABEL",
     "PARCEL_NUTZARTEN",
     "WEITERE_NUTZARTEN",
-    "StreetRecord",
+    "NutzungRecord",
     "collect_street_psets",
     "fetch_nutzung_feature_collection",
     "load_guide_records_from_oaf",
-    "load_streets_records",
+    "load_nutzung_records",
     "nutzung_idebene1",
     "nutzung_split_label",
     "pset_for_nutzung_group",

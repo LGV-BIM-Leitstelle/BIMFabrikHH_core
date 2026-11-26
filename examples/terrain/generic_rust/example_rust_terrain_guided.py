@@ -3,7 +3,7 @@
 Same guided pipeline as ``generic/example_generic_terrain_guided.py`` — DGM1
 tiles from ``examples/assets/dgm1_hh_2022-04-30`` for bbox
 ``9.9769,53.5478–9.991435,53.55622`` (Innenstadt / Alster, ~0.90 km²), Nutzung outlines from
-the Hamburg OAF (``guide_from_oaf=True``) — but the IFC is written by Rust via
+``examples/assets/alkis_nutzung_example.geojson`` — but the IFC is written by Rust via
 :class:`TerrainRustApp` (``bimfabrikhh_core_rs.terrain_parts_to_ifc``) instead of
 the ifcfactory writer. Python still meshes and splits; Rust only writes STEP.
 
@@ -29,13 +29,9 @@ from BIMFabrikHH_core.data_models.params_tree import Component, Container, Reque
 
 # Reuse the DGM tile resolver from the generic example (sibling folder).
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "generic"))
-from local_dgm import EXAMPLE_BBOX, dgm_tile_paths
+from local_dgm import EXAMPLE_BBOX, dgm_tile_paths, example_guide_records
 
 logger = get_logger()
-
-# Persist OAF responses as GeoJSON next to the IFC. Off by default.
-WRITE_GEOJSON = False
-
 
 def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Guided DGM example written by Rust (IFC, optional LandXML).")
@@ -89,8 +85,7 @@ def main() -> None:
         importance_threshold=0.05,
         move_to_origin=False,
         output_path=output_file,
-        guide_from_oaf=True,
-        write_geojson=WRITE_GEOJSON,
+        guide_records=example_guide_records(),
         export_landxml=args.xml,
         merge_parcels=args.merge_parcels,
         split_by_landuse=args.split_by_landuse,

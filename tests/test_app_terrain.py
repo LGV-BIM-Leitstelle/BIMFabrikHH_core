@@ -38,12 +38,12 @@ from BIMFabrikHH_core.apps.terrain.processing import (
     smooth_flowing_water_z,
     snap_vertices_to_planar_water_z,
 )
-from BIMFabrikHH_core.data_models.streets import (
+from BIMFabrikHH_core.data_models.nutzung import (
     ALKIS_NUTZUNG_WEITERE_GEOJSON,
     DEFAULT_NUTZARTEN,
     PARCELS_LABEL,
     WEITERE_NUTZARTEN,
-    StreetRecord,
+    NutzungRecord,
     pset_for_parcel_group,
     write_nutzung_geojson,
 )
@@ -270,7 +270,7 @@ def _umring_hang_hole_vertices() -> int:
 
     from BIMFabrikHH_core.apps.terrain import processing
     from BIMFabrikHH_core.core.georeferencing.crs_transform import bbox_request_params_to_epsg25832
-    from BIMFabrikHH_core.data_models.streets import GUIDE_NUTZARTEN, records_from_geojson_feature_collection
+    from BIMFabrikHH_core.data_models.nutzung import GUIDE_NUTZARTEN, records_from_geojson_feature_collection
 
     data_dir = Path(__file__).parent / "data"
     nutzung = json.loads((data_dir / "alkis_nutzung_umring_hang.geojson").read_text(encoding="utf-8"))
@@ -366,7 +366,7 @@ def test_drop_sliver_faces_welds_duplicate_vertex_without_hole() -> None:
 
 def test_collect_guide_rings_clips_to_bbox() -> None:
     """Street outlines that leave the crop must be clipped so the TIN stays rectangular."""
-    rec = StreetRecord(
+    rec = NutzungRecord(
         feature_id=1,
         rings=[[(-10.0, -10.0), (20.0, -10.0), (20.0, 20.0), (-10.0, 20.0)]],
         nutzart="Strassenverkehr",
@@ -383,7 +383,7 @@ def test_collect_guide_rings_clips_to_bbox() -> None:
 
 
 def test_collect_guide_rings_drops_rings_outside_bbox() -> None:
-    rec = StreetRecord(
+    rec = NutzungRecord(
         feature_id=2,
         rings=[[(100.0, 100.0), (110.0, 100.0), (110.0, 110.0)]],
     )
@@ -522,19 +522,19 @@ def test_merge_parcel_meshes_folds_siedlung_and_unland_only() -> None:
 
 def test_pset_for_parcel_group_summarizes_siedlung_records() -> None:
     records = [
-        StreetRecord(
+        NutzungRecord(
             feature_id=1,
             rings=[[(0.0, 0.0), (1.0, 0.0), (1.0, 1.0)]],
             nutzart="Wohnbauflaeche",
             oid="a",
         ),
-        StreetRecord(
+        NutzungRecord(
             feature_id=2,
             rings=[[(2.0, 2.0), (3.0, 2.0), (3.0, 3.0)]],
             nutzart="Unland Vegetationslose Flaeche",
             oid="b",
         ),
-        StreetRecord(
+        NutzungRecord(
             feature_id=3,
             rings=[[(4.0, 4.0), (5.0, 4.0), (5.0, 5.0)]],
             nutzart="Weg",
